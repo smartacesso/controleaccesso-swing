@@ -1,0 +1,5 @@
+url=http://www.pro-treino.com
+name=Pro-Treino
+imageFolder=pro-treino/
+firstColor=39,57,74
+secondColor=70,178,202

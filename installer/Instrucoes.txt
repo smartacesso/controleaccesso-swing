@@ -1,0 +1,42 @@
+-------- PROCESSO PARA GERAR O INSTALADOR .EXE A PARTIR DO .JAR --------
+
+-- Gerando o instalador .jar --
+
+1. Gerar o executal .jar incluindo todas as bibliotecas no arquivo. Definir o nome como Pro-Treino Controle de Acesso.jar
+
+2. Instalar o IZPACK na pasta padrao C:\Program Files\IzPack (versao dist-5.1.2)
+
+3. Copiar o conteudo da pasta bin_ para C:\Program Files\IzPack\bin
+
+4. Copiar o jar gerado no passo 1 para C:\Program Files\IzPack\bin
+
+5. Abrir o prompt como adminstrador e executar
+cd C:\Program Files\IzPack\bin (C:\Program Files (x86)\IzPack\bin)
+compile install.xml
+
+OU
+
+Executar o arquivo gerarInstalador.bat
+
+Será gerado o arquivo install.jar no mesmo diretorio. Este já é  instalador no formato .jar.
+
+
+
+-- Gerando o instalador .exe --
+
+6. Instalar launch4j (versao 3.11-win32) e abrir como administrador
+
+7. No Launch4j, abrir o arquivo config_installer_launch4j.xml
+
+8. Verificar se o arquivo icon.icon da pasta C:\Program Files\IzPack\bin\images está correto.
+
+9. Clicar em Builder wrapper (icone de engrenagem no topo)
+Será gerado o arquivo Instalador_Pro-Treino_Controle de Acesso.exe na pasta C:\Program Files\IzPack\bin
+
+Pronto!
+
+- Modificacoes no instalador podem ser feitas no arquivo install.xml
+- Modificacoes nas strings podem ser feitas no arquivo CustomLangPack.xml_prt (usar o arquivo prt.xml como referencia. Verificar a string neste arquivo e criar uma copia alterada no CustomLangPack.xml_prt)
+- É possivel alterar a localizacao da pasta de arquivos. Porem sera necessario alterar os apontamentos nos arquivos de configuracoes.
+- Se adicionar novos arquivos e novas pastas no projeto será necessario adicionar tambem na seção Packs no arquivo install.xml. O que irá indicar para instalador incluir estes arquivos e pastas no processo de copia para o diretorio de instalacao.
+- JSmooth pode ser uma opcao para substituir o Launch4j. Porem é necessario testar.
