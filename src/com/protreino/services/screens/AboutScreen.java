@@ -29,10 +29,10 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
 import com.google.gson.Gson;
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.VersionInfoTO;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.Download;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
@@ -66,7 +66,7 @@ public class AboutScreen extends JFrame {
 		aboutLabel.setFont(boldFont);
 		aboutLabel.setForeground(Main.firstColor);
 		
-		JLabel versaoLabel = new JLabel("Versão " + Constants.VERSION);
+		JLabel versaoLabel = new JLabel("Versão " + Configurations.VERSION);
 		versaoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		versaoLabel.setFont(boldFont);
 		versaoLabel.setForeground(Main.firstColor);
@@ -136,11 +136,11 @@ public class AboutScreen extends JFrame {
 			BufferedReader bufferedReader = con.getResponseReader();
 			Gson gson = new Gson();
 			VersionInfoTO versionInfo = gson.fromJson(bufferedReader, VersionInfoTO.class);
-			if (Double.valueOf(Constants.VERSION).doubleValue() == versionInfo.getVersion().doubleValue()) {
+			if (Double.valueOf(Configurations.VERSION).doubleValue() == versionInfo.getVersion().doubleValue()) {
 				JOptionPane.showMessageDialog(null, "Você já possui a última versão instalada!",
 	            		"Atualização " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 			
-			} else if (Double.valueOf(Constants.VERSION).doubleValue() < versionInfo.getVersion().doubleValue()) {
+			} else if (Double.valueOf(Configurations.VERSION).doubleValue() < versionInfo.getVersion().doubleValue()) {
 				
 				JPanel panel = new JPanel();
 				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));

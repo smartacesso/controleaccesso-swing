@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -25,14 +27,15 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.PreferenceTO;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
+import com.topdata.EasyInner;
 
 @SuppressWarnings("serial")
 public class PreferencesDialog extends JDialog {
@@ -173,6 +176,8 @@ public class PreferencesDialog extends JDialog {
 		
 		JButton zerarLastSyncButton = new JButton("Zerar marcador");
 		zerarLastSyncButton.setPreferredSize(new Dimension(140, 30));
+		JButton syncButton = new JButton("Sincronizar");
+		syncButton.setPreferredSize(new Dimension(80, 30));
 		JButton logoutButton = new JButton("Logout");
 		logoutButton.setPreferredSize(new Dimension(80, 30));
 		JButton executarButton = new JButton("Disparar tarefas");
@@ -190,6 +195,8 @@ public class PreferencesDialog extends JDialog {
 		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		buttonsPanel.add(zerarLastSyncButton);
 		buttonsPanel.add(Box.createHorizontalGlue());
+		buttonsPanel.add(syncButton);
+		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(logoutButton);
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(executarButton);
@@ -205,18 +212,30 @@ public class PreferencesDialog extends JDialog {
 		});
 		
 		executarButton.addActionListener(e -> {
-			Main.tasksOfDay();
+			Main.tasksOfDay(false);
 		});
 		
-		
-		
-		
-		
+
+		syncButton.addActionListener(e -> {
+			  JFrame jFrame = new JFrame();
+		        String dateInitialMessage = JOptionPane.showInputDialog(jFrame, "Primeira data com o formato dd/MM/yyyy HH:mm");
+		        String dateFinalgetMessage = JOptionPane.showInputDialog(jFrame, "Segunda data com o formato dd/MM/yyyy HH:mm");
+		        try {
+					Main.dateSync(dateInitialMessage, dateFinalgetMessage);
+				} catch (ParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+//Amanhã fazer a configuração da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
+		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
+		});
+
 		
 		salvarButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Verifica campos de texto obrigatorios
+				
 				for (String key : fieldMap.keySet()) {
 					FieldTO field = fieldMap.get(key);
 					if (FieldType.TEXT.equals(field.getType())
@@ -281,7 +300,7 @@ public class PreferencesDialog extends JDialog {
 
 	private void loadImages(){
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		configImage = toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
+		configImage = toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
 	}
 	
 	public void setErrorMessage(String message){

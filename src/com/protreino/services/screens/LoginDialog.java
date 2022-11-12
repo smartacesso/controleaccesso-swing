@@ -25,8 +25,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -39,11 +37,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
@@ -58,7 +56,6 @@ public class LoginDialog extends JDialog {
 	private JLabel loginMessageLabel;
 	private JButton loginButton;
 	private JButton cancelarButton;
-	private JButton configuracaoButton;
 	
 	public LoginDialog(){
 		super(Main.mainScreen, "Autenticação", true);
@@ -106,7 +103,7 @@ public class LoginDialog extends JDialog {
 		passwordTextField.setHorizontalAlignment(JTextField.CENTER);
 		
 		if (Main.desenvolvimento) {
-			unidadeTextField.setText("startjob");
+			unidadeTextField.setText("desenvolvimento");
 			usernameTextField.setText("admin");
 			passwordTextField.setText("123456");
 		}
@@ -123,32 +120,8 @@ public class LoginDialog extends JDialog {
 		loginButton = new JButton("Logar");
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		configuracaoButton = new JButton("Configurações");
-		configuracaoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		configuracaoButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-						try {
-							AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-									"URL Já destinada a empresa x");
-							Boolean retornoAuthentication = autenticationDialog.authenticate();
-							if (retornoAuthentication == null)
-								return;
-							if (retornoAuthentication) {
-								System.out.println(retornoAuthentication);
-							}
-//							else {
-//								JOptionPane.showMessageDialog(null, "URL Cadastrada com Sucesso",
-//										"Status URL", JOptionPane.PLAIN_MESSAGE);
-//							}
-						} catch (Exception e2) {
-							e2.printStackTrace();
-							Utils.createNotification("Não foi possível abrir a tela de configurações", NotificationType.BAD);
-						}
-					}
-		});
-		
 		Action loginAction = new AbstractAction() {
+			
 		    @Override
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {	public void run() {
@@ -157,6 +130,7 @@ public class LoginDialog extends JDialog {
 					loginButton.setEnabled(false);
 					usernameTextField.setEnabled(false);
 					passwordTextField.setEnabled(false);
+					unidadeTextField.setEnabled(false);
 				}});
 				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				    @Override
@@ -177,10 +151,14 @@ public class LoginDialog extends JDialog {
 										Date creationDate = calendar.getTime();
 										Integer qtdDigitos = null;
 										String chaveIntegracaoComtele = null;
+										Boolean expedidora = false;
 										try {
 											qtdDigitos = (jsonObject.get("qtdePadraoDigitosCartao") != JsonNull.INSTANCE ? jsonObject.get("qtdePadraoDigitosCartao").getAsInt() : null);
 											chaveIntegracaoComtele = (jsonObject.get("chaveIntegracaoComtele") != JsonNull.INSTANCE ? jsonObject.get("chaveIntegracaoComtele").getAsString() : null);
 										} catch (Exception e) {}
+										try {
+											expedidora = (jsonObject.get("expedidora") != JsonNull.INSTANCE ? jsonObject.get("expedidora").getAsBoolean() : false);
+										}catch (Exception e) {}
 										Main.loggedUser = new UserEntity(
 												jsonObject.get("id") != JsonNull.INSTANCE ? jsonObject.get("id").getAsLong() : null,
 												jsonObject.get("login") != JsonNull.INSTANCE ? jsonObject.get("login").getAsString() : null,
@@ -190,13 +168,16 @@ public class LoginDialog extends JDialog {
 												jsonAcademy.get("id") != JsonNull.INSTANCE ? jsonAcademy.get("id").getAsString() : null,
 												jsonAcademy.get("nome") != JsonNull.INSTANCE ? jsonAcademy.get("nome").getAsString() : null,
 												null,qtdDigitos, unidadeTextField.getText(),
-												chaveIntegracaoComtele);
+												chaveIntegracaoComtele, expedidora);
 										Main.loggedUser.setUseBiometry(true);
 										Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
 										Main.lastSync = 0l;
 										Main.devicesList = new ArrayList<Device>();
 										Main.releaseTicketGateMenuItem.setEnabled(true);
 										Main.updateAccessListMenuItem.setEnabled(true);
+										
+										loginMessageLabel.setText("Coletando configurações e pedestres...");
+										//tras dados gerais antes de abrir
 										Main.syncUsersAccessList();
 										Main.syncAthleteAccessList();
 										Main.syncLogAthleteAccess();
@@ -278,7 +259,6 @@ public class LoginDialog extends JDialog {
 		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		buttonsPanel.add(loginButton);
 		buttonsPanel.add(cancelarButton);
-		buttonsPanel.add(configuracaoButton);
 		
 		loginMessageLabel = new JLabel(" ");
 		loginMessageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -320,6 +300,7 @@ public class LoginDialog extends JDialog {
 		loginButton.setEnabled(true);
 		usernameTextField.setEnabled(true);
 		passwordTextField.setEnabled(true);
+		unidadeTextField.setEnabled(true);
 		Main.loggedUser = null;
 	}
 	
@@ -328,7 +309,7 @@ public class LoginDialog extends JDialog {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			logoIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
+					getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

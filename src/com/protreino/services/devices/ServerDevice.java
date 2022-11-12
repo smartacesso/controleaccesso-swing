@@ -1,5 +1,6 @@
 package com.protreino.services.devices;
 
+import java.io.BufferedInputStream;
 import java.io.ObjectInputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -13,9 +14,9 @@ import java.util.Set;
 import javax.swing.SwingWorker;
 
 import com.google.gson.Gson;
-import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.TcpMessageType;
@@ -99,7 +100,7 @@ public class ServerDevice extends Device {
 					while (watchDogEnabled) {
 						try {
 							contador++;
-							if (contador > 4) {
+							if (contador > 2) {
 								setStatus(DeviceStatus.DISCONNECTED);
 								
 								try {
@@ -119,8 +120,7 @@ public class ServerDevice extends Device {
 									
 									HibernateUtil.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
 									HibernateUtil.outToServer.flush();
-	
-									ObjectInputStream reader = new ObjectInputStream(HibernateUtil.clientSocket.getInputStream());
+									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateUtil.clientSocket.getInputStream()));
 									TcpMessageTO resp = (TcpMessageTO) reader.readObject();
 									
 									if(TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
@@ -136,7 +136,7 @@ public class ServerDevice extends Device {
 							e.printStackTrace();
 		                } finally {
 		                	HibernateUtil.executandoPing = false;
-							Utils.sleep(5000);
+							Utils.sleep(10000);
 						}
 					}
 					return null;

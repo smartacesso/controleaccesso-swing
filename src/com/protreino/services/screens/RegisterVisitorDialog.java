@@ -7,6 +7,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,6 +22,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -52,8 +57,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.derby.iapi.sql.compile.Visitable;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.ServerDevice;
@@ -68,14 +73,15 @@ import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.CropImage;
+import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.utils.QRCodeUtils;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
-public class RegisterVisitorDialog extends JDialog {
+public class RegisterVisitorDialog extends BaseDialog {
 	private int ICON_SIZE = 158;
 
 	private Font font;
@@ -149,6 +155,7 @@ public class RegisterVisitorDialog extends JDialog {
 	private JButton cadastrarDigitalButton;
 	private JButton cadastrarFaceButton;
 	private JButton addCreditoButton;
+	private JButton geraQRCodeButton;
 
 	private BufferedImage bufferedImage;
 
@@ -174,7 +181,19 @@ public class RegisterVisitorDialog extends JDialog {
 	private boolean habilitaBuscaRG  = false;
 	public static boolean abertoPeloAtalho = false;
 	
+	private boolean habilitaQRCode = false;
+	private boolean habilitaAppPedestre = false;
+	private boolean habilitaQRCodeDinamico = false;
+	private String tempoQRCode = "5";
+	private String tipoQRCodePadrao = null;
 	
+	private JLabel loginLabel;
+	private JLabel senhaLabel;
+	private JLabel tipoAcessoLabel;
+	
+	private JTextField loginTextField;
+	private JFormattedTextField senhaTextField;
+	private JComboBox<SelectItem> tipoAcessoJComboBox;
 
 	public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
 		loadImages();
@@ -267,7 +286,6 @@ public class RegisterVisitorDialog extends JDialog {
 		getContentPane().add(mainContentPane, BorderLayout.CENTER);
 		pack();
 		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 
 	private void verificaRegrasBusca() {
@@ -280,6 +298,27 @@ public class RegisterVisitorDialog extends JDialog {
 		
 		if(camposObrigatorios.contains("rg"))
 			habilitaBuscaRG = true;
+		
+		String qrCode = buscaParametroPeloNome("Permitir acesso via QR Code");
+		if(qrCode != null && !"".equals(qrCode)) {
+			habilitaQRCode = Boolean.valueOf(qrCode);
+			if(habilitaQRCode) {
+				//busca outras configurações do QRCODE
+				String qrCodeDinamico = buscaParametroPeloNome("Permitir acesso via QR Code: Habilita QRCode dinâmico");
+				if(qrCodeDinamico != null && !"".equals(qrCodeDinamico)) 
+					habilitaQRCodeDinamico = Boolean.valueOf(qrCodeDinamico);
+				String tempoQRCode = buscaParametroPeloNome("Permitir acesso via QR Code: Tempo para renovação do tipo QRCode Dinâmico por tempo (em minutos)");
+				if(tempoQRCode != null && !"".equals(tempoQRCode)) 
+					this.tempoQRCode = tempoQRCode;
+				String tipoQRCodePadrao = buscaParametroPeloNome("Permitir acesso via QR Code: Tipo padrão");
+				if(tipoQRCodePadrao != null && !"".equals(tipoQRCodePadrao)) 
+					this.tipoQRCodePadrao = tipoQRCodePadrao;
+			}
+		}
+		
+		String appPedestre = buscaParametroPeloNome("Habilita App do Pedestre");
+		if(appPedestre != null && !"".equals(appPedestre))
+			habilitaAppPedestre = Boolean.valueOf(appPedestre);
 	}
 
 	private JPanel montarPanelDadosBasicos() {
@@ -441,10 +480,46 @@ public class RegisterVisitorDialog extends JDialog {
 		panel.add(obsPanel, getNewGridBag(0, 3, 30, 5));
 
 		criaPanelDadosEmpresa(panel);
+		
+		if(habilitaAppPedestre)
+			criaPanelDadosAcesso(panel);
 
 		return panel;
 	}
 	
+	private void criaPanelDadosAcesso(JPanel panel) {
+		
+		loginLabel = getNewLabel("Login");
+		loginTextField = getNewTextField(20);
+		loginTextField.setMinimumSize(new Dimension(300, 25));
+		JPanel loginPanel = getNewMiniPanel(loginLabel, loginTextField);
+		panel.add(loginPanel, getNewGridBag(0, 6, 30, 5));
+		
+		senhaLabel = getNewLabel("Senha");
+		senhaTextField = Utils.getNewJFormattedTextField(20);
+		senhaTextField.setMinimumSize(new Dimension(300, 25));
+		senhaTextField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				senhaTextField.setText(Utils.maxlength(senhaTextField.getText(), 8));
+				super.keyReleased(e);
+			}
+		});
+		JPanel senhaPanel = getNewMiniPanel(senhaLabel, senhaTextField);
+		panel.add(senhaPanel, getNewGridBag(1, 6, 30, 5));
+		
+		tipoAcessoLabel = new JLabel("Tipo de Acesso");
+		if(tipoAcessoJComboBox == null) {
+			Vector<SelectItem> itens = new Vector<SelectItem>();
+			itens.add(new SelectItem("Selecione", null));
+			itens.add(new SelectItem("NORMAL", "NORMAL"));
+			itens.add(new SelectItem("GERENCIAL", "GERENCIAL"));
+			tipoAcessoJComboBox = new JComboBox<SelectItem>(itens);
+		}
+		criaPainelComboBox(tipoAcessoLabel, tipoAcessoJComboBox, panel, 2, 6);
+		
+	}
+
 	private JPanel montaPainelEquipamentos() {
 		panelEquipamentosDisponiveis = new AvailableDevicesPanel();
 
@@ -501,7 +576,6 @@ public class RegisterVisitorDialog extends JDialog {
 		departamentoLabel = new JLabel("Departamento");
 		if(departamentoJComboBox == null)
 			departamentoJComboBox = new JComboBox<SelectItem>();
-		
 		criaPainelComboBox(departamentoLabel, departamentoJComboBox, panel, 1, 4);
 		
 		centroCustoLabel = new JLabel("Centro de Custo");
@@ -742,13 +816,20 @@ public class RegisterVisitorDialog extends JDialog {
 	}
 
 	private JPanel montarPainelAcoes() {
+		
+		geraQRCodeButton = new JButton("QRCode");
+		geraQRCodeButton.setBorder(new EmptyBorder(20, 20, 20, 20));
+		geraQRCodeButton.setPreferredSize(new Dimension(150, 40));
+		geraQRCodeButton.addActionListener(e -> {
+			criarDialogoGeraQRCode();
+		});
+		
 		addCreditoButton = new JButton("Salvar e liberar um acesso");
 		addCreditoButton.setBorder(new EmptyBorder(20, 20, 20, 20));
 		addCreditoButton.setPreferredSize(new Dimension(150, 40));
 		addCreditoButton.addActionListener(e -> {
 			criarDialogoConfirmarAddCredito();
 		});
-		addCreditoButton.setVisible(isBotaoAddCreditoVisivel());
 
 		cadastrarDigitalButton = new JButton("Cadastrar digital");
 		cadastrarDigitalButton.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -782,9 +863,9 @@ public class RegisterVisitorDialog extends JDialog {
 						public void run() {
 							Utils.sleep(500);
 							if("VISITANTE".equals(visitante.getTipo()))
-								Main.mainScreen.abreCadastroVisitante();
+								Main.mainScreen.abreCadastroVisitante(null);
 							else
-								Main.mainScreen.abreCadastroPedestre();
+								Main.mainScreen.abreCadastroPedestre(null);
 						}
 					}.start();
 				}else {
@@ -803,38 +884,314 @@ public class RegisterVisitorDialog extends JDialog {
 		JPanel panelInterno = new JPanel();
 		panelInterno.setLayout(new BoxLayout(panelInterno, BoxLayout.X_AXIS));
 		
+		int padrao = -120;
+		if(isBotaoQRCodeVisivel() && isEditandoVisitante()) {
+			panelInterno.add(geraQRCodeButton);
+			panelInterno.add(Box.createHorizontalStrut(10));
+			padrao = padrao - 70;
+		}
+		
+		if(isBotaoAddCreditoVisivel() && isEditandoVisitante()) {
+			panelInterno.add(addCreditoButton);
+			panelInterno.add(Box.createHorizontalStrut(10));
+			if(isBotaoQRCodeVisivel())
+				padrao = padrao + 10;
+			else
+				padrao = padrao - 30;
+		}
+		
 		if (possuiCatracaDisponivel() && isEditandoVisitante()) {
 			panelInterno.add(cadastrarDigitalButton);
 			panelInterno.add(Box.createHorizontalStrut(10));
+			padrao = padrao - 30;
 		}
 		if (possuiCameraDisponivel() && isEditandoVisitante()) {
 			panelInterno.add(cadastrarFaceButton);
 			panelInterno.add(Box.createHorizontalStrut(10));
+			padrao = padrao - 30;
 		}
 		
-		panelInterno.add(addCreditoButton);
-		panelInterno.add(Box.createHorizontalStrut(10));
 		panelInterno.add(addVisitorButton);
 		panelInterno.add(Box.createHorizontalStrut(10));
 		panelInterno.add(cancelarButton);
+		
 
 		JPanel panel = new JPanel();
-
-		if (!isEditandoVisitante())
-			panel.setBorder(new EmptyBorder(5, 0, 10, -50));
-		else if (!possuiCameraDisponivel() && !possuiCatracaDisponivel() && isEditandoVisitante())
-			panel.setBorder(new EmptyBorder(5, 0, 10, -50));
-		else if (possuiCameraDisponivel() && possuiCatracaDisponivel() && isEditandoVisitante())
-			panel.setBorder(new EmptyBorder(5, 0, 10, -100));
-		else if (possuiCatracaDisponivel() && isEditandoVisitante())
-			panel.setBorder(new EmptyBorder(5, 0, 10, -70));
-		else if (possuiCameraDisponivel() && isEditandoVisitante())
-			panel.setBorder(new EmptyBorder(5, 0, 10, -120));
+		panel.setBorder(new EmptyBorder(5, 0, 10, padrao));
 
 		panel.setLayout(new BorderLayout());
 		panel.add(panelInterno, BorderLayout.EAST);
 
 		return panel;
+	}
+
+	private void criarDialogoGeraQRCode() {
+		
+		JDialog qrCodeDialog = new JDialog();
+		qrCodeDialog.setIconImage(Main.favicon);
+		qrCodeDialog.setModal(true);
+		qrCodeDialog.setResizable(false);
+		qrCodeDialog.setLayout(new BorderLayout());
+		
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		
+		if(visitante.getQrCodeParaAcesso() == null) {
+			
+			gerarQRCodeDialog(qrCodeDialog, mainPanel);
+			
+		}else {
+			
+			if("DINAMICO_TEMPO".equals(visitante.getTipoQRCode()))
+				qrCodeDinamicoTempo(qrCodeDialog, mainPanel);
+			else
+				qrCodeEstaticoEUso(qrCodeDialog, mainPanel);
+			
+		}
+		
+		qrCodeDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		qrCodeDialog.pack();
+		qrCodeDialog.setLocationRelativeTo(null);
+		qrCodeDialog.setVisible(true);
+		
+	}
+
+	private void gerarQRCodeDialog(JDialog qrCodeDialog, JPanel mainPanel) {
+		qrCodeDialog.setTitle("Gerar QRCode");
+		JComboBox<SelectItem> tipoQRCodeJComboBox = null;
+		if(habilitaQRCodeDinamico) {
+			//adiciona dados de escolha de tipo
+			JLabel escolhaTipoQRCodeLabel = new JLabel("Escolha o tipo de QRCode");
+			Vector<SelectItem> itens = new Vector<SelectItem>();
+			itens.add(new SelectItem("Estático", null));
+			itens.add(new SelectItem("Dinâmico por tempo", "DINAMICO_TEMPO"));
+			itens.add(new SelectItem("Dinâmico por uso", "DINAMICO_USO"));
+			tipoQRCodeJComboBox = new JComboBox<SelectItem>(itens);
+			criaPainelComboBox(escolhaTipoQRCodeLabel, tipoQRCodeJComboBox, mainPanel, 0, 0);
+			
+			if(tipoQRCodePadrao != null && !"".equals(tipoQRCodePadrao))
+				tipoQRCodeJComboBox.setSelectedIndex(
+						tipoQRCodePadrao.equals("DINAMICO_TEMPO") ? 1 
+								: (tipoQRCodePadrao.equals("DINAMICO_USO") ? 2 : 0 ) );
+			
+		}else {
+			//somente confirmação
+			JLabel mensagemLabel = new JLabel("Deseja gerar um QRCode para esse pedestre?");
+			mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+			mainPanel.add(mensagemLabel);
+		}
+		
+		final JComboBox<SelectItem> box = tipoQRCodeJComboBox;
+		JButton simButton = new JButton("OK");
+		simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		simButton.addActionListener(e -> {
+			gerarQRCode(box != null ? ((SelectItem)box.getSelectedItem()).getValue().toString() : null, qrCodeDialog);
+		});
+
+		JButton naoButton = new JButton("Voltar");
+		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		naoButton.addActionListener(e -> {
+			qrCodeDialog.dispose();
+		});
+		
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+		confirmarPanel.add(simButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+		confirmarPanel.add(naoButton);
+		
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarPanel);
+	}
+
+	private void gerarQRCode(String tipo, JDialog qrCodeDialog) {
+		if(tipo == null
+				|| "ESTATICO".equals(tipo)) {
+			//gera QRCode estático
+			visitante.setQrCodeParaAcesso(Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
+		}else{
+			//gera QRCode genérico
+			String qrCode = EncryptionUtils.getRandomString(4);
+			if("DINAMICO_USO".equals(tipo)) {
+				//adiciona primeiro giro
+				qrCode = "U_" + qrCode +"_0";
+			}else {
+				qrCode = "T_" + qrCode;
+			}
+			visitante.setQrCodeParaAcesso(qrCode);
+		}
+		
+		visitante.setTipoQRCode(tipo);
+		
+		boolean valido = validarCampos();
+		if (valido) {
+			adicionarVisitante();
+			limparTodosOsCampos();
+			qrCodeDialog.dispose();
+			this.dispose();
+			Main.mainScreen.refreshAll();
+			
+			if(Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
+				PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
+				pedestre.setTipo(visitante.getTipo());
+				new Thread() {
+					public void run() {
+						new RegisterVisitorDialog(pedestre);
+					}
+				}.start();
+				
+			}
+		}
+		
+	}
+	
+	private void apagarQRCode(JDialog qrCodeDialog) {
+		
+		visitante.setQrCodeParaAcesso(null);
+		visitante.setTipoQRCode(null);
+		
+		boolean valido = validarCampos();
+		if (valido) {
+			adicionarVisitante();
+			limparTodosOsCampos();
+			qrCodeDialog.dispose();
+			this.dispose();
+			Main.mainScreen.refreshAll();
+			
+			if(Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
+				PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
+				pedestre.setTipo(visitante.getTipo());
+				new Thread() {
+					public void run() {
+						new RegisterVisitorDialog(pedestre);
+					}
+				}.start();
+				
+			}
+		}
+		
+	}
+	
+	public static String padLeftZeros(String inputString, int length) {
+	    if (inputString.length() >= length) {
+	        return inputString;
+	    }
+	    StringBuilder sb = new StringBuilder();
+	    while (sb.length() < length - inputString.length()) {
+	        sb.append('0');
+	    }
+	    sb.append(inputString);
+
+	    return sb.toString();
+	}
+
+	private void qrCodeEstaticoEUso(JDialog qrCodeDialog, JPanel mainPanel) {
+		qrCodeDialog.setTitle("QRCode");
+		
+		ImageIcon qrCodeImage = new ImageIcon(QRCodeUtils.gerarImagemQRCode(visitante.getQrCodeParaAcesso()));
+		JLabel code = new JLabel(qrCodeImage);
+		code.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		JButton simButton = new JButton("Apagar");
+		simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		simButton.addActionListener(e -> {
+			apagarQRCode(qrCodeDialog);
+		});
+
+		JButton naoButton = new JButton("Voltar");
+		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		naoButton.addActionListener(e -> {
+			qrCodeDialog.dispose();
+		});
+		
+		JButton imprimirButton = new JButton("Imprimir");
+		imprimirButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		imprimirButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		imprimirButton.addActionListener(e -> {
+			PrinterJob pjob = PrinterJob.getPrinterJob();
+	        PageFormat pf = pjob.defaultPage();
+	        pf.setOrientation(PageFormat.LANDSCAPE);
+
+	        PageFormat postformat = pjob.pageDialog(pf);
+	        if (pf != postformat) {
+	        	JLabel printQRCode = new JLabel(qrCodeImage);
+	    		code.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    		
+	            pjob.setPrintable(new ComponentPrinter(printQRCode, false), postformat);
+	            if (pjob.printDialog()) {
+	                try {
+						pjob.print();
+					} catch (PrinterException e1) {
+						e1.printStackTrace();
+					}
+	            }
+	        }
+		});
+
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+		confirmarPanel.add(naoButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+		confirmarPanel.add(simButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+		confirmarPanel.add(imprimirButton);
+		
+		
+		mainPanel.add(code);
+		mainPanel.add(Box.createVerticalStrut(10));
+		if("DINAMICO_USO".equals(visitante.getTipoQRCode())) {
+			JLabel mensagemLabel = new JLabel("* Este QRCode é válido somente uma vez. Depois de usado, ele será renovado.");
+			mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+			mainPanel.add(mensagemLabel);
+			mainPanel.add(Box.createVerticalStrut(10));
+		}
+		mainPanel.add(confirmarPanel);
+	}
+
+	private void qrCodeDinamicoTempo(JDialog qrCodeDialog, JPanel mainPanel) {
+		
+		qrCodeDialog.setTitle("QRCode Dinâmico por Tempo");
+		
+		JLabel mensagemLabel = new JLabel("<html>O QRCode gerado é do tipo Dinâmico por tempo, renovando-se automáticamente de tempos em tempos,"
+				+ "<br/>não sendo possível a verificação do mesmo fora do App do Pedestre. Você deseja excluir esse QRCode?</html>");
+		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		JButton simButton = new JButton("Sim");
+		simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		simButton.addActionListener(e -> {
+			apagarQRCode(qrCodeDialog);
+		});
+
+		JButton naoButton = new JButton("Não");
+		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		naoButton.addActionListener(e -> {
+			qrCodeDialog.dispose();
+		});
+
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+		confirmarPanel.add(simButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+		confirmarPanel.add(naoButton);
+		
+		mainPanel.add(mensagemLabel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarPanel);
+		
+	}
+
+	private boolean isBotaoQRCodeVisivel() {
+		return habilitaQRCode && isEditandoVisitante();
 	}
 
 	private void adicionarVisitante() {
@@ -902,6 +1259,14 @@ public class RegisterVisitorDialog extends JDialog {
 		visitante.setIdDepartamento(getValorSelecionado(departamentoJComboBox));
 		visitante.setIdCentroCusto(getValorSelecionado(centroCustoJComboBox));
 		visitante.setIdCargo(getValorSelecionado(cargoJComboBox));
+		
+		//Dados e acesso
+		if(habilitaAppPedestre) {
+			visitante.setTipoAcesso(tipoAcessoJComboBox.getSelectedItem().toString());
+			visitante.setLogin(loginTextField.getText());
+			if(senhaTextField.getText() != null && !"".equals(senhaTextField.getText()))
+				visitante.setSenhaLivre(senhaTextField.getText());
+		}
 
 		// verifica cartao zerado
 		if (visitante.getCardNumber() != null) {
@@ -954,7 +1319,8 @@ public class RegisterVisitorDialog extends JDialog {
 
 	private void preencheDadosVisitanteEditando() {
 		//Dados basicos
-		nomeTextField.setText(visitante.getName() != null ? visitante.getName() : "");
+		nomeTextField.setText(visitante.getName() != null 
+				? visitante.getName() : "");
 		dataNascimentoTextField.setText(visitante.getDataNascimento() != null ? sdf.format(visitante.getDataNascimento()) : "");
 		emailTextField.setText(visitante.getEmail() != null ? visitante.getEmail() : "");
 		cpfTextField.setText(visitante.getCpf() != null ? visitante.getCpf() : "");
@@ -995,6 +1361,14 @@ public class RegisterVisitorDialog extends JDialog {
 		bairroTextField.setText(visitante.getBairro() != null ? visitante.getBairro() : "");
 		cidadeTextField.setText(visitante.getCidade() != null ? visitante.getCidade() : "");
 		estadoTextField.setText(visitante.getEstado() != null ? visitante.getEstado() : "");
+		
+		//dados de acesso
+		if(habilitaAppPedestre) {
+			loginTextField.setText(visitante.getLogin());
+			tipoAcessoJComboBox.setSelectedIndex(visitante.getTipoAcesso() == null || "".equals(visitante.getTipoAcesso()) 
+					? 0 : ("NORMAL".equals(visitante.getTipoAcesso()) ? 1 : 2));
+			senhaLabel.setText("Senha (somente para alteração)");
+		}
 
 		if(visitante.getEquipamentos() != null)
 			panelEquipamentosDisponiveis.setPedestresEquipamentos(visitante.getEquipamentos());
@@ -1131,6 +1505,24 @@ public class RegisterVisitorDialog extends JDialog {
 			valido = false;
 		}
 		
+		//valida login
+		if(loginTextField != null && !"".equals(loginTextField.getText().trim())) {
+			//se login preenchido, então verifica se os outros campos estão
+			//preenchidos tambem
+			if(visitante.getId() == null 
+					&& visitante.getSenha() == null 
+					&& "".equals(senhaTextField.getText().trim())) {
+				redAndBoldFont(senhaLabel);
+				valido = false;
+			}
+			
+			if(tipoAcessoJComboBox.getSelectedIndex() < 0) {
+				redAndBoldFont(tipoAcessoLabel);
+				valido = false;
+			}
+		}
+		
+		
 		if(valido)
 			valido = validaCamposDuplicados();
 		
@@ -1216,6 +1608,7 @@ public class RegisterVisitorDialog extends JDialog {
 				&& !cartaoAcessoTextField.getText().isEmpty()
 				&& !cartaoAcessoTextField.getText().replace( "0", "").equals("")) {
 			String validaCartaoAcessoDuplicado = buscaParametroPeloNome("Validar cartão de acesso duplicado");
+			validaCartaoAcessoDuplicado = "true";
 			if(Boolean.TRUE.equals(Boolean.valueOf(validaCartaoAcessoDuplicado))) {
 				boolean cartaoExiste = verificaCartaoAcessoExistente(cartaoAcessoTextField.getText(),
 																	visitante.getId() != null ? visitante.getId() : 0l);
@@ -1263,14 +1656,43 @@ public class RegisterVisitorDialog extends JDialog {
 	@SuppressWarnings("unchecked")
 	private boolean verificaCartaoAcessoExistente(String cartaoAcesso, Long idPedestre) {
 		HashMap<String, Object> args = new HashMap<>();
-		args.put("CARD_NUMBER", cartaoAcesso);
+		String temp = "";
+		for (int i = 0; i< cartaoAcesso.length(); i++) {
+			if (!cartaoAcesso.substring(i, i + 1).equals("0")) {
+				temp += cartaoAcesso.substring(i, cartaoAcesso.length());
+				break;
+			}
+		}
+		args.put("CARD_NUMBER", temp);
 		args.put("ID_PEDESTRE", idPedestre);
-		
+//		fazer uma nova query verificando os removidos se acaso for removido
+//		verificar os campoos no confereCatracaOffline
 		List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
 							.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByCartaoAcesso", args);
+		
+		//	verificaCartaoAcessoRemovido(cartaoAcesso, idPedestre);
 
+		
 		return pedestres != null && !pedestres.isEmpty();
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private void verificaCartaoAcessoRemovido(String cartaoAcesso, Long idPedestre) {
+		HashMap<String, Object> args = new HashMap<>();
+		
+		args.put("CARD_NUMBER", cartaoAcesso);
+		args.put("ID_PEDESTRE", idPedestre);
+//		verifica se o cartão dos pedestres novos estão sendo vincualdos a pessas já cadastradas
+//		se já, o cartão é removido da pessoa exluida e já atribuido ao novo
+		
+		List<PedestrianAccessEntity> pedestrianExcluded = (List<PedestrianAccessEntity>) HibernateUtil
+				.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByRemovedCardNumber", args);
+		if(pedestrianExcluded.get(0).getCardNumber() != null) {
+			pedestrianExcluded.get(0).setCardNumber("");
+		}
+	}
+	
 
 	@SuppressWarnings("unchecked")
 	private boolean verificaRgExistente(String rg, Long idPedestre) {
@@ -1311,7 +1733,7 @@ public class RegisterVisitorDialog extends JDialog {
 		return parametros.get(0).getValor();
 	}
 	
-	private PedestreRegraEntity buscaPedestreRegraPadraoVisitante() {
+	public  PedestreRegraEntity buscaPedestreRegraPadraoVisitante() {
 		
 		RegraEntity regra = buscaRegraPeloNome("ACESSO_UNICO_VISITANTE");
 		
@@ -1568,7 +1990,7 @@ public class RegisterVisitorDialog extends JDialog {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			escolherImagemIcon = new ImageIcon(
-					toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/ic_photo_male.png")));
+					toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/ic_photo_male.png")));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1817,9 +2239,9 @@ public class RegisterVisitorDialog extends JDialog {
 						public void run() {
 							Utils.sleep(500);
 							if("VISITANTE".equals(visitante.getTipo()))
-								Main.mainScreen.abreCadastroVisitante();
+								Main.mainScreen.abreCadastroVisitante(null);
 							else
-								Main.mainScreen.abreCadastroPedestre();
+								Main.mainScreen.abreCadastroPedestre(null);
 						}
 					}.start();
 				}else {
@@ -1885,7 +2307,7 @@ public class RegisterVisitorDialog extends JDialog {
 	}
 	
 	private void criaPainelComboBox(JLabel label, JComboBox<SelectItem> comboBox, JPanel mainPanel, int x, int y) {
-		comboBox.setPreferredSize(new Dimension(200, 30));
+		comboBox.setPreferredSize(new Dimension(200, 20));
 		JPanel internoPanel = new JPanel(new GridBagLayout());
 
 		GridBagConstraints c = new GridBagConstraints();
@@ -1992,18 +2414,6 @@ public class RegisterVisitorDialog extends JDialog {
 		return empresaItens;
 	}
 	
-	private void redAndBoldFont(JLabel label) {
-		label.setForeground(Color.red);
-		Font f = label.getFont();
-		label.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
-	}
-	
-	private void blackAndUnboldFont(JLabel label) {
-		label.setForeground(Color.BLACK);
-		Font f = label.getFont();
-		label.setFont(f.deriveFont(f.getStyle() & ~Font.BOLD));
-	}
-
 	private void restauraFontLabel() {
 		blackAndUnboldFont(nomeLabel);
 		blackAndUnboldFont(dataNascimentoLabel);
@@ -2059,4 +2469,50 @@ public class RegisterVisitorDialog extends JDialog {
 	public void setBufferedImage(BufferedImage bufferedImage) {
 		this.bufferedImage = bufferedImage;
 	}
+	
+	public static class ComponentPrinter implements Printable {
+
+        private Component comp;
+        private boolean fill;
+
+        public ComponentPrinter(Component comp, boolean fill) {
+            this.comp = comp;
+            this.fill = fill;
+        }
+
+        @Override
+        public int print(Graphics g, PageFormat format, int page_index) throws PrinterException {
+
+            if (page_index > 0) {
+                return Printable.NO_SUCH_PAGE;
+            }
+
+            Graphics2D g2 = (Graphics2D) g;
+            g2.translate(format.getImageableX(), format.getImageableY());
+
+            double width = (int) Math.floor(format.getImageableWidth());
+            double height = (int) Math.floor(format.getImageableHeight());
+
+            if (!fill) {
+
+                width = Math.min(width, comp.getPreferredSize().width);
+                height = Math.min(height, comp.getPreferredSize().height);
+
+            }
+
+            comp.setBounds(0, 0, (int) Math.floor(width), (int) Math.floor(height));
+            if (comp.getParent() == null) {
+                comp.addNotify();
+            }
+            comp.validate();
+            comp.doLayout();
+            comp.printAll(g2);
+            if (comp.getParent() != null) {
+                comp.removeNotify();
+            }
+
+            return Printable.PAGE_EXISTS;
+        }
+
+    }
 }

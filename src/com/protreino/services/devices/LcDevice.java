@@ -8,6 +8,9 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import org.apache.commons.codec.binary.Base64;
+
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.entity.Aso15DefJNA;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -23,15 +26,14 @@ import com.protreino.services.main.Main;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
-import com.sun.jna.Library;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 
 public class LcDevice extends Device {
 	
@@ -272,20 +274,21 @@ public class LcDevice extends Device {
 			}
 			
 			//adiciona no banco de dados da DLL
-			IntByReference idUser = new IntByReference(biometricDialog.acesso.getId().intValue());
-			String dedoString = (String) biometricDialog.fingerComboBox.getSelectedItem();
-			ByteByReference dedo = new ByteByReference((byte) (Finger.valueFromImport(dedoString).ordinal() + 1));
-			ByteByReference user = new ByteByReference((byte) 1);
-			
-			resp = interfaceJna.SFEP_Enroll(memorySpaceStRegTem, idUser, dedo, user);
-			if(resp != Aso15DefJNA.RES_OK) {
-				cancelaColeta("Erro ao registrar digital do pedestre.");
-				return;
-			}
+			LongByReference idUser = new LongByReference(biometricDialog.acesso.getId().intValue());
+//			String dedoString = (String) biometricDialog.fingerComboBox.getSelectedItem();
+//			ByteByReference dedo = new ByteByReference((byte) (Finger.valueFromImport(dedoString).ordinal() + 1));
+//			ByteByReference user = new ByteByReference((byte) 1);
+//			
+//			resp = interfaceJna.SFEP_Enroll(memorySpaceStRegTem, idUser, dedo, user);
+//			if(resp != Aso15DefJNA.RES_OK) {
+//				cancelaColeta("Erro ao registrar digital do pedestre.");
+//				return;
+//			}
 			
 			byte[] stRegTem = new byte[Aso15DefJNA.SFEP_UFPDATA_SIZE];
 			stRegTem = memorySpaceStRegTem.getByteArray(0, amostrasColetadas * Aso15DefJNA.SFEP_UFPDATA_SIZE);
-			biometricDialog.finishCollect(stRegTem);
+			biometricDialog.saveTemplates(stRegTem);
+			biometricDialog.finishCollect();
 			
 			//verifica para inserir templates nas catracas TopData LC
 			System.out.println(sdf.format(new Date()) + "   Adicionando template nas outras catracas...");
@@ -301,6 +304,14 @@ public class LcDevice extends Device {
 						byte [] template2  = new byte[502];
 						
 						extracTopDataTemplate(stRegTem, template1, template2);
+						
+						String tStr = Base64.encodeBase64String(template2);
+						String tStr1 = Base64.encodeBase64String(template1);
+						//verificar se segunda está vazia
+						if(tStr.startsWith("AAAQAAAAAAAAAAA") )
+							template2 = null;
+						
+					
 						
 						topData.insereUserLC((long)idUser.getValue(), template1, template2);
 						
@@ -385,7 +396,7 @@ public class LcDevice extends Device {
 	}
 	
 	private void informarCaminhoDatabaseDigitais() throws Exception {
-		Integer resposta = interfaceJna.SFEP_SetDatabasePath(Constants.LC_DATABASE_PATH);
+		Integer resposta = interfaceJna.SFEP_SetDatabasePath(Configurations.LC_DATABASE_PATH);
 		
 		if (resposta != Aso15DefJNA.RES_OK){
 			throw new Exception(resposta.toString());
@@ -437,10 +448,10 @@ public class LcDevice extends Device {
 		//se for LC
 		System.out.println(sdf.format(new Date()) + "   Remove template nas outras catracas...");
 		for(Device d : Main.devicesList) {
-			if(d != null&& d instanceof TopDataDevice ) {
+			if(d != null && d instanceof TopDataDevice ) {
 				TopDataDevice topData = (TopDataDevice)d;
 				if(topData.modeloLC) 
-					topData.removeUser(athleteAccessEntity);
+					topData.removeUserLCDevice(athleteAccessEntity);
 			}
 		}
 		
@@ -455,9 +466,11 @@ public class LcDevice extends Device {
 	public void disconnect(String... args) throws Exception {
 		if (worker != null)
 			worker.cancel(true);
-		finalizarComunicacaoScanner();
+		
 		workerEnabled = false;
 		Utils.sleep(1500);
+		
+		finalizarComunicacaoScanner();
 		
 		setStatus(DeviceStatus.DISCONNECTED);
 	}

@@ -164,11 +164,12 @@ public class BroadcastServer {
 								PedestrianAccessEntity p = new PedestrianAccessEntity();
 								p.setId(broadcastMessage.getIdPedestrianAccess());
 								topData.insereDigitalInner(true, p);
-							}else if(Main.servidor != null) {
+							} else if(Main.servidor != null) {
 								//atualiza catraca inteira somente se tiver um servidor
 								topData.atualizaDigitaisLFD(true, false, null);
 							}
-						}catch (Exception e) {
+
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					}

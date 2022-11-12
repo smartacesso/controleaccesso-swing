@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -17,7 +16,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +42,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
@@ -51,19 +50,22 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.DeviceCard;
-import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.ServerDevice;
+import com.protreino.services.devices.TopDataDevice;
+import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
-import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.DeviceStatus;
+import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
+import com.protreino.services.to.DeviceTO;
 import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
 import com.protreino.services.utils.WrapLayout;
 
@@ -92,6 +94,7 @@ public class MainScreen extends JFrame {
 	private JLabel eventosLabel;
 	private JScrollPane listaEventosScrollPane;
 	private JPanel listaEventosPanel;
+	private PanelWithLabel connectionStatusLabel;
 
 	private Container mainContentPane;
 	private JTabbedPane tabbedPane;
@@ -99,6 +102,8 @@ public class MainScreen extends JFrame {
    // private LoginPanel loginPanel;
 	private AccessListPanel listaAcessoPanel;
 	private AccessHistoryPanel historicoAcessoPanel;
+	private DevicefromServerPanel devicefromServerPanel;
+	private AccessCardListPanel listaCartoesPanel;
 	private ImageIcon adicionarIcon;
 	private ImageIcon liberarAcessoIcon;
 	private ImageIcon atualizarListaAcessoIcon;
@@ -116,6 +121,7 @@ public class MainScreen extends JFrame {
 	
 	public RegisterVisitorDialog cadastroVisitante;
 	public RegisterVisitorDialog cadastroPedestre;
+	public CartaoComandaDialog cadastroCartao;
 
 	public MainScreen() {
 		instance = this;
@@ -126,15 +132,15 @@ public class MainScreen extends JFrame {
 		tabHeaderFont = new Font(font.getFontName(), Font.BOLD, font.getSize() + 1);
 		sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-		setTitle(Main.nomeAplicacao + " Desktop - v." + Constants.VERSION);
-		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		setTitle(Main.nomeAplicacao + " Desktop - v." + Configurations.VERSION);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLayout(new BorderLayout());
 		setPreferredSize(System.getProperty("os.name").toLowerCase().contains("linux") 
-				? new Dimension(900, 600) : new Dimension(800, 600));
+				? new Dimension(900, 600) : new Dimension(920, 718));
 		setMinimumSize(getPreferredSize());
 		setResizable(true);
 		setIconImage(Main.favicon);
-
+		
 		addComponentListener(new ComponentAdapter() {
 			public void componentMoved(ComponentEvent e) {
 				actualPosition = getLocation();
@@ -159,7 +165,7 @@ public class MainScreen extends JFrame {
 			toFront();
 		}
 	}
-
+	
 	private Font getDefaultFont() {
 		
 		Font font = new JLabel().getFont();
@@ -170,10 +176,14 @@ public class MainScreen extends JFrame {
 	}
 
 	public void showScreen() {
-		buildUI();
+		//buildUI();
 		setVisible(true);
 		toFront();
-
+		if(listaAcessoPanel != null)
+			listaAcessoPanel.updateDateLastSync();
+		if(historicoAcessoPanel != null)
+			historicoAcessoPanel.updateDateLastSync();
+		
 		if (Main.loggedUser == null)
 			new LoginDialog();
 	}
@@ -194,20 +204,43 @@ public class MainScreen extends JFrame {
 		label.setForeground(Main.firstColor);
 		label.setFont(tabHeaderFont);
 		tabbedPane.setTabComponentAt(0, label);
-
+		
+		int position = 1;
+		if(Main.loggedUser != null && Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
+			listaCartoesPanel = new AccessCardListPanel();
+			tabbedPane.addTab("Lista de cartões", listaCartoesPanel);
+			label = new JLabel("Lista de cartões");
+			label.setPreferredSize(new Dimension(150, 25));
+			label.setForeground(Main.firstColor);
+			tabbedPane.setTabComponentAt(position, label);
+			position++;
+		}
+		
 		listaAcessoPanel = new AccessListPanel();
 		tabbedPane.addTab("Lista de acesso", listaAcessoPanel);
 		label = new JLabel("Lista de acesso");
 		label.setPreferredSize(new Dimension(150, 25));
 		label.setForeground(Main.firstColor);
-		tabbedPane.setTabComponentAt(1, label);
+		tabbedPane.setTabComponentAt(position, label);
+		position++;
 
 		historicoAcessoPanel = new AccessHistoryPanel();
 		tabbedPane.addTab("Histórico de acesso", historicoAcessoPanel);
 		label = new JLabel("Histórico de acesso");
 		label.setPreferredSize(new Dimension(150, 25));
 		label.setForeground(Main.firstColor);
-		tabbedPane.setTabComponentAt(2, label);
+		tabbedPane.setTabComponentAt(position, label);
+		position++;
+		
+		if(Main.servidor != null) {
+			devicefromServerPanel = new DevicefromServerPanel();
+			tabbedPane.addTab("Devices do servidor", devicefromServerPanel);
+			label = new JLabel("Devices do servidor");
+			label.setPreferredSize(new Dimension(150, 25));
+			label.setForeground(Main.firstColor);
+			tabbedPane.setTabComponentAt(position, label);
+			position++;
+		}
 
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -215,10 +248,26 @@ public class MainScreen extends JFrame {
 					((JLabel) tabbedPane.getTabComponentAt(i))
 							.setFont((i == tabbedPane.getSelectedIndex()) ? tabHeaderFont : font);
 				}
-				if (tabbedPane.getSelectedIndex() == 1)
-					listaAcessoPanel.cleanFilter();
-				if (tabbedPane.getSelectedIndex() == 2)
-					historicoAcessoPanel.cleanFilter();
+				int p = 1;
+				if(Main.loggedUser != null && Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
+					if (tabbedPane.getSelectedIndex() == p) {
+						if(!listaCartoesPanel.isLoad())
+							listaCartoesPanel.cleanFilter();
+					}
+					p++;
+				}
+				if (tabbedPane.getSelectedIndex() == p)
+					if(!listaAcessoPanel.isLoad())
+						listaAcessoPanel.cleanFilter();
+					else
+						listaAcessoPanel.executeFilter();
+				p++;
+				if (tabbedPane.getSelectedIndex() == p)
+					if(!historicoAcessoPanel.isLoad())
+						historicoAcessoPanel.cleanFilter();
+					else
+						historicoAcessoPanel.executeFilter();
+				p++;
 			}
 		});
 
@@ -353,10 +402,18 @@ public class MainScreen extends JFrame {
 			logoutInternoMenuItem.setVisible(true);
 			
 			menuCadastros.setVisible(true);
-
-			listaAcessoPanel.cleanFilter();
 			
+			if(Main.loggedUser != null 
+					&& Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
+				listaCartoesPanel.addButton.setVisible(true);
+				listaCartoesPanel.clearCardStateButton.setVisible(true);
+				listaCartoesPanel.cleanFilter();
+				listaCartoesPanel.updateUI();
+			}
+			listaAcessoPanel.cleanFilter();
 			listaAcessoPanel.updateUI();
+			
+			
 		}
 	}
 	
@@ -367,6 +424,13 @@ public class MainScreen extends JFrame {
 		
 		menuCadastros.setVisible(false);
 		
+		if(Main.loggedUser != null 
+				&& Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
+			listaCartoesPanel.addButton.setVisible(false);
+			listaCartoesPanel.clearCardStateButton.setVisible(false);
+			listaCartoesPanel.cleanFilter();
+			listaCartoesPanel.updateUI();
+		}
 		listaAcessoPanel.cleanFilter();
 		listaAcessoPanel.updateUI();
 	}
@@ -501,13 +565,13 @@ public class MainScreen extends JFrame {
 			
 			cadastrarPedestreMenuItem = new JMenuItem("Cadastrar pedestre (F7)");
 			cadastrarPedestreMenuItem.addActionListener(e -> {
-				abreCadastroPedestre();
+				abreCadastroPedestre(null);
 			});
 			menuCadastros.add(cadastrarPedestreMenuItem);
 			
 			cadastrarVisitanteMenuItem = new JMenuItem("Cadastrar visitante (F8)");
 			cadastrarVisitanteMenuItem.addActionListener(e -> {
-				abreCadastroVisitante();
+				abreCadastroVisitante(null);
 			});
 			menuCadastros.add(cadastrarVisitanteMenuItem);
 		}
@@ -526,21 +590,59 @@ public class MainScreen extends JFrame {
 		return menuBar;
 	}
 
-	public void abreCadastroVisitante() {
-		PedestrianAccessEntity visitante = new PedestrianAccessEntity();
-		visitante.setTipo("VISITANTE");
+	public void abreCadastroVisitante(PedestrianAccessEntity p) {
+		PedestrianAccessEntity visitante = p;
+		if(visitante == null) {
+			visitante = new PedestrianAccessEntity();
+			visitante.setTipo("VISITANTE");
+		}
 		if(!RegisterVisitorDialog.abertoPeloAtalho) {
 			RegisterVisitorDialog.abertoPeloAtalho = true;
 			cadastroVisitante = new RegisterVisitorDialog(visitante);
+			SwingUtilities.invokeLater( 
+			    new Runnable() { 
+			        @Override public void run() {
+			        	cadastroVisitante.setVisible(true);
+			        }
+			    }
+			);
 		}
 	}
 
-	public void abreCadastroPedestre() {
-		PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
-		pedestre.setTipo("PEDESTRE");
+	public void abreCadastroPedestre(PedestrianAccessEntity p) {
+		PedestrianAccessEntity pedestre = p;
+		if(pedestre == null) {
+			pedestre = new PedestrianAccessEntity();
+			pedestre.setTipo("PEDESTRE");
+		}
 		if(!RegisterVisitorDialog.abertoPeloAtalho) {
 			RegisterVisitorDialog.abertoPeloAtalho = true;
 			cadastroPedestre = new RegisterVisitorDialog(pedestre);
+			SwingUtilities.invokeLater( 
+			    new Runnable() { 
+			        @Override public void run() {
+			        	cadastroPedestre.setVisible(true);
+			        }
+			    }
+			);
+		}
+	}
+	
+	public void abreCadastroCartoComanda(CartaoComandaEntity c) {
+		CartaoComandaEntity cartao = c;
+		if(cartao == null) {
+			cartao = new CartaoComandaEntity();
+		}
+		if(!CartaoComandaDialog.abertoPeloAtalho) {
+			CartaoComandaDialog.abertoPeloAtalho = true;
+			cadastroCartao = new CartaoComandaDialog(cartao);
+			SwingUtilities.invokeLater( 
+			    new Runnable() { 
+			        @Override public void run() {
+			        	cadastroCartao.setVisible(true);
+			        }
+			    }
+			);
 		}
 	}
 
@@ -617,7 +719,19 @@ public class MainScreen extends JFrame {
 			device.getDeviceCard()
 					.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
 		}
-	
+		
+		List <DeviceTO> devicesFromServer = HibernateUtil.getListDeviceFromServer();
+		if(devicesFromServer != null && !devicesFromServer.isEmpty()) {
+			for (DeviceTO deviceTO : devicesFromServer) {
+				Device device = null;
+				if(Manufacturer.TOP_DATA.equals(deviceTO.getManufacturer())) {
+					 // device = new TopDataDevice();
+				}
+				addDeviceCard(device);
+				device.getDeviceCard()
+						.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
+			}
+		}
 		// Habilita/desabilita o botao de liberar acesso nas catracas que estiverem
 		// vinculadas
 		verificaCatracasVinculadas();
@@ -670,6 +784,29 @@ public class MainScreen extends JFrame {
 		}
 	}
 	
+	public void setConnectionStatusLabel(Boolean online) {
+		String servidor = Main.urlApplication.replace("sistema", "");
+		
+		if(connectionStatusLabel == null)
+			connectionStatusLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 5, 0);
+		
+		if(online == null) {
+			connectionStatusLabel.setLabelColor(Color.GRAY);
+			connectionStatusLabel.setText("Verificando...");
+			connectionStatusLabel.setToolTipText(servidor);
+		}else if(online) {
+			connectionStatusLabel.setLabelColor(new Color(90, 196, 126));
+			connectionStatusLabel.setText("Online");
+			connectionStatusLabel.setToolTipText("Conectado ao servidor: " + servidor);
+		}else {
+			connectionStatusLabel.setLabelColor(Color.RED);
+			connectionStatusLabel.setText("Offline");
+			connectionStatusLabel.setToolTipText("<html>Sem conexão com servidor " + servidor + " os dados não estão sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+		}
+		
+	}
+	
 	private JPanel montarPanelEventos() {
 
 		eventosLabel = new JLabel(" ");
@@ -687,11 +824,16 @@ public class MainScreen extends JFrame {
 
 		JLabel loggedUserLabel = new JLabel(
 				Main.loggedUser != null ? Main.loggedUser.getName() + " - " + Main.loggedUser.getLoginName() : "");
+		
+		setConnectionStatusLabel(null);
 
 		JPanel toggleButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		toggleButtonPanel.add(toggleEventosButton);
 		toggleButtonPanel.add(Box.createHorizontalStrut(10));
 		toggleButtonPanel.add(loggedUserLabel);
+		toggleButtonPanel.add(Box.createHorizontalStrut(10));
+		toggleButtonPanel.add(connectionStatusLabel);
+		
 
 		JPanel toggleButtonPanelContainer = new JPanel();
 		toggleButtonPanelContainer.setLayout(new BorderLayout(0, 0));
@@ -794,17 +936,17 @@ public class MainScreen extends JFrame {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			logoIcon = new ImageIcon(toolkit.getImage(
-					Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
+					Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
 			adicionarIcon = new ImageIcon(toolkit
-					.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "novo.png")));
+					.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "novo.png")));
 			liberarAcessoIcon = new ImageIcon(toolkit
-					.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "timer.png")));
+					.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "timer.png")));
 			atualizarListaAcessoIcon = new ImageIcon(toolkit.getImage(
-					Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "atualizar.png")));
+					Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "atualizar.png")));
 			setaUpIcon = new ImageIcon(
-					toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/seta_up.png")));
+					toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/seta_up.png")));
 			setaDownIcon = new ImageIcon(
-					toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/seta_down.png")));
+					toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/seta_down.png")));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

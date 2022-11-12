@@ -55,7 +55,7 @@ public class HttpConnection {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return "";
 	}
@@ -97,7 +97,7 @@ public class HttpConnection {
 			}
 		}
 		catch (Exception e){
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return retorno;	
 	}

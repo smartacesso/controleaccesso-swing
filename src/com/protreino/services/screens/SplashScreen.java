@@ -14,8 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 
 @SuppressWarnings("serial")
 public class SplashScreen extends JWindow {
@@ -43,7 +43,7 @@ public class SplashScreen extends JWindow {
         message.setFont(new Font("Sans-Serif", Font.BOLD, 13));
         message.setForeground(Main.firstColor);
         message.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel versao = new JLabel("Versão " + Constants.VERSION, JLabel.CENTER);
+        JLabel versao = new JLabel("Versão " + Configurations.VERSION, JLabel.CENTER);
         versao.setFont(new Font("Sans-Serif", Font.BOLD, 11));
         versao.setForeground(Main.firstColor);
         versao.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -64,7 +64,7 @@ public class SplashScreen extends JWindow {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			logoImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
+					getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "logo_grd003.png")));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

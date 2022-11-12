@@ -33,7 +33,6 @@ public class PedestrianAccessTO extends BaseEntity{
 	private String matricula;
 	private Boolean removido;
 	private Boolean sempreLiberado;
-	private Boolean bloqueado;
 	private Boolean habilitarTeclado;
 	private String qrCodeParaAcesso;
 	private Boolean cadastroFacialObrigatorio;
@@ -74,6 +73,11 @@ public class PedestrianAccessTO extends BaseEntity{
 	
 	private Integer qtdAcessoAntesSinc;
 	
+	private String login;
+	private String senha;
+	private String tipoAcesso;
+	private String tipoQRCode;
+	
 	public PedestrianAccessTO() {
 	}
 
@@ -110,7 +114,6 @@ public class PedestrianAccessTO extends BaseEntity{
 			.append(cardNumber).append(";")
 			.append(habilitarTeclado).append(";")
 			.append(sempreLiberado).append(";")
-			.append(bloqueado).append(";")
 			.append(enviaSmsAoPassarNaCatraca != null ? enviaSmsAoPassarNaCatraca : "").append(";")
 			.append(cadastroFacialObrigatorio).append(";")
 			
@@ -135,7 +138,11 @@ public class PedestrianAccessTO extends BaseEntity{
 			.append(dataInicioPeriodo != null ? dataInicioPeriodo.getTime() : "").append(";")
 			.append(dataFimPeriodo != null ? dataFimPeriodo.getTime() : "").append(";")
 			.append(qtdAcessoAntesSinc != null ? qtdAcessoAntesSinc : "").append(";")
-			.append(idUsuario != null ? idUsuario : "").append(";");
+			.append(idUsuario != null ? idUsuario : "").append(";")
+			.append(login != null ? login : "").append(";")
+			.append(senha != null ? senha : "").append(";")
+			.append(tipoAcesso != null ? tipoAcesso : "").append(";")
+			.append(tipoQRCode != null ? tipoQRCode : "").append(";");
 		
 		if(this.mensagens != null) {
 			for(PedestrianMessagesEntity m : this.mensagens)
@@ -447,16 +454,9 @@ public class PedestrianAccessTO extends BaseEntity{
 	public Boolean getSempreLiberado() {
 		return sempreLiberado;
 	}
-	public void setSempreLiberado(Boolean bloqueado) {
-		this.bloqueado = bloqueado;
-	}
-	public Boolean getBloqueado() {
-		return bloqueado;
-	}
-	public void setBloquado(Boolean bloquado) {
+	public void setSempreLiberado(Boolean sempreLiberado) {
 		this.sempreLiberado = sempreLiberado;
 	}
-	
 	public Boolean getHabilitarTeclado() {
 		return habilitarTeclado;
 	}
@@ -548,6 +548,38 @@ public class PedestrianAccessTO extends BaseEntity{
 
 	public void setIdUsuario(Long idUsuario) {
 		this.idUsuario = idUsuario;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
+
+	public String getTipoAcesso() {
+		return tipoAcesso;
+	}
+
+	public void setTipoAcesso(String tipoAcesso) {
+		this.tipoAcesso = tipoAcesso;
+	}
+
+	public String getTipoQRCode() {
+		return tipoQRCode;
+	}
+
+	public void setTipoQRCode(String tipoQRCode) {
+		this.tipoQRCode = tipoQRCode;
 	}
 	
 }

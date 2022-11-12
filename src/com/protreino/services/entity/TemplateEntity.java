@@ -26,10 +26,16 @@ import com.protreino.services.enumeration.Manufacturer;
 @Entity
 @Table(name="TB_TEMPLATES")
 @NamedQueries({
-	@NamedQuery(name = "TemplateEntity.findAll", query = "select obj from TemplateEntity obj"),
-	@NamedQuery(name = "TemplateEntity.findById", query = "select obj from TemplateEntity obj "
-			+ " join fetch obj.pedestrianAccess a"
-			+ " where obj.id = :ID"),
+	@NamedQuery(name  = "TemplateEntity.findAll", query = "select obj from TemplateEntity obj"),
+	@NamedQuery(name  = "TemplateEntity.findAllNaoRemovido", 
+				query = "select obj "
+					  + "from TemplateEntity obj "
+					  + "where (obj.pedestrianAccess.removido is null "
+					  + "	   or obj.pedestrianAccess.removido = false) "
+					  + "order by obj.id asc"),
+	@NamedQuery(name  = "TemplateEntity.findById", query = "select obj from TemplateEntity obj "
+					  + " join fetch obj.pedestrianAccess a"
+					  + " where obj.id = :ID"),
 	@NamedQuery(name  = "TemplateEntity.findAllNaoLocal",
 				query = "select obj from TemplateEntity obj "
 					  + "where obj.local = false "

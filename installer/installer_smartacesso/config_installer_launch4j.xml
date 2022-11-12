@@ -8,7 +8,7 @@
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>https://www.smartacesso.com.br//downloads/jre-8u201-windows-i586.exe</downloadUrl>
+  <downloadUrl>https://www.smartacesso.com.br/downloads/jre-8u201-windows-i586.exe</downloadUrl>
   <supportUrl></supportUrl>
   <stayAlive>true</stayAlive>
   <restartOnCrash>true</restartOnCrash>

@@ -14,8 +14,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 
 @SuppressWarnings("serial")
 public class ProgressDialog extends JDialog {

@@ -51,9 +51,7 @@ import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
-public class AccessHistoryPanel extends JPanel {
-	
-	private JLabel countLabel;
+public class AccessHistoryPanel extends PaginedListPanel {
 	
 	private JTable accessHistoryTable;
 	private List<LogPedestrianAccessEntity> historicoAcesso;
@@ -68,6 +66,8 @@ public class AccessHistoryPanel extends JPanel {
 	private JButton syncButton;
 	private JLabel dateLastSync;
 	private SimpleDateFormat sdfComHora = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	
+	private HashMap<String, Object> args;
 	
 	public AccessHistoryPanel(){
 		
@@ -135,6 +135,12 @@ public class AccessHistoryPanel extends JPanel {
 		cleanButtonPanel.add(new JLabel(" "));
 		cleanButtonPanel.add(cleanButton);
 		
+		JButton searchButton = new JButton("Pesquisar");;
+		JPanel searchButtonPanel= new JPanel();
+		searchButtonPanel.setLayout(new BoxLayout(searchButtonPanel, BoxLayout.Y_AXIS));
+		searchButtonPanel.add(new JLabel(" "));
+		searchButtonPanel.add(searchButton);
+		
 		JPanel filterFlowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		filterFlowPanel.setMaximumSize(new Dimension(10000, 80));
 		filterFlowPanel.add(filtroNomePanel);
@@ -144,6 +150,8 @@ public class AccessHistoryPanel extends JPanel {
 		filterFlowPanel.add(filtroDataPanel);
 		filterFlowPanel.add(Box.createHorizontalStrut(10));
 		filterFlowPanel.add(cleanButtonPanel);
+		filterFlowPanel.add(Box.createHorizontalStrut(10));
+		filterFlowPanel.add(searchButtonPanel);
 		
 		
 		JPanel filterPanel= new JPanel();
@@ -172,15 +180,17 @@ public class AccessHistoryPanel extends JPanel {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		accessHistoryTablePanel.add(scrollPane);
 		
-		countLabel = new JLabel("Número de registros: ");
 		dateLastSync = new JLabel(" ");
 		syncButton = new JButton("Enviar lista para o servidor");
 		syncButton.setBorder(new EmptyBorder(10,15,10,15));
-		syncButton.setPreferredSize(new Dimension(225, 40));
+		syncButton.setPreferredSize(new Dimension(180, 40));
+		
+		JPanel paginatorPanel = createPaginatorControls();
+		
 		JPanel statusPanel = new JPanel();
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 		statusPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-		statusPanel.add(countLabel);
+		statusPanel.add(paginatorPanel);
 		statusPanel.add(Box.createHorizontalGlue());
 		statusPanel.add(dateLastSync);
 		statusPanel.add(Box.createHorizontalStrut(10));
@@ -209,55 +219,29 @@ public class AccessHistoryPanel extends JPanel {
 			}
 		});
 		
-		DocumentListener documentListener = new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void warn() {
+		ActionListener search = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				filterList();
 			}
 		};
 		
-		filtroNomeTextField.getDocument().addDocumentListener(documentListener);
-		
-		filtroDataInicioDatePicker.getJDateInstantPanel().getModel().addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("value".equals(evt.getPropertyName())) {
-					filterList();
-				}
-			}
-		});
-		
-		filtroDataFimDatePicker.getJDateInstantPanel().getModel().addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("value".equals(evt.getPropertyName())) {
-					filterList();
-				}
-			}
-		});
-		
+		searchButton.addActionListener(search);
+		filtroNomeTextField.addActionListener(search);
+		filtroDataInicioDatePicker.addActionListener(search);
+		filtroDataFimDatePicker.addActionListener(search);
 		filtroTipoJComboBox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				filterList();
 			}
 			
-		}); // getDocument().addDocumentListener(documentListener);
+		});
 		
-		filterList();
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void filterList() {
-		HashMap<String, Object> args = new HashMap<String, Object>();
+		args = new HashMap<String, Object>();
 		try {
 			Calendar dataFim = Calendar.getInstance();
 			dataFim.setTime(Utils.isNullOrEmpty(filtroDataFimDatePicker.getFormattedTextField().getText()) 
@@ -285,10 +269,29 @@ public class AccessHistoryPanel extends JPanel {
 		args.put("NOME", !"".equals(filtroNomeTextField.getText()) ? "%" + filtroNomeTextField.getText() + "%" : "vazio");
 		args.put("TIPO", !"TODOS".equals(itemSelecionado.getValue()) ? "%" + itemSelecionado.getValue() + "%" : "vazio");
 		
-		historicoAcesso = (List<LogPedestrianAccessEntity>) HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class, 
-				"LogPedestrianAccessEntity.findByPeriod", args);
 		
+		paginaAtual = 1;
+		inicioPagina = 0;
+		totalRegistros =  HibernateUtil.getResultListWithParamsCount(LogPedestrianAccessEntity.class, 
+															"LogPedestrianAccessEntity.countByPeriod", args);
+		executeFilter();
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void executeFilter() {
+		
+		calculaTamanhoPaginas();
+		
+		historicoAcesso = (List<LogPedestrianAccessEntity>)
+				HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class, 
+							"LogPedestrianAccessEntity.findByPeriod", args, inicioPagina, registrosPorPagina);
+
 		populateTable(historicoAcesso);
+		
+		paginatorControl();
+		
 	}
 	
 	public void cleanFilter(){
@@ -301,6 +304,7 @@ public class AccessHistoryPanel extends JPanel {
 		filtroDataFimDatePicker.getJDateInstantPanel().getModel().setDay(calendar.get(Calendar.DAY_OF_MONTH));
 		filtroDataFimDatePicker.getJDateInstantPanel().getModel().setMonth(calendar.get(Calendar.MONTH));
 		filtroDataFimDatePicker.getJDateInstantPanel().getModel().setYear(calendar.get(Calendar.YEAR));
+		
 		filterList();
 	}
 	
@@ -340,8 +344,9 @@ public class AccessHistoryPanel extends JPanel {
 			}
 		}
 		accessHistoryTable.setModel(dataModel);
-		int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
-		countLabel.setText("Número de registros: " + numAcessos); 
+		//int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
+		//countLabel.setText("Número de registros: " + numAcessos);
+		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 
@@ -390,11 +395,17 @@ public class AccessHistoryPanel extends JPanel {
 	public void updateDateLastSync() {
 		if (Main.lastSyncLog != null && Main.lastSyncLog > 0) {
 			Date date = new Date(Main.lastSyncLog);
-			dateLastSync.setText("Última sincronização: " + sdfComHora.format(date));
+			dateLastSync.setText("Atualizado: " + sdfComHora.format(date));
 		}
 		else
 			dateLastSync.setText(" ");
 	}
 	
+	public boolean isLoad() {
+		return historicoAcesso != null && !historicoAcesso.isEmpty();
+	}
+	
 	}		
+
+
 

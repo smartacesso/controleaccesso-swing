@@ -54,6 +54,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import com.digitalpersona.onetouch.DPFPGlobal;
 import com.digitalpersona.onetouch.DPFPSample;
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.UsbDevice;
@@ -64,7 +65,6 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
@@ -1131,32 +1131,32 @@ public class PedestrianScreen extends JFrame {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			logoImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "logo_grd001.png")));
+					getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "logo_grd001.png")));
 			configImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "gear.png")));
+					getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "gear.png")));
 			naoPermitidoImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/nao_permitido.png")));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/nao_permitido.png")));
 			vazioImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/vazio.png")));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/vazio.png")));
 			digitalNaoVerificadaBordaImage = toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/digital_nao_verificada_borda.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/digital_nao_verificada_borda.png"));
 			digitalGenericaNegadaImageIcon = new ImageIcon(toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/digital_generica_negada.png")));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/digital_generica_negada.png")));
 			
 			Image semDigitalImage = toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/sem_digital.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/sem_digital.png"));
 			semDigitalImageIcon = new ImageIcon(semDigitalImage);
 			
 			BufferedImage mascara = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/permitido_mask.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/permitido_mask.png"));
 			permitidoImageIcon = new ImageIcon(Utils.paintImage(mascara, secondColor, 256, 256));
 			
 			mascara = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/digital_generica_mask.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/digital_generica_mask.png"));
 			digitalGenericaPermitidaImageIcon = new ImageIcon(Utils.paintImage(mascara, secondColor, 160, 201));
 			
 			mascara = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/digital_borda_mask.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/digital_borda_mask.png"));
 			digitalRecebidaBordaImage = Utils.paintImage(mascara, secondColor, 160, 201);
 			
 			BufferedImage sampleCombined = new BufferedImage(160, 201, BufferedImage.TYPE_INT_ARGB);

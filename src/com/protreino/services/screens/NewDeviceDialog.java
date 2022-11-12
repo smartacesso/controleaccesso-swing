@@ -33,6 +33,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.ComputerIdDevice;
 import com.protreino.services.devices.ControlIdDevice;
 import com.protreino.services.devices.Device;
@@ -42,7 +43,6 @@ import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.FieldTO;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.ScanDevices;
 import com.protreino.services.utils.SelectItem;
@@ -110,6 +110,11 @@ public class NewDeviceDialog extends JDialog{
 				}
 				if(Manufacturer.LC_DEVICE.equals(manufacturer)
 						&& Boolean.TRUE.equals(Main.possuiLeitorLcAdd)) {
+					continue;
+				}
+				
+				if(Manufacturer.TOP_DATA_EXPEDIDORA.equals(manufacturer) && !Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
+					//só adiciona expedidora se usuário poder
 					continue;
 				}
 				
@@ -556,7 +561,7 @@ public class NewDeviceDialog extends JDialog{
 	private void loadImages() {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
-			searchIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/buscar_min.png")));
+			searchIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/buscar_min.png")));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

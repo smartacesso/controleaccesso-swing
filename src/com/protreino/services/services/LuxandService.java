@@ -181,10 +181,16 @@ public class LuxandService {
 //		return null;
 //	}
 	
+	boolean testeGrab = false;
 	public synchronized HImage grabFrame(HCamera cameraHandle) throws Exception {
+		
+		if (testeGrab) {
+			return null;
+		}
+		testeGrab = true;
 		HImage copyImageHandle = null;
 		HImage sharedImageHandle = new HImage();
-		
+
 		int ret = FSDKCam.GrabFrame(cameraHandle, sharedImageHandle);
 		
 		if (ret != FSDK.FSDKE_OK)
@@ -199,6 +205,7 @@ public class LuxandService {
 		
 		FSDK.FreeImage(sharedImageHandle);
 		
+		testeGrab = false;
 		return copyImageHandle;
 	}
 	

@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Toolkit;
@@ -47,6 +48,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.entity.ParametroEntity;
@@ -54,7 +56,6 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
@@ -73,6 +74,7 @@ public class RegisterUserDialog extends JDialog{
 	private JTextField filtroIdTextField;
 	private JTextField filtroNomeTextField;
 	private JButton cleanButton;
+	private JButton searchButton;
 	public JButton registerUserButton;
 	private JButton removeUserButton;
 	private JLabel errorLabel;
@@ -83,6 +85,20 @@ public class RegisterUserDialog extends JDialog{
 	private Set<Integer> hashSetRegistradosNaCatraca;
 	
 	private Device device;
+	
+	protected JButton first = null;
+	protected JButton back = null;
+	protected JButton prox = null;
+	protected JButton last = null;
+	protected JLabel countLabel;
+	
+	protected int totalRegistros = 0;
+	protected int totalPaginas = 10;
+	protected int paginaAtual = 1;
+	protected int inicioPagina = 0;
+	protected int registrosPorPagina = 10;
+	
+	private HashMap<String, Object> args;
 	
 	public RegisterUserDialog(Frame owner, Device device){
 		super(owner, "Cadastro de usuários " + (device.isCatraca() ? "na catraca " : (device.isLeitorBiometrico() ? "com o leitor " : "com a câmera ")) + device.getName(), true);
@@ -142,6 +158,12 @@ public class RegisterUserDialog extends JDialog{
 		cleanButtonContainer.add(new JLabel(" "));
 		cleanButtonContainer.add(cleanButton);
 		
+		JPanel searchButtonPanel= new JPanel();
+		searchButtonPanel.setLayout(new BoxLayout(searchButtonPanel, BoxLayout.Y_AXIS));
+		searchButton = new JButton("Pesquisar");
+		searchButtonPanel.add(new JLabel(" "));
+		searchButtonPanel.add(searchButton);
+		
 		JPanel filterContainer = new JPanel();
 		filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.X_AXIS));
 		filterContainer.setMaximumSize(new Dimension(750, 40));
@@ -150,6 +172,8 @@ public class RegisterUserDialog extends JDialog{
 		filterContainer.add(filtroNomeContainer);
 		filterContainer.add(Box.createHorizontalStrut(10));
 		filterContainer.add(cleanButtonContainer);
+		filterContainer.add(Box.createHorizontalStrut(10));
+		filterContainer.add(searchButtonPanel);
 		filterContainer.add(Box.createHorizontalGlue());
 		
 		JPanel accessListTableContainer = new JPanel();
@@ -206,6 +230,8 @@ public class RegisterUserDialog extends JDialog{
 		buttonsContainer.add(Box.createHorizontalStrut(10));
 		buttonsContainer.add(registerUserButton);
 		
+		JPanel paginatorPanel = createPaginatorControls();
+		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -214,6 +240,8 @@ public class RegisterUserDialog extends JDialog{
 		mainPanel.add(accessListTableContainer);
 		mainPanel.add(Box.createRigidArea(new Dimension(0,5)));
 		mainPanel.add(errorLabelContainer);
+		mainPanel.add(Box.createRigidArea(new Dimension(0,5)));
+		mainPanel.add(paginatorPanel);
 		mainPanel.add(Box.createRigidArea(new Dimension(0,5)));
 		mainPanel.add(buttonsContainer);
 		
@@ -260,21 +288,6 @@ public class RegisterUserDialog extends JDialog{
 			}
 		});
 		
-		DocumentListener documentListener = new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void warn() {
-				filterList();
-			}
-		};
-		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -303,8 +316,15 @@ public class RegisterUserDialog extends JDialog{
 			public void componentHidden(ComponentEvent e) {}
 		});
 		
-		filtroIdTextField.getDocument().addDocumentListener(documentListener);
-		filtroNomeTextField.getDocument().addDocumentListener(documentListener);
+		ActionListener search = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				filterList();
+			}
+		};
+		
+		searchButton.addActionListener(search);
+		filtroIdTextField.addActionListener(search);
+		filtroNomeTextField.addActionListener(search);
 		
 		pack();
 		//showScreen();
@@ -339,7 +359,7 @@ public class RegisterUserDialog extends JDialog{
 	private void filterList() {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			HashMap<String, Object> args = new HashMap<>();
+			args = new HashMap<>();
 			
 			args.put("removido", false);
 			
@@ -353,18 +373,21 @@ public class RegisterUserDialog extends JDialog{
 			if (filtroNomeTextField.getText() != null && !"".equals(filtroNomeTextField.getText()))
 				args.put("name", filtroNomeTextField.getText());
 			
-			String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
-					+ "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier)  ";
-			
 			String join = " left join obj.templates temp ";
 			
 			String groupBy = " group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
 			
-			listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-					getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, join, groupBy, "name", args);
+			if(args.size() == 1) {
+				cleanFilter();
+			}else {
+				paginaAtual = 1;
+				inicioPagina = 0;
+				totalRegistros =  HibernateUtil.
+						getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, join, groupBy, args);
+				
+				executeFilter();
+			}
 			
-			verificarRegistradosNaCatraca();
-			populateTable(listaAcesso);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -374,15 +397,147 @@ public class RegisterUserDialog extends JDialog{
 		}
 	}
 	
+	protected JPanel createPaginatorControls() {
+		countLabel = new JLabel("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		first = new JButton("<<");
+		first.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				paginaAtual = 1;
+				inicioPagina = 0;
+				executeFilter();
+			}
+		});
+		back = new JButton("< ");
+		back.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(paginaAtual > 1) {
+					paginaAtual--;
+					inicioPagina = inicioPagina - registrosPorPagina;
+				}
+				executeFilter();
+			}
+		});
+		prox = new JButton(" >");
+		prox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(paginaAtual < totalPaginas) {
+					paginaAtual++;
+					inicioPagina = inicioPagina + registrosPorPagina;
+				}
+				executeFilter();
+			}
+		});
+		last = new JButton(">>");
+		last.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				paginaAtual = totalPaginas;
+				inicioPagina = (registrosPorPagina * totalPaginas) - registrosPorPagina ;
+				executeFilter();
+			}
+		});
+		
+		JPanel paginatorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		paginatorPanel.setBorder(new EmptyBorder(10,0,10,15));
+		paginatorPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+		paginatorPanel.add(first);
+		paginatorPanel.add(Box.createHorizontalStrut(5));
+		paginatorPanel.add(back);
+		paginatorPanel.add(Box.createHorizontalStrut(5));
+		paginatorPanel.add(prox);
+		paginatorPanel.add(Box.createHorizontalStrut(5));
+		paginatorPanel.add(last);
+		paginatorPanel.add(Box.createHorizontalStrut(5));
+		paginatorPanel.add(countLabel);
+		paginatorPanel.add(Box.createHorizontalStrut(5));
+		return paginatorPanel;
+	}
 	
+	
+	@SuppressWarnings("unchecked")
+	protected void executeFilter() {
+		
+		calculaTamanhoPaginas();
+		
+		if(args == null)
+			args = new HashMap<>();
+		args.put("removido", false);
+		
+		
+		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
+				+ "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier)  ";
+		
+		String join = " left join obj.templates temp ";
+		
+		String groupBy = " group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
+		
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
+				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, join, groupBy, "name", args, inicioPagina, registrosPorPagina);
+		
+		verificarRegistradosNaCatraca();
+		populateTable(listaAcesso);
+		
+		paginatorControl();
+		
+		
+	}
+	
+	protected void calculaTamanhoPaginas() {
+		totalPaginas = totalRegistros / registrosPorPagina;
+		if(totalPaginas == 0) {
+			totalPaginas = 1;
+		}else {
+			int rest = totalRegistros % registrosPorPagina;
+			if(rest > 0)
+				totalPaginas++;
+		}
+	}
+	
+	protected void paginatorControl() {
+		
+		if(totalPaginas == 1) {
+			first.setEnabled(false);
+			back.setEnabled(false);
+			prox.setEnabled(false);
+			last.setEnabled(false);
+		}else{
+			if(paginaAtual == 1) {
+				first.setEnabled(false);
+				back.setEnabled(false);
+				prox.setEnabled(true);
+				last.setEnabled(true);
+			}else if(paginaAtual == totalPaginas) {
+				first.setEnabled(true);
+				back.setEnabled(true);
+				prox.setEnabled(false);
+				last.setEnabled(false);
+			}else {
+				first.setEnabled(true);
+				back.setEnabled(true);
+				prox.setEnabled(true);
+				last.setEnabled(true);
+			}
+			
+		}
+		
+	}
+
 	@SuppressWarnings("unchecked")
 	private void cleanFilter(){
 		filtroIdTextField.setText("");
 		filtroNomeTextField.setText("");
+		
+		totalRegistros =  HibernateUtil.
+				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUser");
+		
+		//calcula páginas
+		calculaTamanhoPaginas();
+		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-				getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser");
+				getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser", (long)registrosPorPagina);
 		verificarRegistradosNaCatraca();
 		populateTable(listaAcesso);
+		
+		paginatorControl();
 	}
 	
 	private void sync(){
@@ -548,7 +703,10 @@ public class RegisterUserDialog extends JDialog{
 			setMensagemErro("Selecione um usuário.");
 			return;
 		}
-
+		if (acessoSelecionado.getCadastradoNoDesktop()) {
+			setMensagemErro("Pedestre precisa ser sincronizado no desktop");
+			return;
+		}
 		if (Manufacturer.FACIAL.equals(device.getManufacturer())) {
 			if(Boolean.TRUE.equals(acessoSelecionado.getCadastradoNoDesktop())) {
 				RegisterVisitorDialog.criarDialogoUsuarioNaoPermitidoCadastrarFace();
@@ -850,6 +1008,7 @@ public class RegisterUserDialog extends JDialog{
 			}
 		}
 		accessListTable.setModel(dataModel);
+		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -898,9 +1057,9 @@ public class RegisterUserDialog extends JDialog{
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			iconSucesso = new ImageIcon(toolkit.getImage(Main.class
-					.getResource(Constants.IMAGE_FOLDER + "comuns/ok.png")));
+					.getResource(Configurations.IMAGE_FOLDER + "comuns/ok.png")));
 			iconErro = new ImageIcon(toolkit.getImage(Main.class
-					.getResource(Constants.IMAGE_FOLDER + "comuns/erro.png")));
+					.getResource(Configurations.IMAGE_FOLDER + "comuns/erro.png")));
 		
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -52,6 +52,20 @@ public final class EncryptionUtils {
 	}
 	
 	/**
+	 * Retorna senha aleatória com 8 dígitos
+	 * de 128 bits
+	 * 
+	 * @return
+	 */
+	public static String getRandomString(int qtd){
+		
+		UUID uuid = UUID.randomUUID();  
+		String myRandom = uuid.toString();  
+		return myRandom.substring(0,qtd);  
+		
+	}
+	
+	/**
 	 * Testa encriptação
 	 * 
 	 * @param args

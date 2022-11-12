@@ -38,7 +38,6 @@ import javax.swing.border.LineBorder;
 
 import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.UserEntity;
-import com.protreino.services.entity.URLEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.HibernateUtil;
@@ -52,10 +51,8 @@ public class AutenticationDialog extends JDialog {
 	public final String CANCEL = "CANCEL";
 	
 	private JPasswordField passwordField;
-	private JLabel urlLabel;
 	private JLabel invalidCredentialsLabel;
 	private JTextField loginField;
-	private JTextField urlField;
 	private JButton okButton;
 	private JButton cancelButton;
 	private String mensagemProgressDialog;
@@ -281,84 +278,6 @@ public class AutenticationDialog extends JDialog {
 			label.setFont(biggerFont);
 			panel.add(label);
 		}
-		panel.add(Box.createVerticalStrut(15));
-		panel.add(passwordField);
-		panel.add(Box.createVerticalStrut(5));
-		panel.add(invalidCredentialsLabel);
-		
-		JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-		mainPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
-		mainPanel.add(panel, BorderLayout.CENTER);
-		mainPanel.add(buttonsPanel, BorderLayout.PAGE_END);
-		
-		setContentPane(mainPanel);
-		
-		pack();
-		setLocationRelativeTo(null);
-	}
-	
-	public AutenticationDialog(Frame owner, String mensagemProgressDialog){
-		super(owner, "Configurações", true);
-		this.mensagemProgressDialog = mensagemProgressDialog;
-
-		
-		setIconImage(Main.favicon);
-		JLabel urlLabel = new JLabel("Informe a Url  Ser Cadastrada");
-		urlLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		passwordField = new JPasswordField(20);
-		passwordField.setHorizontalAlignment(SwingConstants.CENTER);
-		passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
-		passwordField.setMaximumSize(passwordField.getPreferredSize());
-		
-		invalidCredentialsLabel = new JLabel(" ");
-		invalidCredentialsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		invalidCredentialsLabel.setForeground(Color.RED);
-		
-		okButton = new JButton("OK");
-		okButton.setPreferredSize(new Dimension(100, 30));
-		
-		Action okAction = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("URL NÃO INFORMADA!");
-					return;
-				} else {
-					String urlconfig = passwordField.getText();
-					URLEntity url = new URLEntity();
-					HibernateUtil.salvarURLDeConfiguracao(urlconfig);
-					System.out.println(url.ip);
-					invalidCredentialsLabel.setText(" ");
-				}
-				
-				option = OK;
-				setVisible(false);
-			}
-		};
-		
-		okButton.addActionListener(okAction);
-		passwordField.addActionListener(okAction);
-		
-		cancelButton = new JButton("Cancelar");
-		cancelButton.setPreferredSize(new Dimension(100, 30));
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				option = CANCEL;
-				setVisible(false);
-			}
-		});
-		
-		JPanel buttonsPanel = new JPanel();
-		buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-		buttonsPanel.add(okButton);
-		buttonsPanel.add(cancelButton);
-		
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		
-		Font font = new JLabel().getFont();
-		Font biggerFont = new Font(font.getFontName(), font.getStyle(), font.getSize()+1);
-		
 		panel.add(Box.createVerticalStrut(15));
 		panel.add(passwordField);
 		panel.add(Box.createVerticalStrut(5));

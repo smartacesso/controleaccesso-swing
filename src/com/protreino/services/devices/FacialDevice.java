@@ -288,7 +288,13 @@ public class FacialDevice extends Device {
 		                        gr.setFont(new Font("Arial", Font.BOLD, 24));
 		                    	
 		                    	// Tenta detectar alguma face com o DetectFace antes de chamar o FeedFrame, por ser um metodo rapido.
+		                
 		                        DetectFaceResult resultadoDetectFace = LuxandService.getInstance().detectFace(imageHandle);
+		                        if(resultadoDetectFace != null && resultadoDetectFace.getFace()!= null) {
+		                        	 System.out.println("id do  luxand  Facial device  "+ resultadoDetectFace.getFace().getIdentifier());
+				                       System.out.println("nome do luxand Facial device   "+ resultadoDetectFace.getFace().getName());
+		                        }
+		                      
 		                    	
 								if (resultadoDetectFace.getResultCode() == FSDK.FSDKE_OK) {
 									
@@ -307,6 +313,9 @@ public class FacialDevice extends Device {
 											DetectFaceResult resultadoFeedFrame = LuxandService.getInstance().recognize(resultadoDetectFace.getFace().getBytes(), 
 													imageWidth, imageHeight);
 											
+											
+											System.out.println("id do usário no inicio da função  "+ resultadoDetectFace.getFace().getIdentifier());
+											System.out.println("nome do usário no inicio da função  "+ resultadoDetectFace.getFace().getName());
 											if (resultadoFeedFrame.getResultCode() == FSDK.FSDKE_OK) {
 												
 												drawFace(resultadoFeedFrame.getFace(), gr);
@@ -372,6 +381,8 @@ public class FacialDevice extends Device {
 													if (resultadoDetectFace.getResultCode() != FSDK.FSDKE_USER_NOT_LOGGED_IN) {
 														// Erro inesperado no FeedFrame, imprime para ver
 														System.out.println("Erro no FeedFrame: " + resultadoFeedFrame.getResultDescription());
+														System.out.println("id do usário Else  "+ resultadoDetectFace.getFace().getIdentifier());
+														System.out.println("nome do usário no Else  "+ resultadoDetectFace.getFace().getName());
 													}
 												}
 												

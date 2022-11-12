@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.swing.SwingWorker;
 
+import org.apache.commons.codec.binary.Base64;
 import com.nitgen.SDK.BSP.NBioBSPJNI;
 import com.nitgen.SDK.BSP.NBioBSPJNI.FIR_HANDLE;
 import com.nitgen.SDK.BSP.NBioBSPJNI.FIR_PURPOSE;
@@ -45,7 +46,6 @@ public class NitgenDevice extends Device {
 	private FIR_HANDLE capturedFIRHandle;
 	private INPUT_FIR storedInputFIR;
 	
-	private NBioBSPJNI.Export export;
 	private byte[] template;
 	private Boolean createNotification;
 	
@@ -93,14 +93,15 @@ public class NitgenDevice extends Device {
 		createConfigurationMap();
 	}
 
+	private static boolean validando = false;
+	
 	@Override
 	public void connect(String... args) throws Exception {
 		bsp = new NBioBSPJNI();
-		bsp.OpenDevice(nameId, instance); 
+		bsp.OpenDevice(nameId, instance);
 		
 		if (bsp.GetOpenedDeviceID() == nameId) {
 			setStatus(DeviceStatus.CONNECTED);
-			export = bsp.new Export();
 			startIndexSearchEngine();
 			workerEnabled = true;
 			setMode(DeviceMode.VERIFICATION);
@@ -112,8 +113,13 @@ public class NitgenDevice extends Device {
 					WINDOW_OPTION winOption = bsp.new WINDOW_OPTION();
         			winOption.WindowStyle = WINDOW_STYLE.INVISIBLE;
         			
+        			
 					while (workerEnabled) {
+						if(validando)
+							continue;
+						validando = true;
 						try {
+							
 							capturedFIRHandle = bsp.new FIR_HANDLE();
 							bsp.Capture(FIR_PURPOSE.IDENTIFY, capturedFIRHandle, 1000, null, winOption);
 							if (!bsp.IsErrorOccured()) {
@@ -137,22 +143,26 @@ public class NitgenDevice extends Device {
 									} else {
             							// ACESSO DIRETO PELO LEITOR
             							createNotification = true;
+            							
             							processAccessRequest(null);
             							if (VerificationResult.ALLOWED.equals(verificationResult)
             									|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult))
             								allowAccess();
             							else
             								denyAccess();
+            							
             						}
                 				}
                 			
 							} else {
                 				if (bsp.GetErrorCode() != 516)
-                					System.out.println("Erro durante a coleta. Código: " + bsp.GetErrorCode());
+                					System.out.println("Erro durante a coleta. CÃ³digo: " + bsp.GetErrorCode());
                 			}
 						
 						} catch (Throwable e) {
 		                    e.printStackTrace();
+		                }finally {
+		                	validando = false;
 		                }
 					}
 					return null;
@@ -167,7 +177,7 @@ public class NitgenDevice extends Device {
 					getDeviceCard().openAthleteScreen();
 			}
 		} else
-			throw new Exception("Não foi possível conectar.");
+			throw new Exception("NÃ£o foi possÃ­vel conectar.");
 	}
 
 	@Override
@@ -252,7 +262,7 @@ public class NitgenDevice extends Device {
 		
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configurações: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configuraÃ§Ãµes: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();
@@ -295,12 +305,14 @@ public class NitgenDevice extends Device {
 			// verifica a qualidade da imagem
 			FIR fir = bsp.new FIR();
 			bsp.GetFIRFromHandle(capturedFIRHandle, fir);
+			
 			if (fir.Header.Quality < 100) {
 				setMessage("Qualidade ruim. Tente novamente.", "erro");
 				return;
 			}
 			
 			biometricDialog.fingerTouched();
+			
 			if (amostrasColetadas == 0) {
 	            storedInputFIR = bsp.new INPUT_FIR();
 	            storedInputFIR.SetFIRHandle(capturedFIRHandle);
@@ -314,25 +326,26 @@ public class NitgenDevice extends Device {
         		if (retorno == 0) {
             		storedInputFIR.SetFIRHandle(newFIRHandle);
         			amostrasColetadas++;
-				
         		} else {
 					setMessage("Ocorreu um erro no template durante a leitura.", "erro");
 					System.out.println("Erro durante o processamento da amostra: " + retorno);
 				}
 	    	}
-	    	
+			
 	    	if (amostrasColetadas < manufacturer.getSamplesCount()) {
 				biometricDialog.updateSampleStatus(null, amostrasColetadas);
 				Utils.sleep(1000);
 				biometricDialog.fingerGone();
-	    	
+
 	    	} else {
+	    		NBioBSPJNI.Export export = bsp.new Export();
 				NBioBSPJNI.Export.DATA exportData = export.new DATA();
 				export.ExportFIR(storedInputFIR, exportData, EXPORT_MINCONV_TYPE.FIM01_HV);
 				template = exportData.FingerData[0].Template[0].Data;
-				biometricDialog.finishCollect(template);
+				biometricDialog.saveTemplates(template);
 				addTemplateToIndexSearch(biometricDialog.getTemplateEntity());
-				
+				biometricDialog.finishCollect();
+
 				Utils.sleep(1000);
 			}
     	} catch (Throwable e){
@@ -344,31 +357,34 @@ public class NitgenDevice extends Device {
 
 	@Override
 	public void processAccessRequest(Object obj) {
-		// Primeiro é feito o processo de match para identificar o usuário.
-		// Após a identificação é verificado se o acesso é permitido.
+		// Primeiro ï¿½ feito o processo de match para identificar o usuï¿½rio.
+		// Apï¿½s a identificaï¿½ï¿½o ï¿½ verificado se o acesso ï¿½ permitido.
 		try {
 			// digital coletada agora
 			INPUT_FIR capturedInputFIR = bsp.new INPUT_FIR();
 			capturedInputFIR.SetFIRHandle(capturedFIRHandle);
 			
-			Integer nivelSeguranca = getConfigurationValueAsInteger("Nível de segurança do reconhecimento");
-			if (nivelSeguranca == 0)
+			Integer nivelSeguranca = getConfigurationValueAsInteger("NÃ­vel de seguranÃ§a do reconhecimento");
+			if (nivelSeguranca == 0) {
 				nivelSeguranca = 6;
+			}
 			
+			
+			int nMaxSearchTime = 500;
 			NBioBSPJNI.IndexSearch.FP_INFO fpInfo = indexSearchEngine.new FP_INFO();
-			indexSearchEngine.Identify(capturedInputFIR, nivelSeguranca, fpInfo);
+			indexSearchEngine.Identify(capturedInputFIR, nivelSeguranca, fpInfo, nMaxSearchTime);
 			
 			if (bsp.IsErrorOccured()) {
 				System.out.println(sdf.format(new Date()) + "  Erro no IndexSearch: " + bsp.GetErrorCode());
 				if (bsp.GetErrorCode() == NBioBSPJNI.ERROR.NBioAPIERROR_INDEXSEARCH_IDENTIFY_FAIL)  {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital não encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital nÃ£o encontrada.", NotificationType.BAD);
 				
 				} else {
 					verificationResult = VerificationResult.ERROR;
 					if (createNotification)
-						Utils.createNotification("Erro na verificação. Código: " + bsp.GetErrorCode(), NotificationType.BAD);
+						Utils.createNotification("Erro na verificaÃ§Ã£o. CÃ³digo: " + bsp.GetErrorCode(), NotificationType.BAD);
 				}
 				
 			} else {
@@ -384,7 +400,7 @@ public class NitgenDevice extends Device {
 				else {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital não encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital nÃ£o encontrada.", NotificationType.BAD);
 				}
 			}
 			
@@ -392,7 +408,7 @@ public class NitgenDevice extends Device {
 			e.printStackTrace();
 			verificationResult = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Erro na verificação", NotificationType.BAD);
+				Utils.createNotification("Erro na verificaÃ§Ã£o", NotificationType.BAD);
 		}
 	}
 
@@ -409,7 +425,7 @@ public class NitgenDevice extends Device {
 	@Override
 	public String removeUser(PedestrianAccessEntity athleteAccessEntity) {
 		
-		//atualizar catracas envolvidas, quando necessário.
+		//atualizar catracas envolvidas, quando necessï¿½rio.
 		for (Device d : Main.devicesList) {
 			if(d instanceof TopDataDevice
 					&& d.isConnected()) {
@@ -444,35 +460,56 @@ public class NitgenDevice extends Device {
 		if (DeviceMode.ENROLLMENT.equals(mode))
 			return;
 		
+		if (validando)
+			return;
+		
 		indexSearchEngine = bsp.new IndexSearch();
 		indexSearchEngine.ClearDB();
 		
-        List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateUtil.getResultList(TemplateEntity.class, "TemplateEntity.findAllComplete");
+        List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateUtil.getResultList(TemplateEntity.class, "TemplateEntity.findAllNaoRemovido");
 		if (templatesList != null && !templatesList.isEmpty()) {
+			int count = 0;
+			System.out.println("tamanho do template list " + templatesList.size());
 			for (TemplateEntity templateEntity : templatesList) {
-				if (templateEntity.getTemplate().length == 404) { // considera apenas templates Nitgen
+				
+				if (templateEntity.getTemplate().length != 404) { // Insere apenas templates Nitgen
+					continue;
+				}
+				
+				String template = Base64.encodeBase64String(templateEntity.getTemplate());
+				if (!template.contains("AAAAAAAAAAAA")) {
 					addTemplateToIndexSearch(templateEntity);
+				
+				} else {
+					System.out.println("Tem AAAAA");
 				}
 			}
+			System.out.println("Quantas biometrias foram inseridas " + count);
 		}
 	}
 	
 	private void addTemplateToIndexSearch(TemplateEntity templateEntity) {
-    	try {
-    		int exportType = NBioBSPJNI.EXPORT_MINCONV_TYPE.FIM01_HV;
-    		INPUT_FIR storedInputFIR = bsp.new INPUT_FIR();
-    		FIR_HANDLE storedFIRHandle = bsp.new FIR_HANDLE();
-    		export.ImportFIR(templateEntity.getTemplate(), templateEntity.getTemplate().length, exportType, 
-    				NBioBSPJNI.FIR_PURPOSE.IDENTIFY, storedFIRHandle);
-            storedInputFIR.SetFIRHandle(storedFIRHandle);
-    		indexSearchEngine.AddFIR(storedInputFIR, templateEntity.getId().intValue(), indexSearchEngine.new SAMPLE_INFO());
-    		if (bsp.IsErrorOccured()) {
-    			System.out.println("Erro ao adicionar template na IndexSearchEngine. Erro: " + bsp.GetErrorCode());
-    		}
-		
-    	} catch (Exception e) {
+		try {
+			int exportType = NBioBSPJNI.EXPORT_MINCONV_TYPE.FIM01_HV;
+			INPUT_FIR storedInputFIR = bsp.new INPUT_FIR();
+			FIR_HANDLE storedFIRHandle = bsp.new FIR_HANDLE();
+			NBioBSPJNI.Export export = bsp.new Export();
+			
+			if(templateEntity != null) {
+				export.ImportFIR(templateEntity.getTemplate(), templateEntity.getTemplate().length, exportType,
+						NBioBSPJNI.FIR_PURPOSE.IDENTIFY, storedFIRHandle);
+				storedInputFIR.SetFIRHandle(storedFIRHandle);
+				indexSearchEngine.AddFIR(storedInputFIR, templateEntity.getId().intValue(),
+						indexSearchEngine.new SAMPLE_INFO());
+			}
+			
+			if (bsp.IsErrorOccured()) {
+				System.out.println("Erro ao adicionar template na IndexSearchEngine. Erro: " + bsp.GetErrorCode());
+			}
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-    }
+	}
 
 }

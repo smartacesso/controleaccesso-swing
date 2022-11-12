@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -78,12 +79,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.AllowedTimeEntity;
 import com.protreino.services.entity.ConfigurationEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.EmpresaEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianMessagesEntity;
 import com.protreino.services.entity.PreferenceEntity;
@@ -370,6 +373,10 @@ public class Utils {
 				"enableCardAcessClear", "Habilita 'baixa' automática de cartões", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, 
 				"enableDirectionClear", "Habilita reset de direções registradas pelos pedestres", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, 
+				"enableCardReset", "Habilita reset status de cartão/comanda", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, 
+				"enableOfflineCard", "Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
 		
 		
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
@@ -461,6 +468,8 @@ public class Utils {
 				"maxTimeForFaceCapturing", "Tempo máximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER,
 				"serverRecognizerIP", "Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, 
+				"cardMaster", "Definir número do cartão Master", FieldType.TEXT, "0", true, 10));
 		
 		
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
@@ -772,7 +781,7 @@ public class Utils {
 		messageContainer.add(Box.createVerticalGlue());
 		
 		ImageIcon logoImageIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(Main.class.
-				getResource(Constants.IMAGE_FOLDER + "comuns/" + type.getIconName())));
+				getResource(Configurations.IMAGE_FOLDER + "comuns/" + type.getIconName())));
 		JPanel notificationContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		notificationContainer.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		notificationContainer.setOpaque(false);
@@ -860,7 +869,7 @@ public class Utils {
 		String version = "";
 		try {
 			String bufferedString;
-			URL url = new URL(Constants.URL_APPLICATION + "/restful-services/biometric/version");
+			URL url = new URL(Configurations.URL_APPLICATION + "/restful-services/biometric/version");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			if (con.getResponseCode() == 200) {
 				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -902,7 +911,7 @@ public class Utils {
 	public static String whatIsMyIp() {
 		String ip = "";
 		try {
-			URL whatismyip = new URL(Constants.WIP_SITE);
+			URL whatismyip = new URL(Configurations.WIP_SITE);
 			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
 			ip = in.readLine();
 		}
@@ -1378,7 +1387,7 @@ public class Utils {
 			g1.drawImage(originalImage, 0, 0, sizeImage, sizeImage, null);
 			g1.dispose();
 			BufferedImage icon = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/" + type.getSmallIconName()));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/" + type.getSmallIconName()));
 			int sizeIcon = icon.getWidth();
 			Graphics2D g2 = clipedImage.createGraphics();
 			g2.drawImage(clipedImage, 0, 0, sizeImage, sizeImage, null);
@@ -1433,6 +1442,15 @@ public class Utils {
 		return formattedTextField;
 	}
 	
+	public static String maxlength(String str, int lenght) {
+	        String valor = "";
+	        if(str.length() > lenght){
+	        valor = str.substring(0,lenght);
+	            str = valor;
+	        }
+	    return str;
+	} 
+	
 	public static MaskFormatter getNewMaskFormatter(String mask) {
 		MaskFormatter mascara = null;
 		try {
@@ -1473,13 +1491,19 @@ public class Utils {
 	}
 	
 	public static void decrementaCreditos(PedestrianAccessEntity pedestre) {
+		if(pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
+			return;
+		}
+		
 		if("VISITANTE".equals(pedestre.getTipo())) {
 			if(pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) {
 				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
 				if(pedestre.getQuantidadeCreditos() <= 0)
 					pedestre.setCardNumber(null);
-			} else
+			} else {
+				pedestre.setQuantidadeCreditos(null);
 				pedestre.setCardNumber(null);
+			}
 
 		} else {
 			if(pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0)
@@ -1488,12 +1512,53 @@ public class Utils {
 		}
 	}
 	
+	public static boolean pedestreTemRegraDeAcessoPorPeriodoValido(PedestrianAccessEntity pedestre) {
+		if (pedestre.getPedestreRegra() == null || pedestre.getPedestreRegra().isEmpty()) {
+			return false;
+		}
+		
+		for(PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
+			if(isRegraDeAcessoValida(pedestreRegra.getDataInicioPeriodo(), pedestreRegra.getDataFimPeriodo(), pedestreRegra.getValidade())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private static boolean isRegraDeAcessoValida(Date dataInicioPeriodo, Date dataFimPeriodo, Date validade) {
+		if(dataInicioPeriodo == null || dataFimPeriodo == null) {
+			return false;
+		}
+		
+		Date dataAtual = new Date();
+		return dataInicioPeriodo.compareTo(dataAtual) >= 0 
+				&& dataFimPeriodo.compareTo(dataAtual) <= 0 
+				&& validade != null ? validade.compareTo(dataAtual) <= 0 : true;
+	}
+	
 	public static void decrementaMensagens(List<PedestrianMessagesEntity> messages) {
 		for(PedestrianMessagesEntity message : messages) {
 			if(message.getQuantidade() > 0) {
 				message.setQuantidade(message.getQuantidade() - 1);
 			}
 		}
+	}
+	
+	public static void decrementaQRCodeUso(PedestrianAccessEntity pedestre) {
+		
+		if(pedestre.getQrCodeParaAcesso() != null 
+				&& pedestre.getQrCodeParaAcesso().startsWith("U_")){
+			String [] parts = pedestre.getQrCodeParaAcesso().split("_");
+			Long usos = Long.valueOf(parts[parts.length-1]);
+			usos++;
+			
+			pedestre.setQrCodeParaAcesso("U_"+EncryptionUtils.getRandomString(4)+"_"+usos);
+			pedestre.setEditadoNoDesktop(true);
+			pedestre.setDataAlteracao(new Date());
+			
+		}
+		
 	}
 	
 	public static void enviaSmsDeRegistro(PedestrianAccessEntity pedestre) {
@@ -1598,10 +1663,53 @@ public class Utils {
 		return null;
 	}
 	
+	
+	
+	//colocar conversor de ABATRACK para WIGAN aqui como estático
+	
+	public static String toHEX (String Cartao) {
+		
+		try {
+		
+			long longAbatrack = Long.parseLong(Cartao);
+			long fclong = Long.parseLong(Cartao);
+			String hexAbatrack = Long.toHexString(longAbatrack);
+			String hexWigan = hexAbatrack.substring(hexAbatrack.length()-4);
+//			olhar a posição pegar exatamente o mesmo if
+			String fcWiegand = "";
+			String temp = "";
+			fcWiegand = hexAbatrack.substring(hexAbatrack.length()-6);
+			temp += fcWiegand.charAt(0);
+			temp += fcWiegand.charAt(1);
+			longAbatrack  = new BigInteger(hexWigan, 16).longValue();
+			fclong  = new BigInteger(temp, 16).longValue();
+			String wiegand = String.valueOf(longAbatrack);
+			String fcwiegand = String.valueOf(fclong);
+			String fcwiegandtg = fcwiegand+wiegand;
+	        return fcwiegandtg;
+	       
+		}catch (Exception e) {
+			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
+			return Cartao;
+		}
+		
+	}
+	
 	public static void main(String [] args) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
-		System.out.println(sdf.format(new Date()));
+		String aux = "1040991";
+		String temp = "";
+		for (int i = 0; i< aux.length(); i++) {
+			if (!aux.substring(i, i + 1).equals("0")) {
+				temp += aux.substring(i, aux.length());
+				break;
+			}
+		}
+		System.out.println(" o que é cartão " + temp);
 	}
+
+
+	
 	
 	
 	

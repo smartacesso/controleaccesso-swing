@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.protreino.services.devices.ComputerIdDevice;
+import com.protreino.services.devices.ControlIDUHFDevice;
 import com.protreino.services.devices.ControlIdDevice;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
@@ -12,6 +13,7 @@ import com.protreino.services.devices.NitgenDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.devices.TopDataAcessoDevice;
 import com.protreino.services.devices.TopDataDevice;
+import com.protreino.services.devices.TopDataExpedidoraDevice;
 import com.protreino.services.devices.UsbDevice;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.to.FieldTO;
@@ -24,10 +26,12 @@ public enum Manufacturer {
 	PROVEU,
 	TOP_DATA,
 	TOP_DATA_ACESSO,
+	TOP_DATA_EXPEDIDORA,
 	HENRY_8X,
 	HENRY_7X,
 	TECNIBRA,
 	CONTROL_ID,
+	CONTROL_ID_UHF,
 	RWTECH,
 	COMM,
 	USB,
@@ -49,6 +53,8 @@ public enum Manufacturer {
 			return "TopData Catraca";
 		if (this.equals(TOP_DATA_ACESSO))
 			return "TopData Acesso";
+		if (this.equals(TOP_DATA_EXPEDIDORA))
+			return "TopData Expedidora";
 		if (this.equals(HENRY_8X))
 			return "Henry 8X";
 		if (this.equals(HENRY_7X))
@@ -57,6 +63,8 @@ public enum Manufacturer {
 			return "Tecnibra";
 		if (this.equals(CONTROL_ID))
 			return "Control ID";
+		if (this.equals(CONTROL_ID_UHF))
+			return "Control ID Antena UHF";
 		if (this.equals(RWTECH))
 			return "RWTech";
 		if (this.equals(COMM))
@@ -87,6 +95,8 @@ public enum Manufacturer {
 			return Manufacturer.TOP_DATA;
 		if ("TopData Acesso".equals(string))
 			return Manufacturer.TOP_DATA_ACESSO;
+		if ("TopData Expedidora".equals(string))
+			return Manufacturer.TOP_DATA_EXPEDIDORA;
 		if ("Henry 8X".equals(string))
 			return Manufacturer.HENRY_8X;
 		if ("Henry 7X".equals(string))
@@ -95,6 +105,8 @@ public enum Manufacturer {
 			return Manufacturer.TECNIBRA;
 		if ("Control ID".equals(string))
 			return Manufacturer.CONTROL_ID;
+		if ("Control ID Antena UHF".equals(string))
+			return Manufacturer.CONTROL_ID_UHF;
 		if ("RWTech".equals(string))
 			return Manufacturer.RWTECH;
 		if ("COMM".equals(string))
@@ -117,7 +129,7 @@ public enum Manufacturer {
 	}
 	
 	public Boolean useLogin(){
-		if (this.equals(CONTROL_ID))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
 			return true;
 		else
 			return false;
@@ -125,7 +137,7 @@ public enum Manufacturer {
 	
 	public Boolean usePassword(){
 		// A senha da Proveu é definida nas configuracoes da catraca
-		if (this.equals(CONTROL_ID))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
 			return true;
 		else
 			return false;
@@ -153,6 +165,8 @@ public enum Manufacturer {
 			return "catraca_topdata.png";
 		if (this.equals(TOP_DATA_ACESSO))
 			return "acesso_topdata_inner1.gif";
+		if (this.equals(TOP_DATA_EXPEDIDORA))
+			return "acesso_topdata_expedidora.png";
 		if (this.equals(HENRY_8X))
 			return "catraca_henry.png";
 		if (this.equals(HENRY_7X))
@@ -161,6 +175,8 @@ public enum Manufacturer {
 			return "catraca_tecnibra.png";
 		if (this.equals(CONTROL_ID))
 			return "catraca_control_id.png";
+		if (this.equals(CONTROL_ID_UHF))
+			return "antena_control_id_uhf.png";
 		if (this.equals(RWTECH))
 			return "catraca_rwtech.png";
 		if (this.equals(NITGEN))
@@ -191,14 +207,17 @@ public enum Manufacturer {
 			return new TopDataDevice(deviceEntity);
 		if (this.equals(TOP_DATA_ACESSO))
 			return new TopDataAcessoDevice(deviceEntity);
+		if (this.equals(TOP_DATA_EXPEDIDORA))
+			return new TopDataExpedidoraDevice(deviceEntity);
 		//if (this.equals(HENRY_8X))
 		//	return new Henry8XDevice(deviceEntity);
 		//if (this.equals(HENRY_7X))
-		//	return new Henry7XDevice(deviceEntity);
 		//if (this.equals(TECNIBRA))
 		//	return new TecnibraDevice(deviceEntity);
 		if (this.equals(CONTROL_ID))
 			return new ControlIdDevice(deviceEntity);
+		if (this.equals(CONTROL_ID_UHF))
+			return new ControlIDUHFDevice(deviceEntity);
 		//if (this.equals(RWTECH))
 		//	return new RWTechDevice(deviceEntity);
 		//if (this.equals(COMM))
@@ -229,6 +248,8 @@ public enum Manufacturer {
 			return new TopDataDevice(identifier);
 		if (this.equals(TOP_DATA_ACESSO))
 			return new TopDataAcessoDevice(identifier);
+		if (this.equals(TOP_DATA_EXPEDIDORA))
+			return new TopDataExpedidoraDevice(identifier);
 		//if (this.equals(HENRY_8X))
 		//	return new Henry8XDevice(identifier);
 		//if (this.equals(HENRY_7X))
@@ -237,6 +258,8 @@ public enum Manufacturer {
 		//	return new TecnibraDevice(identifier);
 		if (this.equals(CONTROL_ID))
 			return new ControlIdDevice(identifier);
+		if (this.equals(CONTROL_ID_UHF))
+			return new ControlIDUHFDevice(identifier);
 		//if (this.equals(RWTECH))
 		//	return new RWTechDevice(identifier);
 		//if (this.equals(COMM))
@@ -268,9 +291,13 @@ public enum Manufacturer {
 				|| this.equals(NITGEN)) {
 			return null;
 		
-		} else if (this.equals(TOP_DATA) || this.equals(TOP_DATA_ACESSO)){
+		} else if (this.equals(TOP_DATA) || this.equals(TOP_DATA_ACESSO) || this.equals(TOP_DATA_EXPEDIDORA)){
 			fields.add(new FieldTO("Número do inner", FieldType.TEXT, "1"));
 			fields.add(new FieldTO("Número da porta", FieldType.TEXT, "3570"));
+			if(this.equals(TOP_DATA_EXPEDIDORA)) {
+				String[] opcoes = {"ENTRADA", "SAIDA"};
+				fields.add(new FieldTO("Selecione o tipo", FieldType.COMBOBOX, null, opcoes));
+			}
 		
 		} else if (this.equals(HENRY_8X) || this.equals(HENRY_7X)){
 			fields.add(new FieldTO("Número IP do dispositivo", FieldType.TEXT, "192.168.0.200"));
@@ -281,7 +308,7 @@ public enum Manufacturer {
 			fields.add(new FieldTO("Número da porta", FieldType.TEXT, "2051"));
 			fields.add(new FieldTO("Número do terminal", FieldType.TEXT, "01"));
 		
-		} else if (this.equals(CONTROL_ID)){
+		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF)){
 			fields.add(new FieldTO("Número IP do dispositivo", FieldType.TEXT, "192.168.100.200"));
 			fields.add(new FieldTO("Ip deste computador", FieldType.COMBOBOX, null, Utils.getAllLocalIps()));
 			fields.add(new FieldTO("Número da porta deste computador", FieldType.TEXT, "2050"));
@@ -347,7 +374,7 @@ public enum Manufacturer {
 	 * @return
 	 */
 	public Boolean isRegistrationProcessStartedOnDevice(){
-		if (this.equals(CONTROL_ID))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
 			return false;
 		if (this.equals(RWTECH))
 			return false;

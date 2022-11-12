@@ -39,8 +39,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import org.apache.commons.codec.binary.Base64;
+
+import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.ComputerIdDevice;
 import com.protreino.services.devices.Device;
+import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.BiometricEntity;
@@ -52,7 +56,6 @@ import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.BroadcastMessageTO;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
@@ -89,6 +92,7 @@ public class BiometricDialog extends JDialog{
 		this.acesso = acesso;
 		this.instance = this;
 		this.sampleCount = device.getManufacturer().getSamplesCount();
+		Main.isCadastrandoBiometria = true;
 		
 		loadImages();
 		
@@ -211,6 +215,7 @@ public class BiometricDialog extends JDialog{
 		addWindowListener(new WindowAdapter() {
 		    @Override
 		    public void windowClosed(WindowEvent e) {
+		    	Main.isCadastrandoBiometria = false;
 		    	if (selectedDevice != null) {
 		    		selectedDevice.setBiometricDialog(null);
 		    		selectedDevice.setMode(DeviceMode.VERIFICATION);
@@ -221,7 +226,10 @@ public class BiometricDialog extends JDialog{
 		pack();
 	}
 	
+
+	
 	public void showScreen() {
+		Main.isCadastrandoBiometria = true;
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
@@ -261,33 +269,39 @@ public class BiometricDialog extends JDialog{
 		dispose();
 	}
 	
-	public void finishCollect(byte[] template) {
+	public void saveTemplates(byte[] template) {
+		//antes de salvar, verifica se o pedestre está correto
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
+		if(pedestre != null) {
+			acesso = pedestre;			
+		}
+		
+		// Cria e salva uma BiometricEntity para ser enviada para o servidor
+		biometry = new BiometricEntity();
+		biometry.setUser(acesso.getId());
+		biometry.setUserName(acesso.getName());
+		biometry.setFinger(Finger.valueFromImport((String) fingerComboBox.getSelectedItem()));
+		biometry.setTemplate(template);
+		biometry.setSample(imageSample);
+		HibernateUtil.save(BiometricEntity.class, biometry);
+		
+		// salva o template
+		templateEntity = new TemplateEntity();
+		templateEntity.setPedestrianAccess(acesso);
+		templateEntity.setTemplate(template);
+		templateEntity.setLocal(true);
+		templateEntity.setManufacturer(selectedDevice.getManufacturer());
+		templateEntity = (TemplateEntity) HibernateUtil.save(TemplateEntity.class, templateEntity)[0];
+		
+		acesso.setDataAlteracao(new Date());
+		acesso = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, acesso)[0];
+	}
+	
+	public void finishCollect() {
 		try {
 			sampleLabel.setIcon(sampleCollectedImageIcon);
 			updateSamplesCount(sampleCount);
 			selectedDevice.setMode(DeviceMode.VERIFICATION);
-			
-			//antes de salvar, verifica se o pedestre está correto
-			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
-			if(pedestre != null)
-				acesso = pedestre;
-			
-			// Cria e salva uma BiometricEntity para ser enviada para o servidor
-			biometry = new BiometricEntity();
-			biometry.setUser(acesso.getId());
-			biometry.setUserName(acesso.getName());
-			biometry.setFinger(Finger.valueFromImport((String) fingerComboBox.getSelectedItem()));
-			biometry.setTemplate(template);
-			biometry.setSample(imageSample);
-			HibernateUtil.save(BiometricEntity.class, biometry);
-			
-			// salva o template
-			templateEntity = new TemplateEntity();
-			templateEntity.setPedestrianAccess(acesso);
-			templateEntity.setTemplate(template);
-			templateEntity.setLocal(true);
-			templateEntity.setManufacturer(selectedDevice.getManufacturer());
-			templateEntity = (TemplateEntity) HibernateUtil.save(TemplateEntity.class, templateEntity)[0];
 			
 			// adiciona ao templateDatabase (banco de templates na memoria)
 			if (Manufacturer.COMPUTER_ID.equals(selectedDevice.getManufacturer())) {
@@ -299,9 +313,8 @@ public class BiometricDialog extends JDialog{
 						computerIdDevice.addTemplateToTemplateDatabase(templateEntity);
 					}
 				}
-			}
-			
-			if (Manufacturer.NITGEN.equals(selectedDevice.getManufacturer())) {
+
+			} else if (Manufacturer.NITGEN.equals(selectedDevice.getManufacturer())) {
 				//adicionar também nas outras catracas conectadas
 				for(Device device : Main.devicesList) {
 					if(device != null && device instanceof TopDataDevice) {
@@ -313,9 +326,29 @@ public class BiometricDialog extends JDialog{
 								"   Enviando template para indexSearch do Inner "+topDataDevice.getInnerNumber()+"...");
 							topDataDevice.addTemplateToIndexSearch(templateEntity);
 							Thread.sleep(1000);
-						}else if(device.isConnected()){
+						} else if(device.isConnected()) {
 							//para digitais na catraca e que tenham espelhamento
-							topDataDevice.insereDigitalInner(true, acesso);
+							if(topDataDevice.modeloLC) {
+								
+								byte[] template1 = new byte[502];
+								byte[] template2 = new byte[502];
+								
+								//cadastra usuário
+								if(templateEntity.getTemplate().length > 502) {
+									//proveniente do leitor
+									LcDevice.extracTopDataTemplate(templateEntity.getTemplate(), 
+											template1, template2);
+									String tStr = Base64.encodeBase64String(template2);
+									//verificar se segunda está vazia
+									if(tStr.startsWith("AAAQAAAAAAAAAAA") || tStr.startsWith("AAAAAAAAAAAAA")) {
+										template2 = null;
+									}
+								}
+								
+								topDataDevice.insereUserLC(acesso.getId(), template1, template2);
+							} else {
+								topDataDevice.insereDigitalInner(true, acesso);
+							}
 						}
 					}
 				}
@@ -323,8 +356,9 @@ public class BiometricDialog extends JDialog{
 			
 			// envia o template via broadcast
 			TemplateEntity temp = new TemplateEntity(templateEntity);
-			if (Main.broadcastServer != null)
+			if (Main.broadcastServer != null) {
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.NEW_TEMPLATE, temp));
+			}
 			
 			JOptionPane.showMessageDialog(this, "Biometria cadastrada com sucesso!", "Coleta concluída", JOptionPane.PLAIN_MESSAGE);
 			dispose();
@@ -380,15 +414,15 @@ public class BiometricDialog extends JDialog{
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			Image sampleNoneImage = toolkit.getImage(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/sample_none.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/sample_none.png"));
 			sampleNoneImageIcon = new ImageIcon(sampleNoneImage);
 			
 			BufferedImage mascara = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/sample_collected_mask.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/sample_collected_mask.png"));
 			sampleCollectedImageIcon = new ImageIcon(Utils.paintImage(mascara, Main.secondColor, 120, 150));
 			
 			mascara = ImageIO.read(Main.class.
-					getResource(Constants.IMAGE_FOLDER + "comuns/sample_overlay_mask.png"));
+					getResource(Configurations.IMAGE_FOLDER + "comuns/sample_overlay_mask.png"));
 			sampleOverlay = Utils.paintImage(mascara, Main.secondColor, 120, 150);
 			
 			BufferedImage sampleCombined = new BufferedImage(120, 150, BufferedImage.TYPE_INT_ARGB);

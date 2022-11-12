@@ -1,6 +1,5 @@
 package com.protreino.services.screens;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Vector;
 
@@ -32,7 +30,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,39 +37,39 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
-public class AccessListPanel extends JPanel {
+public class AccessListPanel extends PaginedListPanel {
 
-	private JLabel countLabel;
-	
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Código", "Cartão", "Nome", "Tipo", "Status", "Regra", "Liberar acesso"};
-	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105};
+	private String[] columns = {"CÃ³digo", "CartÃ£o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
+	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
 	private JTextField filtroCartaoTextField;
 	private JTextField filtroNomeTextField;
 	private JComboBox<SelectItem> filtroTipoJComboBox;
+	private List<UserEntity> usuarioDoSistema;
 
 	private JButton cleanButton;
+	private JButton searchButton;
 	private JButton syncButton;
 	private HashMap<String, Object> args;
 	private List<Integer> colunasComLink;
 	private JLabel dateLastSync;
+	
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 	
 	public AccessListPanel(){
@@ -88,7 +85,7 @@ public class AccessListPanel extends JPanel {
 		
 		JPanel filtroIdPanel= new JPanel();
 		filtroIdPanel.setLayout(new BoxLayout(filtroIdPanel, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("Código");
+		JLabel filtroIdLabel = new JLabel("CÃ³digo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdPanel.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 8);
@@ -98,7 +95,7 @@ public class AccessListPanel extends JPanel {
 		
 		JPanel filtroCartaoPanel= new JPanel();
 		filtroCartaoPanel.setLayout(new BoxLayout(filtroCartaoPanel, BoxLayout.Y_AXIS));
-		JLabel filtroCartaoLabel = new JLabel("Cartão");
+		JLabel filtroCartaoLabel = new JLabel("CartÃ£o");
 		filtroCartaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoLabel);
 		filtroCartaoTextField = new JTextField("", 8);
@@ -138,8 +135,14 @@ public class AccessListPanel extends JPanel {
 		cleanButtonPanel.add(new JLabel(" "));
 		cleanButtonPanel.add(cleanButton);
 		
+		JPanel searchButtonPanel= new JPanel();
+		searchButtonPanel.setLayout(new BoxLayout(searchButtonPanel, BoxLayout.Y_AXIS));
+		searchButton = new JButton("Pesquisar");
+		searchButtonPanel.add(new JLabel(" "));
+		searchButtonPanel.add(searchButton);
+		
 		JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		filterPanel.setMaximumSize(new Dimension(10000, 40));
+		filterPanel.setMaximumSize(new Dimension(10000, 150));
 		filterPanel.add(filtroIdPanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
 		filterPanel.add(filtroCartaoPanel);
@@ -149,6 +152,8 @@ public class AccessListPanel extends JPanel {
 		filterPanel.add(filtroTipoPanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
 		filterPanel.add(cleanButtonPanel);
+		filterPanel.add(Box.createHorizontalStrut(10));
+		filterPanel.add(searchButtonPanel);
 		
 		JPanel accessListTablePanel = new JPanel();
 		accessListTablePanel.setLayout(new BoxLayout(accessListTablePanel, BoxLayout.Y_AXIS));
@@ -172,22 +177,21 @@ public class AccessListPanel extends JPanel {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		accessListTablePanel.add(scrollPane);
 		
-		countLabel = new JLabel("Número de registros: ");
 		dateLastSync = new JLabel(" ");
 		syncButton = new JButton("Atualizar lista com o servidor");
 		syncButton.setBorder(new EmptyBorder(10,15,10,15));
-		syncButton.setPreferredSize(new Dimension(200, 40));
-
+		syncButton.setPreferredSize(new Dimension(180, 40));
+		
+		JPanel paginatorPanel = createPaginatorControls();
 		
 		JPanel statusPanel = new JPanel();
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 		statusPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-		statusPanel.add(countLabel);
+		statusPanel.add(paginatorPanel);
 		statusPanel.add(Box.createHorizontalGlue());
 		statusPanel.add(dateLastSync);
 		statusPanel.add(Box.createHorizontalStrut(10));
 		statusPanel.add(syncButton);
-		statusPanel.add(Box.createHorizontalStrut(10));
 		
 		updateDateLastSync();
 		
@@ -207,41 +211,33 @@ public class AccessListPanel extends JPanel {
 		
 		syncButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				sync();
+				Main.syncAthleteAccessList();
 			}
 		});
 		
-		DocumentListener documentListener = new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				warn();
-			}
-			public void warn() {
+		ActionListener search = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				filterList();
 			}
 		};
 		
-		filtroIdTextField.getDocument().addDocumentListener(documentListener);
-		filtroCartaoTextField.getDocument().addDocumentListener(documentListener);
-		filtroNomeTextField.getDocument().addDocumentListener(documentListener);
+		searchButton.addActionListener(search);
+		filtroIdTextField.addActionListener(search);
+		filtroCartaoTextField.addActionListener(search);
+		filtroNomeTextField.addActionListener(search);
 		filtroTipoJComboBox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				filterList();
 			}
-			
-		}); // getDocument().addDocumentListener(documentListener);
+		});
 		
 	}
-	
+
 	
 	@SuppressWarnings("unchecked")
 	private void filterList() {
+		
 		args = new HashMap<>();
 		args.put("removido", false);
 		
@@ -269,48 +265,79 @@ public class AccessListPanel extends JPanel {
 			args.remove("tipo");
 		}
 		
-		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
-				  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo) ";
+		paginaAtual = 1;
+		inicioPagina = 0;
+		totalRegistros =  HibernateUtil.
+				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
 		
-		List<PedestrianAccessEntity> listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, "name", args);
+		executeFilter();
 		
-		populateTable(listaAcesso);
 	}
-	
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void executeFilter() {
+		
+		calculaTamanhoPaginas();
+		
+		if(args == null)
+			args = new HashMap<>();
+		args.put("removido", false);
+		
+		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
+				  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
+				  + "obj.idUsuario) ";
+//		fazer isso no hibernate utils
+		
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
+				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, "name", args, inicioPagina, registrosPorPagina);
+		if(usuarioDoSistema == null || usuarioDoSistema.isEmpty()) {
+			usuarioDoSistema = (List<UserEntity>) HibernateUtil.getResultList(UserEntity.class, "UserEntity.findAll");
+		}
+		for(PedestrianAccessEntity pedestre  : listaAcesso) {
+			if(pedestre.getIdUsuario() == null)
+				continue;
+			for(UserEntity user : usuarioDoSistema) {
+				if(pedestre.getIdUsuario().equals(user.getId())) {
+					pedestre.setNomeUuarioQueCriou(user.getLoginName());
+
+					break;
+				}
+			}
+		}
+		populateTable(listaAcesso);
+		
+		paginatorControl();
+		
+	}
+
 	@SuppressWarnings("unchecked")
 	public void cleanFilter(){
+		
 		args = new HashMap<String, Object>();
 		filtroIdTextField.setText("");
 		filtroCartaoTextField.setText("");
 		filtroNomeTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
+		
+		totalRegistros =  HibernateUtil.
+				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
+		
+		//calcula pï¿½ginas
+		calculaTamanhoPaginas();
+		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-				getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList");
+				getResultListLimited(PedestrianAccessEntity.class, 
+						"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
 		
 		if(Main.internoLoggedUser != null)
 			colunasComLink.add(2);
 		populateTable(listaAcesso);
+		
+		paginatorControl();
+		
 	}
-	
-	public void sync(){
-		try {
-			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			if (!Main.updatingAthleteAccessList) {
-				Main.syncAthleteAccessList();
-				while (Main.updatingAthleteAccessList)
-					Thread.sleep(100);
-				cleanFilter();
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		}
-	}
-	
 	
 	private void populateTable(List<PedestrianAccessEntity> listaAcesso){
 		DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {
@@ -321,7 +348,7 @@ public class AccessListPanel extends JPanel {
 		if (listaAcesso != null && !listaAcesso.isEmpty()){
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (PedestrianAccessEntity acesso : listaAcesso) {
-				Object[] obj = new Object[7];
+				Object[] obj = new Object[8];
 				obj[0] = acesso.getId();
 				obj[1] = (acesso.getCardNumber() != null && !"".equals(acesso.getCardNumber())) ? acesso.getCardNumber() : "-";
 				obj[2] = acesso.getName();
@@ -329,12 +356,14 @@ public class AccessListPanel extends JPanel {
 				obj[4] = "ATIVO".equals(acesso.getStatus()) ? "LIBERADO" : "BLOQUEADO";
 				obj[5] =  montaLiberado(acesso); //TODO : vericar quantidade de acessos
 				obj[6] = "LIBERAR ACESSO";
+				obj[7] = acesso.getNomeUuarioQueCriou();
 				dataModel.addRow(obj);
 			}
 		}
 		accessListTable.setModel(dataModel);
-		int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
-		countLabel.setText("Número de registros: " + numAcessos);
+		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
+		//countLabel.setText("Total: " + numAcessos);
+		countLabel.setText("PÃ¡g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -344,26 +373,26 @@ public class AccessListPanel extends JPanel {
 		
 		if("VISITANTE".equals(acesso.getTipo())) {
 			//visitante
-			texto = acesso.getCardNumber() == null ? "--" : "Acesso único";
+			texto = acesso.getCardNumber() == null ? "--" : "Acesso Ãºnico";
 			if(acesso.getQuantidadeCreditos() != null && acesso.getQuantidadeCreditos() > 1l) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crÃ©ditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			}
 		} else{
 			
 			//pedestre
 			if(acesso.getQuantidadeCreditos() != null) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crÃ©ditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			} else if(acesso.getValidadeCreditos() != null) {
 				texto += new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			}
 			
 			if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -374,33 +403,39 @@ public class AccessListPanel extends JPanel {
 	}
 
 	private void formatTable(){
-		UrlRenderer urlRenderer = new UrlRenderer();
+		UrlRenderer urlRenderer = new UrlRenderer(colunasComLink);
 		urlRenderer.setHorizontalAlignment(JLabel.CENTER);
-		ActionRenderer actionRenderer = new ActionRenderer();
+		ActionRenderer actionRenderer = new ActionRenderer(colunasComLink);
 		actionRenderer.setHorizontalAlignment(JLabel.CENTER);
 		EditVisitanteRenderer editVisitanteRenderer = null;
 		if(Main.internoLoggedUser != null) {
-			editVisitanteRenderer = new EditVisitanteRenderer();
+			editVisitanteRenderer = new EditVisitanteRenderer(colunasComLink);
 			editVisitanteRenderer.setHorizontalAlignment(JLabel.CENTER);
 		}
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 		
-		while (accessListTable.getMouseListeners().length > 2)
+		while (accessListTable.getMouseListeners().length > 2) {
 			accessListTable.removeMouseListener(accessListTable.
-					getMouseListeners()[accessListTable.getMouseListeners().length-1]);
+					getMouseListeners()[accessListTable.getMouseListeners().length-1]);			
+		}
 		
-		if(Main.internoLoggedUser != null)
-			accessListTable.addMouseListener(editVisitanteRenderer);
+		if(Main.internoLoggedUser != null) {
+			accessListTable.addMouseListener(editVisitanteRenderer);			
+		}
+		
 		accessListTable.addMouseListener(urlRenderer);
 		accessListTable.addMouseListener(actionRenderer);
 
-		while (accessListTable.getMouseMotionListeners().length > 2)
+		while (accessListTable.getMouseMotionListeners().length > 2) {
 			accessListTable.removeMouseMotionListener(accessListTable.
-					getMouseMotionListeners()[accessListTable.getMouseMotionListeners().length-1]);
+					getMouseMotionListeners()[accessListTable.getMouseMotionListeners().length-1]);			
+		}
 		
-		if(Main.internoLoggedUser != null)
-			accessListTable.addMouseMotionListener(editVisitanteRenderer);
+		if(Main.internoLoggedUser != null) {
+			accessListTable.addMouseMotionListener(editVisitanteRenderer);			
+		}
+
 		accessListTable.addMouseMotionListener(urlRenderer);
 		accessListTable.addMouseMotionListener(actionRenderer);
 		
@@ -415,27 +450,13 @@ public class AccessListPanel extends JPanel {
 			else if (i == 6)
 				column.setCellRenderer(actionRenderer);
 			else
-				column.setCellRenderer(centerRenderer);
-			
+				column.setCellRenderer(centerRenderer);	
 		}
+		
+		//accessListTable.setRowHeight(34);
 	}
-
-	private static void open(String url) {
-		try {
-			if (Desktop.isDesktopSupported()) {
-				URI uri = new URI(url);
-				Desktop.getDesktop().browse(uri);
-			}
-			else {
-				System.out.println("Desktop não suportado. Tentando abrir executando a url.dll");
-				Runtime rt = Runtime.getRuntime();
-				rt.exec("rundll32 url.dll,FileProtocolHandler " + url);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
+	
 	
 	public boolean isFiltering(){
 		return (filtroIdTextField.getText() != null && !filtroIdTextField.getText().isEmpty())
@@ -451,106 +472,19 @@ public class AccessListPanel extends JPanel {
 	public void updateDateLastSync() {
 		if (Main.lastSync != null && Main.lastSync > 0) {
 			Date date = new Date(Main.lastSync);
-			dateLastSync.setText("Última sincronização: " + sdf.format(date));
+			dateLastSync.setText("Atualizado: " + sdf.format(date));
 		}
 		else
 			dateLastSync.setText(" ");
 	}
 
-	class UrlRenderer extends DefaultTableCellRenderer implements MouseListener, MouseMotionListener {
-		protected int vrow = -1; // viewRowIndex
-		protected int vcol = -1; // viewColumnIndex
-		protected boolean isRollover;
-	    
-	    @Override
-	    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-	        super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-	        String str = Objects.toString(value, "");
-	        String color = isSelected ? "white" : "#46b2ca";
-	        if (isRolloverCell(table, row, column)) {
-	            setText("<html><u><font color='" + color + "'>" + str);
-	        }
-	        else if (hasFocus) {
-	            setText("<html><font color='" + color + "'>" + str);
-	        }
-	        else {
-	            setText(str);
-	        }
-	        return this;
-	    }
-	    
-	    protected boolean isRolloverCell(JTable table, int row, int column) {
-	        return this.vrow == row && this.vcol == column && this.isRollover;
-	    }
-
-	    @Override 
-	    public void mouseMoved(MouseEvent e) {
-	        JTable table = (JTable) e.getComponent();
-	        Point pt = e.getPoint();
-	        final int prevRow = vrow;
-	        final int prevCol = vcol;
-	        final boolean prevRollover = isRollover;
-	        vrow = table.rowAtPoint(pt);
-	        vcol = table.columnAtPoint(pt);
-	        if (colunasComLink.contains(vcol)) 
-	        	Main.mainScreen.setCursor(new Cursor(Cursor.HAND_CURSOR));
-	        else
-	        	Main.mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	        isRollover = colunasComLink.contains(vcol);
-	        if (vrow == prevRow && vcol == prevCol && isRollover == prevRollover) {
-	            return;
-	        }
-	        if (!isRollover && !prevRollover) {
-	            return;
-	        }
-	        Rectangle repaintRect;
-	        if (isRollover) {
-	            Rectangle r = table.getCellRect(vrow, vcol, false);
-	            repaintRect = prevRollover ? r.union(table.getCellRect(prevRow, prevCol, false)) : r;
-	        }
-	        else {
-	            repaintRect = table.getCellRect(prevRow, prevCol, false);
-	        }
-	        table.repaint(repaintRect);
-	    }
-	    
-	    @Override
-	    public void mouseExited(MouseEvent e) {
-	    	Main.mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	        JTable table = (JTable) e.getComponent();
-	        if (colunasComLink.contains(vcol)) {
-	            table.repaint(table.getCellRect(vrow, vcol, false));
-	            vrow = -1;
-	            vcol = -1;
-	            isRollover = false;
-	        }
-	    }
-	    
-	    @Override 
-	    public void mouseClicked(MouseEvent e) {
-	        JTable table = (JTable) e.getComponent();
-	        Point pt = e.getPoint();
-	        int ccol = table.columnAtPoint(pt);
-	        if (ccol == 4) { // && pointInsidePrefSize(table, pt)) {
-	            int crow = table.rowAtPoint(pt);
-	            String idUser = String.valueOf(table.getValueAt(crow, 0));
-				try {
-					open(Main.urlApplication + "/paginas/sistema/pedestres/cadastroPedestre.xhtml?id=" + idUser);
-				}
-				catch (Exception e1) {
-					e1.printStackTrace();
-				}
-	        }
-	    }
-	    @Override public void mouseDragged(MouseEvent e) { /* not needed */ }
-	    @Override public void mouseEntered(MouseEvent e) { /* not needed */ }
-	    @Override public void mousePressed(MouseEvent e) { /* not needed */ }
-	    @Override public void mouseReleased(MouseEvent e) { /* not needed */ }
-	}
 	
 	class ActionRenderer extends UrlRenderer {
 	    
-	    @Override 
+	    public ActionRenderer(List<Integer> colunasComLink) {
+			super(colunasComLink);
+		}
+		@Override 
 	    public void mouseClicked(MouseEvent e) {
 	        JTable table = (JTable) e.getComponent();
 	        Point pt = e.getPoint();
@@ -561,7 +495,7 @@ public class AccessListPanel extends JPanel {
 	            
 	            if(Main.getDefaultDevice() != null 
             		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
-            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saída"))) {
+            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saÃ­da"))) {
 	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
 
 	            } else {
@@ -579,6 +513,11 @@ public class AccessListPanel extends JPanel {
 	
 	class EditVisitanteRenderer extends UrlRenderer {
 
+		public EditVisitanteRenderer(List<Integer> colunasComLink) {
+			super(colunasComLink);
+		}
+
+		@SuppressWarnings("unchecked")
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			JTable table = (JTable) e.getComponent();
@@ -588,13 +527,16 @@ public class AccessListPanel extends JPanel {
 				int crow = table.rowAtPoint(pt);
 				String idVisitante = String.valueOf(table.getValueAt(crow, 0));
 
-				args = new HashMap<String, Object>();
+				HashMap args = new HashMap<String, Object>();
 				args.put("ID", Long.valueOf(idVisitante));
 
 				PedestrianAccessEntity visitante = (PedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
 						PedestrianAccessEntity.class, "PedestrianAccessEntity.findById", args);
-
-				new RegisterVisitorDialog(visitante);
+				if("VISITANTE".equals(visitante.getTipo()))
+					Main.mainScreen.abreCadastroVisitante(visitante);
+				else
+					Main.mainScreen.abreCadastroPedestre(visitante);
+				
 			}
 		}
 
@@ -606,6 +548,10 @@ public class AccessListPanel extends JPanel {
 		public void mousePressed(MouseEvent e) {}
 		@Override
 		public void mouseReleased(MouseEvent e) {}
+	}
+	
+	public boolean isLoad() {
+		return listaAcesso != null && !listaAcesso.isEmpty();
 	}
 	
 }

@@ -11,6 +11,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
@@ -90,7 +91,7 @@ public class EscolherSentidoLiberarAcessoDialog{
 	}
 	
 	private void liberarEntradaAction() {
-		logAccess.setDirection("ENTRADA");
+		logAccess.setDirection(Tipo.ENTRADA);
 		logAccess.setEquipament(this.device.getFullIdentifier());
 		
 		liberarCatraca();
@@ -98,7 +99,7 @@ public class EscolherSentidoLiberarAcessoDialog{
 	}
 	
 	private void liberarSaidaAction() {
-		logAccess.setDirection("SAIDA");
+		logAccess.setDirection(Tipo.SAIDA);
 		logAccess.setEquipament(this.device.getFullIdentifier());
 		
 		Main.apertouF10 = true;

@@ -1,11 +1,14 @@
-package com.protreino.services.utils;
+package com.protreino.services.constants;
 
-public abstract class Constants {
+import com.protreino.services.utils.Utils;
+
+public abstract class Configurations {
 	
 	/**
 	 * AO ALTERAR A VERSAO AQUI, CRIAR A VERSAO NOVA NO BANCO DE DADOS
 	 */
-	public static final String VERSION = "3.13";
+
+	public static final String VERSION = "3.42";
 	
 	public static final String URL_APPLICATION = "http://www.smartacesso.com.br/sistema/";
 	
@@ -30,5 +33,7 @@ public abstract class Constants {
 	public static final String LC_DATABASE_PATH = Utils.getAppDataFolder();
 	
 	public static final String LUXAND_KEY = "dte7wp+ICiX8FNYiviQNDLgkhuOYb7zd/mu/iBUFbw+BSqz8r7vea0wKQOHrxYe6pxoBOQDxGBNCBahyKvtFq+t3i/32RsOOfHsl/t/PQn4++zz8w4b1fzCd4XQ0kKOqALFSCpNfjb/NPiPCCoSlC1AR9ymK/dksdi5SD06EyH8=";
+
+
 
 }

@@ -129,6 +129,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Column(name="DATA_REMOVIDO", nullable=true, length=11)
 	private Date dataRemovido = null;
 	
+	@Type(type="org.hibernate.type.NumericBooleanType")
+	@Column(name="HABILITA_EXPEDIDORA", nullable=true)
+	private Boolean expedidora = false;
+	
 	public UserEntity() {}
 
 	public UserEntity(Long id, String loginName, String status, Date creationDate, String idClient, String name,
@@ -157,7 +161,7 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	}
 	
 	public UserEntity(Long id, String loginName, String password, String status, Date creationDate, String idClient, String name,
-			Date lastSync, Integer qtdePadraoDigitosCartao, String unidade, String chaveIntegracaoComtele) {
+			Date lastSync, Integer qtdePadraoDigitosCartao, String unidade, String chaveIntegracaoComtele, Boolean expedidora) {
 		this.id = id;
 		this.loginName = loginName;
 		this.password = password;
@@ -169,6 +173,7 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.qtdePadraoDigitosCartao = qtdePadraoDigitosCartao;
 		this.unitName = unidade;
 		this.chaveIntegracaoComtele = chaveIntegracaoComtele;
+		this.expedidora = expedidora;
 	}
 	
 	public void update(UserEntity user) {
@@ -402,6 +407,16 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 
 	public void setBackupDevicesBinaries(byte[] backupDevicesBinaries) {
 		this.backupDevicesBinaries = backupDevicesBinaries;
+	}
+
+	public Boolean getExpedidora() {
+		if(expedidora == null)
+			return Boolean.FALSE;
+		return expedidora;
+	}
+
+	public void setExpedidora(Boolean expedidora) {
+		this.expedidora = expedidora;
 	}
 
 }

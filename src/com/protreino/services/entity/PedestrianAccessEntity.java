@@ -1,10 +1,11 @@
 package com.protreino.services.entity;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -30,6 +31,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
+import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.HibernateUtil;
 
 @SuppressWarnings("serial")
@@ -37,6 +39,8 @@ import com.protreino.services.utils.HibernateUtil;
 @Table(name="TB_PEDESTRIAN_ACCESS")
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllPedestrian", query = "select obj from PedestrianAccessEntity obj "
+					  + "order by obj.id desc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllAlterados", 
 				query = "select obj "
 					  + "from PedestrianAccessEntity obj "
@@ -91,12 +95,17 @@ import com.protreino.services.utils.HibernateUtil;
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false)"
 					  + "order by obj.name"),
+	@NamedQuery(name  = "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList",
+				query = "select count(*) "
+					  + "from PedestrianAccessEntity obj "
+					  + "where (obj.removido is null or obj.removido = false) "
+					  + "	   and (obj.invisivel is null or obj.invisivel = false) "),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
 					  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo) "
 					  + "from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
-					  + "order by obj.name"),
+					  + "order by obj.name asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
 					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
@@ -105,6 +114,10 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
 					  + "group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier "
 					  + "order by obj.name"),
+	@NamedQuery(name  = "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUser",
+				query = "select count(*) "
+					  + "from PedestrianAccessEntity obj "
+					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllComFotoParaUpload",
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where obj.latestPhotosTaken > :LAST_SYNC_PHOTO "
@@ -160,12 +173,28 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "and obj.id != :ID_PEDESTRE "
 					  + "and (obj.removido is null or obj.removido = false) "
 					  + "order by obj.id asc"),
+	@NamedQuery(name  = "PedestrianAccessEntity.findByRemovedCardNumber",
+				query = "select obj from PedestrianAccessEntity obj "
+						+ "where obj.cardNumber = :CARD_NUMBER "
+						+ "and obj.id != :ID_PEDESTRE "
+						+ "and obj.removido = true "
+						+ "order by obj.id asc"),
+	@NamedQuery(name  = "PedestrianAccessEntity.findByCartaoAcessoWithoutID",
+	query = "select obj from PedestrianAccessEntity obj "
+		  + "where obj.cardNumber = :CARD_NUMBER "
+		  + "and (obj.removido is null or obj.removido = false) "
+		  + "order by obj.id asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findByMatricula2",
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where obj.matricula = :MATRICULA "
 					  + "and obj.id != :ID_PEDESTRE "
 					  + "and (obj.removido is null or obj.removido = false) "
-					  + "order by obj.id asc")
+					  + "order by obj.id asc"),
+	@NamedQuery(name  = "PedestrianAccessEntity.findBylastID",
+	query = "select obj from PedestrianAccessEntity obj "
+		  + "where obj.removido is null and "
+		  + "obj.removido = false "
+		  + "order by obj.id desc"),
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
@@ -315,6 +344,22 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="ID_CARGO", nullable=true, length=15)
 	private Long idCargo;
 	
+	@Column(name="LOGIN", nullable=true, length=100)
+	private String login;
+	
+	@Column(name="SENHA", nullable=true, length=255)
+	private String senha;
+	
+	@Transient
+	private String senhaLivre;
+	
+	@Column(name="TIPO_ACESSO", nullable=true, length=255)
+	private String tipoAcesso;
+	
+	@Column(name="TIPO_QRCODE", nullable=true, length=100)
+	private String tipoQRCode;
+	
+	
 	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
 			 targetEntity=TemplateEntity.class, mappedBy="pedestrianAccess")
 	@Fetch(FetchMode.SUBSELECT)
@@ -378,9 +423,6 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="INVISIVEL", nullable=true, length=11)
 	private Boolean invisivel = false;
 	
-	@Column(name="BLOQUEADO", nullable=true, length=11)
-	private Boolean bloqueado = false;
-
 	@Transient
 	private Integer origemCatraca;
 	
@@ -395,6 +437,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	@Transient
 	private Long tamanhoListaTemplates;
+	
+	@Transient
+	private Boolean novasDigitais = false;
+	
+	@Transient
+	private String nomeUuarioQueCriou;
 
 	public PedestrianAccessEntity() {
 	}
@@ -478,6 +526,21 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.dataFimPeriodo = dataFimPeriodo;
 	}
 	
+	public PedestrianAccessEntity(Long id, String cardNumber, String name, String tipo, String status,
+			Long quantidadeCreditos, Date validadeCreditos, Date dataInicioPeriodo, Date dataFimPeriodo, 
+			Long idUsuario) {
+		this.id = id;
+		this.cardNumber = cardNumber;
+		this.name = name;
+		this.tipo = tipo;
+		this.status = status;
+		this.quantidadeCreditos = quantidadeCreditos;
+		this.validadeCreditos = validadeCreditos;
+		this.dataInicioPeriodo = dataInicioPeriodo;
+		this.dataFimPeriodo = dataFimPeriodo;
+		this.idUsuario = idUsuario;
+	}
+	
 	public PedestrianAccessEntity(PedestrianAccessTO athleteAccessTO){
 		//Dados basicos
 		this.id = athleteAccessTO.getId();
@@ -532,6 +595,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.qtdAcessoAntesSinc = athleteAccessTO.getQtdAcessoAntesSinc();
 		this.idUsuario = athleteAccessTO.getIdUsuario();
 		
+		//Dados de acesso
+		this.login = athleteAccessTO.getLogin();
+		this.senha = athleteAccessTO.getSenha();
+		this.tipoAcesso = athleteAccessTO.getTipoAcesso();
+		this.tipoQRCode = athleteAccessTO.getTipoQRCode();
+		
 		if (athleteAccessTO.getHorariosPermitidos() != null && !athleteAccessTO.getHorariosPermitidos().isEmpty()) {
 			this.horariosPermitidos = new ArrayList<AllowedTimeEntity>();
 			for (AllowedTimeEntity horario : athleteAccessTO.getHorariosPermitidos())
@@ -541,6 +610,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			this.templates = new ArrayList<TemplateEntity>();
 			for (String s : athleteAccessTO.getTemplates())
 				templates.add(new TemplateEntity(this, Base64.decodeBase64(s)));
+			novasDigitais = true;
 		}
 
 		if (athleteAccessTO.getEquipamentos() != null && !athleteAccessTO.getEquipamentos().isEmpty()){
@@ -625,7 +695,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			.append(dataInicioPeriodo != null ? dataInicioPeriodo.getTime() : "").append(";")
 			.append(dataFimPeriodo != null ? dataFimPeriodo.getTime() : "").append(";")
 			.append(qtdAcessoAntesSinc != null ? qtdAcessoAntesSinc : "").append(";")
-			.append(idUsuario != null ? idUsuario : "").append(";");
+			.append(idUsuario != null ? idUsuario : "").append(";")
+			.append(login != null ? login : "").append(";")
+			.append(senha != null ? senha : "").append(";")
+			.append(tipoAcesso != null ? tipoAcesso : "").append(";")
+			.append(tipoQRCode != null ? tipoQRCode : "").append(";");
+			
 		
 		if(this.mensagens != null) {
 			for(PedestrianMessagesEntity m : this.mensagens)
@@ -714,6 +789,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.dataFimPeriodo = athleteAccessTO.getDataFimPeriodo();
 		this.qtdAcessoAntesSinc = athleteAccessTO.getQtdAcessoAntesSinc();
 		this.idUsuario = athleteAccessTO.getIdUsuario();
+		
+		//Dados de acesso
+		this.login = athleteAccessTO.getLogin();
+		this.senha = athleteAccessTO.getSenha();
+		this.tipoAcesso = athleteAccessTO.getTipoAcesso();
+		this.tipoQRCode = athleteAccessTO.getTipoQRCode();
 	    
 		if (athleteAccessTO.getHorariosPermitidos() != null
 				&& !athleteAccessTO.getHorariosPermitidos().isEmpty()) {
@@ -735,13 +816,13 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			boolean alterar = false;
 			if(templates != null && !templates.isEmpty()) {
 				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, já altera
+					//tamanhos diferentes, jï¿½ altera
 					alterar = true;
 					if(Main.desenvolvimento)
 						System.out.println("Digitais diferentes");
 				} else {
 					//verifica se lista de digitais existes 
-					//é igual a lista de digitais recebidas
+					//ï¿½ igual a lista de digitais recebidas
 					List<String> templatesExistentes = new ArrayList<String>();
 					for (TemplateEntity t : templates) {
 						String existente = Base64.encodeBase64String(t.getTemplate());
@@ -771,10 +852,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 				for (String s : athleteAccessTO.getTemplates()){
 					templates.add(new TemplateEntity(this, Base64.decodeBase64(s), athleteAccessTO.getDataAlteracao()));
 				}
+				
+				novasDigitais = true;
 			}
 		} else {
 			if(Main.desenvolvimento)
-				System.out.println("Sem digitais no servidor!");
+//				System.out.println("Sem digitais no servidor!");
 			if (templates != null)
 				templates.clear();
 		}
@@ -1443,6 +1526,73 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setInvisivel(Boolean invisivel) {
 		this.invisivel = invisivel;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
+
+	public String getSenhaLivre() {
+		return senhaLivre;
+	}
+
+	public void setSenhaLivre(String senhaLivre) {
+		
+		if(senhaLivre != null && !"".equals(senhaLivre)) {
+			try {
+				senha = EncryptionUtils.encrypt(senhaLivre);
+			} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}else {
+			senha = null;
+		}
+		
+		this.senhaLivre = senhaLivre;
+	}
+
+	public String getTipoAcesso() {
+		return tipoAcesso;
+	}
+
+	public void setTipoAcesso(String tipoAcesso) {
+		this.tipoAcesso = tipoAcesso;
+	}
+
+	public String getTipoQRCode() {
+		return tipoQRCode;
+	}
+
+	public void setTipoQRCode(String tipoQRCode) {
+		this.tipoQRCode = tipoQRCode;
+	}
+	
+	public Boolean getNovasDigitais() {
+		return novasDigitais;
+	}
+
+	public void setNovasDigitais(Boolean novasDigitais) {
+		this.novasDigitais = novasDigitais;
+	}
+
+	public String getNomeUuarioQueCriou() {
+		return nomeUuarioQueCriou;
+	}
+
+	public void setNomeUuarioQueCriou(String nomeUuarioQueCriou) {
+		this.nomeUuarioQueCriou = nomeUuarioQueCriou;
 	}
 	
 }

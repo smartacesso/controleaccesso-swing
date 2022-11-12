@@ -4,6 +4,7 @@ import com.sun.jna.Library;
 import com.sun.jna.Memory;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 
 public interface Aso15DefJNA extends Library {
 		
@@ -63,7 +64,7 @@ public interface Aso15DefJNA extends Library {
 	void SFEP_FpCancel();
 	int SFEP_CreateTemplate(Memory pTemplate);
 	int SFEP_GetTemplateForRegister(Memory memorySpaceStTemplates, Memory memorySpaceStRegTem);
-	int SFEP_Enroll(Memory pTemplate, IntByReference pdwID, ByteByReference dedo, ByteByReference user);
+	int SFEP_Enroll(Memory pTemplate, LongByReference pdwID, ByteByReference dedo, ByteByReference user);
 	int SFEP_Identify(Memory pTemplate, IntByReference pdwID, ByteByReference fingerNum, ByteByReference manager, byte bSecLevel);
 	int SFEP_Verify(Memory pTemplate, int dwID, byte bFingerNum, byte bSecLevel);
 	int SFEP_Match2Template(Memory pTemplate1, Memory pTemplate2, byte bSecLevel);

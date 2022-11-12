@@ -8,6 +8,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -66,7 +67,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.LigarLedVerde(inner.Numero);
 		EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
 		EasyInner.ManterRele1Acionado(inner.Numero);
+		EasyInner.ManterRele2Acionado(inner.Numero);
 		EasyInner.AcionarBipCurto(inner.Numero);
+		
 		
 		Integer tempoAcionamentoRelé = getConfigurationValueAsInteger("Tempo de acionamento do relé");
 		if(tempoAcionamentoRelé == null)
@@ -79,7 +82,16 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		}
 		
 		EasyInner.DesabilitarRele1(inner.Numero);
+		EasyInner.DesabilitarRele2(inner.Numero);
 		
+		
+		Boolean AcionaRele2 = getConfigurationValueAsBoolean("Aciona relé 2");
+
+//		if(Boolean.TRUE.equals(AcionaRele2)) {
+//			
+//			return;
+//		}
+
 		Boolean usaTorniquete = getConfigurationValueAsBoolean("Usa torniquete");
 		if(Boolean.TRUE.equals(usaTorniquete))
 			return;
@@ -100,11 +112,14 @@ public class TopDataAcessoDevice extends TopDataDevice {
 										: getConfigurationValueAsInteger("Leitor 1");
 		
 		if(sentido == 1)
-			ultimo.setDirection("ENTRADA");
+			ultimo.setDirection(Tipo.ENTRADA);
 		else if(sentido == 2)
-			ultimo.setDirection("SAIDA");
+			ultimo.setDirection(Tipo.SAIDA);
 		
 		ultimo.setStatus("ATIVO");
+		ultimo.setDataCriacao(new Date());
+		registraGiro(sentido, null);
+		
 		
 		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimo);
 		
@@ -121,8 +136,11 @@ public class TopDataAcessoDevice extends TopDataDevice {
 				Utils.decrementaMensagens(pedestre.getMensagens());
 			
 			if(getConfigurationValueAsBoolean("Bloquear saída") 
-					&& "SAIDA".equals(ultimo.getDirection()))
+					&& Tipo.SAIDA.equals(ultimo.getDirection()))
 				Utils.decrementaCreditos(pedestre);
+			
+			if("DINAMICO_USO".equals(pedestre.getTipoQRCode()))
+				Utils.decrementaQRCodeUso(pedestre);
 			
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 			
@@ -153,13 +171,14 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		sentido = inner.BilheteInner.Complemento == 1 || inner.BilheteInner.Complemento == 38 
 					? getConfigurationValueAsInteger("Leitor 2") 
 					: getConfigurationValueAsInteger("Leitor 1");
-
+		System.out.println(" ultimo acesso " + ultimoAcesso.getDirection());
 		if(sentido == 1)
-			ultimoAcesso.setDirection("ENTRADA");
+			ultimoAcesso.setDirection(Tipo.ENTRADA);
 		else if(sentido == 2)
-			ultimoAcesso.setDirection("SAIDA");
+			ultimoAcesso.setDirection(Tipo.SAIDA);
 		
 		ultimoAcesso.setStatus("ATIVO");
+		ultimoAcesso.setDataCriacao(new Date());
 		
 		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 		
@@ -176,8 +195,11 @@ public class TopDataAcessoDevice extends TopDataDevice {
 			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
 				Utils.decrementaMensagens(pedestre.getMensagens());
 			
-			if("SAIDA".equals(ultimoAcesso.getDirection()))
+			if(Tipo.SAIDA.equals(ultimoAcesso.getDirection()))
 				Utils.decrementaCreditos(pedestre);
+			
+			if("DINAMICO_USO".equals(pedestre.getTipoQRCode()))
+				Utils.decrementaQRCodeUso(pedestre);
 		
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 			
@@ -235,6 +257,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO("Padrão de cartão", "Padrão livre_1", FieldType.COMBOBOX, "Padrão livre_1;Padrão TopData_0"));
 		geralConfigurations.add(new ConfigurationTO("Lógica da catraca com urna", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Usa torniquete", "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Aciona relé 2", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Tempo de acionamento do relé", "3", FieldType.NUMERIC_LIST, "0;1;10"));
 		geralConfigurations.add(new ConfigurationTO("Coleta cartões offline", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));

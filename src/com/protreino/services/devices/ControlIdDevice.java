@@ -41,6 +41,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianMessagesEntity;
+import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
@@ -57,23 +58,24 @@ import com.protreino.services.utils.Utils;
 @SuppressWarnings("serial")
 public class ControlIdDevice extends Device {
 	
-	private String serverIp;
-	private String serverPort;
-	private String session;
-	private String serverId;
+	protected String serverIp;
+	protected String serverPort;
+	protected String session;
+	protected String serverId;
 	private Boolean digitalColetada;
 	private Gson gson;
-	private Integer timeout = 5000;
+	protected Integer timeout = 5000;
 	private HashSet<Long> usuariosComFoto = new HashSet<Long>();
 	
-	private static final String CLOCKWISE = "clockwise";
-	private static final String ANTICLOCKWISE = "anticlockwise";
+	protected static final String CLOCKWISE = "clockwise";
+	protected static final String ANTICLOCKWISE = "anticlockwise";
 	
-	private String sentidoEntrada;
+	protected String sentidoEntrada;
 	
 	protected String messagePersonalizedInDevice;
 	
-	private Boolean habilitaBeep;
+	
+	protected Boolean habilitaBeep;
 	
 	public ControlIdDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -243,7 +245,7 @@ public class ControlIdDevice extends Device {
 			                    	out.print("Content-Type: application/json; charset=utf-8" + "\r\n");
 			                    	out.print("Content-Length: " + mensagemRetorno.length() + "\r\n");
 			                    	out.print("Connection: close" + "\r\n");
-									out.print("Server: Pro-Treino_Server" + "\r\n");
+									out.print("Server: SmartAcesso_Server" + "\r\n");
 			                    	out.print("\r\n");
 									out.print(mensagemRetorno + "\r\n");
 									
@@ -257,7 +259,14 @@ public class ControlIdDevice extends Device {
 			                    	template = body.getBytes();
 			                    	digitalColetada = true;
 			                    
-			                    } else if (caminho.startsWith("/push")
+			                    } else if(caminho.startsWith("/api/notification/catra_event")
+			                    		|| caminho.startsWith("/api/notifications/door")) {
+			                    	out.println("HTTP/1.1 200 OK\r\n");
+			                    	Response notificacao = gson.fromJson(body, Response.class);
+			                    	
+			                    	registraGiro(notificacao);
+			                    	
+			                    }  else if (caminho.startsWith("/push")
 			                    		|| caminho.startsWith("/master_password")
 			                    		|| caminho.startsWith("/device_is_alive")
 			                    		|| caminho.startsWith("/api/notifications")
@@ -265,13 +274,7 @@ public class ControlIdDevice extends Device {
 			                    	// Não faz nada
 			                    	out.println("HTTP/1.1 200 OK\r\n");
 			                    
-			                    } else if(caminho.startsWith("/api/notification/catra_event")) {
-			                    	out.println("HTTP/1.1 200 OK\r\n");
-			                    	Response notificacao = gson.fromJson(body, Response.class);
-			                    	
-			                    	registraGiro(notificacao);
-			                    	
-			                    } else if (caminho.startsWith("/api/notifications/operation_mode")) {
+			                    }else if (caminho.startsWith("/api/notifications/operation_mode")) {
 			                    	out.println("HTTP/1.1 200 OK\r\n");
 									Response notificacao = gson.fromJson(body, Response.class);
 									if (Mode.CONTINGENCY.equals(notificacao.operation_mode.mode_name)) {
@@ -416,7 +419,7 @@ public class ControlIdDevice extends Device {
 		return false;
 	}
 	
-	private void registraGiro(Response notificacao) {
+	protected void registraGiro(Response notificacao) {
 		if (GiroCatraca.EVENT_GIVE_UP.equals(notificacao.event.name))
 			return;
 		
@@ -434,9 +437,9 @@ public class ControlIdDevice extends Device {
 		Boolean bloquearSaida = "blocked".equals(modoOperacao) ? true : false;
 		
 		if (GiroCatraca.EVENT_TURN_RIGHT.equals(notificacao.event.name))
-			direction = ANTICLOCKWISE.equals(sentidoEntrada) ? "ENTRADA" : "SAIDA";
+			direction = ANTICLOCKWISE.equals(sentidoEntrada) ? Tipo.ENTRADA : Tipo.SAIDA;
 		else if (GiroCatraca.EVENT_TURN_LEFT.equals(notificacao.event.name))
-			direction = CLOCKWISE.equals(sentidoEntrada) ? "ENTRADA" : "SAIDA";
+			direction = CLOCKWISE.equals(sentidoEntrada) ? Tipo.ENTRADA : Tipo.SAIDA;
 		
 		ultimo.setDirection(direction);
 		ultimo.setStatus("ATIVO");
@@ -450,16 +453,19 @@ public class ControlIdDevice extends Device {
 		if(pedestre == null)
 			return;
 
-		if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
-			Utils.decrementaMensagens(pedestre.getMensagens());
-		
-		if("SAIDA".equals(direction) || !bloquearSaida)
-			Utils.decrementaCreditos(pedestre);
-		
-		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
-
-		if("ENTRADA".equals(direction))
-			Utils.enviaSmsDeRegistro(pedestre);
+		boolean ignoraRegras = getConfigurationValueAsBoolean("Ignorar regras de acesso");
+		if(!ignoraRegras) {
+			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
+				Utils.decrementaMensagens(pedestre.getMensagens());
+			
+			if(Tipo.SAIDA.equals(direction) || !bloquearSaida)
+				Utils.decrementaCreditos(pedestre);
+			
+			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+	
+			if(Tipo.ENTRADA.equals(direction))
+				Utils.enviaSmsDeRegistro(pedestre);
+		}
 	}
 	
 	@Override
@@ -521,7 +527,7 @@ public class ControlIdDevice extends Device {
 			messagePersonalizedInDevice = verificationResult.getMessage().replace(";", " ") + " " + allowedUserName;
 	}
 	
-	private String decideLadoLiberarCatraca(String _sentidoEntrada) {
+	protected String decideLadoLiberarCatraca(String _sentidoEntrada) {
 		String ladoLiberarCatraca = ""; // both, clockwise ou anticlockwise
 
 		if(matchedAthleteAccess == null) {
@@ -564,7 +570,7 @@ public class ControlIdDevice extends Device {
 		return ladoLiberarCatraca;
 	}
 	
-	private List<Action> allowAccessRequest() {
+	protected List<Action> allowAccessRequest() {
 		try {
 			if(habilitaBeep)
 				beep();
@@ -837,9 +843,9 @@ public class ControlIdDevice extends Device {
 			serverId = device.id.toString();
 		}
 		
-		// Caso nao encontre pelo IP, caso tenha trocado de IP, então procura pelo nome ServidorProTreino
+		// Caso nao encontre pelo IP, caso tenha trocado de IP, então procura pelo nome ServidorSmartAcesso
 		if (serverId == null) {
-			whereClause = new WhereClause(new Device("ServidorProTreino", null));
+			whereClause = new WhereClause(new Device("ServidorSmartAcesso", null));
 			response = loadObjects("devices", whereClause);
 			devicesCadastrados = response.devices;
 			if (devicesCadastrados != null && !devicesCadastrados.isEmpty()) {
@@ -852,7 +858,7 @@ public class ControlIdDevice extends Device {
 		if (serverId != null) {
 			whereClause = new WhereClause(new Device(device.id));
 			device.ip = serverIp + ":" + serverPort;
-			device.name = "ServidorProTreino";
+			device.name = "ServidorSmartAcesso";
 			device.public_key = Utils.getPublicKey();
 			Integer changes = modifyObjects("devices", device, whereClause);
 			if (changes == null || changes < 1)
@@ -862,7 +868,7 @@ public class ControlIdDevice extends Device {
 		
 		// Se nao encontrar nada, entao cadastra um novo device para o servidor
 		List<Object> values = new ArrayList<Object>();
-		values.add(new Device(-1, "ServidorProTreino", serverIp + ":" + serverPort, Utils.getPublicKey()));
+		values.add(new Device(-1, "ServidorSmartAcesso", serverIp + ":" + serverPort, Utils.getPublicKey()));
 		List<Integer> idsCriados = createObjects("devices", values);
 		if (idsCriados == null || idsCriados.isEmpty())
 			throw new Exception("Não foi possível criar o servidor.");
@@ -894,7 +900,7 @@ public class ControlIdDevice extends Device {
 		configurationGroups.add(new ConfigurationGroupTO("Personalização", customConfigurations));
 	}
 	
-	private void logout() {
+	protected void logout() {
 		try {
 			Object[] retorno = send("http://" + ip + "/logout.fcgi?session=" + session, null);
 			String erro = (String) retorno[0];
@@ -911,7 +917,7 @@ public class ControlIdDevice extends Device {
 	}
 	
 	
-	private void beep() throws Exception{
+	protected void beep() throws Exception{
 		Object[] retorno = send("http://" + ip + "/buzzer_buzz.fcgi?session=" + session, new Beep(50, 4000, 250));
 		String erro = (String) retorno[0];
 		if (erro != null)
@@ -919,7 +925,7 @@ public class ControlIdDevice extends Device {
 	}
 	
 	
-	private void openGate(String side) throws Exception {
+	protected void openGate(String side) throws Exception {
 		// side pode ser "clockwise", "anticlockwise" ou "both"
 		List<Action> actions = new ArrayList<Action>();
 		actions.add(new Action("catra", "allow=" + side));
@@ -929,7 +935,7 @@ public class ControlIdDevice extends Device {
 			throw new Exception(erro);
 	}
 	
-	private Object[] send(String endereco, Object object, Integer... timeout){
+	protected Object[] send(String endereco, Object object, Integer... timeout){
 		try {
 			URL url = new URL(endereco);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -941,9 +947,10 @@ public class ControlIdDevice extends Device {
 			conn.setDoOutput(true);
 			
 			byte[] data = null;
-			if (object != null) 
+			if (object != null) {
+				System.out.println(gson.toJson(object));
 				data = (gson.toJson(object)).getBytes();
-			else 
+			}else 
 				data = ("{}").getBytes();
 			
 			conn.setRequestProperty("Content-Length", String.valueOf(data.length));
@@ -990,7 +997,7 @@ public class ControlIdDevice extends Device {
 		pane.setOpaque(false);
 		pane.add(Box.createGlue());
 		
-		String nomeAcademia = "ACESSO PRO-TREINO";
+		String nomeAcademia = "ACESSO SMARTACESSO";
     	if (Main.loggedUser != null)
     		nomeAcademia = Utils.formatAcademyName(Main.loggedUser.getName());
     	
@@ -1143,7 +1150,7 @@ public class ControlIdDevice extends Device {
 			}
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Template criado! Replicando para outras catracas...");
 			
-			// Verifica se serï¿½ necessário criar tambem em outras catracas ControlId
+			// Verifica se serão necessário criar tambem em outras catracas ControlId
 			for (com.protreino.services.devices.Device device : Main.devicesList) {
 				if (!device.isTheSame(this) 
 						&& manufacturer.equals(device.getManufacturer())){
@@ -1253,7 +1260,7 @@ public class ControlIdDevice extends Device {
 			if (retorno == null)
 				throw new Exception("Não foi possível remover o usuário.");
 			
-			// Verifica se serï¿½ necessário apagar tambem em outras catracas ControlId
+			// Verifica se serão necessário apagar tambem em outras catracas ControlId
 			if (sincronizarExclusao) {
 				for (com.protreino.services.devices.Device device : Main.devicesList) {
 					if (!device.isTheSame(this) 
@@ -1265,7 +1272,7 @@ public class ControlIdDevice extends Device {
 						// apaga o usuário na catraca
 						retorno = otherDevice.removeObjects("users", whereClause);
 						if (retorno == null)
-							throw new Exception("Erro ao espelhar exclusï¿½o na catraca " + otherDevice.getName());
+							throw new Exception("Erro ao espelhar exclusão na catraca " + otherDevice.getName());
 					}
 				}
 			}
@@ -1299,7 +1306,7 @@ public class ControlIdDevice extends Device {
 	
 	
 	@SuppressWarnings("unused")
-	private class Login{
+	protected class Login{
 		private String login;
 		private String password;
 		
@@ -1310,7 +1317,7 @@ public class ControlIdDevice extends Device {
 	}
 	
 	
-	public class Response{
+	protected class Response{
 		public String session;
 		public Boolean session_is_valid;
 		public List<Device> devices;
@@ -1329,26 +1336,33 @@ public class ControlIdDevice extends Device {
 		public Event event;
 		public Long device_id;
 		
+		public Door door;
+		
 		public Response(Result result){
 			this.result = result;
 		}
 		
 	}
 	
-	private class Event {
+	protected class Door{
+		public Integer id;
+		public Boolean open; 
+	}
+	
+	protected class Event {
 		public Integer type;
 		public GiroCatraca name;
 		public Long time;
 	}
 	
-	private enum GiroCatraca {
+	protected enum GiroCatraca {
 		EVENT_TURN_LEFT,
 		EVENT_TURN_RIGHT,
 		EVENT_GIVE_UP;
 	}
 	
 	@SuppressWarnings("unused")
-	private class LoadObject {
+	protected class LoadObject {
 		private String object;
 		private WhereClause where;
 		
@@ -1360,7 +1374,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class CreateObject {
+	protected class CreateObject {
 		private String object;
 		private List<Object> values;
 		
@@ -1372,7 +1386,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class ModifyObject {
+	protected class ModifyObject {
 		private String object;
 		private Object values;
 		private WhereClause where;
@@ -1386,7 +1400,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class RemoveObject {
+	protected class RemoveObject {
 		private String object;
 		private WhereClause where;
 		
@@ -1398,7 +1412,7 @@ public class ControlIdDevice extends Device {
 	
 	
 	@SuppressWarnings("unused")
-	private class SetImageList {
+	protected class SetImageList {
 		private List<UserImage> user_images;
 		
 		public SetImageList(List<UserImage> user_images){
@@ -1408,7 +1422,7 @@ public class ControlIdDevice extends Device {
 	
 	
 	@SuppressWarnings("unused")
-	private class UserImage {
+	protected class UserImage {
 		private Integer user_id;
 		private String image;
 		
@@ -1420,7 +1434,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class WhereClause {
+	protected class WhereClause {
 		private Device devices;
 		private User users;
 		private Template templates;
@@ -1437,7 +1451,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class Device{
+	protected class Device{
 		private Integer id;
 		private String name;
 		private String ip;
@@ -1462,14 +1476,14 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	public class User{
+	protected class User{
 		private Integer id;
 		private String registration;
 		private String name;
 		private String password;
 		private String salt;
-		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usuário ï¿½ vï¿½lido.
-		private Integer end_time; // opcional, Inteiro rperesentando até que data e hora (unix timestamp) o usuário ï¿½ vï¿½lido.
+		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usuário é válido.
+		private Integer end_time; // opcional, Inteiro rperesentando até que data e hora (unix timestamp) o usuário é válido.
 		
 		public User(Integer id, String name, String password, String salt) {
 			this.id = id;
@@ -1486,22 +1500,67 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class Configuration {
+	protected class Configuration {
 		private GeneralConfiguration general;
 		private MonitorConfiguration monitor;
 		private PushConfiguration push_server;
 		private OnlineClient online_client;
+		private UHFConfiguration uhf;
 		
-		public Configuration(String hostname, String port, String serverId,
+		protected Configuration(String hostname, String port, String serverId,
 				Boolean beepEnabled, String tempoGiro, String requestTimeout) {
 			this.general = new GeneralConfiguration(beepEnabled, tempoGiro);
 			this.monitor = new MonitorConfiguration(hostname, port, requestTimeout);
-			this.push_server = new PushConfiguration("");
+			//this.push_server = new PushConfiguration("");
 			this.online_client = new OnlineClient(serverId);
+		}
+		
+		
+		protected Configuration(String hostname, String port, String serverId,
+				Boolean beepEnabled, String tempoGiro, String requestTimeout,
+				Integer identification_bits, String reader_type, Integer read_interval,
+				Integer read_interval_diff_tags, Integer transmit_power, String work_channel, String operation_mode,
+				Integer trigger_timeout, Integer trig_idle) {
+			this.general = new GeneralConfiguration(beepEnabled, tempoGiro);
+			this.monitor = new MonitorConfiguration(hostname, port, requestTimeout);
+			//this.push_server = new PushConfiguration("");
+			this.online_client = new OnlineClient(serverId);
+			this.uhf = new UHFConfiguration(identification_bits, reader_type, read_interval,
+					read_interval_diff_tags, transmit_power, work_channel, 
+					operation_mode, trigger_timeout, trig_idle);
+		}
+		
+		
+		protected class UHFConfiguration{
+			private String identification_bits;
+			private String reader_type;
+			private String read_interval;
+			private String read_interval_diff_tags;
+			private String transmit_power;
+			private String work_channel;
+			private String operation_mode;
+			private String trigger_timeout;
+			private String trig_idle;
+			
+			public UHFConfiguration(Integer identification_bits, String reader_type, Integer read_interval,
+					Integer read_interval_diff_tags, Integer transmit_power, String work_channel, String operation_mode,
+					Integer trigger_timeout, Integer trig_idle) {
+				super();
+				this.identification_bits = identification_bits.toString();
+				this.reader_type = reader_type;
+				this.read_interval = read_interval.toString();
+				this.read_interval_diff_tags = read_interval_diff_tags.toString();
+				this.transmit_power = transmit_power.toString();
+				this.work_channel = work_channel.toString();
+				this.operation_mode = operation_mode.toString();
+				this.trigger_timeout = trigger_timeout.toString();
+				this.trig_idle = trig_idle.toString();
+			}
+			
 		}
 
 		
-		private class GeneralConfiguration {
+		protected class GeneralConfiguration {
 			private String beep_enabled = "1";
 			private String catra_timeout = "5000"; // milisegundos
 			private String local_identification = "1";
@@ -1513,7 +1572,7 @@ public class ControlIdDevice extends Device {
 			}
 		}
 		
-		private class MonitorConfiguration {
+		protected class MonitorConfiguration {
 			private String request_timeout = "10000"; // milisegundos
 			private String hostname;
 			private String port;
@@ -1525,7 +1584,7 @@ public class ControlIdDevice extends Device {
 			}
 		}
 		
-		private class PushConfiguration {
+		protected class PushConfiguration {
 			private String push_request_timeout = "30"; // segundos ?
 			private String push_request_period = "20"; // segundos
 			private String push_remote_address;
@@ -1535,7 +1594,7 @@ public class ControlIdDevice extends Device {
 			}
 		}
 		
-		private class OnlineClient {
+		protected class OnlineClient {
 			private String server_id;
 			private String extract_template = "1";
 			
@@ -1548,7 +1607,7 @@ public class ControlIdDevice extends Device {
 
 
 	@SuppressWarnings("unused")
-	private class Result {
+	protected class Result {
 		private Integer event;
 		private Long user_id;
 		private String user_name;
@@ -1572,7 +1631,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class Request {
+	protected class Request {
 		private List<Action> actions;
 		private Boolean keep_network_info;
 		private String password;
@@ -1592,7 +1651,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class OperationMode{
+	protected class OperationMode{
 		public Integer mode;
 		public Mode mode_name;
 		public String exception_mode;
@@ -1603,13 +1662,13 @@ public class ControlIdDevice extends Device {
 	}
 	
 	
-	private enum Mode {
+	protected enum Mode {
 		DEFAULT,
 		CONTINGENCY;
 	}
 	
 	@SuppressWarnings("unused")
-	private class Action {
+	protected class Action {
 		private String action;
 		private String parameters;
 		
@@ -1621,7 +1680,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class Beep {
+	protected class Beep {
 		private Integer duty_cycle;
 		private Integer frequency;
 		private Integer timeout;
@@ -1635,7 +1694,7 @@ public class ControlIdDevice extends Device {
 	
 
 	@SuppressWarnings("unused")
-	private class RemoteEnroll {
+	protected class RemoteEnroll {
 		public String type = "biometry";
 		public Boolean save = false;
 		public Integer user_id;
@@ -1646,7 +1705,7 @@ public class ControlIdDevice extends Device {
 	}
 	
 
-	public class Template {
+	protected class Template {
 		public Long id;
 		public String template;
 		public Integer user_id;

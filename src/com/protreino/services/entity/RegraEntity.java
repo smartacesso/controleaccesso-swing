@@ -119,9 +119,6 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="REMOVED", nullable=true, length=30)
 	private Boolean removed;
 	
-	@Column(name="PERMITE_BLOQUEIO", nullable=true, length=30)
-	private Boolean permite_bloqueio;
-	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_REMOVIDO", nullable=true, length=11)
 	private Date dataRemovido = null;

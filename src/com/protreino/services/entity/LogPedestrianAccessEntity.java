@@ -38,6 +38,18 @@ import org.hibernate.annotations.Type;
 					  + " where obj.dataCriacao > :LAST_SYNC "
 					  + " and obj.offline = true "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
+	
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDateBetween", 
+	query = "select obj from LogPedestrianAccessEntity obj "
+		  + " where obj.accessDate between :DATA_INICIO and :DATA_FIM "
+		  + " and (obj.offline is null or obj.offline = false) "
+		  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
+
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDateBetween", 
+	query = "select obj from LogPedestrianAccessEntity obj "
+		  + " where obj.dataCriacao between :DATA_INICIO and :DATA_FIM "
+		  + " and obj.offline = true "
+		  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findLocalByDate", 
 				query = "select obj "
 					  + "from LogPedestrianAccessEntity obj, "
@@ -46,6 +58,14 @@ import org.hibernate.annotations.Type;
 					  + "      and p.id = obj.idPedestrian "
 			          + "      and (p.cadastradoNoDesktop = null or p.cadastradoNoDesktop = false) "
 			          + " 	   and (obj.onlyLocal is null or obj.onlyLocal = false) "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.countByPeriod", 
+				query = "select count(*) "
+					  + "from LogPedestrianAccessEntity obj "
+					  + "	left join obj.pedestre p "
+					  + " where obj.accessDate >= :DATA_INICIO "
+					  + " and obj.accessDate <= :DATA_FIM "
+					  + "and (p.name like :NOME or :NOME = 'vazio') "
+					  + "and (p.tipo like :TIPO or :TIPO = 'vazio') "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByPeriod", 
 				query = "select new com.protreino.services.entity.LogPedestrianAccessEntity(obj, p.name, p.id, p.cardNumber, p.tipo) "
 					  + "from LogPedestrianAccessEntity obj "
@@ -109,7 +129,26 @@ import org.hibernate.annotations.Type;
 					  + "and obj.direction is null "
 					  + "and obj.idPedestrian is not null "
 					  + "and obj.cartaoAcessoRecebido = :NUMERO_CARTAO_RECEBIDO "
-					  + "order by obj.id desc ")
+					  + "order by obj.id desc "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrian",
+	query = "select obj from LogPedestrianAccessEntity obj "
+		  + "where obj.idPedestrian = :ID_PEDESTRE "
+		  + "and obj.direction is not null "
+		  + "and obj.dataCriacao is not null "
+		  + "order by obj.dataCriacao desc "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrianAndDate",
+	query = "select obj from LogPedestrianAccessEntity obj "
+		  + "where obj.idPedestrian = :ID_PEDESTRE "
+		  + "and obj.direction is not null "
+		  + "and obj.dataCriacao is not null "
+		  + "and obj.dataCriacao >= :DATE "
+		  + "order by obj.dataCriacao desc "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCurrentDate",
+	query = "select obj from LogPedestrianAccessEntity obj "
+		  + "where obj.dataCriacao is not null "
+		  + "and  obj.idPedestrian = :ID_PEDESTRE  "
+		  + "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM "
+		  + "order by obj.dataCriacao desc ")
 })
 public class LogPedestrianAccessEntity implements ObjectWithId {
 	

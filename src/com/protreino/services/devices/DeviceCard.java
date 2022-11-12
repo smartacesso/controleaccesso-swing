@@ -40,6 +40,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
+import com.protreino.services.constants.Configurations;
+import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
@@ -63,7 +65,6 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.FieldTO.ComboBoxListener;
-import com.protreino.services.utils.Constants;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.SelectItem;
@@ -425,6 +426,9 @@ public class DeviceCard extends JPanel {
 			jPopup.add(mirrorMenuItem);
 			mirrorMenuItem.setSelected(device.isMirrorDevice());
 		}
+		if (Manufacturer.CONTROL_ID_UHF.equals(device.getManufacturer())) {
+			jPopup.remove(0);
+		}
 		if (Manufacturer.HENRY_7X.equals(device.getManufacturer())) {
 			jPopup.add(syncUsersMenuItem);
 			syncUsersMenuItem.setSelected(device.isSyncUsers());
@@ -483,7 +487,7 @@ public class DeviceCard extends JPanel {
 	}
 	
 	private void liberarCatraca() {
-		logAccess.setDirection("ENTRADA");
+		logAccess.setDirection(Tipo.ENTRADA);
 		logAccess.setEquipament(this.device.getName());
 		
 		if (Manufacturer.SERVER.equals(device.getManufacturer())) {
@@ -891,7 +895,6 @@ public class DeviceCard extends JPanel {
 	}
 	
 	private void sync() {
-			
 		TopDataDevice topData = (TopDataDevice) device;
 		if(topData.isConnected()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, 
@@ -952,12 +955,12 @@ public class DeviceCard extends JPanel {
 
 	private void loadImages(){
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		configImage = toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
-		catracaIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "thumbnails/" 
+		configImage = toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
+		catracaIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "thumbnails/" 
 						+ device.getManufacturer().getIconName())));
-		connectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/ok.png")));
-		disconnectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/erro.png")));
-		linkIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Constants.IMAGE_FOLDER + "comuns/link.png")));
+		connectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/ok.png")));
+		disconnectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/erro.png")));
+		linkIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/link.png")));
 	}
 
 	public Device getDevice() {

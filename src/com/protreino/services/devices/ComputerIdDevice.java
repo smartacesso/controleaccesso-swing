@@ -293,7 +293,8 @@ public class ComputerIdDevice extends Device {
 				case TEMPLATE_STATUS_READY:
 					biometricDialog.setImageSample(convertSampleToByteArray(sample));
 					template = enroller.getTemplate().serialize();
-					biometricDialog.finishCollect(template);
+					biometricDialog.saveTemplates(template);
+					biometricDialog.finishCollect();
 					break;
 				case TEMPLATE_STATUS_FAILED:
 					biometricDialog.setMessage("Ocorreu um erro no template durante a leitura.", "erro");
