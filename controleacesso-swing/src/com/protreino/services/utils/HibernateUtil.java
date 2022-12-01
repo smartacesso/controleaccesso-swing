@@ -1162,13 +1162,18 @@ public class HibernateUtil {
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
 			
-			if (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) {
+			if ((Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedAthleteAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
 
 				return new Object[] { VerificationResult.ALLOWED, userName, matchedAthleteAccess };
 
 			}
+			
+			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == 3) {
+				permitidoSensor = false;
+			}
+			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
 				if (createNotification)
 					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
@@ -2960,7 +2965,8 @@ public class HibernateUtil {
 //			antes o count
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
-					+ "	where  p.tipo = 'VISITANTE' ");
+					+ "	where  p.tipo = 'VISITANTE' "
+					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
 //			depois do commit a nova query

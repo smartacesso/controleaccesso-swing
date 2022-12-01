@@ -650,8 +650,8 @@ public class Main {
 						if (retornoAuthentication == null)
 							return null;
 						if (!retornoAuthentication) {
-							JOptionPane.showMessageDialog(null, "N√£o foi poss√≠vel validar a senha, ou senha inv√°lida", 
-									"Erro na valida√ß√£o", JOptionPane.PLAIN_MESSAGE);
+							JOptionPane.showMessageDialog(null, "N√£o foi poss[ivel validar a senha, ou senha inv·lida", 
+									"Erro na validaÁ„o", JOptionPane.PLAIN_MESSAGE);
 							return null;
 						}
 					}
@@ -693,7 +693,7 @@ public class Main {
 						button.setText("Acesso permitido!");
 						mainScreen.getLiberarAcessoMenuItem().setEnabled(false);
 						
-						String direction = apertouF9 ? Tipo.ENTRADA : (apertouF10 ? "SA√çDA" : Tipo.ENTRADA);
+						String direction = apertouF9 ? Tipo.ENTRADA : (apertouF10 ? Tipo.SAIDA : Tipo.ENTRADA);
 						String equipament = selectedDevice.getFullIdentifier();
 						
 						if (idAlunoEspecifico != null) {
@@ -1342,7 +1342,7 @@ public class Main {
 			return;
 		
 		if(Main.servidor != null) {
-			System.out.println(sdf.format(new Date()) + " Sincroniza√ß√£o desabilitada: M√°quina possui servidor");
+			System.out.println(sdf.format(new Date()) + " SincronizaÁ„o desabilitada: M·quina possui servidor");
 			return;
 		}
 		
@@ -1368,16 +1368,20 @@ public class Main {
 						mainScreen.getListaAcessoPanel().getSyncButton().setEnabled(false);
 						mainScreen.getListaAcessoPanel().getSyncButton().revalidate();
 					}
-					if (timerSyncAthleteAccessList.isRunning())
+					
+					if (timerSyncAthleteAccessList.isRunning()) {
 						timerSyncAthleteAccessList.stop();
+					}
+					
 					timerSyncAthleteAccessList.setInitialDelay(Integer.valueOf(Utils.getPreference("timeAccessList")) * 60000);
 					trayIcon.setImage(trayIconImageLoading);
 					
 					//Sincroniza os logs de acesso antes de sincronizar os pedestres
 					syncLogAthleteAccess();
 					
-					while(updatingLogAccessList)
+					while(updatingLogAccessList) {
 						Thread.sleep(500);
+					}
 					
 					HttpConnection con = new HttpConnection(urlApplication + "/restful-services/login/action");
 					int responseCode = con.getResponseCode();
@@ -1394,8 +1398,9 @@ public class Main {
 					recebePedestresEBiometriasDaWeb();
 					buscaFotosDosPedestres(backUpLastSync);
 					
-					if(visitantesLocais != null && !visitantesLocais.isEmpty())
+					if(visitantesLocais != null && !visitantesLocais.isEmpty()) {
 						apagaDadosNovos(visitantesLocais);
+					}
 				
 					atualizaListadeAcessoCatracaOffline();
 				
@@ -1669,9 +1674,9 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 					
-					// TODO : criar novo m√©todo para pegar pedestre removido ou n√£o
-					//        isso pode resolver v√°rios bugs
-					// TODO : verificar onde o luxand ID √© removido para n√£o fazer mais. Pode ser 
+					// TODO : criar novo mÈtodo para pegar pedestre removido ou n„o
+					//        isso pode resolver v·rios bugs
+					// TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser 
 					//		  aqui ou ne
 					
 					PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateUtil.
@@ -1758,8 +1763,9 @@ public class Main {
 				loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
 				
 				//dispara para servidores
-				if (Main.broadcastServer != null)
-					Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REFRESH_TEMPLATES));
+				if (Main.broadcastServer != null) {
+					Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REFRESH_TEMPLATES));					
+				}
 			}
 
 			@SuppressWarnings("unchecked")
@@ -1844,16 +1850,15 @@ public class Main {
 						List<PedestrianAccessTO> athleteAccessTOList = gson.fromJson(bufferedReader, type);
 						if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
 							for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
-								if (loggedUser == null) // usuario deslogou durante a sincronizacao
+								if (loggedUser == null) {
 									break;
+								}
+								
 								PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateUtil
-										.getSingleResultById(PedestrianAccessEntity.class,
-												athleteAccessTO.getId());
+										.getSingleResultById(PedestrianAccessEntity.class, athleteAccessTO.getId());
 								if (existentAthleteAccess != null) {
-									existentAthleteAccess
-											.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
-									HibernateUtil.update(PedestrianAccessEntity.class,
-											existentAthleteAccess);
+									existentAthleteAccess.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
+									HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 								}
 							}
 						}
@@ -1865,17 +1870,18 @@ public class Main {
 	}
 	
 	public static void syncLogAthleteAccess(){
-		if (updatingLogAccessList)
-			return;
+		if (updatingLogAccessList) {
+			return;			
+		}
 		
-		if(Main.servidor != null)
-			return;
+		if(Main.servidor != null) {
+			return;			
+		}
 		
 		while(isCadastrandoBiometria) {
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
