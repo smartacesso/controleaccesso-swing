@@ -45,7 +45,7 @@ public class PreferencesDialog extends JDialog {
 	private Map<String, FieldTO> fieldMap;
 	
 	public PreferencesDialog() {
-		super(Main.mainScreen, "Preferências", true);
+		super(Main.mainScreen, "PreferÃªncias", true);
 		
 		loadImages();
 		
@@ -96,6 +96,10 @@ public class PreferencesDialog extends JDialog {
 			field.setNumeric(preference.getNumeric());
 			field.setTextFieldSize(preference.getTextFieldSize());
 			if ("messageAllowed".equals(preference.getKey())) {
+				field.setMaxCharacteres(16);
+				field.setTextFieldSize(12);
+			}
+			if ("cardMaster".equals(preference.getKey())) {
 				field.setMaxCharacteres(16);
 				field.setTextFieldSize(12);
 			}
@@ -183,7 +187,7 @@ public class PreferencesDialog extends JDialog {
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
 		
-		JButton resetarButton = new JButton("Valores padrão");
+		JButton resetarButton = new JButton("Valores padrÃ£o");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
 		salvarButton.setPreferredSize(new Dimension(80, 30));
@@ -226,7 +230,7 @@ public class PreferencesDialog extends JDialog {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//Amanhã fazer a configuração da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
+//Amanhï¿½ fazer a configuraï¿½ï¿½o da funï¿½ï¿½o e terminar de executar tanto a requisiï¿½ï¿½o, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
 		});
 
@@ -257,7 +261,7 @@ public class PreferencesDialog extends JDialog {
 				if(Main.servidor == null)
 					Utils.exportPreferences();
 				
-				JOptionPane.showMessageDialog(Main.mainScreen, "Preferências salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(Main.mainScreen, "PreferÃªncias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();
 			}
 		});
@@ -282,7 +286,7 @@ public class PreferencesDialog extends JDialog {
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmação", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "ConfirmaÃ§Ã£o", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (dialogResult == JOptionPane.YES_OPTION){
 					Main.lastSync = 0l;

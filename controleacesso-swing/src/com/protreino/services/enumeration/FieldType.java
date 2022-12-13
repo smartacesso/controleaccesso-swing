@@ -4,53 +4,53 @@ public enum FieldType {
 	
 	/**
 	 * Um JTextField simples. 
-	 * Podem ser definidos máximo e minimo de caracteres. Pode ser definido como campo numerico.
-	 * O valor padrão pode ser uma string qualquer.
-	 * Por padrão, é um campo obrigatório e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
+	 * Podem ser definidos mÃ¡ximo e minimo de caracteres. Pode ser definido como campo numerico.
+	 * O valor padrï¿½o pode ser uma string qualquer.
+	 * Por padrï¿½o, ï¿½ um campo obrigatï¿½rio e portanto nï¿½o pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatï¿½rio.
 	 */
 	TEXT,
 	
 	/**
 	 * Um JCheckBox. 
-	 * Os valores booleanos são representados pelas strings "true" e "false". 
-	 * O valor padrão deve ser definido como "true" ou "false".
+	 * Os valores booleanos sï¿½o representados pelas strings "true" e "false". 
+	 * O valor padrï¿½o deve ser definido como "true" ou "false".
 	 */
 	CHECKBOX,
 	
 	/**
 	 * Um JComboBox de SelectItem. 
 	 * Deve ser passada uma string com os valores da lista do combobox no formato "LABEL_VALUE;LABEL_VALUE". 
-	 * Exemplo: "Horário_clockwise;Antihorário_anticlockwise;Ambos_both".
-	 * Podem ser passados quantos valores LABEL_VALUE forem necessários.
-	 * O valor padrão deve ser definido no padrão "LABEL_VALUE".
+	 * Exemplo: "Horï¿½rio_clockwise;Antihorï¿½rio_anticlockwise;Ambos_both".
+	 * Podem ser passados quantos valores LABEL_VALUE forem necessï¿½rios.
+	 * O valor padrï¿½o deve ser definido no padrï¿½o "LABEL_VALUE".
 	 */
 	COMBOBOX,
 	
 	/**
-	 * Um JComboBox predefinido com os dois valores booleanos "Sim_true;Não_false". 
-	 * O valor padrão pode ser definido como "Sim_true" ou "Não_false", ou apenas como "true" ou "false".
+	 * Um JComboBox predefinido com os dois valores booleanos "Sim_true;Nï¿½o_false". 
+	 * O valor padrï¿½o pode ser definido como "Sim_true" ou "Nï¿½o_false", ou apenas como "true" ou "false".
 	 */
 	YES_NO_COMBOBOX,
 	
 	/**
 	 * Um campo composto por dois JTextField.
-	 * Podem ser definidos máximo e minimo de caracteres.
-	 * O retorno e o valor padrão seguem o formato "TEXTO1;TEXTO2".
+	 * Podem ser definidos mï¿½ximo e minimo de caracteres.
+	 * O retorno e o valor padrï¿½o seguem o formato "TEXTO1;TEXTO2".
 	 */
 	MESSAGE_LINES,
 	
 	/**
-	 * Um JComboBox com uma sequência numérica, apenas para números INTEIROS.
+	 * Um JComboBox com uma sequï¿½ncia numï¿½rica, apenas para nï¿½meros INTEIROS.
 	 * Os valores da lista devem ser definidos no formato "INICIO;PASSO;FIM". Por exemplo, a string "1;1;9" resulta na lista 1 2 3 4 5 6 7 8 9. 
-	 * O valor padrão pode ser definido apenas como "VALOR".
-	 * Por padrão, é um campo obrigatório e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
+	 * O valor padrï¿½o pode ser definido apenas como "VALOR".
+	 * Por padrï¿½o, ï¿½ um campo obrigatï¿½rio e portanto nï¿½o pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatï¿½rio.
 	 */
 	NUMERIC_LIST,
 	
 	/**
-	 * Um botão para carregar uma imagem e um imageView para visualizar a imagem carregada.
-	 * A imagem é convertida para uma string base64.
-	 * Não é obrigatório.
+	 * Um botï¿½o para carregar uma imagem e um imageView para visualizar a imagem carregada.
+	 * A imagem ï¿½ convertida para uma string base64.
+	 * Nï¿½o ï¿½ obrigatï¿½rio.
 	 */
 	IMAGE,
 	

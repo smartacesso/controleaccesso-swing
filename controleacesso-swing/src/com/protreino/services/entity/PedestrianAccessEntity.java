@@ -816,13 +816,13 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			boolean alterar = false;
 			if(templates != null && !templates.isEmpty()) {
 				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, j� altera
+					//tamanhos diferentes, já altera
 					alterar = true;
 					if(Main.desenvolvimento)
 						System.out.println("Digitais diferentes");
 				} else {
 					//verifica se lista de digitais existes 
-					//� igual a lista de digitais recebidas
+					//é igual a lista de digitais recebidas
 					List<String> templatesExistentes = new ArrayList<String>();
 					for (TemplateEntity t : templates) {
 						String existente = Base64.encodeBase64String(t.getTemplate());

@@ -53,11 +53,11 @@ public class LuxandService {
 			
 			int ret = FSDK.ActivateLibrary(key);
 			if (ret != FSDK.FSDKE_OK)
-				throw new Exception("N„o foi possÌvel ativar a Luxand FaceSDK. Verifique a chave de licenÁa.");
+				throw new Exception("N√£o foi poss√≠vel ativar a Luxand FaceSDK. Verifique a chave de licen√ßa.");
 			
 			ret = FSDK.Initialize();
 			if (ret != FSDK.FSDKE_OK)
-				throw new Exception("N„o foi possÌvel inicializar a Luxand FaceSDK.");
+				throw new Exception("N√£o foi poss√≠vel inicializar a Luxand FaceSDK.");
 			
 			serviceInitialized = true;
 			
@@ -69,22 +69,22 @@ public class LuxandService {
 	        		Boolean.valueOf(configurationsMap.get("DetermineFaceRotationAngle")),
 	        		Integer.valueOf(configurationsMap.get("InternalResizeWidth")));
         	if (ret != FSDK.FSDKE_OK)
-	        	throw new Exception("N„o foi possÌvel setar os par‚metros de detecÁ„o da Luxand FaceSDK.");
+	        	throw new Exception("N√£o foi poss√≠vel setar os par√™metros de detec√ß√£o da Luxand FaceSDK.");
         	
         	ret = FSDK.SetFaceDetectionThreshold(Integer.valueOf(configurationsMap.get("FaceDetectionThreshold")));
         	if (ret != FSDK.FSDKE_OK)
-	        	throw new Exception("N„o foi possÌvel setar o par‚metro threshold da Luxand FaceSDK.");
+	        	throw new Exception("N√£o foi poss√≠vel setar o par√¢metro threshold da Luxand FaceSDK.");
         	
         	if(Boolean.valueOf(configurationsMap.get("FacilitateRecognizeWithMask"))) {
         		int [] erros = new int [10];
         		ret = FSDK.SetParameters("FaceDetectionModel="+PATH_FILE_MASKS_BIN+";TrimFacesWithUncertainFacialFeatures=false", erros);
         		if(ret != FSDK.FSDKE_OK)
-        			throw new Exception("N„o foi possÌvel setar o par‚metro modelo de detecÁ„o de faces.");
+        			throw new Exception("N√£o foi poss√≠vel setar o par√¢metro modelo de detec√ß√£o de faces.");
         	}
 	        
         	ret = FSDKCam.SetCameraNaming(true); // UseDevicePathAsName
 	        if (ret != FSDK.FSDKE_OK)
-	        	throw new Exception("N„o foi possÌvel setar o padr„o de nomenclatura da Luxand FaceSDK.");
+	        	throw new Exception("N√£o foi poss√≠vel setar o padr√£o de nomenclatura da Luxand FaceSDK.");
 	        
 		}
 		catch(Exception e) {
@@ -110,7 +110,7 @@ public class LuxandService {
 		FSDKCam.FinalizeCapturing();
 		
 		if (ret != FSDK.FSDKE_OK) {
-        	JOptionPane.showMessageDialog(null, "N„o foi possÌvel retornar lista de nomes das c‚meras.", "Erro na Luxand FaceSDK", JOptionPane.PLAIN_MESSAGE);
+        	JOptionPane.showMessageDialog(null, "N√£o foi poss√≠vel retornar lista de nomes das c√£meras.", "Erro na Luxand FaceSDK", JOptionPane.PLAIN_MESSAGE);
         	return new String[0];
         }
         
@@ -123,7 +123,7 @@ public class LuxandService {
             }
 		}
         else {
-        	JOptionPane.showMessageDialog(null, "Nenhuma c‚mera encontrada.", "Erro na Luxand FaceSDK", JOptionPane.PLAIN_MESSAGE);
+        	JOptionPane.showMessageDialog(null, "Nenhuma c√£mera encontrada.", "Erro na Luxand FaceSDK", JOptionPane.PLAIN_MESSAGE);
         }
         
         return cameras;
@@ -273,7 +273,7 @@ public class LuxandService {
 		    }
 		    
 		} catch (ConnectException e) {
-			System.err.println("N„o foi possÌvel conectar com o servidor");
+			System.err.println("N√£o foi poss√≠vel conectar com o servidor");
 			resultado.setResultCode(FSDK.FSDKE_LOCAL_EXCEPTION);
 
 		} catch (Exception e) {
@@ -330,7 +330,7 @@ public class LuxandService {
 			if (status != HttpURLConnection.HTTP_OK) {
 				String errorResponse = null;
 				if (status != HttpURLConnection.HTTP_UNAUTHORIZED) {
-					errorResponse = "Usu·rio n„o logado no servidor.";
+					errorResponse = "Usu√°rio n√£o logado no servidor.";
 				}
 				else {
 					errorResponse = httpConnection.getErrorString();
@@ -372,7 +372,7 @@ public class LuxandService {
 			
 		}
 		catch (Exception e) {
-			System.err.println("N„o foi possÌvel se conectar com o servidor facial.");
+			System.err.println("N√£o foi poss√≠vel se conectar com o servidor facial.");
 			
 			// Usa valores padrao
 			configurationsMap.put("HandleArbitraryRotations", "false");

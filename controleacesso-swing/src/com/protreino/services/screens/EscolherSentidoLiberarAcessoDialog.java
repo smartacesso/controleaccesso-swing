@@ -65,7 +65,7 @@ public class EscolherSentidoLiberarAcessoDialog{
 			escolherSentidoDialog.dispose();
 		});
 		
-		JButton escolherSaidaButton = new JButton("2 - Saída");
+		JButton escolherSaidaButton = new JButton("2 - SaÃ­da");
 		escolherSaidaButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		escolherSaidaButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		escolherSaidaButton.addActionListener(e -> {

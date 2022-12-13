@@ -39,7 +39,7 @@ public class ReleaseReasonDialog extends JDialog {
 	private JButton okButton;
 	
 	public ReleaseReasonDialog(Frame owner, String motivos) {
-		super(owner, "Motivo da liberaÁ„o", true);
+		super(owner, "Motivo da libera√ß√£o", true);
 		
 		String[] options = motivos.split(",");
 		
@@ -53,7 +53,7 @@ public class ReleaseReasonDialog extends JDialog {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
-		JLabel label = new JLabel("Selecione o motivo da liberaÁ„o");
+		JLabel label = new JLabel("Selecione o motivo da libera√ß√£o");
 		label.setAlignmentX(Component.CENTER_ALIGNMENT);
 		label.setFont(boldFont);
 		
@@ -138,12 +138,12 @@ public class ReleaseReasonDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Utils.isNullOrEmpty(reason)){
-					labelErro.setText("… necess·rio informar um motivo.");
+					labelErro.setText("√â necess√°rio informar um motivo.");
 					return;
 				}
 				if ("Outro: ".equals(reason)) {
 					if (Utils.isNullOrEmpty(outroTextField.getText())){
-						labelErro.setText("… necess·rio informar um motivo.");
+						labelErro.setText("√â necess√°rio informar um motivo.");
 						return;
 					}
 					reason = reason + outroTextField.getText();

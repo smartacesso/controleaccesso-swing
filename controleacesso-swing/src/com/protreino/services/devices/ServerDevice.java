@@ -147,9 +147,9 @@ public class ServerDevice extends Device {
 		} else {
 			InetAddress inetAddress = InetAddress.getByName(ip);
 			if (inetAddress.isReachable(3000))
-				throw new Exception("Servidor n„o responde. Verifique se o aplicativo est· rodando no servidor.");
+				throw new Exception("Servidor n√£o responde. Verifique se o aplicativo est√° rodando no servidor.");
 			else
-				throw new Exception("Servidor n„o encontrado na rede.");
+				throw new Exception("Servidor n√£o encontrado na rede.");
 		}
 	}
 	
@@ -161,7 +161,7 @@ public class ServerDevice extends Device {
 	}
 	
 	/**
-	 * MÈtodo usado para varredura de ip
+	 * M√©todo usado para varredura de ip
 	 */
 	private boolean quickConnect() throws Exception {
 		client.connect();

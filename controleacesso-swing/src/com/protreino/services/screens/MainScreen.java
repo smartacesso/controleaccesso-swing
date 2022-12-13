@@ -208,8 +208,8 @@ public class MainScreen extends JFrame {
 		int position = 1;
 		if(Main.loggedUser != null && Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
 			listaCartoesPanel = new AccessCardListPanel();
-			tabbedPane.addTab("Lista de cartões", listaCartoesPanel);
-			label = new JLabel("Lista de cartões");
+			tabbedPane.addTab("Lista de cartoes", listaCartoesPanel);
+			label = new JLabel("Lista de cartoes");
 			label.setPreferredSize(new Dimension(150, 25));
 			label.setForeground(Main.firstColor);
 			tabbedPane.setTabComponentAt(position, label);
@@ -225,8 +225,8 @@ public class MainScreen extends JFrame {
 		position++;
 
 		historicoAcessoPanel = new AccessHistoryPanel();
-		tabbedPane.addTab("Histórico de acesso", historicoAcessoPanel);
-		label = new JLabel("Histórico de acesso");
+		tabbedPane.addTab("Historico de acesso", historicoAcessoPanel);
+		label = new JLabel("Historico de acesso");
 		label.setPreferredSize(new Dimension(150, 25));
 		label.setForeground(Main.firstColor);
 		tabbedPane.setTabComponentAt(position, label);
@@ -324,8 +324,8 @@ public class MainScreen extends JFrame {
 	}
 
 	/**
-	 * Cria o deviceCard. Chamado quando um novo dispositivo é adicionado ou quando
-	 * a tela exibida e há dispositivos salvos na lista
+	 * Cria o deviceCard. Chamado quando um novo dispositivo ï¿½ adicionado ou quando
+	 * a tela exibida e hï¿½ dispositivos salvos na lista
 	 * 
 	 * @param device
 	 */
@@ -369,7 +369,7 @@ public class MainScreen extends JFrame {
 	public void doLogout(JDialog dialog) {
 		try {
 			AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-					"Digite a senha do usuário logado \npara confirmar a saída", "Aguarde, realizando logout...");
+					"Digite a senha do usuario logado \npara confirmar a saida", "Aguarde, realizando logout...");
 			Boolean retornoAuthentication = autenticationDialog.authenticate();
 			if (retornoAuthentication == null)
 				return;
@@ -381,13 +381,13 @@ public class MainScreen extends JFrame {
 				revalidate();
 				new LoginDialog();
 			} else {
-				JOptionPane.showMessageDialog(null, "Não foi possível realizar o logout.", "Erro no logout",
+				JOptionPane.showMessageDialog(null, "Nao foi possivel realizar o logout.", "Erro no logout",
 						JOptionPane.PLAIN_MESSAGE);
 			}
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			Utils.createNotification("Não foi possível realizar o logout", NotificationType.BAD);
+			Utils.createNotification("Nao foi possivel realizar o logout", NotificationType.BAD);
 		}
 	}
 	
@@ -447,7 +447,7 @@ public class MainScreen extends JFrame {
 		menuCadastros.setVisible(Main.internoLoggedUser != null);
 		menuBar.add(menuCadastros);
 		
-		JMenu menuConfiguracoes = new JMenu("Configurações");
+		JMenu menuConfiguracoes = new JMenu("Configuracoes");
 		menuConfiguracoes.setMnemonic(KeyEvent.VK_O);
 		menuBar.add(menuConfiguracoes);
 		
@@ -465,13 +465,13 @@ public class MainScreen extends JFrame {
 			});
 			menuOpcoes.add(liberarAcessoMenuItem);
 
-			preferenciasMenuItem = new JMenuItem("Preferências");
+			preferenciasMenuItem = new JMenuItem("PreferÃªncias");
 			preferenciasMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
 						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-								"Digite a senha do usuário logado", "Aguarde, verificando a senha informada...");
+								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
 						if (retornoAuthentication == null)
 							return;
@@ -481,24 +481,24 @@ public class MainScreen extends JFrame {
 							buildUI();
 							tabbedPane.setSelectedIndex(index);
 						} else {
-							JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
-									"Erro na validação", JOptionPane.PLAIN_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
+						Utils.createNotification("NÃ£o foi possÃ­vel abri as preferÃªncias", NotificationType.BAD);
 					}
 				}
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
 			
-			syncUsersMenuItem = new JMenuItem("Sincronizar usuários");
+			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
 			syncUsersMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
 						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-								"Digite a senha do usuário logado", "Aguarde, verificando a senha informada...");
+								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
 						
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
 						if (retornoAuthentication == null)
@@ -506,12 +506,12 @@ public class MainScreen extends JFrame {
 						if (retornoAuthentication) {
 							syncUsers();
 						} else {
-							JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
-									"Erro na validação", JOptionPane.PLAIN_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Não foi possível sincronizar os usuários", NotificationType.BAD);
+						Utils.createNotification("Nao foi possÃ­vel sincronizar os usuÃ¡rios", NotificationType.BAD);
 					}
 				}
 			});
@@ -526,7 +526,7 @@ public class MainScreen extends JFrame {
 			});
 			menuConfiguracoes.add(logsMenuItem);
 			
-			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizações");
+			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizaÃ§oes");
 			procurarAtualizacaoMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -801,8 +801,8 @@ public class MainScreen extends JFrame {
 		}else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
-			connectionStatusLabel.setToolTipText("<html>Sem conexão com servidor " + servidor + " os dados não estão sendo sincronizados."
-					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+			connectionStatusLabel.setToolTipText("<html>Sem conexÃ£o com servidor " + servidor + " os dados nÃ£o estÃ£o sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor estÃ¡ ligado!</html>" );
 		}
 		
 	}
@@ -901,7 +901,7 @@ public class MainScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.mainScreen
-					.addEvento("Não foi possivel abrir a pasta de logs. Navegue até ela manualmente: " + Main.logPath);
+					.addEvento("NÃ£o foi possivel abrir a pasta de logs. Navegue atÃ© ela manualmente: " + Main.logPath);
 		}
 	}
 

@@ -21,10 +21,10 @@ public class ProveuUtil {
 					interfaceJna.inicializaComunicador(Utils.getAppDataFolder() + "/logs/");
 				}
 				else
-					Utils.createNotification("Catraca Proveu Tup„ requer JVM 32 bits", NotificationType.BAD);
+					Utils.createNotification("Catraca Proveu Tup√° requer JVM 32 bits", NotificationType.BAD);
 			}
 			else 
-				Utils.createNotification("Catraca Proveu Tup„ requer sistema Windows", NotificationType.BAD);
+				Utils.createNotification("Catraca Proveu Tup√° requer sistema Windows", NotificationType.BAD);
 		}
 		catch(Exception e){
 			e.printStackTrace();

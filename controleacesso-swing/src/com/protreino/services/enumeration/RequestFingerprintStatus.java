@@ -9,7 +9,7 @@ public enum RequestFingerprintStatus {
 		else if (this.equals(PROCESSING))
 			return "Processando";
 		else if (this.equals(FINISHED))
-			return "Concluído";
+			return "ConcluÃ­do";
 		else if (this.equals(CANCELED))
 			return "Cancelado";
 		else
@@ -21,7 +21,7 @@ public enum RequestFingerprintStatus {
 			return RequestFingerprintStatus.REQUESTED;
 		else if (importValue.equals("Processando"))
 			return RequestFingerprintStatus.PROCESSING;
-		else if (importValue.equals("Concluído"))
+		else if (importValue.equals("ConcluÃ­do"))
 			return RequestFingerprintStatus.FINISHED;
 		else if (importValue.equals("Cancelado"))
 			return RequestFingerprintStatus.CANCELED;
