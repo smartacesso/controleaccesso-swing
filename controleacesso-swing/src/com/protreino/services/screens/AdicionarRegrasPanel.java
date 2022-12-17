@@ -409,26 +409,30 @@ public class AdicionarRegrasPanel extends JPanel {
 	public void setPedestresRegras(List<PedestreRegraEntity> pedestresRegras) {
 		this.pedestresRegras = pedestresRegras;
 		
-		if(this.pedestresRegras != null && !this.pedestresRegras.isEmpty()) {
-			this.pedestresRegras.forEach(p -> {
-				Object[] item = new Object[4];
-				
-				item[0] = p.getId();
-				item[1] = p.getRegra() != null ? p.getRegra().getNome() : "";
-				try {
-					item[2] = new SimpleDateFormat("dd/MM/yyyy").format(p.getValidade());
-				} catch (Exception e) {
-					item[2] = "";
-				}
-				item[3] = p.getRegra() != null ? p.getRegra().getTipo().getDescricao() : "";
-				
-				dataModel.addRow(item);
-			});
-			
-			pedestreRegrasListTable.setModel(dataModel);
-			
-			Utils.escondeColunaFromTable(pedestreRegrasListTable, 0);
+		if(this.pedestresRegras == null || this.pedestresRegras.isEmpty()) {
+			return;
 		}
+		
+		this.pedestresRegras.stream()
+				.filter(p -> p.getRemovidoNoDesktop() == null || p.getRemovidoNoDesktop() == false)
+				.forEach(p -> {
+					Object[] item = new Object[4];
+
+					item[0] = p.getId();
+					item[1] = p.getRegra() != null ? p.getRegra().getNome() : "";
+					try {
+						item[2] = new SimpleDateFormat("dd/MM/yyyy").format(p.getValidade());
+					} catch (Exception e) {
+						item[2] = "";
+					}
+					item[3] = p.getRegra() != null ? p.getRegra().getTipo().getDescricao() : "";
+
+					dataModel.addRow(item);
+				});
+		
+		pedestreRegrasListTable.setModel(dataModel);
+		
+		Utils.escondeColunaFromTable(pedestreRegrasListTable, 0);
 	}
 	
 	private void criarDialogoPadrao(String title, String msg) {

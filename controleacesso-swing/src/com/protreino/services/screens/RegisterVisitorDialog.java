@@ -418,19 +418,26 @@ public class RegisterVisitorDialog extends BaseDialog {
 						&& !"".equals(rgTextField.getText())) {
 					PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateUtil
 							.getSingleResultByRG(PedestrianAccessEntity.class, rgTextField.getText().trim());
-					if(existente != null && visitante.getTipo().equals(existente.getTipo())
+					
+					if(existente != null
 							&& !"".equals(existente.getRg())) {
-						visitante = existente;
-						fotoVisitante = visitante.getFoto();
-						preencheDadosVisitanteEditando();
-						ajustaPaineisParaEdicao();
-						buscaESelecionaEmpresaPedestre();
+						if(!existente.getTipo().equals(visitante.getTipo())) {
+							criarDialogoConfirmarmudarTipoPedestre(existente);
+						} else {
+							existente.setTipo(visitante.getTipo());
+							visitante = existente;
+							fotoVisitante = visitante.getFoto();
+							preencheDadosVisitanteEditando();
+							ajustaPaineisParaEdicao();
+							buscaESelecionaEmpresaPedestre();
+							
+							mainContentPane.remove(actionsPanel);
+							actionsPanel = montarPainelAcoes();
+							mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
+							mainContentPane.revalidate();
+							mainContentPane.repaint();
+						}
 						
-						mainContentPane.remove(actionsPanel);
-						actionsPanel = montarPainelAcoes();
-						mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
-						mainContentPane.revalidate();
-						mainContentPane.repaint();
 					}
 				}
 			}
@@ -485,6 +492,85 @@ public class RegisterVisitorDialog extends BaseDialog {
 			criaPanelDadosAcesso(panel);
 
 		return panel;
+	}
+	
+	private void criarDialogoConfirmarmudarTipoPedestre(PedestrianAccessEntity existente) {
+		JDialog confirmarAdicaoCreditoDialog = new JDialog();
+		confirmarAdicaoCreditoDialog.setIconImage(Main.favicon);
+		confirmarAdicaoCreditoDialog.setModal(true);
+		confirmarAdicaoCreditoDialog.setTitle("Confirmar");
+		confirmarAdicaoCreditoDialog.setResizable(false);
+		confirmarAdicaoCreditoDialog.setLayout(new BorderLayout());
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		String mensagem = String.format("Rg já existente, tem certeza que quer mudar o tipo do Usuário de %s para %s?", 
+				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.PEDESTRE : TipoPedestre.VISITANTE,
+				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.VISITANTE : TipoPedestre.PEDESTRE);
+
+		JLabel mensagemLabel = new JLabel(mensagem);
+		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+		JButton simButton = new JButton("Sim");
+		simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		simButton.addActionListener(e -> {
+			
+			inverteTipoUsuario(existente);
+			
+			existente.setTipo(visitante.getTipo());
+			visitante = existente;
+			fotoVisitante = visitante.getFoto();
+			
+			confirmarAdicaoCreditoDialog.dispose();
+			this.dispose();
+			dispose();
+			
+			new Thread() {
+				public void run() {
+					Utils.sleep(500);
+					if("VISITANTE".equals(visitante.getTipo()))
+						Main.mainScreen.abreCadastroVisitante(visitante);
+					else
+						Main.mainScreen.abreCadastroPedestre(visitante);
+				}
+			}.start();
+		});
+
+		JButton naoButton = new JButton("Não");
+		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		naoButton.addActionListener(e -> {
+			confirmarAdicaoCreditoDialog.dispose();
+			dispose();
+			
+			new Thread() {
+				public void run() {
+					Utils.sleep(500);
+					if("VISITANTE".equals(visitante.getTipo()))
+						Main.mainScreen.abreCadastroVisitante(null);
+					else
+						Main.mainScreen.abreCadastroPedestre(null);
+				}
+			}.start();
+		});
+
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+		confirmarPanel.add(simButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+		confirmarPanel.add(naoButton);
+
+		mainPanel.add(mensagemLabel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarPanel);
+
+		confirmarAdicaoCreditoDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		confirmarAdicaoCreditoDialog.pack();
+		confirmarAdicaoCreditoDialog.setLocationRelativeTo(null);
+		confirmarAdicaoCreditoDialog.setVisible(true);
 	}
 	
 	private void criaPanelDadosAcesso(JPanel panel) {
@@ -821,6 +907,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		geraQRCodeButton.setBorder(new EmptyBorder(20, 20, 20, 20));
 		geraQRCodeButton.setPreferredSize(new Dimension(150, 40));
 		geraQRCodeButton.addActionListener(e -> {
+			
 			criarDialogoGeraQRCode();
 		});
 		
@@ -925,6 +1012,18 @@ public class RegisterVisitorDialog extends BaseDialog {
 		return panel;
 	}
 
+	private void inverteTipoUsuario(PedestrianAccessEntity usuarioExistente) {
+		usuarioExistente.setValidadeCreditos(null);
+		usuarioExistente.setQuantidadeCreditos(null);
+		usuarioExistente.setDataInicioPeriodo(null);
+		usuarioExistente.setDataFimPeriodo(null);
+		usuarioExistente.setSempreLiberado(false);
+		
+		usuarioExistente.getPedestreRegra().forEach(pedestreRegra -> {
+			pedestreRegra.setRemovidoNoDesktop(true);
+		});
+	}
+	
 	private void criarDialogoGeraQRCode() {
 		
 		JDialog qrCodeDialog = new JDialog();
@@ -1340,13 +1439,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 				&& (visitante.getCardNumber() == null  || "".equals(visitante.getCardNumber().replace("0", "")))){
 			//não muda valor do cartão adicionado anteriormente
 			System.out.println("Não muda valor do cartão");
-		}else {
-		
+
+		} else {
 			cartaoAcessoTextField.setText(visitante.getCardNumber() != null ? visitante.getCardNumber()
 														: StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-			if (cartaoAcessoTextField.getText().length() < qtdeDigitosCartao)
-				cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-			
+			if (cartaoAcessoTextField.getText().length() < qtdeDigitosCartao) {
+				cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));				
+			}
 		}
 		
 		habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
@@ -1638,6 +1737,21 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		}
 		
+		if(cartaoAcessoTextField != null
+				&& !cartaoAcessoTextField.getText().isEmpty()
+				&& visitante.getTipo().equals("PEDESTRE")
+				){
+			
+				if(cartaoAcessoTextField.getText().replace( "0", "").matches(
+			            "^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$"
+				        ))
+				{
+					cartaoAcessoLabel.setText(" Senha sequencial ou repetida ");
+					redAndBoldFont(cartaoAcessoLabel);
+					valido = false;
+				}
+		}
+		
 		return valido;
 	}
 
@@ -1795,7 +1909,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		responsavelTextField.setText("");
 		obsTextArea.setText("");
 		statusJComboBox.setSelectedIndex(0);
-		//cartaoAcessoTextField.setText("");
+		cartaoAcessoTextField.setText("");
 		cartaoAcessoTextField.setText(StringUtils.leftPad("0", qtdeDigitosCartao, '0'));
 		cepTextField.setText("");
 		logradouroTextField.setText("");
@@ -1804,13 +1918,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 		bairroTextField.setText("");
 		cidadeTextField.setText("");
 		estadoTextField.setText("");
+		matriculaLabel.setText("");
 		
 		new Thread() {
 			public void run() {
 				Runtime.getRuntime().gc();
 			};
 		}.start();
-		
 		
 	}
 
@@ -2224,7 +2338,26 @@ public class RegisterVisitorDialog extends BaseDialog {
 		simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		simButton.addActionListener(e -> {
+			
+			try {
+				if(visitante.getPedestreRegra() != null) {
+					for(PedestreRegraEntity pedestreRegra : visitante.getPedestreRegra()) {
+						RegraEntity regra = pedestreRegra.getRegra();
+						if(regra.getTipo().equals(TipoRegra.ACESSO_PERIODO)) {
+							pedestreRegra.setRemovidoNoDesktop(true);
+							break;
+						}
+					}
+				}
+			} catch (Exception a) {
+				a.printStackTrace();
+			}
+			
+			visitante.setDataInicioPeriodo(null);
+			visitante.setDataFimPeriodo(null);
+			
 			visitante.setQuantidadeCreditos(1l);
+			visitante.setValidadeCreditos(null);
 
 			boolean valido = validarCampos();
 

@@ -678,7 +678,7 @@ public class Utils {
 	
 	/**
 	 * Tenta enviar o backup para o servidor. Caso falhe, entao seta um flag indicando que o
-	 * backup precisa ser enviado. Com isso, haverï¿½ nova tentativa juntamente com o envio dos logs de acesso
+	 * backup precisa ser enviado. Com isso, haveriá nova tentativa juntamente com o envio dos logs de acesso
 	 */
 	private static void sendBackupToServer() {
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1518,6 +1518,10 @@ public class Utils {
 		}
 		
 		for(PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
+			if(pedestreRegra.getRemovidoNoDesktop()) {
+				continue;
+			}
+			
 			if(isRegraDeAcessoValida(pedestreRegra.getDataInicioPeriodo(), pedestreRegra.getDataFimPeriodo(), pedestreRegra.getValidade())) {
 				return true;
 			}
@@ -1684,6 +1688,13 @@ public class Utils {
 			longAbatrack  = new BigInteger(hexWigan, 16).longValue();
 			fclong  = new BigInteger(temp, 16).longValue();
 			String wiegand = String.valueOf(longAbatrack);
+			if(wiegand.length() < 4) {
+				wiegand = "00"+wiegand;
+			}
+			if(wiegand.length() < 5) {
+				wiegand = "0"+wiegand;
+			}
+			
 			String fcwiegand = String.valueOf(fclong);
 			String fcwiegandtg = fcwiegand+wiegand;
 	        return fcwiegandtg;
@@ -1706,6 +1717,14 @@ public class Utils {
 			}
 		}
 		System.out.println(" o que é cartão " + temp);
+		
+		String n1 = "4537";
+		if(n1.matches("^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
+			System.out.println(true);
+		}else {
+			System.out.println(false);
+		}
+		
 	}
 
 

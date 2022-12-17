@@ -323,8 +323,9 @@ public class HibernateUtil {
 		List<?> resultList = null;
 
 		if (Main.servidor != null && !DeviceEntity.class.equals(entityClass)) {
-			if (!Main.servidor.isConnected())
-				return null;
+			if (!Main.servidor.isConnected()) {
+				return null;				
+			}
 
 			verificaExecucaoDePing();
 			try {
@@ -336,6 +337,59 @@ public class HibernateUtil {
 
 				executando = true;
 
+				outToServer.writeObject(req);
+				outToServer.flush();
+				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+				resultList = (List<?>) resp.getParans().get("list");
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				executando = false;
+			}
+
+		} else {
+			Session session = getSessionFactory().getCurrentSession();
+			if (session.getTransaction() == null || !session.getTransaction().isActive())
+				session.beginTransaction();
+
+			try {
+				Query<?> query = session.createNamedQuery(namedQuery, entityClass);
+				resultList = (List<?>) query.getResultList();
+				session.getTransaction().commit();
+
+			} catch (Exception e) {
+				resultList = null;
+				session.getTransaction().rollback();
+				e.printStackTrace();
+
+			} finally {
+				session.close();
+			}
+		}
+		return resultList;
+	}
+	
+	public static synchronized <T> List<?> buscaListaDevicesDoServidor(Class<T> entityClass, String namedQuery) {
+		List<?> resultList = null;
+
+		if (Main.servidor != null) {
+			if (!Main.servidor.isConnected()) {				
+				return null;
+			}
+
+			verificaExecucaoDePing(); 
+			try {
+				String classe = entityClass.getCanonicalName();
+
+				TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ALL_DEVICES_FROM_SERVER);
+				req.getParans().put("entityClass", classe);
+				req.getParans().put("namedQuery", namedQuery);
+				
+				executando = true;
+				
 				outToServer.writeObject(req);
 				outToServer.flush();
 				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
@@ -1161,13 +1215,12 @@ public class HibernateUtil {
 				motivo = "Usuário inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
-			
-			if ((Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
+			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
+				
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedAthleteAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
 
 				return new Object[] { VerificationResult.ALLOWED, userName, matchedAthleteAccess };
-
 			}
 			
 			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == 3) {
@@ -1175,6 +1228,8 @@ public class HibernateUtil {
 			}
 			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
+				System.out.println("o que é equipament" +equipament );
+				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
 					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
 							foto);
@@ -1584,7 +1639,8 @@ public class HibernateUtil {
 			PedestrianAccessEntity pedestre) {
 		Boolean permitidoSensor = true;
 		System.out.println(pedestre.getCardNumber());
-		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")) {
+		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")
+				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
 			return true;
 			
 		}
@@ -1751,7 +1807,7 @@ public class HibernateUtil {
 		for (PedestrianEquipamentEntity e : equipamentos) {
 			String idEquipament = equipament.replace("Inner ", "").replace("Inner Acesso ", "").replace("Control ", "");
 
-			if (e.getIdEquipamento().equals(idEquipament)) {
+			if (e.getIdEquipamento().equals(idEquipament) || idEquipament.contains(e.getIdEquipamento())) {
 				pode = true;
 				break;
 			}

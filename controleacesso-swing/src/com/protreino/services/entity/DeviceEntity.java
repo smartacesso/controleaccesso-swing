@@ -1,5 +1,6 @@
 package com.protreino.services.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,7 @@ import com.protreino.services.utils.HibernateUtil;
 	@NamedQuery(name = "DeviceEntity.findAll", query = "select obj from DeviceEntity obj order by id asc"),
 	@NamedQuery(name = "DeviceEntity.findById", query = "select obj from DeviceEntity obj where obj.id = :ID")
 })
-public class DeviceEntity extends BaseEntity implements ObjectWithId{
+public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -28,6 +28,7 @@ import javax.swing.text.MaskFormatter;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.main.Main;
+import com.protreino.services.to.DeviceTO;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
@@ -146,13 +147,27 @@ public class AvailableDevicesPanel extends JPanel {
 		equipamentosDisponiveisItens.add(new SelectItem("Selecione", null));
 		
 		List<DeviceEntity> devices = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+		List<DeviceEntity> devicesServidor = null;
+		if(Main.servidor != null) {
+			devicesServidor = (List<DeviceEntity>) HibernateUtil.buscaListaDevicesDoServidor(DeviceEntity.class, "DeviceEntity.findAll");
+		}
 		
-		if(devices == null || devices.isEmpty())
+		
+		if((devices == null || devices.isEmpty()) && (devicesServidor == null || devicesServidor.isEmpty())) {			
 			return equipamentosDisponiveisItens;
+		}
 		
-		devices.forEach(device -> {
-			equipamentosDisponiveisItens.add(new SelectItem(device.getName(), device.getIdentifier()));
-		});
+		if(devices != null) {
+			devices.forEach(device -> {
+				equipamentosDisponiveisItens.add(new SelectItem(device.getName(), device.getIdentifier()));
+			});
+		}
+		
+		if(devicesServidor != null) {
+			devicesServidor.forEach(device -> {
+				equipamentosDisponiveisItens.add(new SelectItem(device.getName(), device.getIdentifier()));
+			});
+		}
 		
 		return equipamentosDisponiveisItens;
 	}

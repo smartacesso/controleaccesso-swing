@@ -286,7 +286,12 @@ public class TcpServer {
 								.equals(receivedTcpMessage.getType())) {
 							liberarDevice(receivedTcpMessage);
 
-						} else {
+						} else if (TcpMessageType.GET_ALL_DEVICES_FROM_SERVER
+								.equals(receivedTcpMessage.getType())) {
+							List<?> list = getDevicesListServer(receivedTcpMessage);
+							responseTcpMessage.getParans().put("list", list);
+						}
+						else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
 						}
 
@@ -358,6 +363,19 @@ public class TcpServer {
 			}
 			return devices;
 		}
+		
+		private List<?> getDevicesGromServer() {
+			List<Device> devices = new ArrayList<>();
+			if (Main.devicesList != null && !Main.devicesList.isEmpty()) {
+				for (Device device : Main.devicesList) {
+					if (device instanceof TopDataDevice) {
+						devices.add(device);
+					}
+				}
+
+			}
+			return devices;
+		} 
 
 		private Object getSingleResultByCPF(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
 			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
@@ -592,6 +610,14 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 
 			return HibernateUtil.getResultList(entityClass, namedQuery);
+		}
+		
+		private List<?> getDevicesListServer(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
+			String namedQuery = (String) receivedTcpMessage.getParans().get("namedQuery");
+			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
+			Class<?> entityClass = Class.forName(classe);
+
+			return HibernateUtil.buscaListaDevicesDoServidor(entityClass, namedQuery);
 		}
 
 		private Integer getResultListCount(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {

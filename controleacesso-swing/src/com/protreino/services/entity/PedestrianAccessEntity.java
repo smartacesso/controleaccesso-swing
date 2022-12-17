@@ -70,6 +70,7 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "order by obj.id asc"),
 	@NamedQuery(name = "PedestrianAccessEntity.findByOnlyRG", 
 				query = "select obj from PedestrianAccessEntity obj "
+					  + "left join fetch obj.pedestreRegra p "
 					  + " where obj.rg = :RG "
 					  + "	    and (obj.removido is null or obj.removido = false) "
 					  + "order by obj.id asc"),
