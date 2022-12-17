@@ -172,7 +172,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível encontrar o dispositivo USB");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel encontrar o dispositivo USB");
 					return;
 				}
 				
@@ -191,7 +191,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível comunicar com o dispositivo USB");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel comunicar com o dispositivo USB");
 					return;
 				}
 				
@@ -215,7 +215,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível abrir a porta 1");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel abrir a porta 1");
 					return;
 				}
 				
@@ -239,7 +239,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível abrir a porta 2");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel abrir a porta 2");
 					return;
 				}
 				
@@ -268,7 +268,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível fechar a porta 2");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel fechar a porta 2");
 					return;
 				}
 				
@@ -293,7 +293,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível fechar a porta 2");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel fechar a porta 2");
 					return;
 				}
 				
@@ -313,7 +313,7 @@ public class UsbDevice extends Device {
 					}
 				}
 				if (!comandoEnviado) {
-					Main.mainScreen.addEvento("Não foi possível fechar o dispositivo USB");
+					Main.mainScreen.addEvento("NÃ£o foi possÃ­vel fechar o dispositivo USB");
 					return;
 				}
 				

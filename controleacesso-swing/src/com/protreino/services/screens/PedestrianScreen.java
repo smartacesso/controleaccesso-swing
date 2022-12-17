@@ -254,7 +254,7 @@ public class PedestrianScreen extends JFrame {
 		welcomeLabel.setForeground(firstColor);
 		welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		JLabel insiraCodigoLabel = new JLabel("Digite seu Código");
+		JLabel insiraCodigoLabel = new JLabel("Digite seu CÃ³digo");
 		insiraCodigoLabel.setFont(bigFont);
 		insiraCodigoLabel.setForeground(firstColor);
 		insiraCodigoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -266,7 +266,7 @@ public class PedestrianScreen extends JFrame {
 		codigoTextField.setForeground(Main.firstColor);
 		codigoTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroCodigoLabel = new JLabel("Código não encontrado");
+		messageErroCodigoLabel = new JLabel("CÃ³digo nÃ£o encontrado");
 		messageErroCodigoLabel.setFont(normalFont);
 		messageErroCodigoLabel.setForeground(Color.RED);
 		messageErroCodigoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -279,7 +279,7 @@ public class PedestrianScreen extends JFrame {
 		sampleLabel = new JLabel(semDigitalImageIcon);
 		sampleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroDigitalLabel = new JLabel("Digital não encontrada");
+		messageErroDigitalLabel = new JLabel("Digital nÃ£o encontrada");
 		messageErroDigitalLabel.setFont(normalFont);
 		messageErroDigitalLabel.setForeground(Color.RED);
 		messageErroDigitalLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -376,7 +376,7 @@ public class PedestrianScreen extends JFrame {
 		configButton.setMargin(new Insets(0, 0, 0, 0));
 		configButton.setContentAreaFilled(false);
 		configButton.setIcon(configImageIcon);
-		configButton.setToolTipText("Opções");
+		configButton.setToolTipText("OpÃ§Ãµes");
 		
 		leitorLabel = new JLabel(readerDevice.getName() + " - " 
 				+ (DeviceStatus.CONNECTED.equals(readerDevice.getStatus()) ? "conectado" : "desconectado"));
@@ -436,7 +436,7 @@ public class PedestrianScreen extends JFrame {
 			bottomContainer.add(lbl1);
 			bottomContainer.add(catracasCombobox);
 			bottomContainer.add(Box.createHorizontalStrut(30));
-			JLabel lbl2 = new JLabel("Leitor biométrico: ");
+			JLabel lbl2 = new JLabel("Leitor biomÃ©trico: ");
 			lbl2.setForeground(firstColor);
 			bottomContainer.add(lbl2);
 			bottomContainer.add(leitorLabel);
@@ -818,7 +818,7 @@ public class PedestrianScreen extends JFrame {
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			setErroCodigo("Erro ao procurar Código.");
+			setErroCodigo("Erro ao procurar CÃ³digo.");
 		
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -928,7 +928,7 @@ public class PedestrianScreen extends JFrame {
     		switch (resultadoVerificacao) {
 	    		case ERROR:
 	    			if ("CODIGO".equals(tipoAcesso))
-	    				messageErroCodigoLabel.setText("Erro ao procurar Código.");
+	    				messageErroCodigoLabel.setText("Erro ao procurar CÃ³digo.");
 	    			else if ("DIGITAL".equals(tipoAcesso)) {
 	    				messageErroDigitalLabel.setText("Erro ao procurar digital.");
 	    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
@@ -939,13 +939,13 @@ public class PedestrianScreen extends JFrame {
 	    		case NOT_FOUND:
 	    			if (!"FACIAL".equals(tipoAcesso)) {
 		    			if ("CODIGO".equals(tipoAcesso))
-		    				messageErroCodigoLabel.setText("Código não encontrado.");
+		    				messageErroCodigoLabel.setText("CÃ³digo nÃ£o encontrado.");
 		    			else {
-		    				messageErroDigitalLabel.setText("Digital não encontrada.");
+		    				messageErroDigitalLabel.setText("Digital nÃ£o encontrada.");
 		    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
 		    			}
 	    			} else if("FACIAL".equals(tipoAcesso)) {
-	    				messageErroDigitalLabel.setText("Face não reconhecida ou mal posicionada.");
+	    				messageErroDigitalLabel.setText("Face nÃ£o reconhecida ou mal posicionada.");
 	    			}
 	    			break;
 	    		case NOT_ALLOWED:
@@ -982,7 +982,7 @@ public class PedestrianScreen extends JFrame {
 	    			Long agora = Calendar.getInstance().getTimeInMillis();
 	    			
 	    			if (HibernateUtil.isAniversariante())
-						statusLabel.setText("Parabéns!");
+						statusLabel.setText("ParabÃ©ns!");
 	    			statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 	    			
 	    			//TODO : verificar mensagens personalizadas
@@ -991,7 +991,7 @@ public class PedestrianScreen extends JFrame {
 //						Long diasRestantes = TimeUnit.DAYS.convert(dataPermitido-agora, TimeUnit.MILLISECONDS);
 //						if (diasRestantes > 5) {
 //							if (HibernateUtil.isAniversariante())
-//								statusLabel.setText("Parabéns!");
+//								statusLabel.setText("Parabï¿½ns!");
 //							else
 //								statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 //						}
@@ -1037,7 +1037,7 @@ public class PedestrianScreen extends JFrame {
 //	    			calendar.add(Calendar.DAY_OF_YEAR, matchedAthleteAccess.getTolerance());
 //	    			Long dataTolerancia = calendar.getTime().getTime();
 //	    			Long diasRestantes = TimeUnit.DAYS.convert(dataTolerancia - Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
-//					statusLabel.setText("Sua mensalidade está vencida. Você ainda tem " + diasRestantes + " para o pagamento.");
+//					statusLabel.setText("Sua mensalidade estï¿½ vencida. Vocï¿½ ainda tem " + diasRestantes + " para o pagamento.");
 	    			resultadoLabel.setIcon(permitidoImageIcon);
 	    			if ("DIGITAL".equals(tipoAcesso))
 	    				sampleLabel.setIcon(digitalGenericaPermitidaImageIcon);
@@ -1066,7 +1066,7 @@ public class PedestrianScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			if ("CODIGO".equals(tipoAcesso))
-				messageErroCodigoLabel.setText("Erro ao procurar Código. " + e.getMessage());
+				messageErroCodigoLabel.setText("Erro ao procurar CÃ³digo. " + e.getMessage());
 			else if ("DIGITAL".equals(tipoAcesso))
 				messageErroDigitalLabel.setText("Erro ao procurar digital. " + e.getMessage());
 			else if ("FACIAL".equals(tipoAcesso))

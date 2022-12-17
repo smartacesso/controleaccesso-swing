@@ -676,7 +676,7 @@ public class TcpServer {
 					response.setSuccess(true);
 					response.setUser(new SimpleUser(usuario.getId(), usuario.getName(), usuario.getIdClient()));
 				} else {
-					response.setErrorMessage("Dados inválidos!");
+					response.setErrorMessage("Dados invÃ¡lidos!");
 				}
 
 			} catch (Exception e) {
@@ -707,7 +707,7 @@ public class TcpServer {
 				ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
 			} catch (Exception e) {
 			}
-			System.out.println("Recebido código: " + codigo);
+			System.out.println("Recebido cÃ³digo: " + codigo);
 			System.out.println("Recebido catraca: " + deviceIdentifier);
 
 			VerificationResult verificationResult = VerificationResult.NOT_FOUND;
@@ -738,7 +738,7 @@ public class TcpServer {
 				device.setAllowedUserName((String) retorno[1]);
 				device.setMatchedFacialId(((PedestrianAccessEntity) retorno[2]).getId());
 
-				System.out.println("Resultado na análise: " + verificationResult);
+				System.out.println("Resultado na anÃ¡lise: " + verificationResult);
 				if (VerificationResult.ALLOWED.equals(verificationResult)
 						|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult)) {
 					device.allowAccess((PedestrianAccessEntity) retorno[2]);
@@ -747,7 +747,7 @@ public class TcpServer {
 				}
 			} else {
 				System.out.println("Libera sem catraca");
-				// se não tiver, realiza um processo de liberação genérico
+				// se nï¿½o tiver, realiza um processo de liberaï¿½ï¿½o genï¿½rico
 				Object[] retorno = HibernateUtil.processAccessRequest(codigo, location, createNotification,
 						ignoraRegras);
 				if (retorno != null && retorno.length > 0)
@@ -811,7 +811,7 @@ public class TcpServer {
 		}
 
 		private String processaCartaoComanda(String receivedData, String responseData) {
-			// para liberação de cartões
+			// para liberaï¿½ï¿½o de cartï¿½es
 			if (receivedData != null) {
 
 				if (receivedData.startsWith("SIER;STCSI;2")) {
@@ -838,7 +838,7 @@ public class TcpServer {
 					// encontrado
 					response = receivedData + (StatusCard.LIBERADO.equals(cartao.getStatus()) ? ";1" : ";2");
 				} else {
-					// não encontrado
+					// nï¿½o encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {
@@ -863,7 +863,7 @@ public class TcpServer {
 						response = receivedData + ";102";
 					}
 				} else {
-					// não encontrado
+					// nï¿½o encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {

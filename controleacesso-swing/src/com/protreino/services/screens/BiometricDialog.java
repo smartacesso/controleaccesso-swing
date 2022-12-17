@@ -104,7 +104,7 @@ public class BiometricDialog extends JDialog{
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
 		
-		JLabel label1 = new JLabel("Usuário: ");
+		JLabel label1 = new JLabel("UsuÃ¡rio: ");
 		userLabel = new JLabel(acesso.getName());
 		userLabel.setFont(boldFont);
 		userLabel.setForeground(Main.firstColor);
@@ -121,7 +121,7 @@ public class BiometricDialog extends JDialog{
 		fingerContainer.add(label2);
 		fingerContainer.add(fingerComboBox);
 		
-		JLabel label3 = new JLabel("Leitor biométrico:");
+		JLabel label3 = new JLabel("Leitor biomÃ©trico:");
 		JPanel devicesContainer= new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 5));
 		devicesContainer.add(label3);
 		deviceLabel = new JLabel(device.getName());
@@ -270,7 +270,7 @@ public class BiometricDialog extends JDialog{
 	}
 	
 	public void saveTemplates(byte[] template) {
-		//antes de salvar, verifica se o pedestre está correto
+		//antes de salvar, verifica se o pedestre estï¿½ correto
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
 		if(pedestre != null) {
 			acesso = pedestre;			
@@ -315,7 +315,7 @@ public class BiometricDialog extends JDialog{
 				}
 
 			} else if (Manufacturer.NITGEN.equals(selectedDevice.getManufacturer())) {
-				//adicionar também nas outras catracas conectadas
+				//adicionar tambï¿½m nas outras catracas conectadas
 				for(Device device : Main.devicesList) {
 					if(device != null && device instanceof TopDataDevice) {
 						//verifica se pode adicionar
@@ -333,13 +333,13 @@ public class BiometricDialog extends JDialog{
 								byte[] template1 = new byte[502];
 								byte[] template2 = new byte[502];
 								
-								//cadastra usuário
+								//cadastra usuï¿½rio
 								if(templateEntity.getTemplate().length > 502) {
 									//proveniente do leitor
 									LcDevice.extracTopDataTemplate(templateEntity.getTemplate(), 
 											template1, template2);
 									String tStr = Base64.encodeBase64String(template2);
-									//verificar se segunda está vazia
+									//verificar se segunda estï¿½ vazia
 									if(tStr.startsWith("AAAQAAAAAAAAAAA") || tStr.startsWith("AAAAAAAAAAAAA")) {
 										template2 = null;
 									}
@@ -360,7 +360,7 @@ public class BiometricDialog extends JDialog{
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.NEW_TEMPLATE, temp));
 			}
 			
-			JOptionPane.showMessageDialog(this, "Biometria cadastrada com sucesso!", "Coleta concluída", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Biometria cadastrada com sucesso!", "Coleta concluÃ­da", JOptionPane.PLAIN_MESSAGE);
 			dispose();
 		
 		} catch (Exception e) {

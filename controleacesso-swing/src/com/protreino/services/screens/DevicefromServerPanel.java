@@ -151,7 +151,7 @@ public class DevicefromServerPanel extends JPanel {
 				obj[0] = device.getName();
 				obj[1] = device.getIdentifier();
 				obj[2] = device.getManufacturer();
-				obj[3] = device.isConnected() ? "SIM" : "N√O";
+				obj[3] = device.isConnected() ? "SIM" : "N√ÉO";
 				obj[4] = "LIBERAR ACESSO";
 				dataModel.addRow(obj);
 			}
@@ -210,14 +210,14 @@ public class DevicefromServerPanel extends JPanel {
 			deviceNotConnectedDialog = new JDialog();
 			deviceNotConnectedDialog.setIconImage(Main.favicon);
 			deviceNotConnectedDialog.setModal(true);
-			deviceNotConnectedDialog.setTitle("Device n„o conectado");
+			deviceNotConnectedDialog.setTitle("Device n√£o conectado");
 			deviceNotConnectedDialog.setResizable(false);
 			
 			JPanel deviceNotConnectedPanel = new JPanel();
 			deviceNotConnectedPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 			deviceNotConnectedPanel.setLayout(new BoxLayout(deviceNotConnectedPanel, BoxLayout.Y_AXIS));
 			
-			JLabel label = new JLabel("Este equipamento n„o est· conectado");
+			JLabel label = new JLabel("Este equipamento n√£o est√° conectado");
 			
 			deviceNotConnectedPanel.add(label);
 			deviceNotConnectedPanel.add(Box.createVerticalStrut(10));

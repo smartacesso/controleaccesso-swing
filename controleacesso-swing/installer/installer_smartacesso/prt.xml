@@ -283,7 +283,7 @@
 
     <!-- SummaryPanel strings -->
     <str id="SummaryPanel.info"
-         txt="A Instala��o vai continuar com as configurações seguintes. Clique em Seguinte para continuar."/>
+         txt="A Instalação vai continuar com as configurações seguintes. Clique em Seguinte para continuar."/>
     <str id="TargetPanel.summaryCaption" txt="Localização da Instalação"/>
     <str id="JDKPathPanel.summaryCaption" txt="Localização do JDK"/>
     <str id="PacksPanel.summaryCaption" txt="Pacotes de Instalação Escolhidos"/>

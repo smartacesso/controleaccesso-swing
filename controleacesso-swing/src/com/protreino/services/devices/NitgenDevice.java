@@ -357,8 +357,8 @@ public class NitgenDevice extends Device {
 
 	@Override
 	public void processAccessRequest(Object obj) {
-		// Primeiro � feito o processo de match para identificar o usu�rio.
-		// Ap�s a identifica��o � verificado se o acesso � permitido.
+		// Primeiro é feito o processo de match para identificar o usuário.
+		// Após a identificação é verificado se o acesso é permitido.
 		try {
 			// digital coletada agora
 			INPUT_FIR capturedInputFIR = bsp.new INPUT_FIR();
@@ -425,7 +425,7 @@ public class NitgenDevice extends Device {
 	@Override
 	public String removeUser(PedestrianAccessEntity athleteAccessEntity) {
 		
-		//atualizar catracas envolvidas, quando necess�rio.
+		//atualizar catracas envolvidas, quando necessário.
 		for (Device d : Main.devicesList) {
 			if(d instanceof TopDataDevice
 					&& d.isConnected()) {

@@ -114,7 +114,7 @@ public class NewDeviceDialog extends JDialog{
 				}
 				
 				if(Manufacturer.TOP_DATA_EXPEDIDORA.equals(manufacturer) && !Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
-					//só adiciona expedidora se usuário poder
+					//sï¿½ adiciona expedidora se usuï¿½rio poder
 					continue;
 				}
 				
@@ -179,7 +179,7 @@ public class NewDeviceDialog extends JDialog{
 									for (FieldTO field : newDeviceFields) {
 										field.setTextFieldSize(15);
 										JPanel fieldPanel = field.getPanel();
-										if ("Número IP do dispositivo".equals(field.getName())) {
+										if ("NÃºmero IP do dispositivo".equals(field.getName())) {
 											JTextField textField = (JTextField) field.getField()[0];
 											Container container = textField.getParent();
 											JButton button = new JButton(searchIcon);
@@ -201,7 +201,7 @@ public class NewDeviceDialog extends JDialog{
 											double height = fieldPanel.getPreferredSize().getHeight();
 											fieldPanel.setMaximumSize(new Dimension(Double.valueOf(width).intValue(), Double.valueOf(height).intValue()));
 										
-										} else if("Selecione o tipo de camêra".equals(field.getName())) {
+										} else if("Selecione o tipo de camÃªra".equals(field.getName())) {
 											JComboBox<String> comboTipoCamera = (JComboBox<String>) field.getField()[0];
 											
 											comboTipoCamera.addActionListener(e -> {
@@ -222,7 +222,7 @@ public class NewDeviceDialog extends JDialog{
 										dadosDispositivoPanel.add(Box.createVerticalStrut(7));
 									}
 									
-									PanelWithLabel label = new PanelWithLabel("Insira as informações do dispositivo:", FlowLayout.LEFT, true, 0, 10);
+									PanelWithLabel label = new PanelWithLabel("Insira as informaÃ§Ãµes do dispositivo:", FlowLayout.LEFT, true, 0, 10);
 									mainNewDevicePanel.add(label);
 									mainNewDevicePanel.add(dadosDispositivoPanel);
 									
@@ -281,7 +281,7 @@ public class NewDeviceDialog extends JDialog{
 							if (field.getValue() != null && !"".equals(field.getValue()))
 								identifier.append(field.getValue() + ";");
 							else {
-								mensagem.setText("Todos os campos são necessários");
+								mensagem.setText("Todos os campos sÃ£o necessÃ¡rios");
 								return;
 							}
 						}
@@ -289,9 +289,9 @@ public class NewDeviceDialog extends JDialog{
 						if(cameraDeviceFiels != null && Manufacturer.FACIAL.equals(fabricante)) {
 							for(FieldTO field : cameraDeviceFiels) {
 								if("IP".equals(tipoCamera) 
-										&& "URL da camêra".equalsIgnoreCase(field.getName())
+										&& "URL da camÃªra".equalsIgnoreCase(field.getName())
 											&& field.getValue().trim().isEmpty()) {
-									mensagem.setText("A URL é obrigatória.");
+									mensagem.setText("A URL Ã© obrigatÃ³ria.");
 									return;
 								}
 								String valor = field.getValue().isEmpty() ? " " : field.getValue();
@@ -300,9 +300,9 @@ public class NewDeviceDialog extends JDialog{
 							}
 						}
 						
-						if (fabricante.useLogin()) // login será pedido quando conectar, mas precisar estar presente no identificador
+						if (fabricante.useLogin()) // login serï¿½ pedido quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
-						if (fabricante.usePassword()) // senha será pedida quando conectar, mas precisar estar presente no identificador
+						if (fabricante.usePassword()) // senha serï¿½ pedida quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
 						newDevice = fabricante.getNewDevice(identifier.toString());
 					
@@ -313,14 +313,14 @@ public class NewDeviceDialog extends JDialog{
 						}
 						SelectItem item = (SelectItem) foundDevicesComboBox.getSelectedItem();
 						if (item.getValue() == null) {
-							mensagem.setText("Selecione um dispositivo válido");
+							mensagem.setText("Selecione um dispositivo vÃ¡lido");
 							return;
 						}
 						newDevice = (Device) item.getValue();
 					}
 					for (Device device : Main.devicesList){
 						if (device.isTheSame(newDevice)){
-							mensagem.setText("Dispositivo já adicionado!");
+							mensagem.setText("Dispositivo jÃ¡ adicionado!");
 							newDevice = null;
 							return;
 						}
@@ -395,7 +395,7 @@ public class NewDeviceDialog extends JDialog{
 	
 	private String fazerVarreduraIps(){
 		
-		// cria o dialog com as informações
+		// cria o dialog com as informaï¿½ï¿½es
 		JDialog dialog = new JDialog(null, "Procurando a catraca na rede...", ModalityType.APPLICATION_MODAL);
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -418,7 +418,7 @@ public class NewDeviceDialog extends JDialog{
 				
 				Manufacturer fabricante = (Manufacturer) fabricanteComboBox.getSelectedItem();
 				
-				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q iniciá-lo toda vez
+				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q iniciï¿½-lo toda vez
 //				if (Manufacturer.RWTECH.equals(fabricante)){
 //					RWTechDevice deviceTeste = new RWTechDevice(5000, " ; ;");
 //					deviceTeste.iniciarNucleoIntegracao();
@@ -428,7 +428,7 @@ public class NewDeviceDialog extends JDialog{
 				// Recupera IP digitado para ver qual sub-rede usar
 				String subrede = null;
 				for (FieldTO field : newDeviceFields) {
-					if ("Número IP do dispositivo".equals(field.getName())
+					if ("NÃºmero IP do dispositivo".equals(field.getName())
 							&& !field.getValue().isEmpty()
 							&& field.getValue().split("\\.").length >= 2){
 						String[] partes = field.getValue().split("\\.");
@@ -446,7 +446,7 @@ public class NewDeviceDialog extends JDialog{
 					String ip = "192.168." + subrede + "." + String.valueOf(i);
 					instrucoesLabel1.setText("Procurando a catraca na rede: " + ip);
 					
-					// ping no ip e vê se tem alguma resposta, se responder é um possivel ip de catraca, e ai tenta conectar nele
+					// ping no ip e vï¿½ se tem alguma resposta, se responder ï¿½ um possivel ip de catraca, e ai tenta conectar nele
 					if (!ping(ip))
 						continue;
 					
@@ -456,7 +456,7 @@ public class NewDeviceDialog extends JDialog{
 						// Cria um identificador com os dados inseridos e cria um device a partir desse identificador
 						StringBuilder identifier = new StringBuilder();
 						for (FieldTO field : newDeviceFields) 
-							identifier.append(("Número IP do dispositivo".equals(field.getName()) ? ip : field.getValue()) + ";");
+							identifier.append(("NÃºmero IP do dispositivo".equals(field.getName()) ? ip : field.getValue()) + ";");
 						
 						Boolean retorno = false;
 //						if (Manufacturer.HENRY_8X.equals(fabricante)) {
@@ -516,7 +516,7 @@ public class NewDeviceDialog extends JDialog{
 		progressBar.setPreferredSize(new Dimension(200, 30));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		// Adicionar um botao para cancelar a ação quando for possível
+		// Adicionar um botao para cancelar a aï¿½ï¿½o quando for possï¿½vel
 		JButton cancelButton = new JButton("Cancelar");
 		cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		cancelButton.setPreferredSize(new Dimension(100, 50));

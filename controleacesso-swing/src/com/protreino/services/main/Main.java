@@ -1092,7 +1092,7 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 
-					if (loggedUser.getId().equals(user.getId())) // retira usu�rio logado
+					if (loggedUser.getId().equals(user.getId())) // retira usuário logado
 						continue;
 
 					user.setIdClient(loggedUser.getIdClient());

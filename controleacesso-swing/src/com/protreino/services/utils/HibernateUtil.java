@@ -6,7 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -34,7 +33,6 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.hbm2ddl.SchemaExport.Action;
 import org.hibernate.tool.schema.TargetType;
 
-import com.protreino.services.constants.Configurations;
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.ControlIdDevice;
@@ -47,7 +45,6 @@ import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
-import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.entity.PreferenceEntity;
@@ -65,7 +62,6 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.TcpMessageTO;
-import com.topdata.EasyInner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class HibernateUtil {
@@ -1130,7 +1126,7 @@ public class HibernateUtil {
 					matchedAthleteAccess = trataPedestreQRCode(codigo);
 				} catch (QrcodeVencidoException e) {
 					if (createNotification)
-						Utils.createNotification("QRCode do usuário expirado.", NotificationType.BAD, foto);
+						Utils.createNotification("QRCode do usuÃ¡rio expirado.", NotificationType.BAD, foto);
 					return new Object[] { VerificationResult.NOT_FOUND, userName, matchedAthleteAccess };
 				}
 
@@ -1173,7 +1169,7 @@ public class HibernateUtil {
 			if (matchedAthleteAccess == null) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD,
+					Utils.createNotification("UsuÃ¡rio de CÃ³digo " + codigo + " nÃ£o encontrado.", NotificationType.BAD,
 							foto);
 
 				return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
@@ -1200,7 +1196,7 @@ public class HibernateUtil {
 
 				if (isPedestreNaoPossuiRegras(matchedAthleteAccess)) {
 					if (createNotification) {
-						Utils.createNotification(userName + " não possui regras.", NotificationType.BAD, foto);
+						Utils.createNotification(userName + " nÃ£o possui regras.", NotificationType.BAD, foto);
 					}
 					return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 				}
@@ -1211,12 +1207,13 @@ public class HibernateUtil {
 			if(matchedAthleteAccess.getStatus().equals("INATIVO")) {
 				System.out.println("chegou no pedestre ");
 				
-				Utils.createNotification(" Acesso Negado, usuário: " +userName +  "Inativo", NotificationType.BAD, foto);
-				motivo = "Usuário inativo.";
+				Utils.createNotification(" Acesso Negado, usuÃ¡rio: " +userName +  "Inativo", NotificationType.BAD, foto);
+				motivo = "UsuÃ¡rio inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
+
 			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
-				
+
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedAthleteAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
 
@@ -1231,7 +1228,7 @@ public class HibernateUtil {
 				System.out.println("o que é equipament" +equipament );
 				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
-					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
+					Utils.createNotification(userName + " nÃ£o permitido nesse equipamento.", NotificationType.BAD,
 							foto);
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedAthleteAccess };
 			}
@@ -1293,7 +1290,7 @@ public class HibernateUtil {
 					 * verificar creditos
 					 */
 
-					// verifica se tem créditos para passar
+					// verifica se tem crï¿½ditos para passar
 					System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
 					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
 							&& matchedAthleteAccess.getCardNumber() != null
@@ -1330,12 +1327,12 @@ public class HibernateUtil {
 						// pode acessar
 						permitido = true;
 					} else {
-						// não pode acessar
+						// nï¿½o pode acessar
 						permitido = false;
 					}
 
 				} else if (acessoRestrito) {
-					// verifica se há algum log de acesso para este aluno hoje
+					// verifica se hï¿½ algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedAthleteAccess.getId());
 					List<LogPedestrianAccessEntity> list = (List<LogPedestrianAccessEntity>) HibernateUtil
@@ -1351,7 +1348,7 @@ public class HibernateUtil {
 			}
 
 			if (!permitidoSensor) {
-				// para lógica de urna
+				// para lï¿½gica de urna
 				if (origem != Origens.ORIGEM_LEITOR_2)
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
 				else
@@ -1359,35 +1356,35 @@ public class HibernateUtil {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cartão na urna.", NotificationType.BAD,
+						Utils.createNotification(userName + " deve depositar cartÃ£o na urna.", NotificationType.BAD,
 								foto);
-						motivo = "Deve depositar cartão na urna.";
+						motivo = "Deve depositar cartÃ£o na urna.";
 
 					} else {
-						Utils.createNotification(userName + " não deve depositar na urna", NotificationType.BAD, foto);
-						motivo = "Não deve depositar cartão na urna.";
+						Utils.createNotification(userName + " nÃ£o deve depositar na urna", NotificationType.BAD, foto);
+						motivo = "NÃ£o deve depositar cartÃ£o na urna.";
 					}
 				}
 
 			} else if (!permitido) {
-				// para lógica de créditos finalizados
+				// para lï¿½gica de crï¿½ditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
-					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
-					motivo = "Não permitido.";
+					Utils.createNotification(userName + " nÃ£o permitido.", NotificationType.BAD, foto);
+					motivo = "NÃ£o permitido.";
 				}
 
 			} else if (!permitidoRetornar) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				if (createNotification) {
-					Utils.createNotification(userName + " não pode retornar agora.", NotificationType.BAD, foto);
-					motivo = "Não pode retornar agora.";
+					Utils.createNotification(userName + " nÃ£o pode retornar agora.", NotificationType.BAD, foto);
+					motivo = "NÃ£o pode retornar agora.";
 				}
 
 			} else if (permitidoHoje) {
 
-				// para lógicas do pedestre:
-				// - horário
+				// para lï¿½gicas do pedestre:
+				// - horï¿½rio
 				// - periodo
 				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -1408,8 +1405,8 @@ public class HibernateUtil {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
 					if (createNotification) {
-						Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
-						motivo = "Não permitido.";
+						Utils.createNotification(userName + " nÃ£o permitido.", NotificationType.BAD, foto);
+						motivo = "NÃ£o permitido.";
 					}
 				}
 
@@ -1429,14 +1426,14 @@ public class HibernateUtil {
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
 				if (createNotification)
-					Utils.createNotification(userName + " já registrado hoje.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " jÃ¡ registrado hoje.", NotificationType.BAD, foto);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			resultadoVerificacao = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Falha ao processar requisição de acesso. " + e.getMessage(),
+				Utils.createNotification("Falha ao processar requisiÃ§Ã£o de acesso. " + e.getMessage(),
 						NotificationType.BAD, foto);
 		}
 
@@ -1522,7 +1519,7 @@ public class HibernateUtil {
 
 	private static Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
 
-		// recupera última entrada da pessoa
+		// recupera ï¿½ltima entrada da pessoa
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("ID_PEDESTRE", matchedAthleteAccess.getId());
 		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
@@ -1603,6 +1600,7 @@ public class HibernateUtil {
 
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	public static List<PedestrianAccessEntity> buscaPedestresAtivosComBiometria() {
 		
@@ -1639,14 +1637,16 @@ public class HibernateUtil {
 			PedestrianAccessEntity pedestre) {
 		Boolean permitidoSensor = true;
 		System.out.println(pedestre.getCardNumber());
+
 		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")
+
 				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
 			return true;
 			
 		}
-//		Se origem diferentes das que não são permitidas como exemplo, biometria.
+//		Se origem diferentes das que nï¿½o sï¿½o permitidas como exemplo, biometria.
 
-//			verificar o máximo possível para ver o que não pode estar contido na mesma informação
+//			verificar o mï¿½ximo possï¿½vel para ver o que nï¿½o pode estar contido na mesma informaï¿½ï¿½o
 		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
@@ -1674,7 +1674,7 @@ public class HibernateUtil {
 		LogPedestrianAccessEntity lastAccess = (LogPedestrianAccessEntity) HibernateUtil
 				.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
-//		buscar pelo dia de "hoje" e confefir se tem datas, já dar entrada
+//		buscar pelo dia de "hoje" e confefir se tem datas, jï¿½ dar entrada
 		if (qtdAcessosAntesSinc != null && qtdAcessosAntesSinc > 0 && lastAccess == null) {
 
 			lastAccess = new LogPedestrianAccessEntity();
@@ -1799,7 +1799,7 @@ public class HibernateUtil {
 		if (equipament == null)
 			return true;
 
-		// não tem bloqueo por equipamento
+		// nï¿½o tem bloqueo por equipamento
 		if (equipamentos == null || equipamentos.isEmpty())
 			return true;
 
@@ -1895,23 +1895,23 @@ public class HibernateUtil {
 
 		VerificationResult resultadoVerificacao;
 
-		// verifica se há um dia liberado para acesso
+		// verifica se hï¿½ um dia liberado para acesso
 //		if (Utils.isDiaLivre(matchedAthleteAccess.getDiasLivres())) {
 //			resultadoVerificacao = validado;
 //			logAccess.setStatus("ATIVO");
 //			aniversariante = Utils.isBirthday(matchedAthleteAccess);
 //			if (createNotification) {
 //				Utils.createNotification(userName + " permitido" 
-//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância." : "." ), 
+//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerï¿½ncia." : "." ), 
 //						aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 //			}
 //		}
 //		else {
 
-		// verifica se há um dia permitido
+		// verifica se hï¿½ um dia permitido
 		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
 
-			// verifica se está num horario permitido
+			// verifica se estï¿½ num horario permitido
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
@@ -1920,21 +1920,21 @@ public class HibernateUtil {
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem))
 					Utils.createNotification(
 							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância."
+									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia."
 											: "."),
 							aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 			} else {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification)
-					Utils.createNotification(userName + " fora do horário.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horÃ¡rio.", NotificationType.BAD, foto);
 			}
 
 		} else {
 			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
 			logAccess.setStatus("INATIVO");
 			if (createNotification)
-				Utils.createNotification(userName + " não permitido hoje.", NotificationType.BAD, foto);
+				Utils.createNotification(userName + " nÃ£o permitido hoje.", NotificationType.BAD, foto);
 		}
 		// }
 
@@ -2417,7 +2417,7 @@ public class HibernateUtil {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("usuário já cadastrado: " + " " + confereID.getName() + e.getMessage());
+			Main.mainScreen.addEvento("usuÃ¡rio jÃ¡ cadastrado: " + " " + confereID.getName() + e.getMessage());
 		}
 		return null;
 	}
@@ -3062,13 +3062,13 @@ public class HibernateUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeGiro(Date data) {
-//		Parou na apagaDadosDeGIRO O QUE é DATA?
+//		Parou na apagaDadosDeGIRO O QUE ï¿½ DATA?
 
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-		// TODO : voltar a validação da data de cadastro, porém para maior que
+		// TODO : voltar a validaï¿½ï¿½o da data de cadastro, porï¿½m para maior que
 		// a data calculada a baixo
 
 		Calendar c = Calendar.getInstance();

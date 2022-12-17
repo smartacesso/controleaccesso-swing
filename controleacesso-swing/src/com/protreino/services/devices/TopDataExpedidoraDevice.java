@@ -83,7 +83,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			super.connect(args);
 		}else{
 			
-			//faz conex„o propria
+			//faz conex√£o propria
 			easyInner = new EasyInner();
 			int ret = 0;
 			if(!portaAberta) {
@@ -91,7 +91,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 		        ret = EasyInner.AbrirPortaComunicacao(port);
 		        if (ret != Enumeradores.RET_COMANDO_OK 
 		        		&& ret != Enumeradores.RET_PORTA_JAABERTA) 
-		        	throw new Exception("Erro ao abrir a porta de comunicaÁ„o: " + ret);
+		        	throw new Exception("Erro ao abrir a porta de comunica√ß√£o: " + ret);
 		        portaAberta = true;
 			}
 	        ret = Enumeradores.Limpar;
@@ -102,7 +102,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	        	Utils.sleep(50);
 	        }
 	        if (ret != Enumeradores.RET_COMANDO_OK) 
-	        	throw new Exception("N„o foi possÌvel conectar.");
+	        	throw new Exception("N√£o foi poss√≠vel conectar.");
 	        
 	        sendConfiguration();
 	        
@@ -122,7 +122,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 							
 							coletarBilhetesOffLine();
 							
-							Long tempo = getConfigurationValueAsLong("Tempo de para coletar cart„o/comanda");
+							Long tempo = getConfigurationValueAsLong("Tempo de para coletar cart√£o/comanda");
 							if(tempo == null)
 								tempo = 3l;
 							
@@ -196,14 +196,14 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	@Override
 	protected void registraGiro(int sentido, Date data) {
 		
-		//volta cart„o para o status de AGUARDANDO
+		//volta cart√£o para o status de AGUARDANDO
 		if(matched != null) {
 			
 			//verifica sentido
 			if("ENTRADA".equals(this.tipo)) {
 				//bloqueia se entrada
 				matched.setDataAlteracao(new Date());
-				matched.setStatus(getConfigurationValueAsBoolean("Cart„o expedido com status de LIBERADO") 
+				matched.setStatus(getConfigurationValueAsBoolean("Cart√£o expedido com status de LIBERADO") 
 						? StatusCard.LIBERADO : StatusCard.BLOQUEADO);
 			}else {
 				//aguardando se saida
@@ -213,7 +213,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			
 			HibernateUtil.save(CartaoComandaEntity.class, matched);
 			
-			//cria log de liberaÁ„o (sem sincronizaÁ„o com web)
+			//cria log de libera√ß√£o (sem sincroniza√ß√£o com web)
 	       	LogCartaoComandaEntity log = new LogCartaoComandaEntity(matched);
 	       	log.setUsuario(Main.internoLoggedUser);
 	       	log.setTipoLiberacao(this.tipo+"_"+matched.getStatus().name());
@@ -240,10 +240,10 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 		if("ENTRADA".equals(this.tipo)) {
 			cartao = Utils.toHEX(obj.toString().replaceAll("[^a-zA-Z0-9]+",""));
 			cartao = cartao.substring(2);
-			//System.out.println("Numero do cart„o: " +cartao);
+			//System.out.println("Numero do cart√£o: " +cartao);
 		}
 		
-		//procura cart„o por cÛdigo real
+		//procura cart√£o por c√≥digo real
 		HashMap<String, Object> args = new HashMap<>();
 		args.put("numeroReal", cartao);
 		args.put("removido"  , false);
@@ -276,12 +276,12 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				if(inner.BilheteInner.Origem != 3)
 					verificationResult = VerificationResult.NOT_ALLOWED_SENSOR;
 				else {
-					//verifica se cart„o pode sair
+					//verifica se cart√£o pode sair
 					//esta no status de LIBERADO
 					if(StatusCard.LIBERADO.equals(matched.getStatus())) {
 						verificationResult = VerificationResult.ALLOWED;
 						//catraca com urna
-						//boolean usaUrna = getConfigurationValueAsBoolean("LÛgica da catraca com urna");
+						//boolean usaUrna = getConfigurationValueAsBoolean("L√≥gica da catraca com urna");
 			            //if(usaUrna)
 			            //	EasyInner.AcionarRele2(inner.Numero);
 					}
@@ -291,7 +291,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				}
 			}
 		}else {
-			//cart„o n„o encontrado
+			//cart√£o n√£o encontrado
 			verificationResult = VerificationResult.NOT_FOUND;
 		}
 		
@@ -313,7 +313,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	protected void validarAcesso(){
 		try {
 			validandoAcesso = true;
-			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO SAÕDA: ");
+			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO SA√çDA: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
 			
@@ -332,7 +332,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			if (VerificationResult.ALLOWED.equals(verificationResult)
 					|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult)) {
 				//catraca com urna
-				boolean usaUrna = getConfigurationValueAsBoolean("LÛgica da catraca com urna");
+				boolean usaUrna = getConfigurationValueAsBoolean("L√≥gica da catraca com urna");
 	            if(usaUrna && origem == 3) {
 	            	EasyInner.AcionarRele2(inner.Numero);
 	            } else {
@@ -359,38 +359,38 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			geralConfigurations.add(new ConfigurationTO("Modo de trabalho", "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 					"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 			geralConfigurations.add(new ConfigurationTO("Envia digitais para catraca", "false", FieldType.CHECKBOX));
-			geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Hor·rio_clockwise", FieldType.COMBOBOX, 
-					"Hor·rio_clockwise;Antihor·rio_anticlockwise"));
-			geralConfigurations.add(new ConfigurationTO("Tempo de liberaÁ„o", "7", FieldType.NUMERIC_LIST, "5;1;15"));
+			geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Hor√°rio_clockwise", FieldType.COMBOBOX, 
+					"Hor√°rio_clockwise;Antihor√°rio_anticlockwise"));
+			geralConfigurations.add(new ConfigurationTO("Tempo de libera√ß√£o", "7", FieldType.NUMERIC_LIST, "5;1;15"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de mensagem negado", "5", FieldType.NUMERIC_LIST, "1;1;15"));
-			geralConfigurations.add(new ConfigurationTO("Bloquear saÌda", "true", FieldType.CHECKBOX));
+			geralConfigurations.add(new ConfigurationTO("Bloquear sa√≠da", "true", FieldType.CHECKBOX));
 			geralConfigurations.add(new ConfigurationTO("Habilitar teclado", "true", FieldType.CHECKBOX));
 			geralConfigurations.add(new ConfigurationTO("Ecoar asteriscos", "false", FieldType.CHECKBOX));
-			geralConfigurations.add(new ConfigurationTO("NÌvel de seguranÁa do reconhecimento", "6", FieldType.NUMERIC_LIST, "1;1;9"));
+			geralConfigurations.add(new ConfigurationTO("N√≠vel de seguran√ßa do reconhecimento", "6", FieldType.NUMERIC_LIST, "1;1;9"));
 			geralConfigurations.add(new ConfigurationTO("Tempo teclado", "10", FieldType.NUMERIC_LIST, "5;1;20"));
-			geralConfigurations.add(new ConfigurationTO("Tempo de mudanÁa Online/Offline", "10", FieldType.NUMERIC_LIST, "6;1;20"));
+			geralConfigurations.add(new ConfigurationTO("Tempo de mudan√ßa Online/Offline", "10", FieldType.NUMERIC_LIST, "6;1;20"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 			geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade AbaTrack2_2", FieldType.COMBOBOX, 
-					"CÛdigo de barras_0;MagnÈtico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+					"C√≥digo de barras_0;Magn√©tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 					+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
-			//if(Main.loggedUser != null && Main.loggedUser.getQtdePadraoDigitosCart„o() != null) {
-			//	geralConfigurations.add(new ConfigurationTO("Quantidade dÌgitos cart„o", 
-			//			Main.loggedUser.getQtdePadraoDigitosCart„o().toString(), FieldType.NUMERIC_LIST, "4;1;16"));
+			//if(Main.loggedUser != null && Main.loggedUser.getQtdePadraoDigitosCart√£o() != null) {
+			//	geralConfigurations.add(new ConfigurationTO("Quantidade d√≠gitos cart√£o", 
+			//			Main.loggedUser.getQtdePadraoDigitosCart√£o().toString(), FieldType.NUMERIC_LIST, "4;1;16"));
 			//} else {
-				geralConfigurations.add(new ConfigurationTO("Quantidade dÌgitos cart„o", "14", FieldType.NUMERIC_LIST, "4;1;16"));
+				geralConfigurations.add(new ConfigurationTO("Quantidade d√≠gitos cart√£o", "14", FieldType.NUMERIC_LIST, "4;1;16"));
 			//}
-			geralConfigurations.add(new ConfigurationTO("Modelo biomÈtrico", "false", FieldType.CHECKBOX));
-			geralConfigurations.add(new ConfigurationTO("Tipo biomÈtrico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
+			geralConfigurations.add(new ConfigurationTO("Modelo biom√©trico", "false", FieldType.CHECKBOX));
+			geralConfigurations.add(new ConfigurationTO("Tipo biom√©trico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 			geralConfigurations.add(new ConfigurationTO("Dois leitores", "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
 			geralConfigurations.add(new ConfigurationTO("Leitor 1", "Somente entrada_1", FieldType.COMBOBOX, 
-					"Desativado_0;Somente entrada_1;Somente saÌda_2;Entrada e saÌda_3;SaÌda e entrada_4"));
+					"Desativado_0;Somente entrada_1;Somente sa√≠da_2;Entrada e sa√≠da_3;Sa√≠da e entrada_4"));
 			geralConfigurations.add(new ConfigurationTO("Leitor 2", "Desativado_0", FieldType.COMBOBOX, 
-					"Desativado_0;Somente entrada_1;Somente saÌda_2;Entrada e saÌda_3;SaÌda e entrada_4"));
-			geralConfigurations.add(new ConfigurationTO("IdentificaÁ„o BiomÈtrica", "N„o_1", FieldType.COMBOBOX, "Sim_1;N„o_0"));
-			geralConfigurations.add(new ConfigurationTO("VerificaÁ„o BiomÈtrica", "N„o_0", FieldType.COMBOBOX, "Sim_1;N„o_0"));
-			geralConfigurations.add(new ConfigurationTO("Padr„o de cart„o", "Padr„o livre_1", FieldType.COMBOBOX, "Padr„o livre_1;Padr„o TopData_0"));
-			geralConfigurations.add(new ConfigurationTO("LÛgica da catraca com urna", "false", FieldType.CHECKBOX));
+					"Desativado_0;Somente entrada_1;Somente sa√≠da_2;Entrada e sa√≠da_3;Sa√≠da e entrada_4"));
+			geralConfigurations.add(new ConfigurationTO("Identifica√ß√£o Biom√©trica", "N√£o_1", FieldType.COMBOBOX, "Sim_1;N√£o_0"));
+			geralConfigurations.add(new ConfigurationTO("Verifica√ß√£o Biom√©trica", "N√£o_0", FieldType.COMBOBOX, "Sim_1;N√£o_0"));
+			geralConfigurations.add(new ConfigurationTO("Padr√£o de cart√£o", "Padr√£o livre_1", FieldType.COMBOBOX, "Padr√£o livre_1;Padr√£o TopData_0"));
+			geralConfigurations.add(new ConfigurationTO("L√≥gica da catraca com urna", "false", FieldType.CHECKBOX));
 			
 			String nomeAcademia = "SmartPonto;Controle Acesso";
 	    	if (Main.loggedUser != null)
@@ -398,8 +398,8 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	    	if (nomeAcademia.length() > 16)
 	    		nomeAcademia = nomeAcademia.substring(0, 16).trim() + ";" + nomeAcademia.substring(16, 32).trim();
 	    	
-			geralConfigurations.add(new ConfigurationTO("Tempo de para coletar cart„o/comanda", "3", FieldType.NUMERIC_LIST, "3;1;15"));
-			geralConfigurations.add(new ConfigurationTO("Cart„o expedido com status de LIBERADO", "false", FieldType.CHECKBOX));
+			geralConfigurations.add(new ConfigurationTO("Tempo de para coletar cart√£o/comanda", "3", FieldType.NUMERIC_LIST, "3;1;15"));
+			geralConfigurations.add(new ConfigurationTO("Cart√£o expedido com status de LIBERADO", "false", FieldType.CHECKBOX));
 			
 			String nomeEmpresa = "SmartPonto;Controle Acesso";
 	    	if (Main.loggedUser != null)
@@ -412,7 +412,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	
 			configurationGroups = new ArrayList<ConfigurationGroupTO>();
 			configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-			configurationGroups.add(new ConfigurationGroupTO("PersonalizaÁ„o", customConfigurations));
+			configurationGroups.add(new ConfigurationGroupTO("Personaliza√ß√£o", customConfigurations));
 		
 		}
 		

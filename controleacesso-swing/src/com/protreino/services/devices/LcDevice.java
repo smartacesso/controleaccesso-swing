@@ -97,7 +97,7 @@ public class LcDevice extends Device {
 			workerEnabled = true;
 			setMode(DeviceMode.VERIFICATION);
 			
-			nivelConfianca = getConfigurationValueAsInteger("NÌvel de confianÁa");
+			nivelConfianca = getConfigurationValueAsInteger("N√≠vel de confian√ßa");
 			
 			worker = new SwingWorker<Void, Void>(){
 				@Override
@@ -152,7 +152,7 @@ public class LcDevice extends Device {
 	public void createDefaultConfiguration() {
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
 		geralConfigurations.add(new ConfigurationTO("Catraca vinculada", "Nenhuma_NULL", FieldType.COMBOBOX, "Nenhuma_NULL;COMM_COMM;USB_USB"));
-		geralConfigurations.add(new ConfigurationTO("NÌvel de confianÁa", "1", FieldType.NUMERIC_LIST, "1;1;10"));
+		geralConfigurations.add(new ConfigurationTO("N√≠vel de confian√ßa", "1", FieldType.NUMERIC_LIST, "1;1;10"));
 		
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
@@ -238,13 +238,13 @@ public class LcDevice extends Device {
 			} else {
 				this.verificationResult = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Digital n„o encontrada.", NotificationType.BAD);
+					Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
 			}
 		
 		} else {
 			this.verificationResult = VerificationResult.NOT_FOUND;
 			if (createNotification)
-				Utils.createNotification("Digital n„o encontrada.", NotificationType.BAD);
+				Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
 		}
 	}
 	
@@ -269,7 +269,7 @@ public class LcDevice extends Device {
 		if(amostrasColetadas >= QUANTIDADE_TEMPLATES - 1) {
 			resp = interfaceJna.SFEP_GetTemplateForRegister(memorySpaceStTemplates, memorySpaceStRegTem);
 			if (resp != Aso15DefJNA.RES_OK) {
-				cancelaColeta("Ocorreu um erro na geraÁ„o de template.");
+				cancelaColeta("Ocorreu um erro na gera√ß√£o de template.");
 				return;
 			}
 			
@@ -307,7 +307,7 @@ public class LcDevice extends Device {
 						
 						String tStr = Base64.encodeBase64String(template2);
 						String tStr1 = Base64.encodeBase64String(template1);
-						//verificar se segunda est· vazia
+						//verificar se segunda est√° vazia
 						if(tStr.startsWith("AAAQAAAAAAAAAAA") )
 							template2 = null;
 						
@@ -336,7 +336,7 @@ public class LcDevice extends Device {
 	public static void extracTopDataTemplate(byte[] stRegTem, byte[] template1, byte[] template2) {
 		int bytes = 0;
 		byte [] cabecalho = new byte[] {0, 0, 16, 0};
-		//adiciona cabeÁalho
+		//adiciona cabe√ßalho
 		for (byte b : cabecalho) {
 			template1[bytes] = b;
 			template2[bytes] = b;
@@ -346,7 +346,7 @@ public class LcDevice extends Device {
 		int lcBytes = 0;
 		for (byte b : stRegTem) {
 			if(lcBytes < 498) {
-				//atÈ aqui È o template 1
+				//at√© aqui √© o template 1
 				template1[bytes] = b; 
 				bytes++;
 			}else {
@@ -496,7 +496,7 @@ public class LcDevice extends Device {
 				sendConfiguration();
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configuraÁıes: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configura√ß√µes: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();
