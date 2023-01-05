@@ -156,7 +156,7 @@ public class NitgenDevice extends Device {
                 			
 							} else {
                 				if (bsp.GetErrorCode() != 516)
-                					System.out.println("Erro durante a coleta. C�digo: " + bsp.GetErrorCode());
+                					System.out.println("Erro durante a coleta. Código: " + bsp.GetErrorCode());
                 			}
 						
 						} catch (Throwable e) {
@@ -177,7 +177,7 @@ public class NitgenDevice extends Device {
 					getDeviceCard().openAthleteScreen();
 			}
 		} else
-			throw new Exception("Não foi poss�vel conectar.");
+			throw new Exception("Não foi possóvel conectar.");
 	}
 
 	@Override
@@ -384,7 +384,7 @@ public class NitgenDevice extends Device {
 				} else {
 					verificationResult = VerificationResult.ERROR;
 					if (createNotification)
-						Utils.createNotification("Erro na verificação. C�digo: " + bsp.GetErrorCode(), NotificationType.BAD);
+						Utils.createNotification("Erro na verificação. Código: " + bsp.GetErrorCode(), NotificationType.BAD);
 				}
 				
 			} else {

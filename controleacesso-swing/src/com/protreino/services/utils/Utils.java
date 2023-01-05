@@ -678,7 +678,7 @@ public class Utils {
 	
 	/**
 	 * Tenta enviar o backup para o servidor. Caso falhe, entao seta um flag indicando que o
-	 * backup precisa ser enviado. Com isso, haveri� nova tentativa juntamente com o envio dos logs de acesso
+	 * backup precisa ser enviado. Com isso, haveri� nova tentativa juntamente com o envio dos logs de acesso
 	 */
 	private static void sendBackupToServer() {
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1538,7 +1538,7 @@ public class Utils {
 		Date dataAtual = new Date();
 		return dataInicioPeriodo.compareTo(dataAtual) >= 0 
 				&& dataFimPeriodo.compareTo(dataAtual) <= 0 
-				&& validade != null ? validade.compareTo(dataAtual) <= 0 : true;
+				&& validade != null ? validade.compareTo(dataAtual) >= 0 : true;
 	}
 	
 	public static void decrementaMensagens(List<PedestrianMessagesEntity> messages) {
@@ -1708,16 +1708,12 @@ public class Utils {
 	
 	public static void main(String [] args) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
-		String aux = "8590983286";
+		String aux = "8591641950";
 		String temp = "";
 		
 		System.out.println(" o que é cartão " + toHEX(aux));
 		
 		
-		String n1 = "1234";
-		String n2 = "12345";
-		String n3 = "7429";
-		String n4 = "2968";
 		String n5 = "1237";
 		if(n5.matches( "^(?=\\d{3}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
 			System.out.println("true");

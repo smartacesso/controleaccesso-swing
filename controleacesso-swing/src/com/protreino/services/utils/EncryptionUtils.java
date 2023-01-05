@@ -34,7 +34,6 @@ public final class EncryptionUtils {
 		}
 		
 		return hexString.toString();
-		
 	}
 	
 	/**

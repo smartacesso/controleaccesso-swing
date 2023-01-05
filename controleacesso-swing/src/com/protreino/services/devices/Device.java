@@ -253,8 +253,9 @@ public abstract class Device implements IDevice {
 	public void setStatus(DeviceStatus status) {
 		this.lastStatus = DeviceStatus.valueOf(this.status.name());
 		this.status = status;
-		if (deviceCard != null)
+		if (deviceCard != null) {
 			deviceCard.setStatus(status);
+		}
 	}
 
 	public String getIp() {

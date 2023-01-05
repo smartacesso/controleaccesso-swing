@@ -71,11 +71,12 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.AcionarBipCurto(inner.Numero);
 		
 		
+
 		Integer tempoAcionamentoRelé = getConfigurationValueAsInteger("Tempo de acionamento do relé");
 		if(tempoAcionamentoRelé == null)
 			tempoAcionamentoRelé = 3;
 		tempoAcionamentoRelé*= 1000;
-		
+
 		Long inicio = System.currentTimeMillis();
 		while ((System.currentTimeMillis() - inicio) < tempoAcionamentoRelé) {
 			Utils.sleep(1000);

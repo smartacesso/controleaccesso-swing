@@ -182,9 +182,7 @@ public class TopDataDevice extends Device {
 		
 		worker = new SwingWorker<Void, Void>(){
 
-
 			@SuppressWarnings("unlikely-arg-type")
-
 			@Override
 			protected Void doInBackground() throws Exception {
 				while (workerEnabled) {
@@ -242,15 +240,6 @@ public class TopDataDevice extends Device {
 							if (ret == Enumeradores.RET_COMANDO_OK) {
 								
 								System.out.println("Origem: " + iArrBCartaoRb[0]);
-								System.out.println("Origem: " + iArrBCartaoRb[1]);
-								System.out.println("Origem: " + iArrBCartaoRb[2]);
-								System.out.println("Origem: " + iArrBCartaoRb[3]);
-								System.out.println("Origem: " + iArrBCartaoRb[4]);
-								System.out.println("Origem: " + iArrBCartaoRb[5]);
-								System.out.println("Origem: " + iArrBCartaoRb[6]);
-								System.out.println("Origem: " + iArrBCartaoRb[7]);
-								
-							
 								
 								try {
 									StringBuffer cartaoMaster = new StringBuffer(Utils.getPreference("cardMaster"));
@@ -259,6 +248,7 @@ public class TopDataDevice extends Device {
 										EasyInner.DefinirNumeroCartaoMaster(cartaoMaster+"");
 										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 									}
+									
 									Main.validandoAcesso = true;
 									if(Main.servidor != null)
 										HibernateUtil.enviaInicioVerificandoAcesso();
@@ -376,12 +366,15 @@ public class TopDataDevice extends Device {
 					Long sleepTime = null;
 					try {
 						int ret = 0; 
-						if (!busy) 
+						if (!busy) {
 							ret = ping();
+						}
+
 						sleepTime = getConfigurationValueAsLong("Tempo de ping") * 1000;
 						
-						if(DeviceStatus.DISCONNECTED.equals(getStatus()))
-							System.out.println(Main.sdf.format(new Date()) + " Catraca desconectada, resposta do ping: " + ret);
+						if(DeviceStatus.DISCONNECTED.equals(getStatus())) {
+							System.out.println(Main.sdf.format(new Date()) + " Catraca desconectada, resposta do ping: " + ret);							
+						}
 						
 						if(DeviceStatus.DISCONNECTED.equals(lastStatus)
 								&& DeviceStatus.CONNECTED.equals(getStatus())) {
@@ -393,10 +386,10 @@ public class TopDataDevice extends Device {
 									try {
 										System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar até 5 segundos");
 										disconnect();
-										Utils.sleep(5000l);
+										Utils.sleep(5000);
 										System.out.println(Main.sdf.format(new Date()) + " Tentando reconectar catraca...");
 										connect();
-									}catch (Exception e) {
+									} catch (Exception e) {
 										System.out.println(Main.sdf.format(new Date()) + " Erro ao reconectar a catraca, veja abaixo: ");
 										e.printStackTrace();
 										if(watchDog != null && !watchDogEnabled) {
@@ -1712,12 +1705,14 @@ public class TopDataDevice extends Device {
 			}
 			if (ret == easyInner.RET_COMANDO_OK) {
 				inner.TempoInicialPingOnLine = System.currentTimeMillis();
-				if(!coletandoDadosOffLine)
+				if(!coletandoDadosOffLine) {
 					setStatus(DeviceStatus.CONNECTED);
+				}
 				inner.CountRepeatPingOnline = 0;
 			
-			} else 
+			} else {
 				setStatus(DeviceStatus.DISCONNECTED);
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			setStatus(DeviceStatus.DISCONNECTED);
@@ -2435,12 +2430,7 @@ public class TopDataDevice extends Device {
             if(indexSearchEngine != null) {
             	indexSearchEngine.AddFIR(storedInputFIR, templateEntity.getId().intValue(), indexSearchEngine.new SAMPLE_INFO());
          
-            } else {
-            	System.out.println("caiu no else, provavelmente erro !!!!!");
-            }
-            
-
-    		if (!bsp.IsErrorOccured()) {
+            }	if (!bsp.IsErrorOccured() && bsp.GetErrorCode()!=0) {
 
     			System.out.println(sdf.format(new Date()) + " topdata topdata Erro ao adicionar template na IndexSearchEngine. Erro: " + bsp.GetErrorCode());
     		}
