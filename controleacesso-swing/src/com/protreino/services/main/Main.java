@@ -500,6 +500,7 @@ public class Main {
 			Calendar inicio = Calendar.getInstance();
 			
 			inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
+//			inicio.set(Calendar.HOUR_OF_DAY, 14);
 			inicio.set(Calendar.MINUTE, 0);
 			inicio.set(Calendar.SECOND, 0); 
 			if(new Date().getTime() > inicio.getTimeInMillis()) {
@@ -650,8 +651,8 @@ public class Main {
 						if (retornoAuthentication == null)
 							return null;
 						if (!retornoAuthentication) {
-							JOptionPane.showMessageDialog(null, "NÃ£o foi poss[ivel validar a senha, ou senha inválida", 
-									"Erro na validação", JOptionPane.PLAIN_MESSAGE);
+							JOptionPane.showMessageDialog(null, "NÃ£o foi poss[ivel validar a senha, ou senha invÃ¡lida", 
+									"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
 							return null;
 						}
 					}
@@ -829,7 +830,7 @@ public class Main {
         HibernateUtil.shutdown();
         finalizeDevices();
         if (!desenvolvimento)
-			closeLogFile();
+			//closeLogFile();
         System.exit(0);
 	}
 	
@@ -916,7 +917,7 @@ public class Main {
 		limpaSentidoTodos();
 		limpaStatusCartoes();
 		limpaTelas();
-		closeLogFile();
+//		closeLogFile();
 		configLogFile();
 
 	}
@@ -941,6 +942,7 @@ public class Main {
 			};
 		}.start();
 		
+		System.out.println("Saiu limpa telas");
 	}
 
 	private static void limpaStatusCartoes() {
@@ -950,6 +952,7 @@ public class Main {
 		
 		HibernateUtil.resetStatusAllCards();
 		
+		System.out.println("saiu limpaStatusCartoes");
 	}
 
 	private static void limpaSentidoTodos() {
@@ -969,6 +972,8 @@ public class Main {
 		//apaga tambï¿½m dados de giros anteriores nï¿½o registrados
 		HibernateUtil.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 		
+		System.out.println("Saiu limpaSentidoTodos");
+		
 	}
 
 	private static void limpaCartoesVisitantes() {
@@ -985,6 +990,8 @@ public class Main {
 		HibernateUtil.apagaDadosCartao();
 		HibernateUtil.apagaDadosDeUltimoSentido();
 		
+		
+		System.out.println("saiu limpaCartoesVisitantes");
 	}
 
 	public static Device getDefaultDevice() {
@@ -1342,7 +1349,7 @@ public class Main {
 			return;
 		
 		if(Main.servidor != null) {
-			System.out.println(sdf.format(new Date()) + " Sincronização desabilitada: Máquina possui servidor");
+			System.out.println(sdf.format(new Date()) + " SincronizaÃ§Ã£o desabilitada: MÃ¡quina possui servidor");
 			return;
 		}
 		
@@ -1674,8 +1681,8 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 					
-					// TODO : criar novo método para pegar pedestre removido ou não
-					//        isso pode resolver vários bugs
+					// TODO : criar novo mï¿½todo para pegar pedestre removido ou nï¿½o
+					//        isso pode resolver vï¿½rios bugs
 					// TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser 
 					//		  aqui ou ne
 					
@@ -2338,6 +2345,7 @@ public class Main {
 		catch (Exception e){
 			e.printStackTrace();
 		}
+		System.out.println("saiu configLogFile");
 	}
 	
 	private static void closeLogFile(){
@@ -2354,6 +2362,7 @@ public class Main {
 		System.setOut(originalOut);
 		System.setErr(originalErr);
 		System.out.println(sdf.format(new Date()) + "  Voltando as mensagens para o console.");
+		System.out.println("Saiu closeLogFile");
 	}
 	
 	private static JsonObject getNewVisitanteResponseObj(PedestrianAccessEntity visitante) {

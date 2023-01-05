@@ -507,7 +507,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-		String mensagem = String.format("Rg já existente, tem certeza que quer mudar o tipo do Usuário de %s para %s?", 
+		String mensagem = String.format("Rg jÃ¡ existente, tem certeza que quer mudar o tipo do UsuÃ¡rio de %s para %s?", 
 				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.PEDESTRE : TipoPedestre.VISITANTE,
 				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.VISITANTE : TipoPedestre.PEDESTRE);
 
@@ -540,7 +540,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}.start();
 		});
 
-		JButton naoButton = new JButton("Não");
+		JButton naoButton = new JButton("NÃ£o");
 		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		naoButton.addActionListener(e -> {
@@ -1076,7 +1076,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 								: (tipoQRCodePadrao.equals("DINAMICO_USO") ? 2 : 0 ) );
 			
 		}else {
-			//somente confirmaï¿½ï¿½o
+			//somente confirmaÃ§Ã£o
 			JLabel mensagemLabel = new JLabel("Deseja gerar um QRCode para esse pedestre?");
 			mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 			mainPanel.add(mensagemLabel);
@@ -1439,8 +1439,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 				&& !"".equals(cartaoAcessoTextField.getText().replace("0", ""))
 				&& (visitante.getCardNumber() == null  || "".equals(visitante.getCardNumber().replace("0", "")))){
 
-			//não muda valor do cartão adicionado anteriormente
-			System.out.println("Não muda valor do cartão");
+			//nï¿½o muda valor do cartï¿½o adicionado anteriormente
+			System.out.println("NÃ£o muda valor do cartÃ£o");
 
 		} else {
 

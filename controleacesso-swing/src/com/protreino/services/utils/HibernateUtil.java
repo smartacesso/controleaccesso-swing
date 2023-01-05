@@ -1225,8 +1225,8 @@ public class HibernateUtil {
 			}
 			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
-				System.out.println("o que � equipament" +equipament );
-				System.out.println("o que � pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
+				System.out.println("o que é equipament" +equipament );
+				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
 					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
 							foto);
@@ -1260,8 +1260,7 @@ public class HibernateUtil {
 								&& !Integer.valueOf(18).equals(origem) && usaUrna)
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 
-					} else if (Utils.pedestreTemRegraDeAcessoPorPeriodoValido(matchedAthleteAccess)
-							|| codigo.contains("_")) {
+					} else if (Utils.pedestreTemRegraDeAcessoPorPeriodoValido(matchedAthleteAccess)) {
 						permitido = true;
 
 					} else {
@@ -1290,7 +1289,7 @@ public class HibernateUtil {
 					 * verificar creditos
 					 */
 
-					// verifica se tem cr�ditos para passar
+					// verifica se tem créditos para passar
 					System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
 					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
 							&& matchedAthleteAccess.getCardNumber() != null
@@ -1327,12 +1326,12 @@ public class HibernateUtil {
 						// pode acessar
 						permitido = true;
 					} else {
-						// n�o pode acessar
+						// não pode acessar
 						permitido = false;
 					}
 
 				} else if (acessoRestrito) {
-					// verifica se h� algum log de acesso para este aluno hoje
+					// verifica se há algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedAthleteAccess.getId());
 					List<LogPedestrianAccessEntity> list = (List<LogPedestrianAccessEntity>) HibernateUtil
@@ -1348,7 +1347,7 @@ public class HibernateUtil {
 			}
 
 			if (!permitidoSensor) {
-				// para l�gica de urna
+				// para lógica de urna
 				if (origem != Origens.ORIGEM_LEITOR_2)
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
 				else
@@ -1367,7 +1366,7 @@ public class HibernateUtil {
 				}
 
 			} else if (!permitido) {
-				// para l�gica de cr�ditos finalizados
+				// para lógica de créditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
 					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
@@ -1383,8 +1382,8 @@ public class HibernateUtil {
 
 			} else if (permitidoHoje) {
 
-				// para l�gicas do pedestre:
-				// - hor�rio
+				// para lógicas do pedestre:
+				// - horário
 				// - periodo
 				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -1519,7 +1518,7 @@ public class HibernateUtil {
 
 	private static Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
 
-		// recupera �ltima entrada da pessoa
+		// recupera última entrada da pessoa
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("ID_PEDESTRE", matchedAthleteAccess.getId());
 		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
@@ -1644,9 +1643,9 @@ public class HibernateUtil {
 			return true;
 			
 		}
-//		Se origem diferentes das que n�o s�o permitidas como exemplo, biometria.
+//		Se origem diferentes das que não são permitidas como exemplo, biometria.
 
-//			verificar o m�ximo poss�vel para ver o que n�o pode estar contido na mesma informa��o
+//			verificar o máximo possível para ver o que não pode estar contido na mesma informação
 		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
@@ -1674,7 +1673,7 @@ public class HibernateUtil {
 		LogPedestrianAccessEntity lastAccess = (LogPedestrianAccessEntity) HibernateUtil
 				.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
-//		buscar pelo dia de "hoje" e confefir se tem datas, j� dar entrada
+//		buscar pelo dia de "hoje" e confefir se tem datas, já dar entrada
 		if (qtdAcessosAntesSinc != null && qtdAcessosAntesSinc > 0 && lastAccess == null) {
 
 			lastAccess = new LogPedestrianAccessEntity();
@@ -1799,7 +1798,7 @@ public class HibernateUtil {
 		if (equipament == null)
 			return true;
 
-		// n�o tem bloqueo por equipamento
+		// não tem bloqueo por equipamento
 		if (equipamentos == null || equipamentos.isEmpty())
 			return true;
 
@@ -1895,23 +1894,23 @@ public class HibernateUtil {
 
 		VerificationResult resultadoVerificacao;
 
-		// verifica se h� um dia liberado para acesso
+		// verifica se há um dia liberado para acesso
 //		if (Utils.isDiaLivre(matchedAthleteAccess.getDiasLivres())) {
 //			resultadoVerificacao = validado;
 //			logAccess.setStatus("ATIVO");
 //			aniversariante = Utils.isBirthday(matchedAthleteAccess);
 //			if (createNotification) {
 //				Utils.createNotification(userName + " permitido" 
-//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela toler�ncia." : "." ), 
+//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância." : "." ), 
 //						aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 //			}
 //		}
 //		else {
 
-		// verifica se h� um dia permitido
+		// verifica se há um dia permitido
 		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
 
-			// verifica se est� num horario permitido
+			// verifica se está num horario permitido
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
@@ -3062,7 +3061,7 @@ public class HibernateUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeGiro(Date data) {
-//		Parou na apagaDadosDeGIRO O QUE � DATA?
+//		Parou na apagaDadosDeGIRO O QUE É DATA?
 
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())

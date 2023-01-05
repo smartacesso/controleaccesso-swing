@@ -71,13 +71,13 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.AcionarBipCurto(inner.Numero);
 		
 		
-		Integer tempoAcionamentoRelÈ = getConfigurationValueAsInteger("Tempo de acionamento do rel√©");
-		if(tempoAcionamentoRelÈ == null)
-			tempoAcionamentoRelÈ = 3;
-		tempoAcionamentoRelÈ*= 1000;
+		Integer tempoAcionamentoRel√© = getConfigurationValueAsInteger("Tempo de acionamento do rel√©");
+		if(tempoAcionamentoRel√© == null)
+			tempoAcionamentoRel√© = 3;
+		tempoAcionamentoRel√©= 1000;
 		
 		Long inicio = System.currentTimeMillis();
-		while ((System.currentTimeMillis() - inicio) < tempoAcionamentoRelÈ) {
+		while ((System.currentTimeMillis() - inicio) < tempoAcionamentoRel√©) {
 			Utils.sleep(1000);
 		}
 		

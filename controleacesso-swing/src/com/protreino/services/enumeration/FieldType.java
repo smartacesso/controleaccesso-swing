@@ -5,8 +5,8 @@ public enum FieldType {
 	/**
 	 * Um JTextField simples. 
 	 * Podem ser definidos máximo e minimo de caracteres. Pode ser definido como campo numerico.
-	 * O valor padr�o pode ser uma string qualquer.
-	 * Por padr�o, � um campo obrigat�rio e portanto n�o pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigat�rio.
+	 * O valor padrão pode ser uma string qualquer.
+	 * Por padrão, é um campo obrigatório e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
 	 */
 	TEXT,
 	
@@ -27,15 +27,15 @@ public enum FieldType {
 	COMBOBOX,
 	
 	/**
-	 * Um JComboBox predefinido com os dois valores booleanos "Sim_true;N�o_false". 
-	 * O valor padr�o pode ser definido como "Sim_true" ou "N�o_false", ou apenas como "true" ou "false".
+	 * Um JComboBox predefinido com os dois valores booleanos "Sim_true;Não_false". 
+	 * O valor padrão pode ser definido como "Sim_true" ou "Não_false", ou apenas como "true" ou "false".
 	 */
 	YES_NO_COMBOBOX,
 	
 	/**
 	 * Um campo composto por dois JTextField.
-	 * Podem ser definidos m�ximo e minimo de caracteres.
-	 * O retorno e o valor padr�o seguem o formato "TEXTO1;TEXTO2".
+	 * Podem ser definidos máximo e minimo de caracteres.
+	 * O retorno e o valor padrão seguem o formato "TEXTO1;TEXTO2".
 	 */
 	MESSAGE_LINES,
 	
