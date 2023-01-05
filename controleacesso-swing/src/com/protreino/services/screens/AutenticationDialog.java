@@ -324,11 +324,15 @@ public class AutenticationDialog extends JDialog {
 			    @Override
 			    public Boolean doInBackground() {
 			    	try {
-//			    		HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/login/do?loginName=" 
-//			    				+ Main.loggedUser.getLoginName() + "&passwd=" + senha + "&unidadeName="+Main.loggedUser.getUnitName());
-//			    		if (con.getResponseCode() == 200)  // Status.OK 
-//							return true;
-			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), EncryptionUtils.encrypt(senha));
+			    		long inicio = new Date().getTime();
+			    		String senhaEncriptado = EncryptionUtils.encrypt(senha);
+			    		long fim = new Date().getTime();
+			    		System.out.println("Tempo gasto para encripitar senha em ms: " + (fim - inicio));
+			    		
+			    		inicio = new Date().getTime();
+			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
+			    		fim = new Date().getTime();
+			    		System.out.println("Tempo gasto para buscar usuario no banco em ms: " + (fim - inicio));
 			    		
 			    		if(user != null)
 			    			return true;

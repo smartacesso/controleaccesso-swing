@@ -2540,7 +2540,7 @@ public class HibernateUtil {
 			query.setParameter("LOGIN_NAME", loginName);
 			query.setParameter("PASSWORD", password);
 
-			List<UserEntity> resultList = query.getResultList();
+			List<UserEntity> resultList = query.getResultList(); 
 			if (resultList != null && !resultList.isEmpty()) {
 				usuario = resultList.get(0);
 			}
