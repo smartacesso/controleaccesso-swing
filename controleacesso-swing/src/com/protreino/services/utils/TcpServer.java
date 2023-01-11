@@ -622,10 +622,13 @@ public class TcpServer {
 
 		private Integer getResultListCount(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
 			String namedQuery = (String) receivedTcpMessage.getParans().get("namedQuery");
-			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
+			String classe = (String) receivedTcpMessage.getParans().get("entityClass");			
 			Class<?> entityClass = Class.forName(classe);
 
-			return HibernateUtil.getResultListCount(entityClass, namedQuery);
+			@SuppressWarnings("unchecked")
+			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
+
+			return HibernateUtil.getResultListCount(entityClass, namedQuery, args);
 		}
 
 		private List<?> getResultListLimited(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {

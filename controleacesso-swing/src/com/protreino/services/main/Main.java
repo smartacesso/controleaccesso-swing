@@ -820,7 +820,7 @@ public class Main {
 	
 	public static void exit(boolean exibirConfirmacao){
 		if (exibirConfirmacao) {
-			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serÃ£o desconectadas. Deseja realmente sair?", "ConfirmaÃ§Ã£o", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serão desconectadas. Deseja realmente sair?", "Confirmação", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult != JOptionPane.YES_OPTION)
 				return;
@@ -910,18 +910,35 @@ public class Main {
 
 
 	public static void tasksOfDay(boolean timerCall) {
-
-		if (timerCall)
-			limpaCartoesVisitantes();
+	
+		if (timerCall) {
+			limpaCartoesVisitantes();			
+		}
 
 		limpaSentidoTodos();
 		limpaStatusCartoes();
 		limpaTelas();
-//		closeLogFile();
+		closeLogFile();
 		configLogFile();
-
+		enviarLogsComFalhaAoEnviar();
+		
+		
 	}
 	
+	private static void enviarLogsComFalhaAoEnviar() {
+		try {
+			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
+					"LogPedestrianAccessEntity.findUnsubmittedLogsCount", null);
+			System.out.println("Quantidade total de logs com falha ao enviar: " + countLogs);
+			
+			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findUnsubmittedLogs", null, true);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
 	private static void limpaTelas() {
 
 		if(mainScreen != null) {
@@ -989,9 +1006,6 @@ public class Main {
 		//e que tenham um crï¿½dito
 		HibernateUtil.apagaDadosCartao();
 		HibernateUtil.apagaDadosDeUltimoSentido();
-		
-		
-		System.out.println("saiu limpaCartoesVisitantes");
 	}
 
 	public static Device getDefaultDevice() {
@@ -1971,65 +1985,35 @@ public class Main {
 				}
 			}
 
-			@SuppressWarnings("unchecked")
 			private void enviaLogsDeAcesso() throws Exception {
 				HashMap<String, Object> args = new HashMap<String, Object>();
     			args.put("LAST_SYNC", new Date(lastSyncLog));
     			
-    			List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) HibernateUtil.
-    					getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByAccessDate", args);
+    			Long lastSyncLogBackup = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
     			
-    			List<LogPedestrianAccessEntity> logListOff = (List<LogPedestrianAccessEntity>) HibernateUtil.
-    					getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCreateDate", args);
+    			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
+    					"LogPedestrianAccessEntity.findByAccessDateCount", args);
+    			System.out.println("Quantidade total de logs online: " + countLogs);
     			
-    			if(logListOff != null) {
-    				if(logList == null) {
-    					logList = new ArrayList<LogPedestrianAccessEntity>();
-    				}
-    				
-    				logList.addAll(logListOff);
-    			}
+    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByAccessDate", args, false);
     			
-    			if (logList == null || logList.isEmpty()) {
-    				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: sem dados para enviar");
-    				Utils.sleep(1000);
-    				return;
-    			}
+    			countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
+    					"LogPedestrianAccessEntity.findByCreateDateCount", args);
+    			System.out.println("Quantidade total de logs offline: " + countLogs);
     			
-    			System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
-				JsonArray responseArray = new JsonArray();
-				for (LogPedestrianAccessEntity log : logList){
-					JsonObject responseObj = new JsonObject();
-					responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
-					responseObj.addProperty("idPedestrian", log.getIdPedestrian() == null 
-																	? "" : log.getIdPedestrian().toString());
-					responseObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
-					responseObj.addProperty("status", log.getStatus());
-					responseObj.addProperty("location", log.getLocation());
-					responseObj.addProperty("reason", log.getReason());
-					responseObj.addProperty("direction", log.getDirection() == null ? Tipo.ENTRADA : log.getDirection());
-					responseObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
-					responseObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
-					responseObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null 
-																		? log.getCartaoAcessoRecebido() : "");
-					responseArray.add(responseObj);
-				}
-				
-				HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/registerlog");
-				int responseCode = con.sendResponse(responseArray.toString());
-				if (responseCode != 200) {
-					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode 
-							+ "  Error String: " + con.getErrorString());
-					return;
-				}
+    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByCreateDate", args, false);
+    			
+    			lastSyncLog = lastSyncLogBackup;
 				
 				if (loggedUser != null) {
-					lastSyncLog = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
 					loggedUser.setLastSyncLog(new Date(lastSyncLog));
 					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
 				}
+				
 				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
 			}
+			
+			
 		};
 		worker.execute();
 	}
@@ -2037,27 +2021,12 @@ public class Main {
 	@SuppressWarnings("unchecked")
 	public static void dateSync(String inicio, String fim) throws ParseException {
 		
-		SimpleDateFormat sdfLocal = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-		
-		HashMap<String, Object> dataInicioFim = new HashMap<String, Object>();
-		
-		
-		dataInicioFim.put("DATA_INICIO", sdfLocal.parse(inicio));
-		dataInicioFim.put("DATA_FIM",sdfLocal.parse(fim));
-		
-		List<LogPedestrianAccessEntity> listaDataAcesso = (List<LogPedestrianAccessEntity>) HibernateUtil.
-				getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByAccessDateBetween", dataInicioFim);
-		
-		List<LogPedestrianAccessEntity> ListaDataCriacao = (List<LogPedestrianAccessEntity>) HibernateUtil.
-				getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCreateDateBetween", dataInicioFim);
-		 
-		List<LogPedestrianAccessEntity> listaAcessoCriacao = new ArrayList<LogPedestrianAccessEntity>();
-		listaAcessoCriacao.addAll(listaDataAcesso);	
-		listaAcessoCriacao.addAll(ListaDataCriacao);
-		
+		List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateUtil.
+				getResultList(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findUnsubmittedLogs");
+	
 		JsonArray responseArray = new JsonArray();
-		System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + listaAcessoCriacao.size() + " registros sincronizados manualmente para enviar");
-		for (LogPedestrianAccessEntity log : listaAcessoCriacao){
+		System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + listaAcessoNaoEnvidados.size() + " registros sincronizados manualmente para enviar");
+		for (LogPedestrianAccessEntity log : listaAcessoNaoEnvidados){
 //			System.out.println("log de acesso " + log);
 			JsonObject responseObj = new JsonObject();
 			responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());

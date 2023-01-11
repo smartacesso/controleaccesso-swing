@@ -1,4 +1,4 @@
-package com.protreino.services.entity;
+                                                                                                                                                                                                                                                                                                                         package com.protreino.services.entity;
 
 import java.util.Date;
 
@@ -27,29 +27,35 @@ import org.hibernate.annotations.Type;
 					  + " where obj.accessDate > :LAST_SYNC"
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
 	
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDateCount", 
+				query = "select count(obj) from LogPedestrianAccessEntity obj "
+					  + " where obj.accessDate > :LAST_SYNC"
+					  + " and (obj.offline is null or obj.offline = false) "
+					  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDate", 
 				query = "select obj from LogPedestrianAccessEntity obj "
 					  + " where obj.accessDate > :LAST_SYNC"
 					  + " and (obj.offline is null or obj.offline = false) "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
 	
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDateCount", 
+				query = "select count(obj) from LogPedestrianAccessEntity obj "
+					  + " where obj.dataCriacao > :LAST_SYNC "
+					  + " and obj.offline = true "
+					  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDate", 
 				query = "select obj from LogPedestrianAccessEntity obj "
 					  + " where obj.dataCriacao > :LAST_SYNC "
 					  + " and obj.offline = true "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	
-	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDateBetween", 
-	query = "select obj from LogPedestrianAccessEntity obj "
-		  + " where obj.accessDate between :DATA_INICIO and :DATA_FIM "
-		  + " and (obj.offline is null or obj.offline = false) "
-		  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findUnsubmittedLogsCount", 
+				query = "select count(obj) from LogPedestrianAccessEntity obj "
+					  + " where obj.failAtSync = true "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findUnsubmittedLogs", 
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + " where obj.failAtSync = true "),
 
-	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDateBetween", 
-	query = "select obj from LogPedestrianAccessEntity obj "
-		  + " where obj.dataCriacao between :DATA_INICIO and :DATA_FIM "
-		  + " and obj.offline = true "
-		  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findLocalByDate", 
 				query = "select obj "
 					  + "from LogPedestrianAccessEntity obj, "
@@ -205,6 +211,10 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 	@Type(type = "org.hibernate.type.NumericBooleanType")
 	@Column(name="OFF_LINE", nullable=true, length=30)
 	private Boolean offline = false;
+	
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name="FAIL_AT_SYNC", nullable=true, length=30)
+	private Boolean failAtSync = false;
 	
 	public LogPedestrianAccessEntity(){
 	}
@@ -378,6 +388,14 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 
 	public void setOffline(Boolean offline) {
 		this.offline = offline;
+	}
+
+	public Boolean getFailAtSync() {
+		return failAtSync;
+	}
+
+	public void setFailAtSync(Boolean failAtSync) {
+		this.failAtSync = failAtSync;
 	}
 	
 	

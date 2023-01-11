@@ -38,7 +38,7 @@ public interface IDevice extends Serializable {
 	public void allowAccess();
 	
 	/**
-	 * Acesso n√£o permitido
+	 * Acesso N„o permitido
 	 */
 	public void denyAccess();
 	

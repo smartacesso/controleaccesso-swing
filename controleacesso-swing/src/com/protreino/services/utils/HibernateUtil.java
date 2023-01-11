@@ -33,6 +33,8 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.hbm2ddl.SchemaExport.Action;
 import org.hibernate.tool.schema.TargetType;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.ControlIdDevice;
@@ -76,6 +78,8 @@ public class HibernateUtil {
 
 	public static boolean executando = false;
 	public static boolean executandoPing = false;
+	
+	public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	static {
 		try {
@@ -258,9 +262,13 @@ public class HibernateUtil {
 
 		return result;
 	}
+	
+	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery) {
+		return getResultListCount(entityClass, namedQuery, null);
+	}
 
 	@SuppressWarnings("unchecked")
-	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery) {
+	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery, HashMap<String, Object> args) {
 		Integer count = 0;
 
 		if (Main.servidor != null && !DeviceEntity.class.equals(entityClass)) {
@@ -274,6 +282,7 @@ public class HibernateUtil {
 				TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_RESULT_LIST_COUNT);
 				req.getParans().put("entityClass", classe);
 				req.getParans().put("namedQuery", namedQuery);
+				req.getParans().put("args", args);
 
 				executando = true;
 
@@ -298,9 +307,16 @@ public class HibernateUtil {
 
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery);
+				
+				if(args != null && !args.isEmpty()) {
+					args.forEach(query::setParameter);
+				}
+				
 				Long qtd = (Long) query.getSingleResult();
-				if (qtd != null)
-					count = qtd.intValue();
+				if (qtd != null) {
+					count = qtd.intValue();					
+				}
+				
 				session.getTransaction().commit();
 
 			} catch (Exception e) {
@@ -526,10 +542,13 @@ public class HibernateUtil {
 					query.setParameter(entry.getKey(), entry.getValue());
 				}
 
-				if (inicio != null)
-					query.setFirstResult(inicio);
-				if (quantidade != null)
-					query.setMaxResults(quantidade);
+				if (inicio != null) {
+					query.setFirstResult(inicio);					
+				}
+
+				if (quantidade != null) {
+					query.setMaxResults(quantidade);					
+				}
 
 				resultList = (List<?>) query.getResultList();
 				session.getTransaction().commit();
@@ -3141,6 +3160,73 @@ public class HibernateUtil {
 
 		}
 
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static synchronized void sendLogs(Integer qtdeTotalLogos, String namedQuery, HashMap<String, Object> args, boolean marcaLogsComoEnviados) {
+		if(qtdeTotalLogos <= 0) {
+			return;
+		}
+		
+		int pageSize = 50;
+		int offset = 0;
+		
+		do {
+			List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) getResultListWithParams(
+					LogPedestrianAccessEntity.class, namedQuery, args, (offset * pageSize), pageSize);
+			
+			System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
+			JsonArray requestArray = new JsonArray();
+			for (LogPedestrianAccessEntity log : logList){
+				JsonObject requestObj = new JsonObject();
+				requestObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
+				requestObj.addProperty("idPedestrian", log.getIdPedestrian() == null 
+																? "" : log.getIdPedestrian().toString());
+				requestObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
+				requestObj.addProperty("status", log.getStatus());
+				requestObj.addProperty("location", log.getLocation());
+				requestObj.addProperty("reason", log.getReason());
+				requestObj.addProperty("direction", log.getDirection() == null ? Tipo.ENTRADA : log.getDirection());
+				requestObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
+				requestObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
+				requestObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null 
+																	? log.getCartaoAcessoRecebido() : "");
+				requestArray.add(requestObj);
+			}
+			
+			try {
+				HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/registerlog");
+				int responseCode = con.sendResponse(requestArray.toString());
+				if (responseCode != 200) {
+					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode 
+							+ "  Error String: " + con.getErrorString());
+					setFailAtSync(logList, true);
+				}
+				
+				if(marcaLogsComoEnviados) {
+					setFailAtSync(logList, false);
+				}
+
+			} catch (Throwable e) {
+				System.out.println(e.getMessage());
+				setFailAtSync(logList, true);
+			}
+			
+			offset++;
+			
+		} while(offset * pageSize <= qtdeTotalLogos);
+	}
+	
+	private static synchronized void setFailAtSync(List<LogPedestrianAccessEntity> logList, boolean status) {
+		if(logList == null || logList.isEmpty()) {
+			return;
+		}
+		
+		logList.forEach(log -> {
+			log.setFailAtSync(status);
+			
+			HibernateUtil.save(LogPedestrianAccessEntity.class, log);
+		});
 	}
 	
 	public static synchronized Device getDeviceByIdentifier(String identifier) {

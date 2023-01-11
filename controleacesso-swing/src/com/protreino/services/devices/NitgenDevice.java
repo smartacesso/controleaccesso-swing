@@ -177,7 +177,7 @@ public class NitgenDevice extends Device {
 					getDeviceCard().openAthleteScreen();
 			}
 		} else
-			throw new Exception("N√£o foi poss√≥vel conectar.");
+			throw new Exception("N„o foi poss√≥vel conectar.");
 	}
 
 	@Override
@@ -379,7 +379,7 @@ public class NitgenDevice extends Device {
 				if (bsp.GetErrorCode() == NBioBSPJNI.ERROR.NBioAPIERROR_INDEXSEARCH_IDENTIFY_FAIL)  {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 				
 				} else {
 					verificationResult = VerificationResult.ERROR;
@@ -400,7 +400,7 @@ public class NitgenDevice extends Device {
 				else {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 				}
 			}
 			
