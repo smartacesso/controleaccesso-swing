@@ -238,13 +238,13 @@ public class LcDevice extends Device {
 			} else {
 				this.verificationResult = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
+					Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 			}
 		
 		} else {
 			this.verificationResult = VerificationResult.NOT_FOUND;
 			if (createNotification)
-				Utils.createNotification("Digital n√£o encontrada.", NotificationType.BAD);
+				Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 		}
 	}
 	

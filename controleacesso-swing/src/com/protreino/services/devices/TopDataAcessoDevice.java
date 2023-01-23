@@ -71,13 +71,14 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.AcionarBipCurto(inner.Numero);
 		
 		
-		Integer tempoAcionamentoRelé = getConfigurationValueAsInteger("Tempo de acionamento do relé");
-		if(tempoAcionamentoRelé == null)
-			tempoAcionamentoRelé = 3;
-		tempoAcionamentoRelé= 1000;
-		
+
+		Integer tempoAcionamentoRele = getConfigurationValueAsInteger("Tempo de acionamento do rel�");
+		if(tempoAcionamentoRele == null)
+			tempoAcionamentoRele = 3;
+		tempoAcionamentoRele*= 1000;
+
 		Long inicio = System.currentTimeMillis();
-		while ((System.currentTimeMillis() - inicio) < tempoAcionamentoRelé) {
+		while ((System.currentTimeMillis() - inicio) < tempoAcionamentoRele) {
 			Utils.sleep(1000);
 		}
 		
@@ -85,7 +86,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.DesabilitarRele2(inner.Numero);
 		
 		
-		Boolean AcionaRele2 = getConfigurationValueAsBoolean("Aciona relé 2");
+		Boolean AcionaRele2 = getConfigurationValueAsBoolean("Aciona rel� 2");
 
 //		if(Boolean.TRUE.equals(AcionaRele2)) {
 //			
@@ -135,7 +136,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
 				Utils.decrementaMensagens(pedestre.getMensagens());
 			
-			if(getConfigurationValueAsBoolean("Bloquear saída") 
+			if(getConfigurationValueAsBoolean("Bloquear sa�da") 
 					&& Tipo.SAIDA.equals(ultimo.getDirection()))
 				Utils.decrementaCreditos(pedestre);
 			
@@ -212,7 +213,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 	public void processAccessRequest(Object obj) {
 		try {
 			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, "Inner Acesso " + inner.Numero, 
-					inner.BilheteInner.Origem, location, getConfigurationValueAsBoolean("Lógica da catraca com urna"), true, 
+					inner.BilheteInner.Origem, location, getConfigurationValueAsBoolean("L�gica da catraca com urna"), true, 
 					getConfigurationValueAsBoolean("Ignorar regras de acesso"));
 			verificationResult = (VerificationResult) retorno[0];
 			allowedUserName = (String) retorno[1];
@@ -230,36 +231,36 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO("Modo de trabalho", "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO("Envia digitais para catraca", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Horário_clockwise", FieldType.COMBOBOX, 
-				"Horário_clockwise;Antihorário_anticlockwise"));
-		geralConfigurations.add(new ConfigurationTO("Tempo de liberação", "7", FieldType.NUMERIC_LIST, "5;1;15"));
-		geralConfigurations.add(new ConfigurationTO("Bloquear saída", "true", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Hor�rio_clockwise", FieldType.COMBOBOX, 
+				"Hor�rio_clockwise;AntiHor�rio_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO("Tempo de libera��o", "7", FieldType.NUMERIC_LIST, "5;1;15"));
+		geralConfigurations.add(new ConfigurationTO("Bloquear sa�da", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Habilitar teclado", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Ecoar asteriscos", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Nível de segurança do reconhecimento", "6", FieldType.NUMERIC_LIST, "1;1;9"));
+		geralConfigurations.add(new ConfigurationTO("N�vel de seguran�a do reconhecimento", "6", FieldType.NUMERIC_LIST, "1;1;9"));
 		geralConfigurations.add(new ConfigurationTO("Tempo teclado", "10", FieldType.NUMERIC_LIST, "5;1;20"));
-		geralConfigurations.add(new ConfigurationTO("Tempo de mudança Online/Offline", "10", FieldType.NUMERIC_LIST, "6;1;20"));
+		geralConfigurations.add(new ConfigurationTO("Tempo de mudan�a Online/Offline", "10", FieldType.NUMERIC_LIST, "6;1;20"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"C�digo de barras_0;Magn�tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
-		geralConfigurations.add(new ConfigurationTO("Quantidade dígitos cartão", "5", FieldType.NUMERIC_LIST, "4;1;16"));
-		geralConfigurations.add(new ConfigurationTO("Modelo biométrico", "true", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Tipo biométrico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
+		geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cart�o", "5", FieldType.NUMERIC_LIST, "4;1;16"));
+		geralConfigurations.add(new ConfigurationTO("Modelo biom�trico", "true", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Tipo biom�trico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 		geralConfigurations.add(new ConfigurationTO("Dois leitores", "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
 		geralConfigurations.add(new ConfigurationTO("Leitor 1", "Somente entrada_1", FieldType.COMBOBOX, 
-				"Desativado_0;Somente entrada_1;Somente saída_2"));
-		geralConfigurations.add(new ConfigurationTO("Leitor 2", "Somente saída_2", FieldType.COMBOBOX, 
-				"Desativado_0;Somente entrada_1;Somente saída_2"));
-		geralConfigurations.add(new ConfigurationTO("Identificação Biométrica", "Sim_1", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO("Verificação Biométrica", "Não_0", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO("Padrão de cartão", "Padrçao livre_1", FieldType.COMBOBOX, "Padrão livre_1;Padrão TopData_0"));
-		geralConfigurations.add(new ConfigurationTO("Lógica da catraca com urna", "true", FieldType.CHECKBOX));
+				"Desativado_0;Somente entrada_1;Somente sa�da_2"));
+		geralConfigurations.add(new ConfigurationTO("Leitor 2", "Somente sa�da_2", FieldType.COMBOBOX, 
+				"Desativado_0;Somente entrada_1;Somente sa�da_2"));
+		geralConfigurations.add(new ConfigurationTO("Identifica��o Biom�trica", "Sim_1", FieldType.COMBOBOX, "Sim_1;N�o_0"));
+		geralConfigurations.add(new ConfigurationTO("Verifica��o Biom�trica", "N�o_0", FieldType.COMBOBOX, "Sim_1;N�o_0"));
+		geralConfigurations.add(new ConfigurationTO("Padr�o de cart�o", "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
+		geralConfigurations.add(new ConfigurationTO("L�gica da catraca com urna", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Usa torniquete", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Aciona relé 2", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Tempo de acionamento do relé", "3", FieldType.NUMERIC_LIST, "0;1;10"));
-		geralConfigurations.add(new ConfigurationTO("Coleta cartões offline", "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Aciona rel� 2", "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Tempo de acionamento do rel�", "3", FieldType.NUMERIC_LIST, "0;1;10"));
+		geralConfigurations.add(new ConfigurationTO("Coleta cart�es offline", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));
 		
 		String nomeEmpresa = "SmartPonto;Controle Acesso";
@@ -273,7 +274,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-		configurationGroups.add(new ConfigurationGroupTO("Personalização", customConfigurations));
+		configurationGroups.add(new ConfigurationGroupTO("Personaliza��o", customConfigurations));
 		
 		
 	}

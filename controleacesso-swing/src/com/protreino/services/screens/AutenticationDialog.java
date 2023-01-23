@@ -66,7 +66,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, boolean useLogin, boolean usePassword, boolean loginInterno){
-		super(owner, "Autentica√ß√£o", true);
+		super(owner, "AutenticaÁ„o", true);
 		
 		setPreferredSize(new Dimension(300,260));
 		setMinimumSize(getPreferredSize());
@@ -109,7 +109,7 @@ public class AutenticationDialog extends JDialog {
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inv√°lida!");
+					invalidCredentialsLabel.setText("Senha inv·lida!");
 					return;
 				}
 				
@@ -213,7 +213,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, String mensagemDialogSenha, String mensagemProgressDialog){
-		super(owner, "Autentica√ß√£o", true);
+		super(owner, "AutenticaÁ„o", true);
 		this.mensagemProgressDialog = mensagemProgressDialog;
 		
 		setIconImage(Main.favicon);
@@ -240,7 +240,7 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inv√°lida!");
+					invalidCredentialsLabel.setText("Senha inv·lida!");
 					return;
 				}
 				invalidCredentialsLabel.setText(" ");
@@ -324,10 +324,17 @@ public class AutenticationDialog extends JDialog {
 			    @Override
 			    public Boolean doInBackground() {
 			    	try {
-//			    		HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/login/do?loginName=" 
-//			    				+ Main.loggedUser.getLoginName() + "&passwd=" + senha + "&unidadeName="+Main.loggedUser.getUnitName());
-//			    		if (con.getResponseCode() == 200)  // Status.OK 
-//							return true;
+
+			    		long inicio = new Date().getTime();
+			    		String senhaEncriptado = EncryptionUtils.encrypt(senha);
+			    		long fim = new Date().getTime();
+			    		System.out.println("Tempo gasto para encripitar senha em ms: " + (fim - inicio));
+			    		
+			    		inicio = new Date().getTime();
+			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
+			    		fim = new Date().getTime();
+			    		System.out.println("Tempo gasto para buscar usuario no banco em ms: " + (fim - inicio));
+
 			    		
 			    	//	fazer o enable se n√£o achar motivo para sennha
 			    		long inicioTimer = new Date().getTime();
@@ -336,7 +343,6 @@ public class AutenticationDialog extends JDialog {
 			    			return true;
 			    		}
 			    		
-			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), EncryptionUtils.encrypt(senha));
 			    		long fimTimer =  new Date().getTime();
 			    		System.out.println("tempo com shortcut: "+ (fimTimer - inicioTimer));
 			    		if(user != null) {
