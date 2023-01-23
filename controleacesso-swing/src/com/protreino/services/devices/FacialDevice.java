@@ -291,8 +291,7 @@ public class FacialDevice extends Device {
 		                
 		                        DetectFaceResult resultadoDetectFace = LuxandService.getInstance().detectFace(imageHandle);
 		                        if(resultadoDetectFace != null && resultadoDetectFace.getFace()!= null) {
-		                        	 System.out.println("id do  luxand  Facial device  "+ resultadoDetectFace.getFace().getIdentifier());
-				                       System.out.println("nome do luxand Facial device   "+ resultadoDetectFace.getFace().getName());
+		                      
 		                        }
 		                      
 		                    	
@@ -536,8 +535,12 @@ public class FacialDevice extends Device {
 		try {
 			Face face = (Face) obj;
 			
-			if (Boolean.TRUE.equals(Main.desenvolvimento))
-				System.out.println("Predição: " + face.getName());
+			if (Boolean.TRUE.equals(Main.desenvolvimento)) {
+				System.out.println("Predição nome : " + face.getName());
+				System.out.println("id do luxand identifier " +face.getIdentifier());
+				
+			}
+			
 			
 			if(face.getName() == null)
 				return;
@@ -733,7 +736,7 @@ public class FacialDevice extends Device {
 	@Override
 	public String removeUser(PedestrianAccessEntity athleteAccessEntity) {
 		if (athleteAccessEntity.getLuxandIdentifier() != null && !athleteAccessEntity.getLuxandIdentifier().isEmpty()) {
-			Long luxandIdentifier = Long.valueOf(athleteAccessEntity.getLuxandIdentifier());
+			Long luxandIdentifier = Long.valueOf("11");
 			LuxandService.getInstance().clearName(luxandIdentifier);
 			athleteAccessEntity.setLuxandIdentifier(null);
 		}
