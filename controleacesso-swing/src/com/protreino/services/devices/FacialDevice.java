@@ -536,8 +536,9 @@ public class FacialDevice extends Device {
 		try {
 			Face face = (Face) obj;
 			
-			if (Boolean.TRUE.equals(Main.desenvolvimento))
 				System.out.println("Predição: " + face.getName());
+				System.out.println("id do ususário face " + face.getIdentifier());
+			
 			
 			if(face.getName() == null)
 				return;

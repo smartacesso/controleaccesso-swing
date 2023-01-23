@@ -500,8 +500,9 @@ public class Main {
 			Calendar inicio = Calendar.getInstance();
 			
 
-			inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-			inicio.set(Calendar.MINUTE, 0);
+			//inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
+			inicio.set(Calendar.HOUR_OF_DAY,16);
+			inicio.set(Calendar.MINUTE, 7);
 			inicio.set(Calendar.SECOND, 0); 
 			if(new Date().getTime() > inicio.getTimeInMillis()) {
 				//registra pra iniciar amanhï¿½
@@ -1716,20 +1717,25 @@ public class Main {
 							existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
 						}
 						
-						//verifica se usuï¿½rio foi apagado e se tem facial para apagar tambï¿½m no servidor facial
-						String idFacial = null; 
-						if(Boolean.TRUE.equals(athleteAccessTO.getRemovido())
-								&& existentAthleteAccess.getLuxandIdentifier() != null)
+						//verifica se usuário foi apagado e se tem facial para apagar também no servidor facial
+						String idFacial = null;
+						if((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
+									|| !"ATIVO".equals(athleteAccessTO.getStatus()))
+								&& existentAthleteAccess.getLuxandIdentifier() != null) {
 							idFacial = existentAthleteAccess.getLuxandIdentifier();
-					
-							existentAthleteAccess.update(athleteAccessTO);
-							if(!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais()))
-								atualizaDigitais = true;
-							HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
-					
+						}
+						
 						//apaga dados do facial
-						if(idFacial != null && !"".equals(idFacial) && LuxandService.getInstance() != null) 
+						if(idFacial != null && !"".equals(idFacial) && LuxandService.getInstance() != null) {
 							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
+						}
+						
+						existentAthleteAccess.update(athleteAccessTO);
+						if(!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
+							atualizaDigitais = true;
+						}
+						
+						HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 						
 					} else {
 						PedestrianAccessEntity newAthleteAccess = new PedestrianAccessEntity(athleteAccessTO);
