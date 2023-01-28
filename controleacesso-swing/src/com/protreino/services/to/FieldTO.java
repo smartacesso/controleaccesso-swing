@@ -418,13 +418,13 @@ public class FieldTO {
 	}
 	
 	/**
-	 * M�todo que retorno uma String representando o valor do campo. 
+	 * Método que retorno uma String representando o valor do campo. 
 	 * 
 	 * @ Para campos com valor booleano (CHECKBOX e YES_NO_COMBOBOX),
-	 * � retornado "true" ou "false"
+	 * é retornado "true" ou "false"
 	 * 
-	 * @ Para um campo do tipo MESSAGE_LINES, que � composto por dois TextFields, 
-	 * � retornada uma String com um ";" separando os valores de cada TextField. Ex: "texto1;texto2"
+	 * @ Para um campo do tipo MESSAGE_LINES, que é composto por dois TextFields, 
+	 * é retornada uma String com um ";" separando os valores de cada TextField. Ex: "texto1;texto2"
 	 */
 	public String getValue() {
 		if (FieldType.TEXT.equals(type)){
@@ -514,9 +514,9 @@ public class FieldTO {
 	}
 	
 	/**
-	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES est� de acordo com as defini��es, isto �
-	 * o tamanho n�o excede os limites m�nimo e m�ximo de caracteres, e caso seja obrigat�rio, n�o pode ser nulo ou vazio.
-	 * Por padr�o o campos � obrigat�rio, mas pode ser alterado para deixar de ser.
+	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES está de acordo com as definições, isto é
+	 * o tamanho não excede os limites mínimo e máximo de caracteres, e caso seja obrigatório, não pode ser nulo ou vazio.
+	 * Por padrão o campos é obrigatório, mas pode ser alterado para deixar de ser.
 	 * @return
 	 */
 	public String checkField(){

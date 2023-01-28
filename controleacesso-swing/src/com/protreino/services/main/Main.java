@@ -207,7 +207,7 @@ public class Main {
 //		String jvmArchitecture = Utils.getJvmArchitecture();
 //		if ("64".equals(jvmArchitecture)) {
 //			Object[] options = {"OK"};
-//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada. ï¿½ necess�rio uma JVM de 32 bits.","JVM 32 bits necessï¿½ria",
+//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada. ï¿½ necessário uma JVM de 32 bits.","JVM 32 bits necessï¿½ria",
 //		                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 //		    System.exit(0);
 //		}
@@ -422,7 +422,7 @@ public class Main {
 											if (DeviceStatus.DISCONNECTED.equals(device.getStatus())
 													&& DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
 												
-												//verifica se � topdata e se esta sincronizando
+												//verifica se é topdata e se esta sincronizando
 //												if(device instanceof TopDataDevice) {
 //													TopDataDevice 
 //												}
@@ -491,22 +491,22 @@ public class Main {
 			inicializaTimers();
 			
 			
-			//tarefas di�rias
+			//tarefas diárias
 			
 			String hora = Utils.getPreference("hourAutomaticRoutines");
 			hora = (hora == null || "".equals(hora) ? "0" : hora);
 			
 			Long periodExpirar = 24L * 3600L * 1000L;
 			Calendar inicio = Calendar.getInstance();
+			System.out.println(" hora para reset " + hora);
+
+
+			inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
 			
-
-
-			//inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-			inicio.set(Calendar.HOUR_OF_DAY,16);
-			inicio.set(Calendar.MINUTE, 7);
+			inicio.set(Calendar.MINUTE, 05);
 			inicio.set(Calendar.SECOND, 0); 
 			if(new Date().getTime() > inicio.getTimeInMillis()) {
-				//registra pra iniciar amanh�
+				//registra pra iniciar amanhã
 				inicio.add(Calendar.DATE, 1);
 			}
 			timerTasksOfDay.scheduleAtFixedRate(uTimerTask, inicio.getTime(),
@@ -653,7 +653,7 @@ public class Main {
 						if (retornoAuthentication == null)
 							return null;
 						if (!retornoAuthentication) {
-							JOptionPane.showMessageDialog(null, "Não foi poss[ivel validar a senha, ou senha inválida", 
+							JOptionPane.showMessageDialog(null, "Não foi possssivel validar a senha, ou senha inválida", 
 									"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 							return null;
 						}
@@ -822,7 +822,7 @@ public class Main {
 	
 	public static void exit(boolean exibirConfirmacao){
 		if (exibirConfirmacao) {
-			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser�o desconectadas. Deseja realmente sair?", "Confirma��o", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serão desconectadas. Deseja realmente sair?", "Confirmação", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult != JOptionPane.YES_OPTION)
 				return;
@@ -976,7 +976,7 @@ public class Main {
 
 	private static void limpaSentidoTodos() {
 		
-		//verifica se est� ativado
+		//verifica se está ativado
 		if(Main.servidor != null)
 			return;
 		
@@ -988,7 +988,7 @@ public class Main {
 		loggedUser.setDateNewAccess(new Date());
 		HibernateUtil.save(UserEntity.class, loggedUser);
 		
-		//apaga tamb�m dados de giros anteriores n�o registrados
+		//apaga também dados de giros anteriores não registrados
 		HibernateUtil.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 		
 		System.out.println("Saiu limpaSentidoTodos");
@@ -997,15 +997,15 @@ public class Main {
 
 	private static void limpaCartoesVisitantes() {
 		
-		//verifica se est� ativado
+		//verifica se está ativado
 		if(Main.servidor != null)
 			return;
 		
 		if(!Utils.getPreferenceAsBoolean("enableCardAcessClear"))
 			return;
 		
-		//pesquisa todos os pedestres que est�o com cart�o ativado
-		//e que tenham um cr�dito
+		//pesquisa todos os pedestres que estáo com cartão ativado
+		//e que tenham um crédito
 		HibernateUtil.apagaDadosCartao();
 		HibernateUtil.apagaDadosDeUltimoSentido();
 	}
@@ -1499,7 +1499,7 @@ public class Main {
 					}
 
 					// se foi criado, envia os dados para o servidor
-					// porque est� sem o ID
+					// porque está sem o ID
 					if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
 						visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
 						System.out.println(" quantidade de acessos antes da sincroinização " + visitante.getQtdAcessoAntesSinc());
@@ -1547,7 +1547,7 @@ public class Main {
 				if(visitantesLocais == null || visitantesLocais.isEmpty())
 					return;
 				
-				//antes de alterar dados, verifica se existe valida��o de acesso em andamento
+				//antes de alterar dados, verifica se existe validação de acesso em andamento
 				Main.verificaValidandoAcesso();
 				
 				for (PedestrianAccessEntity visitante : visitantesLocais) {
@@ -1584,7 +1584,7 @@ public class Main {
 			
 			private void apagaDadosNovos(List<PedestrianAccessEntity> visitantesLocais) {
 				
-				//antes de alterar dados, verifica se existe valida��o de acesso em andamento
+				//antes de alterar dados, verifica se existe validação de acesso em andamento
 				Main.verificaValidandoAcesso();
 				
 				
@@ -1647,8 +1647,8 @@ public class Main {
 							HibernateUtil.remove(visitante);
 						
 						}catch (Exception e) {
-							//visitante ser� exclu�do na pr�xima sincroniza��o
-							//marca para n�o aparecer nas listagens
+							//visitante será excluído na próxima sincronização
+							//marca para não aparecer nas listagens
 							
 							visitante = (PedestrianAccessEntity) HibernateUtil
 												.getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
@@ -1697,8 +1697,8 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 					
-					// TODO : criar novo m�todo para pegar pedestre removido ou n�o
-					//        isso pode resolver v�rios bugs
+					// TODO : criar novo método para pegar pedestre removido ou não
+					//        isso pode resolver vários bugs
 					// TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser 
 					//		  aqui ou ne
 					
@@ -1718,7 +1718,7 @@ public class Main {
 							existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
 						}
 						
-						//verifica se usu�rio foi apagado e se tem facial para apagar tamb�m no servidor facial
+						//verifica se usuário foi apagado e se tem facial para apagar também no servidor facial
 						String idFacial = null;
 						if((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
 									|| !"ATIVO".equals(athleteAccessTO.getStatus()))
@@ -1777,7 +1777,7 @@ public class Main {
 									topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
 							}
 						} catch (Exception e) {
-							//n�o deixa o erro para o processo
+							//não deixa o erro para o processo
 							e.printStackTrace();
 						}
 					}

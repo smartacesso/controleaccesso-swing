@@ -206,7 +206,7 @@ public class CartaoComandaDialog extends JDialog {
 				return true;
 		}
 		
-		//n�o tem c�digo
+		//não tem código
 		return false;
 	}
 

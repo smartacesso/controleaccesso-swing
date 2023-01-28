@@ -270,7 +270,7 @@ public class BiometricDialog extends JDialog{
 	}
 	
 	public void saveTemplates(byte[] template) {
-		//antes de salvar, verifica se o pedestre est� correto
+		//antes de salvar, verifica se o pedestre está correto
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
 		if(pedestre != null) {
 			acesso = pedestre;			
@@ -315,7 +315,7 @@ public class BiometricDialog extends JDialog{
 				}
 
 			} else if (Manufacturer.NITGEN.equals(selectedDevice.getManufacturer())) {
-				//adicionar tamb�m nas outras catracas conectadas
+				//adicionar também nas outras catracas conectadas
 				for(Device device : Main.devicesList) {
 					if(device != null && device instanceof TopDataDevice) {
 						//verifica se pode adicionar
@@ -333,13 +333,13 @@ public class BiometricDialog extends JDialog{
 								byte[] template1 = new byte[502];
 								byte[] template2 = new byte[502];
 								
-								//cadastra usu�rio
+								//cadastra usuário
 								if(templateEntity.getTemplate().length > 502) {
 									//proveniente do leitor
 									LcDevice.extracTopDataTemplate(templateEntity.getTemplate(), 
 											template1, template2);
 									String tStr = Base64.encodeBase64String(template2);
-									//verificar se segunda est� vazia
+									//verificar se segunda está vazia
 									if(tStr.startsWith("AAAQAAAAAAAAAAA") || tStr.startsWith("AAAAAAAAAAAAA")) {
 										template2 = null;
 									}

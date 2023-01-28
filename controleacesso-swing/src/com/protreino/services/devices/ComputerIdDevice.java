@@ -366,7 +366,7 @@ public class ComputerIdDevice extends Device {
 			} else {
 				verificationResult = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Digital Não encontrada.", NotificationType.BAD);
+					Utils.createNotification("Digital NÃ£o encontrada.", NotificationType.BAD);
 			}
 			
 		} catch (DPFPImageQualityException ex) {

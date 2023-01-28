@@ -750,7 +750,7 @@ public class TcpServer {
 				}
 			} else {
 				System.out.println("Libera sem catraca");
-				// se n�o tiver, realiza um processo de libera��o gen�rico
+				// se não tiver, realiza um processo de liberação genêrico
 				Object[] retorno = HibernateUtil.processAccessRequest(codigo, location, createNotification,
 						ignoraRegras);
 				if (retorno != null && retorno.length > 0)
@@ -814,7 +814,7 @@ public class TcpServer {
 		}
 
 		private String processaCartaoComanda(String receivedData, String responseData) {
-			// para libera��o de cart�es
+			// para liberação de cartões
 			if (receivedData != null) {
 
 				if (receivedData.startsWith("SIER;STCSI;2")) {
@@ -841,7 +841,7 @@ public class TcpServer {
 					// encontrado
 					response = receivedData + (StatusCard.LIBERADO.equals(cartao.getStatus()) ? ";1" : ";2");
 				} else {
-					// n�o encontrado
+					// não encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {
@@ -866,7 +866,7 @@ public class TcpServer {
 						response = receivedData + ";102";
 					}
 				} else {
-					// n�o encontrado
+					// não encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {

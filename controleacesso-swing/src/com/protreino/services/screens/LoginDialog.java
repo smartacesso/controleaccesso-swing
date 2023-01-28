@@ -182,7 +182,7 @@ public class LoginDialog extends JDialog {
 										Main.syncAthleteAccessList();
 										Main.syncLogAthleteAccess();
 										
-										// Buscando backup de dispostivos e pref�ncias
+										// Buscando backup de dispostivos e preferências
 										con = new HttpConnection(Main.urlApplication + "/restful-services/access/getBackupByUser?idUser=" + Main.loggedUser.getId().toString());
 										if (con.getResponseCode() == 200) {
 											JsonObject backupResponse = con.getResponseJsonObject();

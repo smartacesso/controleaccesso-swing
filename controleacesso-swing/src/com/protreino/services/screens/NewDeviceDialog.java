@@ -114,7 +114,7 @@ public class NewDeviceDialog extends JDialog{
 				}
 				
 				if(Manufacturer.TOP_DATA_EXPEDIDORA.equals(manufacturer) && !Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
-					//s� adiciona expedidora se usu�rio poder
+					//só adiciona expedidora se usuário poder
 					continue;
 				}
 				
@@ -300,9 +300,9 @@ public class NewDeviceDialog extends JDialog{
 							}
 						}
 						
-						if (fabricante.useLogin()) // login ser� pedido quando conectar, mas precisar estar presente no identificador
+						if (fabricante.useLogin()) // login será pedido quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
-						if (fabricante.usePassword()) // senha ser� pedida quando conectar, mas precisar estar presente no identificador
+						if (fabricante.usePassword()) // senha será pedida quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
 						newDevice = fabricante.getNewDevice(identifier.toString());
 					
@@ -395,7 +395,7 @@ public class NewDeviceDialog extends JDialog{
 	
 	private String fazerVarreduraIps(){
 		
-		// cria o dialog com as informa��es
+		// cria o dialog com as informações
 		JDialog dialog = new JDialog(null, "Procurando a catraca na rede...", ModalityType.APPLICATION_MODAL);
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -418,7 +418,7 @@ public class NewDeviceDialog extends JDialog{
 				
 				Manufacturer fabricante = (Manufacturer) fabricanteComboBox.getSelectedItem();
 				
-				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q inici�-lo toda vez
+				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q iniciá-lo toda vez
 //				if (Manufacturer.RWTECH.equals(fabricante)){
 //					RWTechDevice deviceTeste = new RWTechDevice(5000, " ; ;");
 //					deviceTeste.iniciarNucleoIntegracao();
@@ -446,7 +446,7 @@ public class NewDeviceDialog extends JDialog{
 					String ip = "192.168." + subrede + "." + String.valueOf(i);
 					instrucoesLabel1.setText("Procurando a catraca na rede: " + ip);
 					
-					// ping no ip e v� se tem alguma resposta, se responder � um possivel ip de catraca, e ai tenta conectar nele
+					// ping no ip e vê se tem alguma resposta, se responder é um possivel ip de catraca, e ai tenta conectar nele
 					if (!ping(ip))
 						continue;
 					
@@ -516,7 +516,7 @@ public class NewDeviceDialog extends JDialog{
 		progressBar.setPreferredSize(new Dimension(200, 30));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		// Adicionar um botao para cancelar a a��o quando for poss�vel
+		// Adicionar um botao para cancelar a ação quando for possível
 		JButton cancelButton = new JButton("Cancelar");
 		cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		cancelButton.setPreferredSize(new Dimension(100, 50));

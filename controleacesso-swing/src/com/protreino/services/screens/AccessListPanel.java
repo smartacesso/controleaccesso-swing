@@ -324,7 +324,7 @@ public class AccessListPanel extends PaginedListPanel {
 		totalRegistros =  HibernateUtil.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
 		
-		//calcula p�ginas
+		//calcula páginas
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.

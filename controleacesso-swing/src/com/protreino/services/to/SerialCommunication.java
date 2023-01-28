@@ -30,7 +30,7 @@ public class SerialCommunication implements SerialPortEventListener {
 		serialPort = null;
 		String portName = null;
 		
-		// Verifica se a dll rxtxSerial.dll est� na pasta SysWOW64 (64bits) ou System32 (32bits)
+		// Verifica se a dll rxtxSerial.dll está na pasta SysWOW64 (64bits) ou System32 (32bits)
 		File dll = new File(System.getenv("WINDIR") + "\\" + (Utils.isWindows64bits() ? "SysWOW64" : "System32") +"\\rxtxSerial.dll");
 		if (!dll.exists()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, "é necessário copiar 'rxtxSerial.dll' para a pasta '" + 

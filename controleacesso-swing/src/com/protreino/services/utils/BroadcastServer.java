@@ -126,7 +126,7 @@ public class BroadcastServer {
 
 		private void removeCatracas(BroadcastMessageTO broadcastMessage) {
 			//procura catraca para remover template caso 
-			//a configuração seja para remoção diretamente na mesma
+			//a configuraÃ§Ã£o seja para remoÃ§Ã£o diretamente na mesma
 			for (Device d : Main.devicesList) {
 				if(d instanceof TopDataDevice
 						&& d.isConnected()

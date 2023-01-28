@@ -678,7 +678,7 @@ public class Utils {
 	
 	/**
 	 * Tenta enviar o backup para o servidor. Caso falhe, entao seta um flag indicando que o
-	 * backup precisa ser enviado. Com isso, haveri� nova tentativa juntamente com o envio dos logs de acesso
+	 * backup precisa ser enviado. Com isso, haveria nova tentativa juntamente com o envio dos logs de acesso
 	 */
 	private static void sendBackupToServer() {
 		SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1501,9 +1501,12 @@ public class Utils {
 				if(pedestre.getQuantidadeCreditos() <= 0)
 					pedestre.setCardNumber(null);
 			} else {
+				decrementaCreditosPedestreRegra(pedestre);
 				pedestre.setQuantidadeCreditos(null);
 				pedestre.setCardNumber(null);
 			}
+			
+			
 
 		} else {
 			if(pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0)
@@ -1512,6 +1515,19 @@ public class Utils {
 		}
 	}
 	
+	private static void decrementaCreditosPedestreRegra(PedestrianAccessEntity pedestre) {
+		if(pedestre.getPedestreRegra() == null) {
+			return;
+		}
+		for(PedestreRegraEntity pedestreRegra :pedestre.getPedestreRegra()) {
+			if	(pedestreRegra.getQtdeDeCreditos() != null) {
+				pedestreRegra.setQtdeDeCreditos(pedestreRegra.getQtdeDeCreditos() -1);	
+			}
+		}
+		
+	}
+
+
 	public static boolean pedestreTemRegraDeAcessoPorPeriodoValido(PedestrianAccessEntity pedestre) {
 		if (pedestre.getPedestreRegra() == null || pedestre.getPedestreRegra().isEmpty()) {
 			return false;
@@ -1669,7 +1685,7 @@ public class Utils {
 	
 	
 	
-	//colocar conversor de ABATRACK para WIGAN aqui como est�tico
+	//colocar conversor de ABATRACK para WIGAN aqui como estático
 	
 	public static String toHEX (String Cartao) {
 		

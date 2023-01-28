@@ -136,7 +136,7 @@ public enum Manufacturer {
 	}
 	
 	public Boolean usePassword(){
-		// A senha da Proveu � definida nas configuracoes da catraca
+		// A senha da Proveu é definida nas configuracoes da catraca
 		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
 			return true;
 		else
@@ -380,7 +380,7 @@ public enum Manufacturer {
 			return false;
 		if (this.equals(SYSTEMTEC))
 			return false;
-		// if (this.equals(TOP_DATA)) informacao � definida por configuracao especifica do dispositivo
+		// if (this.equals(TOP_DATA)) informacao é definida por configuracao especifica do dispositivo
 		return true;
 	}
 	

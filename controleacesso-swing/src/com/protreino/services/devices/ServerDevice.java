@@ -147,9 +147,9 @@ public class ServerDevice extends Device {
 		} else {
 			InetAddress inetAddress = InetAddress.getByName(ip);
 			if (inetAddress.isReachable(3000))
-				throw new Exception("Servidor N�o responde. Verifique se o aplicativo está rodando no servidor.");
+				throw new Exception("Servidor Não responde. Verifique se o aplicativo está rodando no servidor.");
 			else
-				throw new Exception("Servidor N�o encontrado na rede.");
+				throw new Exception("Servidor Não encontrado na rede.");
 		}
 	}
 	

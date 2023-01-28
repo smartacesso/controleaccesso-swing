@@ -768,7 +768,7 @@ public class PedestrianScreen extends JFrame {
 	}
 	
 	/**
-	 * Metodo chamado apos o leitor/catraca processar uma requisicao de acesso por C�digo.
+	 * Metodo chamado apos o leitor/catraca processar uma requisicao de acesso por Código.
 	 * O metodo exibe as mensagens na tela de acordo com o resultado da verificacao recebido
 	 * @param sample
 	 * @param verificationResult
@@ -991,7 +991,7 @@ public class PedestrianScreen extends JFrame {
 //						Long diasRestantes = TimeUnit.DAYS.convert(dataPermitido-agora, TimeUnit.MILLISECONDS);
 //						if (diasRestantes > 5) {
 //							if (HibernateUtil.isAniversariante())
-//								statusLabel.setText("Parab�ns!");
+//								statusLabel.setText("Parabéns!");
 //							else
 //								statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 //						}
@@ -1037,7 +1037,7 @@ public class PedestrianScreen extends JFrame {
 //	    			calendar.add(Calendar.DAY_OF_YEAR, matchedAthleteAccess.getTolerance());
 //	    			Long dataTolerancia = calendar.getTime().getTime();
 //	    			Long diasRestantes = TimeUnit.DAYS.convert(dataTolerancia - Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
-//					statusLabel.setText("Sua mensalidade est� vencida. Voc� ainda tem " + diasRestantes + " para o pagamento.");
+//					statusLabel.setText("Sua mensalidade está vencida. Você ainda tem " + diasRestantes + " para o pagamento.");
 	    			resultadoLabel.setIcon(permitidoImageIcon);
 	    			if ("DIGITAL".equals(tipoAcesso))
 	    				sampleLabel.setIcon(digitalGenericaPermitidaImageIcon);

@@ -14,7 +14,7 @@ public class PanelWithLabel extends JPanel {
 	private JLabel label;
 	
 	/**
-	 * Com alinhamento no centro, sem negrito e espaçamento igual a zero
+	 * Com alinhamento no centro, sem negrito e espaÃ§amento igual a zero
 	 * @param texto
 	 */
 	public PanelWithLabel(String texto){
@@ -22,7 +22,7 @@ public class PanelWithLabel extends JPanel {
 	}
 	
 	/**
-	 * Sem negrito e espaçamento igual a zero
+	 * Sem negrito e espaÃ§amento igual a zero
 	 * @param texto
 	 * @param aligment
 	 */
@@ -31,7 +31,7 @@ public class PanelWithLabel extends JPanel {
 	}
 	
 	/**
-	 * Com espaçamento igual a zero
+	 * Com espaÃ§amento igual a zero
 	 * @param texto
 	 * @param aligment
 	 */

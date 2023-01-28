@@ -47,6 +47,7 @@ import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.entity.PreferenceEntity;
@@ -1243,6 +1244,7 @@ public class HibernateUtil {
 				permitidoSensor = false;
 			}
 			
+			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
 				System.out.println("o que é equipament" +equipament );
 				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
@@ -1255,7 +1257,7 @@ public class HibernateUtil {
 			LogPedestrianAccessEntity ultimoAcesso = buscaUltimoAcesso(matchedAthleteAccess.getId(),
 					matchedAthleteAccess.getQtdAcessoAntesSinc());
 
-			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
+ 			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
 					&& Boolean.FALSE.equals(matchedAthleteAccess.getHabilitarTeclado())) {
 				permitido = false;
 
@@ -1266,18 +1268,29 @@ public class HibernateUtil {
 			} else if (ultimoAcesso != null && Tipo.SAIDA.equals(ultimoAcesso.getDirection())
 					&& !isPedestrePermitidoRetornar(matchedAthleteAccess)) {
 				permitidoRetornar = true;
-
+				System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
 			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
+				if(matchedAthleteAccess.getQrCodeParaAcesso() == null ) {
+					usaUrna = true;
+				}
+				
 
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
-					if (matchedAthleteAccess.getQuantidadeCreditos() != null) {
-						permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
+					if (matchedAthleteAccess.getQuantidadeCreditos() != null || isPermitidoPedestreRegra(matchedAthleteAccess)) {
+						permitido =   matchedAthleteAccess.getQuantidadeCreditos() > 0   
 								&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 										.getValidadeCreditos().getTime() >= new Date().getTime());
+						
+						//fazer um for validando se existe regra livre ou com quantidade veazia, só assim libero
 
-						if (matchedAthleteAccess.getQuantidadeCreditos().equals(1l)
+						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l) 
+								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  &&matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
 								&& !Integer.valueOf(18).equals(origem) && usaUrna)
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
+						
+						if(isPermitidoPedestreRegra(matchedAthleteAccess)) {
+							permitido = true;
+						}
 
 					} else if (Utils.pedestreTemRegraDeAcessoPorPeriodoValido(matchedAthleteAccess)) {
 						permitido = true;
@@ -1309,8 +1322,8 @@ public class HibernateUtil {
 					 */
 
 					// verifica se tem créditos para passar
-					System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
-					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
+					
+					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0 && !isPermitidoPedestreRegra(matchedAthleteAccess)
 							&& matchedAthleteAccess.getCardNumber() != null
 							&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 									.getValidadeCreditos().getTime() >= (data != null ? data : new Date()).getTime());
@@ -1321,6 +1334,7 @@ public class HibernateUtil {
 					/*
 					 * verificar turno/escala
 					 */
+				 
 
 					TipoEscala tipo = TipoEscala.valueOf(matchedAthleteAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
@@ -1416,8 +1430,8 @@ public class HibernateUtil {
 							logAccess, VerificationResult.ALLOWED, foto, origem, data);
 
 					// indefine acesso
-					if ("ATIVO".equals(logAccess.getStatus()))
-						logAccess.setStatus("INDEFINIDO");
+//					if ("ATIVO".equals(logAccess.getStatus()))
+//						logAccess.setStatus("INDEFINIDO");
 
 				} else {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
@@ -1490,6 +1504,19 @@ public class HibernateUtil {
 
 		HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
 
+	}
+	
+	private static boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
+		if(pedestre.getPedestreRegra() == null) {
+			return false;
+		}
+		for(PedestreRegraEntity pedestreRegra :pedestre.getPedestreRegra()) {
+			if	(pedestreRegra.getQtdeDeCreditos() != null) {
+				return true;	
+			}
+		}
+		
+		return false;
 	}
 
 	private static boolean isPedestreNaoPossuiRegras(PedestrianAccessEntity pedestre) {
@@ -1949,10 +1976,14 @@ public class HibernateUtil {
 			}
 
 		} else {
-			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
-			logAccess.setStatus("INATIVO");
+//			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
+//			logAccess.setStatus("INATIVO");
+//			if (createNotification)
+//				Utils.createNotification(userName + " não permitido hoje.", NotificationType.BAD, foto);
+			resultadoVerificacao = VerificationResult.ALLOWED;
+			logAccess.setStatus("ATIVO");
 			if (createNotification)
-				Utils.createNotification(userName + " não permitido hoje.", NotificationType.BAD, foto);
+				Utils.createNotification(userName + " Permitido.", NotificationType.GOOD, foto);
 		}
 		// }
 
@@ -3086,7 +3117,7 @@ public class HibernateUtil {
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-		// TODO : voltar a valida��o da data de cadastro, por�m para maior que
+		// TODO : voltar a validação da data de cadastro, porém para maior que
 		// a data calculada a baixo
 
 		Calendar c = Calendar.getInstance();

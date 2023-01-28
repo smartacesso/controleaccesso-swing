@@ -272,7 +272,7 @@ public class RegisterUserDialog extends JDialog{
 		registerUserButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (device.isCatraca()) {
-					// exibe apenas um pequeno dialog na tela. O processo � acompanhado no visor da catraca
+					// exibe apenas um pequeno dialog na tela. O processo é acompanhado no visor da catraca
 					cadastrarOuRemoverUsuario("CADASTRO");
 				
 				} else {
@@ -529,7 +529,7 @@ public class RegisterUserDialog extends JDialog{
 		totalRegistros =  HibernateUtil.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUser");
 		
-		//calcula p�ginas
+		//calcula páginas
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
@@ -558,9 +558,9 @@ public class RegisterUserDialog extends JDialog{
 	}
 	
 	/**
-	 * Recupera a lista dos usu�rios cadastrados na catraca. 
+	 * Recupera a lista dos usuários cadastrados na catraca. 
 	 * Para catracas TOP DATA pode ser um processo lento. 
-	 * Para catracas RWTECH n�o � possivel, ao inves disso � feito uma busca no banco antigo.
+	 * Para catracas RWTECH não é possivel, ao inves disso é feito uma busca no banco antigo.
 	 */
 	private void recuperarListaCadastradosNaCatraca() {
 		return;
@@ -617,7 +617,7 @@ public class RegisterUserDialog extends JDialog{
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Utils.createNotification("N�o foi poss�vel recuperar os usu�rios da catraca.", NotificationType.BAD);
+			Utils.createNotification("Não foi possível recuperar os usuários da catraca.", NotificationType.BAD);
 		}
 		finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -689,7 +689,7 @@ public class RegisterUserDialog extends JDialog{
 						return;
 					}
 				}catch (Exception e) {
-					//suprime para n�o mostrar o erro
+					//suprime para não mostrar o erro
 				}
 			}
 		}else if(Manufacturer.FACIAL.equals(device.getManufacturer())
@@ -728,7 +728,7 @@ public class RegisterUserDialog extends JDialog{
 		cadastrarOuRemoverUsuario(tipoOperacao, null);
 	}
 	
-	// Metodo para cadastrar ou remover um usu�rio na catraca
+	// Metodo para cadastrar ou remover um usuário na catraca
 	public void cadastrarOuRemoverUsuario(String tipoOperacao, PedestrianAccessEntity pedestre) { // tipoAlteracao = "CADASTRO" ou "EXCLUSAO"
 		if (!device.isConnected()) {
 			setMensagemErro("Dispositivo desconectado.");
@@ -782,7 +782,7 @@ public class RegisterUserDialog extends JDialog{
 		limparMensagemErro();
 		
 		// Define as mensagens e informacoes que serao exibidas de acordo com o tipo de operacao
-		// e de acordo com a catraca, se o cadastro � feito direto nela ou nao
+		// e de acordo com a catraca, se o cadastro é feito direto nela ou nao
 		Dimension dialogDimension = new Dimension(300, 150);
 		String tituloDialog = "CADASTRO".equals(tipoOperacao) ? "Cadastro de usuário" : "Exclusão de usuário";
 		String mensagemDialogSucesso = "CADASTRO".equals(tipoOperacao) ? "Usuário cadastrado com sucesso!" : 
@@ -811,7 +811,7 @@ public class RegisterUserDialog extends JDialog{
 		alteradoComSucesso = false;
 		mensagemErroRetorno = "";
 		
-		// cria o dialog com as informa��es
+		// cria o dialog com as informações
 		JDialog dialog = new JDialog(null, tituloDialog, ModalityType.APPLICATION_MODAL);
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -828,7 +828,7 @@ public class RegisterUserDialog extends JDialog{
 		dialogPanel.setPreferredSize(dialogDimension);
 		
 		if (cadastroFeitoDiretamenteNaCatraca) {
-			// adiciona um botao para indicar o fim do cadastro/exclusao quando o processo � feito diretamente na catraca
+			// adiciona um botao para indicar o fim do cadastro/exclusao quando o processo é feito diretamente na catraca
 			Font bigFont = new Font(font.getFontName(), Font.BOLD, font.getSize()+20);
 			instrucoesLabel2.setFont(bigFont);
 			JButton okButton = new JButton("OK");
@@ -868,7 +868,7 @@ public class RegisterUserDialog extends JDialog{
 			dialogPanel.add(okButton);
 		
 		} else {
-			// inicia o processo de cadastro/exclusao atrav�s do device
+			// inicia o processo de cadastro/exclusao através do device
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override
 				protected Void doInBackground() throws Exception {
@@ -939,7 +939,7 @@ public class RegisterUserDialog extends JDialog{
 			progressBar.setPreferredSize(new Dimension(200, 30));
 			progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
-			// Adicionar um botao para cancelar a a��o quando for poss�vel
+			// Adicionar um botao para cancelar a ação quando for possível
 			JButton cancelButton = new JButton("Cancelar");
 			cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 			cancelButton.setPreferredSize(new Dimension(100, 50));

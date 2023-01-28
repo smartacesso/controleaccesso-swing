@@ -66,7 +66,7 @@ public class AboutScreen extends JFrame {
 		aboutLabel.setFont(boldFont);
 		aboutLabel.setForeground(Main.firstColor);
 		
-		JLabel versaoLabel = new JLabel("Vers„o " + Configurations.VERSION);
+		JLabel versaoLabel = new JLabel("Vers√£o " + Configurations.VERSION);
 		versaoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		versaoLabel.setFont(boldFont);
 		versaoLabel.setForeground(Main.firstColor);
@@ -128,8 +128,8 @@ public class AboutScreen extends JFrame {
 			Integer responseCode = con.getResponseCode();
 			
 			if (responseCode != 200) {
-				JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualiza√ß√µes. Verifique sua conex√£o e tente novamente.",
-	            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(null, "n√£o foi poss√≠vel procurar atualiza√ß√µes. Verifique sua conex√£o e tente novamente.",
+	            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);
 				return;
 			}
 			
@@ -137,22 +137,22 @@ public class AboutScreen extends JFrame {
 			Gson gson = new Gson();
 			VersionInfoTO versionInfo = gson.fromJson(bufferedReader, VersionInfoTO.class);
 			if (Double.valueOf(Configurations.VERSION).doubleValue() == versionInfo.getVersion().doubleValue()) {
-				JOptionPane.showMessageDialog(null, "Voc√™ j√° possui a √∫ltima Vers„o instalada!",
-	            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
+				JOptionPane.showMessageDialog(null, "Voc√™ j√° possui a √∫ltima Vers√£o instalada!",
+	            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 			
 			} else if (Double.valueOf(Configurations.VERSION).doubleValue() < versionInfo.getVersion().doubleValue()) {
 				
 				JPanel panel = new JPanel();
 				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 				
-				JLabel label1= new JLabel("H√° uma nova Vers„o dispon√≠vel!");
+				JLabel label1= new JLabel("H√° uma nova Vers√£o dispon√≠vel!");
 				label1.setAlignmentX(Component.LEFT_ALIGNMENT);
 				
-				JLabel novaVersaoLabel = new JLabel("Vers„o " + versionInfo.getVersion().toString());
+				JLabel novaVersaoLabel = new JLabel("Vers√£o " + versionInfo.getVersion().toString());
 				novaVersaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 				novaVersaoLabel.setFont(boldFont);
 				
-				JLabel descricaoLabel = new JLabel("Detalhes da Vers„o: ");
+				JLabel descricaoLabel = new JLabel("Detalhes da Vers√£o: ");
 				descricaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 				
 				panel.add(label1);
@@ -178,7 +178,7 @@ public class AboutScreen extends JFrame {
 				panel.add(confirmacaoLabel);
 				panel.add(Box.createVerticalStrut(10));
 				
-				int option = JOptionPane.showConfirmDialog(null, panel, "Nova Vers„o disponÌvel", 
+				int option = JOptionPane.showConfirmDialog(null, panel, "Nova Vers√£o dispon√≠vel", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE); 
 				if (option == 0){
 					atualizar(versionInfo);
@@ -187,8 +187,8 @@ public class AboutScreen extends JFrame {
 				
 		} catch (Exception e){
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualizaÁıes. Verifique sua conex√£o e tente novamente.",
-            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
+			JOptionPane.showMessageDialog(null, "n√£o foi poss√≠vel procurar atualiza√ß√µes. Verifique sua conex√£o e tente novamente.",
+            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -215,7 +215,7 @@ public class AboutScreen extends JFrame {
 					downloadDialog.setPreferredSize(new Dimension(300, 180));
 					downloadDialog.setResizable(false);
 					
-					JLabel label = new JLabel("Baixando Vers„o " + versionInfo.getVersion().toString());
+					JLabel label = new JLabel("Baixando Vers√£o " + versionInfo.getVersion().toString());
 					label.setAlignmentX(Component.CENTER_ALIGNMENT);
 					
 					JProgressBar progressBar = new JProgressBar(0, 100);
@@ -276,10 +276,10 @@ public class AboutScreen extends JFrame {
 						Object[] options = {"OK"};
 						int option = -1;
 						if (Boolean.TRUE.equals(versionInfo.getFullInstaller()))
-							option = JOptionPane.showOptionDialog(null, "Download completo! Clique em OK para iniciar a instala√ß√£o.", "AtualizaÁ„o pronta!",
+							option = JOptionPane.showOptionDialog(null, "Download completo! Clique em OK para iniciar a instala√ß√£o.", "Atualiza√ß√£o pronta!",
 									JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 			    		else
-							option = JOptionPane.showOptionDialog(null, "Download completo! Clique em OK para reiniciar o aplicativo.", "AtualizaÁ„o pronta!",
+							option = JOptionPane.showOptionDialog(null, "Download completo! Clique em OK para reiniciar o aplicativo.", "Atualiza√ß√£o pronta!",
 									JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 						if (option == 0) {
 							setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -288,11 +288,11 @@ public class AboutScreen extends JFrame {
 					}
 					else if (download.getStatus() == 3){
 						JOptionPane.showMessageDialog(null, "Download cancelado.",
-			            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
+			            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 					}
 					else if (download.getStatus() == 4){
 						JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualiza√ß√£o. Verifique sua conex√£o e tente novamente.",
-			            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);  
+			            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);  
 					}
 			    }
 				catch (Exception e){
@@ -300,7 +300,7 @@ public class AboutScreen extends JFrame {
 					if (downloadDialog != null && downloadDialog.isVisible())
 						downloadDialog.dispose();
 					JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualiza√ß√£o. Verifique sua conex√£o e tente novamente.",
-		            		"AtualizaÁ„o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
+		            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 				}
 		    	finally {
 		    		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

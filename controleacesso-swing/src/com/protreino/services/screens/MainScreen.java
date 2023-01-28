@@ -324,8 +324,8 @@ public class MainScreen extends JFrame {
 	}
 
 	/**
-	 * Cria o deviceCard. Chamado quando um novo dispositivo � adicionado ou quando
-	 * a tela exibida e h� dispositivos salvos na lista
+	 * Cria o deviceCard. Chamado quando um novo dispositivo é adicionado ou quando
+	 * a tela exibida e há dispositivos salvos na lista
 	 * 
 	 * @param device
 	 */

@@ -137,7 +137,7 @@ public class ControlIdDevice extends Device {
 			doLogin();
 			
 			if (session == null)
-				throw new Exception("N�o foi poss�vel iniciar uma sessão.");
+				throw new Exception("Não foi possível iniciar uma sessão.");
 			
 			setStatus(DeviceStatus.CONNECTED);
 			workerEnabled = true;
@@ -226,7 +226,7 @@ public class ControlIdDevice extends Device {
 			                    		message = verificationResult.getMessage().replace(";", " ");
 			                    	
 			                    	} else if (VerificationResult.NOT_FOUND.equals(verificationResult)) {
-			                    		event = 3; // N�o identificado
+			                    		event = 3; // Não identificado
 			                    		message = verificationResult.getMessage().replace(";", " ");
 			                    	}
 			                    	
@@ -250,7 +250,7 @@ public class ControlIdDevice extends Device {
 									out.print(mensagemRetorno + "\r\n");
 									
 			                    } else if (caminho.startsWith("/fingerprint_create")) {
-			                    	// N�o faz nada
+			                    	// Não faz nada
 			                    	out.println("HTTP/1.1 200 OK" + "\r\n");
 			                    
 			                    } else if (caminho.startsWith("/template_create")) {
@@ -271,7 +271,7 @@ public class ControlIdDevice extends Device {
 			                    		|| caminho.startsWith("/device_is_alive")
 			                    		|| caminho.startsWith("/api/notifications")
 			                    		|| caminho.startsWith("/api/notification")) {
-			                    	// N�o faz nada
+			                    	// Não faz nada
 			                    	out.println("HTTP/1.1 200 OK\r\n");
 			                    
 			                    }else if (caminho.startsWith("/api/notifications/operation_mode")) {
@@ -396,7 +396,7 @@ public class ControlIdDevice extends Device {
 			synchronizer.execute();*/
 			
 		} catch (SocketTimeoutException ste) {
-			throw new SocketTimeoutException("N�o foi poss�vel conectar na catraca: timeout");
+			throw new SocketTimeoutException("Não foi possível conectar na catraca: timeout");
 		} catch (Exception e){
 			throw e;
 		}
@@ -658,7 +658,7 @@ public class ControlIdDevice extends Device {
 			if ("connect timed out".equals(erro))
 				throw new SocketTimeoutException();
 			if (erro.contains("Service Not Available"))
-				throw new Exception("Catraca N�o responde. Verifique as conexões.");
+				throw new Exception("Catraca Não responde. Verifique as conexões.");
 			Response response = gson.fromJson(erro, Response.class);
 			if (response.code != null && response.error != null) {
 				if (response.code == 1)
@@ -667,7 +667,7 @@ public class ControlIdDevice extends Device {
 					erro = response.error;
 			}
 			else
-				erro = "N�o foi poss�vel conectar";
+				erro = "Não foi possível conectar";
 			throw new Exception(erro);
 		}
 		if (responseString == null)
@@ -862,7 +862,7 @@ public class ControlIdDevice extends Device {
 			device.public_key = Utils.getPublicKey();
 			Integer changes = modifyObjects("devices", device, whereClause);
 			if (changes == null || changes < 1)
-				throw new Exception("N�o foi poss�vel atualizar os dados do servidor.");
+				throw new Exception("Não foi possível atualizar os dados do servidor.");
 			return;
 		}
 		
@@ -871,7 +871,7 @@ public class ControlIdDevice extends Device {
 		values.add(new Device(-1, "ServidorSmartAcesso", serverIp + ":" + serverPort, Utils.getPublicKey()));
 		List<Integer> idsCriados = createObjects("devices", values);
 		if (idsCriados == null || idsCriados.isEmpty())
-			throw new Exception("N�o foi poss�vel criar o servidor.");
+			throw new Exception("Não foi possível criar o servidor.");
 		serverId = idsCriados.get(0).toString();
 		
 		System.out.println(sdf.format(new Date()) + "  Servidor criado: " + serverId);
@@ -1132,8 +1132,8 @@ public class ControlIdDevice extends Device {
 			values.add(new User(idUsuario, athleteAccessEntity.getName(), hash[0], hash[1]));
 			List<Integer> idsCriados = createObjects("users", values);
 			if (idsCriados == null || idsCriados.isEmpty()) {
-				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N�o foi poss�vel criar o usuario: " + erro);
-				throw new Exception("N�o foi poss�vel criar o usuário.");
+				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Não foi possível criar o usuario: " + erro);
+				throw new Exception("Não foi possível criar o usuário.");
 			}
 			usuarioCriadoNestaCatraca = true;
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Usuario criado! Criando template...");
@@ -1143,10 +1143,10 @@ public class ControlIdDevice extends Device {
 			values.add(new Template(idUsuario, Base64.getEncoder().encodeToString(template)));
 			idsCriados = createObjects("templates", values);
 			if (idsCriados == null || idsCriados.isEmpty()) {
-				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N�o foi poss�vel criar o template: " + erro);
+				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Não foi possível criar o template: " + erro);
 				excluirUsuario(new PedestrianAccessEntity(athleteAccessEntity.getId()), false);
 				usuarioCriadoNestaCatraca = false;
-				throw new Exception("N�o foi poss�vel criar o template.");
+				throw new Exception("Não foi possível criar o template.");
 			}
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Template criado! Replicando para outras catracas...");
 			
@@ -1169,7 +1169,7 @@ public class ControlIdDevice extends Device {
 							values.add(new User(idUsuario, athleteAccessEntity.getName(), hash[0], hash[1]));
 							idsCriados = otherDevice.createObjects("users", values);
 							if (idsCriados == null || idsCriados.isEmpty()) {
-								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N�o foi poss�vel espelhar o usuario em " + device.getName());
+								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Não foi possível espelhar o usuario em " + device.getName());
 								throw new Exception("Erro ao espelhar usuário na catraca " + otherDevice.getName());
 							}
 							usuarioEspelhadoNestaCatraca = true;
@@ -1181,7 +1181,7 @@ public class ControlIdDevice extends Device {
 							idsCriados = otherDevice.createObjects("templates", values);
 							if (idsCriados == null || idsCriados.isEmpty()) {
 								// Nao foi possivel criar o template, entao apaga o usuário criado anteriormente
-								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N�o foi poss�vel espelhar o template em " + device.getName());
+								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Não foi possível espelhar o template em " + device.getName());
 								otherDevice.excluirUsuario(new PedestrianAccessEntity(athleteAccessEntity.getId()), false);
 								usuarioEspelhadoNestaCatraca = false;
 								throw new Exception("Erro ao espelhar template na catraca " + otherDevice.getName());
@@ -1236,7 +1236,7 @@ public class ControlIdDevice extends Device {
 		values.add(user);
 		List<Integer> idsCriados = createObjects("users", values);
 		if (idsCriados == null || idsCriados.isEmpty())
-			throw new Exception("N�o foi poss�vel criar o usuário.");
+			throw new Exception("Não foi possível criar o usuário.");
 		return idsCriados.get(0);
 	}
 	
@@ -1246,7 +1246,7 @@ public class ControlIdDevice extends Device {
 		values.add(template);
 		List<Integer> idsCriados = createObjects("templates", values);
 		if (idsCriados == null || idsCriados.isEmpty()) {
-			throw new Exception("N�o foi poss�vel criar o template.");
+			throw new Exception("Não foi possível criar o template.");
 		}
 		return idsCriados.get(0);
 	}
@@ -1258,7 +1258,7 @@ public class ControlIdDevice extends Device {
 			WhereClause whereClause = new WhereClause(new User(acesso.getId().intValue()));
 			Integer retorno = removeObjects("users", whereClause);
 			if (retorno == null)
-				throw new Exception("N�o foi poss�vel remover o usuário.");
+				throw new Exception("Não foi possível remover o usuário.");
 			
 			// Verifica se serão necessário apagar tambem em outras catracas ControlId
 			if (sincronizarExclusao) {

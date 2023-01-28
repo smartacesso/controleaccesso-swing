@@ -255,7 +255,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 				+ "Tem certeza que deseja continuar?", "Confirmação", 
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
-			//apaga tamb�m dados de giros anteriores n�o registrados
+			//apaga também dados de giros anteriores não registrados
 			HibernateUtil.resetStatusAllCards();
 			Utils.createNotification("Cartões/Comandas atualizados com sucesso!", NotificationType.GOOD);
 			
@@ -334,7 +334,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 				getResultListCount(CartaoComandaEntity.class, 
 						"CartaoComandaEntity.countNaoRemovidosOrdered");
 		
-		//calcula p�ginas
+		//calcula páginas
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<CartaoComandaEntity>) HibernateUtil.
@@ -387,7 +387,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		}
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
-		//countLabel.setText("N�mero de registros: " + numAcessos);
+		//countLabel.setText("Número de registros: " + numAcessos);
 		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
@@ -554,7 +554,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 cartao.setDataAlteracao(new Date());
 		        	 HibernateUtil.update(CartaoComandaEntity.class, cartao);
 		        	 
-		        	 //cria log de libera��o (sem sincroniza��o com web)
+		        	 //cria log de liberação (sem sincronização com web)
 		        	 LogCartaoComandaEntity log = new LogCartaoComandaEntity(cartao);
 		        	 log.setUsuario(Main.internoLoggedUser);
 		        	 log.setTipoLiberacao("MANUAL_"+cartao.getStatus().name());
