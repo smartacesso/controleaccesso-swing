@@ -439,6 +439,7 @@ public class TopDataDevice extends Device {
 			
 			System.out.println("Qtd encontradas: " + pedestres == null ? 0 : pedestres.size());
 			if(pedestres != null && !pedestres.isEmpty()) {
+				
 				coletandoDadosOffLine = true;
 				//realiza atualização
 				for (PedestrianAccessEntity pedestre : pedestres) {
