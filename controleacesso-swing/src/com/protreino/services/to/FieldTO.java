@@ -256,12 +256,12 @@ public class FieldTO {
 		} else if (FieldType.YES_NO_COMBOBOX.equals(type)){
 			Vector<SelectItem> options = new Vector<>();
 			options.add(new SelectItem("Sim", "true"));
-			options.add(new SelectItem("Não", "false"));
+			options.add(new SelectItem("N�o", "false"));
 			comboBox = new JComboBox<SelectItem>(options);
 			comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 			if (!Utils.isNullOrEmpty(defaultValue)) {
 				if (!defaultValue.contains("_")) 
-					defaultValue = Boolean.valueOf(defaultValue) ? "Sim_true" : "Não_false";
+					defaultValue = Boolean.valueOf(defaultValue) ? "Sim_true" : "N�o_false";
 				comboBox.setSelectedItem(new SelectItem(defaultValue));
 			}
 			fieldPanel.add(comboBox);
@@ -484,7 +484,7 @@ public class FieldTO {
 		} else if (FieldType.YES_NO_COMBOBOX.equals(type)){
 			if (!Utils.isNullOrEmpty(value)) {
 				if (!value.contains("_")) 
-					value = Boolean.valueOf(value) ? "Sim_true" : "Não_false";
+					value = Boolean.valueOf(value) ? "Sim_true" : "N�o_false";
 				comboBox.setSelectedItem(new SelectItem(value));
 			}
 		
@@ -515,8 +515,8 @@ public class FieldTO {
 	
 	/**
 	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES está de acordo com as definições, isto é
-	 * o tamanho não excede os limites mínimo e máximo de caracteres, e caso seja obrigatório, não pode ser nulo ou vazio.
-	 * Por padrão o campos é obrigatório, mas pode ser alterado para deixar de ser.
+	 * o tamanho n�o excede os limites mínimo e m�ximo de caracteres, e caso seja obrigatório, n�o pode ser nulo ou vazio.
+	 * Por padr�o o campos é obrigatório, mas pode ser alterado para deixar de ser.
 	 * @return
 	 */
 	public String checkField(){

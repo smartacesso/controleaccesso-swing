@@ -77,7 +77,7 @@ public class FacialDialog extends JDialog {
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
 		
-		JLabel label1 = new JLabel("Usu√°rio: ");
+		JLabel label1 = new JLabel("Usu·rio: ");
 		userLabel = new JLabel(acesso.getName());
 		userLabel.setFont(boldFont);
 		userLabel.setForeground(Main.firstColor);
@@ -85,7 +85,7 @@ public class FacialDialog extends JDialog {
 		userContainer.add(label1);
 		userContainer.add(userLabel);
 		
-		JLabel label3 = new JLabel("C√¢mera selecionada:");
+		JLabel label3 = new JLabel("C‚mera selecionada:");
 		JPanel devicesContainer= new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 5));
 		devicesContainer.add(label3);
 		deviceLabel = new JLabel(device.getName());
@@ -217,7 +217,7 @@ public class FacialDialog extends JDialog {
 		try {
 			HibernateUtil.save(PedestrianAccessEntity.class, acesso);
 			
-			JOptionPane.showMessageDialog(this, mensagem != null ? mensagem : "Coleta facial realizada com sucesso!", "Coleta conclu√≠da", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(this, mensagem != null ? mensagem : "Coleta facial realizada com sucesso!", "Coleta concluÌda", JOptionPane.PLAIN_MESSAGE);
 			dispose();
 		
 		} catch (Exception e) {

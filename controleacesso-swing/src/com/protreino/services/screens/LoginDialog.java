@@ -86,7 +86,7 @@ public class LoginDialog extends JDialog {
 		unidadeTextField.setMaximumSize(unidadeTextField.getPreferredSize());
 		unidadeTextField.setHorizontalAlignment(JTextField.CENTER);
 		
-		JLabel usernameLabel = new JLabel("Usuário");
+		JLabel usernameLabel = new JLabel("Usu�rio");
 		usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
 		usernameTextField = new JTextField();
@@ -152,12 +152,16 @@ public class LoginDialog extends JDialog {
 										Integer qtdDigitos = null;
 										String chaveIntegracaoComtele = null;
 										Boolean expedidora = false;
+										Boolean habilitaPedestre = true;
 										try {
 											qtdDigitos = (jsonObject.get("qtdePadraoDigitosCartao") != JsonNull.INSTANCE ? jsonObject.get("qtdePadraoDigitosCartao").getAsInt() : null);
 											chaveIntegracaoComtele = (jsonObject.get("chaveIntegracaoComtele") != JsonNull.INSTANCE ? jsonObject.get("chaveIntegracaoComtele").getAsString() : null);
 										} catch (Exception e) {}
 										try {
 											expedidora = (jsonObject.get("expedidora") != JsonNull.INSTANCE ? jsonObject.get("expedidora").getAsBoolean() : false);
+										}catch (Exception e) {}
+										try {
+											habilitaPedestre = (jsonObject.get("habilitaPedestre") != JsonNull.INSTANCE ? jsonObject.get("habilitaPedestre").getAsBoolean() : true);
 										}catch (Exception e) {}
 										Main.loggedUser = new UserEntity(
 												jsonObject.get("id") != JsonNull.INSTANCE ? jsonObject.get("id").getAsLong() : null,
@@ -168,7 +172,7 @@ public class LoginDialog extends JDialog {
 												jsonAcademy.get("id") != JsonNull.INSTANCE ? jsonAcademy.get("id").getAsString() : null,
 												jsonAcademy.get("nome") != JsonNull.INSTANCE ? jsonAcademy.get("nome").getAsString() : null,
 												null,qtdDigitos, unidadeTextField.getText(),
-												chaveIntegracaoComtele, expedidora);
+												chaveIntegracaoComtele, expedidora, habilitaPedestre);
 										Main.loggedUser.setUseBiometry(true);
 										Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
 										Main.lastSync = 0l;
@@ -176,7 +180,7 @@ public class LoginDialog extends JDialog {
 										Main.releaseTicketGateMenuItem.setEnabled(true);
 										Main.updateAccessListMenuItem.setEnabled(true);
 										
-										loginMessageLabel.setText("Coletando configurações e pedestres...");
+										loginMessageLabel.setText("Coletando configura��es e pedestres...");
 										//tras dados gerais antes de abrir
 										Main.syncUsersAccessList();
 										Main.syncAthleteAccessList();
@@ -205,16 +209,16 @@ public class LoginDialog extends JDialog {
 										}
 										
 										Main.mainScreen.buildUI();
-										Utils.createNotification("Usuário logado com sucesso!", NotificationType.GOOD);
+										Utils.createNotification("Usu�rio logado com sucesso!", NotificationType.GOOD);
 										dispose();
 									
 									} else {
-										setMessageErrorLogin("Usuário não autorizado!");
+										setMessageErrorLogin("Usu�rio n�o autorizado!");
 										Main.loggedUser = null;
 									}
 								
 								} else {
-									setMessageErrorLogin("Usuário inativo!");
+									setMessageErrorLogin("Usu�rio inativo!");
 									Main.loggedUser = null;
 								}
 							
@@ -225,7 +229,7 @@ public class LoginDialog extends JDialog {
 									setMessageErrorLogin("Senha incorreta!");
 								
 								} else{
-									setMessageErrorLogin("Usuário não encontrado!");
+									setMessageErrorLogin("Usu�rio n�o encontrado!");
 								}
 							} else {
 								setMessageErrorLogin("Sem conexão!");

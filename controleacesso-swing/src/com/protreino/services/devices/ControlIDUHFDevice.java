@@ -61,10 +61,10 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 				"Horário_clockwise;Anti-horário_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de abertura", "10000", FieldType.NUMERIC_LIST, "10000;10000;60000")); // inicio;passo;fim
 		
-		geralConfigurations.add(new ConfigurationTO("Bits de identificação", "32", FieldType.COMBOBOX, "26;32;34;66"));
+		geralConfigurations.add(new ConfigurationTO("Bits de identifica��o", "32", FieldType.COMBOBOX, "26;32;34;66"));
 		geralConfigurations.add(new ConfigurationTO("Ordem dos bytes", "default", FieldType.COMBOBOX, "default;lsb"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de leitura (milissegundos)", "250", FieldType.TEXT));
-		geralConfigurations.add(new ConfigurationTO("Tempo de leitura mesmo cartão  (milissegundos)", "0", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO("Tempo de leitura mesmo cart�o  (milissegundos)", "0", FieldType.TEXT));
 		geralConfigurations.add(new ConfigurationTO("Potência de transmissão", "2400", FieldType.NUMERIC_LIST, "1500;100;2400"));
 		geralConfigurations.add(new ConfigurationTO("Canal de trabalho", "1-10", FieldType.TEXT));
 		geralConfigurations.add(new ConfigurationTO("Modo de operação", "cont", FieldType.COMBOBOX, "cont;trigger")); 
@@ -72,7 +72,7 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 		geralConfigurations.add(new ConfigurationTO("Trigger ocioso", "0", FieldType.COMBOBOX, "0;1"));
 		
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Usa lógica de calculo de Entrada/Saída", "true", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Usa l�gica de calculo de Entrada/Sa�da", "true", FieldType.CHECKBOX));
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
 	}
@@ -83,9 +83,9 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 			return;
 		Configuration configuration = new Configuration(serverIp, serverPort, serverId, 
 			getConfigurationValueAsBoolean("Habilita beep"), getConfigurationValue("Tempo de giro"), 
-			getConfigurationValue("Tempo da requisição"), Integer.valueOf(getConfigurationValue("Bits de identificação")),
+			getConfigurationValue("Tempo da requisição"), Integer.valueOf(getConfigurationValue("Bits de identifica��o")),
 			getConfigurationValue("Ordem dos bytes"), Integer.valueOf(getConfigurationValue("Tempo de leitura (milissegundos)")),
-			Integer.valueOf(getConfigurationValue("Tempo de leitura mesmo cartão  (milissegundos)")), Integer.valueOf(getConfigurationValue("Potência de transmissão")),
+			Integer.valueOf(getConfigurationValue("Tempo de leitura mesmo cart�o  (milissegundos)")), Integer.valueOf(getConfigurationValue("Potência de transmissão")),
 			getConfigurationValue("Canal de trabalho"), getConfigurationValue("Modo de operação"),
 			Integer.valueOf(getConfigurationValue("Trigger timeout (milissegundos)")), Integer.valueOf(getConfigurationValue("Trigger ocioso")));
 		Object[] retorno = send("http://" + ip + "/set_configuration.fcgi?session=" + session, configuration);
@@ -147,7 +147,7 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 		
 		
 		String direction = Tipo.ENTRADA;
-		if(getConfigurationValueAsBoolean("Usa lógica de calculo de Entrada/Saída"))
+		if(getConfigurationValueAsBoolean("Usa l�gica de calculo de Entrada/Sa�da"))
 			direction =  ANTICLOCKWISE.equals(decideLadoLiberarCatraca(sentidoEntrada)) ? Tipo.ENTRADA : Tipo.SAIDA;// ANTICLOCKWISE.equals(sentidoEntrada) ? "ENTRADA" : "SAIDA";
 		else
 			direction =  ANTICLOCKWISE.equals(sentidoEntrada) ? Tipo.ENTRADA : Tipo.SAIDA;

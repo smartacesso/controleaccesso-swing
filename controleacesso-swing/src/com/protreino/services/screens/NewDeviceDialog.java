@@ -114,7 +114,7 @@ public class NewDeviceDialog extends JDialog{
 				}
 				
 				if(Manufacturer.TOP_DATA_EXPEDIDORA.equals(manufacturer) && !Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
-					//só adiciona expedidora se usuário poder
+					//só adiciona expedidora se usu�rio poder
 					continue;
 				}
 				
@@ -179,7 +179,7 @@ public class NewDeviceDialog extends JDialog{
 									for (FieldTO field : newDeviceFields) {
 										field.setTextFieldSize(15);
 										JPanel fieldPanel = field.getPanel();
-										if ("Número IP do dispositivo".equals(field.getName())) {
+										if ("N�mero IP do dispositivo".equals(field.getName())) {
 											JTextField textField = (JTextField) field.getField()[0];
 											Container container = textField.getParent();
 											JButton button = new JButton(searchIcon);
@@ -320,7 +320,7 @@ public class NewDeviceDialog extends JDialog{
 					}
 					for (Device device : Main.devicesList){
 						if (device.isTheSame(newDevice)){
-							mensagem.setText("Dispositivo já adicionado!");
+							mensagem.setText("Dispositivo j� adicionado!");
 							newDevice = null;
 							return;
 						}
@@ -428,7 +428,7 @@ public class NewDeviceDialog extends JDialog{
 				// Recupera IP digitado para ver qual sub-rede usar
 				String subrede = null;
 				for (FieldTO field : newDeviceFields) {
-					if ("Número IP do dispositivo".equals(field.getName())
+					if ("N�mero IP do dispositivo".equals(field.getName())
 							&& !field.getValue().isEmpty()
 							&& field.getValue().split("\\.").length >= 2){
 						String[] partes = field.getValue().split("\\.");
@@ -456,7 +456,7 @@ public class NewDeviceDialog extends JDialog{
 						// Cria um identificador com os dados inseridos e cria um device a partir desse identificador
 						StringBuilder identifier = new StringBuilder();
 						for (FieldTO field : newDeviceFields) 
-							identifier.append(("Número IP do dispositivo".equals(field.getName()) ? ip : field.getValue()) + ";");
+							identifier.append(("N�mero IP do dispositivo".equals(field.getName()) ? ip : field.getValue()) + ";");
 						
 						Boolean retorno = false;
 //						if (Manufacturer.HENRY_8X.equals(fabricante)) {
@@ -516,7 +516,7 @@ public class NewDeviceDialog extends JDialog{
 		progressBar.setPreferredSize(new Dimension(200, 30));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		// Adicionar um botao para cancelar a ação quando for possível
+		// Adicionar um botao para cancelar a ação quando for poss�vel
 		JButton cancelButton = new JButton("Cancelar");
 		cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		cancelButton.setPreferredSize(new Dimension(100, 50));

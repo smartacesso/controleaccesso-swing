@@ -54,7 +54,7 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"C√≥digo", "Cart√£o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
+	private String[] columns = {"CÛdigo", "Cart„o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
 	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
@@ -85,7 +85,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroIdPanel= new JPanel();
 		filtroIdPanel.setLayout(new BoxLayout(filtroIdPanel, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("C√≥digo");
+		JLabel filtroIdLabel = new JLabel("CÛdigo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdPanel.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 8);
@@ -95,7 +95,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroCartaoPanel= new JPanel();
 		filtroCartaoPanel.setLayout(new BoxLayout(filtroCartaoPanel, BoxLayout.Y_AXIS));
-		JLabel filtroCartaoLabel = new JLabel("Cart√£o");
+		JLabel filtroCartaoLabel = new JLabel("Cart„o");
 		filtroCartaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoLabel);
 		filtroCartaoTextField = new JTextField("", 8);
@@ -503,7 +503,7 @@ public class AccessListPanel extends PaginedListPanel {
 	            
 	            if(Main.getDefaultDevice() != null 
             		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
-            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear sa√≠da"))) {
+            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saÌda"))) {
 	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
 
 	            } else {

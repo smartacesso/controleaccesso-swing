@@ -129,7 +129,7 @@ public class UrlRenderer extends DefaultTableCellRenderer implements MouseListen
 				Desktop.getDesktop().browse(uri);
 			}
 			else {
-				System.out.println("Desktop n√£o suportado. Tentando abrir executando a url.dll");
+				System.out.println("Desktop n„o suportado. Tentando abrir executando a url.dll");
 				Runtime rt = Runtime.getRuntime();
 				rt.exec("rundll32 url.dll,FileProtocolHandler " + url);
 			}

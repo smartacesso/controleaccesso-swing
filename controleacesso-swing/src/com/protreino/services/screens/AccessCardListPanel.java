@@ -57,7 +57,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<CartaoComandaEntity> listaAcesso;
-	private String[] columns = {"Código", "Número", "Rótulo", "Status", "Ações"};
+	private String[] columns = {"C�digo", "N�mero", "Rótulo", "Status", "Ações"};
 	private Integer[] columnWidths = {60, 100, 100, 80, 80};
 	
 	private JTextField filtroIdTextField;
@@ -85,7 +85,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		
 		JPanel filtroIdPanel= new JPanel();
 		filtroIdPanel.setLayout(new BoxLayout(filtroIdPanel, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("Código");
+		JLabel filtroIdLabel = new JLabel("C�digo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdPanel.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 12);
@@ -95,7 +95,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		
 		JPanel filtroNumeroPanel= new JPanel();
 		filtroNumeroPanel.setLayout(new BoxLayout(filtroNumeroPanel, BoxLayout.Y_AXIS));
-		JLabel filtroNumeroLabel = new JLabel("Número");
+		JLabel filtroNumeroLabel = new JLabel("N�mero");
 		filtroNumeroLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroNumeroPanel.add(filtroNumeroLabel);
 		filtroNumeroTextField = new JTextField("", 12);
@@ -177,12 +177,12 @@ public class AccessCardListPanel extends PaginedListPanel {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		accessListTablePanel.add(scrollPane);
 		
-		addButton = new JButton("Novo cartão/comanda");
+		addButton = new JButton("Novo cart�o/comanda");
 		addButton.setBorder(new EmptyBorder(10,15,10,15));
 		addButton.setPreferredSize(new Dimension(150, 40));
 		addButton.setVisible(Main.internoLoggedUser != null);
 		
-		clearCardStateButton = new JButton("Limpar estado cartões");
+		clearCardStateButton = new JButton("Limpar estado cart�es");
 		clearCardStateButton.setBorder(new EmptyBorder(10,15,10,15));
 		clearCardStateButton.setPreferredSize(new Dimension(150, 40));
 		clearCardStateButton.setVisible(Main.internoLoggedUser != null
@@ -250,12 +250,12 @@ public class AccessCardListPanel extends PaginedListPanel {
 	
 	protected void clearCardState() {
 		
-		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa ação fará com que todos os cartões/comandas voltem para o "
+		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa ação fará com que todos os cart�es/comandas voltem para o "
 				+ "status de AGUARDANDO (dentro da urna expedidora). "
 				+ "Tem certeza que deseja continuar?", "Confirmação", 
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
-			//apaga também dados de giros anteriores não registrados
+			//apaga também dados de giros anteriores n�o registrados
 			HibernateUtil.resetStatusAllCards();
 			Utils.createNotification("Cartões/Comandas atualizados com sucesso!", NotificationType.GOOD);
 			
@@ -387,7 +387,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		}
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
-		//countLabel.setText("Número de registros: " + numAcessos);
+		//countLabel.setText("N�mero de registros: " + numAcessos);
 		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
@@ -554,7 +554,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 cartao.setDataAlteracao(new Date());
 		        	 HibernateUtil.update(CartaoComandaEntity.class, cartao);
 		        	 
-		        	 //cria log de liberação (sem sincronização com web)
+		        	 //cria log de libera��o (sem sincronização com web)
 		        	 LogCartaoComandaEntity log = new LogCartaoComandaEntity(cartao);
 		        	 log.setUsuario(Main.internoLoggedUser);
 		        	 log.setTipoLiberacao("MANUAL_"+cartao.getStatus().name());
@@ -563,9 +563,9 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 HibernateUtil.save(LogCartaoComandaEntity.class, log);
 		        	 
 		        	 
-		        	 Utils.createNotification("Cartão " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
+		        	 Utils.createNotification("Cart�o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
 		         }else {
-		        	 Utils.createNotification("Cartão " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " já está liberado.", NotificationType.BAD);
+		        	 Utils.createNotification("Cart�o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " j� est� liberado.", NotificationType.BAD);
 		         }
 		         cleanFilter();
 	        }

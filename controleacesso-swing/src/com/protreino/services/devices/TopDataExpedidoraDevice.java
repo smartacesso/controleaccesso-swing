@@ -83,7 +83,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			super.connect(args);
 		}else{
 			
-			//faz conexão propria
+			//faz conexÃ£o propria
 			easyInner = new EasyInner();
 			int ret = 0;
 			if(!portaAberta) {
@@ -91,7 +91,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 		        ret = EasyInner.AbrirPortaComunicacao(port);
 		        if (ret != Enumeradores.RET_COMANDO_OK 
 		        		&& ret != Enumeradores.RET_PORTA_JAABERTA) 
-		        	throw new Exception("Erro ao abrir a porta de comunicação: " + ret);
+		        	throw new Exception("Erro ao abrir a porta de comunicaÃ§Ã£o: " + ret);
 		        portaAberta = true;
 			}
 	        ret = Enumeradores.Limpar;
@@ -213,7 +213,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			
 			HibernateUtil.save(CartaoComandaEntity.class, matched);
 			
-			//cria log de liberação (sem sincronização com web)
+			//cria log de liberação (sem sincronizaÃ§Ã£o com web)
 	       	LogCartaoComandaEntity log = new LogCartaoComandaEntity(matched);
 	       	log.setUsuario(Main.internoLoggedUser);
 	       	log.setTipoLiberacao(this.tipo+"_"+matched.getStatus().name());
@@ -243,7 +243,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			//System.out.println("Numero do cartão: " +cartao);
 		}
 		
-		//procura cartão por código real
+		//procura cartão por cÃ³digo real
 		HashMap<String, Object> args = new HashMap<>();
 		args.put("numeroReal", cartao);
 		args.put("removido"  , false);
@@ -291,7 +291,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				}
 			}
 		}else {
-			//cartão não encontrado
+			//cartão nÃ£o encontrado
 			verificationResult = VerificationResult.NOT_FOUND;
 		}
 		
@@ -313,7 +313,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	protected void validarAcesso(){
 		try {
 			validandoAcesso = true;
-			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO SAÍDA: ");
+			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO SAÃ�DA: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
 			
@@ -359,8 +359,8 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			geralConfigurations.add(new ConfigurationTO("Modo de trabalho", "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 					"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 			geralConfigurations.add(new ConfigurationTO("Envia digitais para catraca", "false", FieldType.CHECKBOX));
-			geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Horário_clockwise", FieldType.COMBOBOX, 
-					"Horário_clockwise;Antihorário_anticlockwise"));
+			geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "HorÃ¡rio_clockwise", FieldType.COMBOBOX, 
+					"HorÃ¡rio_clockwise;AntihorÃ¡rio_anticlockwise"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de liberação", "7", FieldType.NUMERIC_LIST, "5;1;15"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de mensagem negado", "5", FieldType.NUMERIC_LIST, "1;1;15"));
 			geralConfigurations.add(new ConfigurationTO("Bloquear saída", "true", FieldType.CHECKBOX));
@@ -372,7 +372,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 			geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 			geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade AbaTrack2_2", FieldType.COMBOBOX, 
-					"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+					"Código de barras_0;MagnÃ©tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 					+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 			//if(Main.loggedUser != null && Main.loggedUser.getQtdePadraoDigitosCartão() != null) {
 			//	geralConfigurations.add(new ConfigurationTO("Quantidade dígitos cartão", 
@@ -412,7 +412,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	
 			configurationGroups = new ArrayList<ConfigurationGroupTO>();
 			configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-			configurationGroups.add(new ConfigurationGroupTO("Personalização", customConfigurations));
+			configurationGroups.add(new ConfigurationGroupTO("PersonalizaÃ§Ã£o", customConfigurations));
 		
 		}
 		

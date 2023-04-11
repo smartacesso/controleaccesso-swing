@@ -199,7 +199,7 @@ public class Main {
 	public static boolean possuiLeitorLcAdd;
 	public static boolean validandoAcesso = false;
 	
-	public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integra√ß√£o Comtele";
+	public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integraÁ„o Comtele";
 	
 	public static void main(String[] args) {
 		
@@ -271,12 +271,12 @@ public class Main {
 	}
 	
 	private static Serializable process(Serializable msg) {
-		System.out.println("N√£o iniciar nova instancia: " + msg);
+		System.out.println("N„o iniciar nova instancia: " + msg);
 		if (mainScreen != null) {
-			System.out.println("Exibe tela para usu√°rio");
+			System.out.println("Exibe tela para usu·rio");
 			mainScreen.showScreen();
 		}else {
-			System.out.println("N√£o h√° telas para exibir");
+			System.out.println("N„o h· telas para exibir");
 		}
 		return null;
 	}
@@ -436,11 +436,11 @@ public class Main {
 	    			    						mainScreen.showScreen();
 		    			            		mainScreen.refresh();
 	    			    					String html = "<html><body width='%1s'>"
-	    			    			                + "<p>N√£o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
+	    			    			                + "<p>N„o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
 	    			    			                + "<br><br>"
-	    			    			                + "- A catraca e/ou leitor est√° ligado na tomada?"
+	    			    			                + "- A catraca e/ou leitor est· ligado na tomada?"
 	    			    			                + "<br>"
-	    			    			                + "- Os cabos est√£o conectados de forma correta?"
+	    			    			                + "- Os cabos est„o conectados de forma correta?"
 	    			    			                + "<br><br>"
 	    			    			                + "Se estiver tudo OK, clique em Conectar."
 	    			    			                + "</p></html>";
@@ -566,7 +566,7 @@ public class Main {
 								LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
 																matchedPedestre.getId(), "SYSTEM", null, motivoLiberacao);
 								Utils.createNotification(
-										"Usu√°rio " + matchedPedestre.getFirstName() + " liberado pelo sistema.",
+										"Usu·rio " + matchedPedestre.getFirstName() + " liberado pelo sistema.",
 										NotificationType.GOOD);
 								HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
 								Thread.sleep(1000);
@@ -637,7 +637,7 @@ public class Main {
 					Boolean exigeSenha = Utils.getPreferenceAsBoolean("releaseAccessRequiresPassword");
 					if (exigeSenha) {
 						AutenticationDialog autenticationDialog = new AutenticationDialog(null, 
-								"Digite a senha do usu√°rio logado \npara liberar o acesso", 
+								"Digite a senha do usu·rio logado \npara liberar o acesso", 
 								"Aguarde, verificando senha...");
 						Boolean retornoAuthentication = null;
 						try {
@@ -653,7 +653,7 @@ public class Main {
 						if (retornoAuthentication == null)
 							return null;
 						if (!retornoAuthentication) {
-							JOptionPane.showMessageDialog(null, "N√£o foi possssivel validar a senha, ou senha inv√°lida", 
+							JOptionPane.showMessageDialog(null, "N„o foi possssivel validar a senha, ou senha inv√°lida", 
 									"Erro na valida√ß√£o", JOptionPane.PLAIN_MESSAGE);
 							return null;
 						}
@@ -712,7 +712,7 @@ public class Main {
 
 							} else {
 								Utils.createNotification(
-										"Usu√°rio " + athleteAccess.getFirstName() + " liberado pelo sistema.",
+										"Usu·rio " + athleteAccess.getFirstName() + " liberado pelo sistema.",
 										NotificationType.GOOD);
 								HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
 								if (Main.broadcastServer != null)
@@ -811,18 +811,18 @@ public class Main {
 		
 		Boolean sessaoLimpa = HibernateUtil.cleanUserSession();
 		if (sessaoLimpa) {
-			Utils.createNotification("Sess√£o de usu√°rio encerrada!", NotificationType.GOOD);
+			Utils.createNotification("Sess√£o de usu·rio encerrada!", NotificationType.GOOD);
 			releaseTicketGateMenuItem.setEnabled(false);
 			updateAccessListMenuItem.setEnabled(false);
 		
 		} else
-			Utils.createNotification("Ocorreu um erro ao finalizar a sess√£o.", NotificationType.BAD);
+			Utils.createNotification("Ocorreu um erro ao finalizar a sess„o.", NotificationType.BAD);
 		
 	}
 	
 	public static void exit(boolean exibirConfirmacao){
 		if (exibirConfirmacao) {
-			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser√£o desconectadas. Deseja realmente sair?", "Confirma√ß√£o", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser„o desconectadas. Deseja realmente sair?", "ConfirmaÁ„o", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult != JOptionPane.YES_OPTION)
 				return;
@@ -922,10 +922,11 @@ public class Main {
 		limpaTelas();
 		closeLogFile();
 		configLogFile();
-		enviarLogsComFalhaAoEnviar();
+	//	enviarLogsComFalhaAoEnviar();
 		
 		
 	}
+	/*
 	
 	private static void enviarLogsComFalhaAoEnviar() {
 		try {
@@ -940,6 +941,7 @@ public class Main {
 		}
 		
 	}
+	*/
 
 	private static void limpaTelas() {
 
@@ -976,7 +978,7 @@ public class Main {
 
 	private static void limpaSentidoTodos() {
 		
-		//verifica se est√° ativado
+		//verifica se est· ativado
 		if(Main.servidor != null)
 			return;
 		
@@ -988,7 +990,7 @@ public class Main {
 		loggedUser.setDateNewAccess(new Date());
 		HibernateUtil.save(UserEntity.class, loggedUser);
 		
-		//apaga tamb√©m dados de giros anteriores n√£o registrados
+		//apaga tamb√©m dados de giros anteriores n„o registrados
 		HibernateUtil.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 		
 		System.out.println("Saiu limpaSentidoTodos");
@@ -997,14 +999,14 @@ public class Main {
 
 	private static void limpaCartoesVisitantes() {
 		
-		//verifica se est√° ativado
+		//verifica se est· ativado
 		if(Main.servidor != null)
 			return;
 		
 		if(!Utils.getPreferenceAsBoolean("enableCardAcessClear"))
 			return;
 		
-		//pesquisa todos os pedestres que est√°o com cart√£o ativado
+		//pesquisa todos os pedestres que est·o com cart„o ativado
 		//e que tenham um cr√©dito
 		HibernateUtil.apagaDadosCartao();
 		HibernateUtil.apagaDadosDeUltimoSentido();
@@ -1025,7 +1027,7 @@ public class Main {
 			return;
 
 		if (Main.servidor != null) {
-			System.out.println(sdf.format(new Date()) + " Sincroniza√ß√£o desabilitada: M√°quina possui servidor");
+			System.out.println(sdf.format(new Date()) + " SincronizaÁ„o desabilitada: M·quina possui servidor");
 			return;
 		}
 		updatingUsersAccessList = true;
@@ -1059,7 +1061,7 @@ public class Main {
 					requestAllPlanos();
 					
 				} catch (ConnectException e) {
-					System.err.println("N√£o foi poss√≠vel comunicar com o servidor.");
+					System.err.println("N„o foi possÌvel comunicar com o servidor.");
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -1115,8 +1117,8 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 
-					if (loggedUser.getId().equals(user.getId())) // retira usu√°rio logado
-						continue;
+//					if (loggedUser.getId().equals(user.getId())) // retira usu·rio logado
+//						continue;
 
 					user.setIdClient(loggedUser.getIdClient());
 
@@ -1125,7 +1127,13 @@ public class Main {
 
 					if (usuarioExistente != null) {
 						usuarioExistente.update(user);
-						HibernateUtil.update(UserEntity.class, usuarioExistente);
+						if (loggedUser.getId().equals(user.getId())) {
+							loggedUser = (UserEntity) HibernateUtil.update(UserEntity.class, usuarioExistente)[0];
+
+						} else {
+							HibernateUtil.update(UserEntity.class, usuarioExistente);
+						}
+
 					} else {
 						HibernateUtil.save(UserEntity.class, user);
 					}
@@ -1365,7 +1373,7 @@ public class Main {
 			return;
 		
 		if(Main.servidor != null) {
-			System.out.println(sdf.format(new Date()) + " Sincroniza√ß√£o desabilitada: M√°quina possui servidor");
+			System.out.println(sdf.format(new Date()) + " SincronizaÁ„o desabilitada: M·quina possui servidor");
 			return;
 		}
 		
@@ -1499,10 +1507,10 @@ public class Main {
 					}
 
 					// se foi criado, envia os dados para o servidor
-					// porque est√° sem o ID
+					// porque est· sem o ID
 					if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
 						visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
-						System.out.println(" quantidade de acessos antes da sincroiniza√ß√£o " + visitante.getQtdAcessoAntesSinc());
+						System.out.println(" quantidade de acessos antes da sincronizaÁ„o " + visitante.getQtdAcessoAntesSinc());
 
 						if(visitante.getListaAcessosTransient() != null 
 								&& !visitante.getListaAcessosTransient().isEmpty()) {
@@ -1648,7 +1656,7 @@ public class Main {
 						
 						}catch (Exception e) {
 							//visitante ser√° exclu√≠do na pr√≥xima sincroniza√ß√£o
-							//marca para n√£o aparecer nas listagens
+							//marca para n„o aparecer nas listagens
 							
 							visitante = (PedestrianAccessEntity) HibernateUtil
 												.getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
@@ -1697,7 +1705,7 @@ public class Main {
 					if (loggedUser == null) // usuario deslogou durante a sincronizacao
 						break;
 					
-					// TODO : criar novo m√©todo para pegar pedestre removido ou n√£o
+					// TODO : criar novo m√©todo para pegar pedestre removido ou n„o
 					//        isso pode resolver v√°rios bugs
 					// TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser 
 					//		  aqui ou ne
@@ -1718,7 +1726,7 @@ public class Main {
 							existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
 						}
 						
-						//verifica se usu√°rio foi apagado e se tem facial para apagar tamb√©m no servidor facial
+						//verifica se usu·rio foi apagado e se tem facial para apagar tamb√©m no servidor facial
 						String idFacial = null;
 						if((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
 									|| !"ATIVO".equals(athleteAccessTO.getStatus()))
@@ -1727,9 +1735,10 @@ public class Main {
 						}
 						
 						//apaga dados do facial
-						if(idFacial != null && !"".equals(idFacial) && LuxandService.getInstance() != null) {
-							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
-						}
+//						if(idFacial != null && !"".equals(idFacial) && LuxandService.getInstance() != null) {
+//							System.out.println("Estou deletando automaticamente, face: " + idFacial);
+//							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
+//						}
 						
 						existentAthleteAccess.update(athleteAccessTO);
 						if(!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
@@ -1777,7 +1786,7 @@ public class Main {
 									topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
 							}
 						} catch (Exception e) {
-							//n√£o deixa o erro para o processo
+							//n„o deixa o erro para o processo
 							e.printStackTrace();
 						}
 					}
@@ -1985,13 +1994,14 @@ public class Main {
 					Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
 
 				} catch (ConnectException e) {
-					System.err.println("N√£o foi poss√≠vel comunicar com o servidor.");
+					System.err.println("N„o foi possÌvel comunicar com o servidor.");
 
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 
+			/*
 			private void enviaLogsDeAcesso() throws Exception {
 				HashMap<String, Object> args = new HashMap<String, Object>();
     			args.put("LAST_SYNC", new Date(lastSyncLog));
@@ -2017,6 +2027,65 @@ public class Main {
 					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
 				}
 				
+				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
+			}
+			*/
+			
+			@SuppressWarnings("unchecked")
+			private void enviaLogsDeAcesso() throws Exception {
+				HashMap<String, Object> args = new HashMap<String, Object>();
+    			args.put("LAST_SYNC", new Date(lastSyncLog));
+    			
+    			List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) HibernateUtil.
+    					getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByAccessDate", args);
+    			
+    			List<LogPedestrianAccessEntity> logListOff = (List<LogPedestrianAccessEntity>) HibernateUtil.
+    					getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCreateDate", args);
+    			
+    			if(logListOff != null) {
+    				if(logList == null)
+        				logList = new ArrayList<LogPedestrianAccessEntity>();
+    				logList.addAll(logListOff);
+    			}
+    			
+    			if (logList == null || logList.isEmpty()) {
+    				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: sem dados para enviar");
+    				Utils.sleep(1000);
+    				return;
+    			}
+    			
+    			System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
+				JsonArray responseArray = new JsonArray();
+				for (LogPedestrianAccessEntity log : logList){
+					JsonObject responseObj = new JsonObject();
+					responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
+					responseObj.addProperty("idPedestrian", log.getIdPedestrian() == null 
+																	? "" : log.getIdPedestrian().toString());
+					responseObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
+					responseObj.addProperty("status", log.getStatus());
+					responseObj.addProperty("location", log.getLocation());
+					responseObj.addProperty("reason", log.getReason());
+					responseObj.addProperty("direction", log.getDirection() == null ? "ENTRADA" : log.getDirection());
+					responseObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
+					responseObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
+					responseObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null 
+																		? log.getCartaoAcessoRecebido() : "");
+					responseArray.add(responseObj);
+				}
+				
+				HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/registerlog");
+				int responseCode = con.sendResponse(responseArray.toString()) ;
+				if (responseCode != 200) {
+					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode 
+							+ "  Error String: " + con.getErrorString());
+					return;
+				}
+				
+				if (loggedUser != null) {
+					lastSyncLog = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
+					loggedUser.setLastSyncLog(new Date(lastSyncLog));
+					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+				}
 				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
 			}
 			
@@ -2072,7 +2141,7 @@ public class Main {
 		
 		if (!SystemTray.isSupported()) {
 			Object[] options = {"OK"};
-			JOptionPane.showOptionDialog(null, "N√£o √© poss√≠vel adicionar √≠cones na bandeja do sistema.","Bandeja do sistema n√£o suportada.",
+			JOptionPane.showOptionDialog(null, "N„o √© possÌvel adicionar √≠cones na bandeja do sistema.","Bandeja do sistema n„o suportada.",
 	                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 			HibernateUtil.shutdown();
             System.exit(0);
@@ -2126,7 +2195,7 @@ public class Main {
         }
         catch (AWTException e) {
         	Object[] options = {"OK"};
-			JOptionPane.showOptionDialog(mainScreen, "N√£o √© poss√≠vel adicionar √≠cones na bandeja do sistema.","Bandeja do sistema n√£o suportada.",
+			JOptionPane.showOptionDialog(mainScreen, "N„o foi possÌvel adicionar √≠cones na bandeja do sistema.","Bandeja do sistema n„o suportada.",
 	                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 			HibernateUtil.shutdown();
             System.exit(0);

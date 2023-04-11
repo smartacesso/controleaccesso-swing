@@ -66,7 +66,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, boolean useLogin, boolean usePassword, boolean loginInterno){
-		super(owner, "Autentificação", true);
+		super(owner, "AutentificaÃ§Ã£o", true);
 		
 		setPreferredSize(new Dimension(300,260));
 		setMinimumSize(getPreferredSize());
@@ -105,15 +105,15 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Utils.isNullOrEmpty(loginField.getText())) {
-					invalidCredentialsLabel.setText("Login inválido!");
+					invalidCredentialsLabel.setText("Login invÃ¡lido!");
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inválida!");
+					invalidCredentialsLabel.setText("Senha invÃ¡lida!");
 					return;
 				}
 				
-				//IDENTIFICAR QUEM ESTÁ CHAMANDO A TELA
+				//IDENTIFICAR QUEM ESTÃ� CHAMANDO A TELA
 				if(loginInterno) {
 					PlanoEntity planoComMaiorVencimento = buscaPlanoAtivoComMaiorDataVencimento();
 					
@@ -213,7 +213,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, String mensagemDialogSenha, String mensagemProgressDialog){
-		super(owner, "Autentificação", true);
+		super(owner, "AutentificaÃ§Ã£o", true);
 		this.mensagemProgressDialog = mensagemProgressDialog;
 		
 		setIconImage(Main.favicon);
@@ -240,7 +240,7 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inválida!");
+					invalidCredentialsLabel.setText("Senha invÃ¡lida!");
 					return;
 				}
 				invalidCredentialsLabel.setText(" ");

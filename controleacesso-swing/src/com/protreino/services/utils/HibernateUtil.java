@@ -127,6 +127,8 @@ public class HibernateUtil {
 	}
 
 	public static SessionFactory getSessionFactory() {
+		if(sessionFactory != null && !sessionFactory.isOpen())
+			sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
 		return sessionFactory;
 	}
 
@@ -539,8 +541,11 @@ public class HibernateUtil {
 
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery, entityClass);
-				for (Map.Entry<String, Object> entry : args.entrySet()) {
-					query.setParameter(entry.getKey(), entry.getValue());
+				
+				if(args != null) {
+					for (Map.Entry<String, Object> entry : args.entrySet()) {
+						query.setParameter(entry.getKey(), entry.getValue());
+					}					
 				}
 
 				if (inicio != null) {
@@ -1146,7 +1151,7 @@ public class HibernateUtil {
 					matchedAthleteAccess = trataPedestreQRCode(codigo);
 				} catch (QrcodeVencidoException e) {
 					if (createNotification)
-						Utils.createNotification("QRCode do usu√°rio expirado.", NotificationType.BAD, foto);
+						Utils.createNotification("QRCode do usu·rio expirado.", NotificationType.BAD, foto);
 					return new Object[] { VerificationResult.NOT_FOUND, userName, matchedAthleteAccess };
 				}
 
@@ -1189,7 +1194,7 @@ public class HibernateUtil {
 			if (matchedAthleteAccess == null) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Usu√°rio de C√≥digo " + codigo + " n√£o encontrado.", NotificationType.BAD,
+					Utils.createNotification("Usu·rio de CÛdigo " + codigo + " n„o encontrado.", NotificationType.BAD,
 							foto);
 
 				return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
@@ -1216,7 +1221,7 @@ public class HibernateUtil {
 
 				if (isPedestreNaoPossuiRegras(matchedAthleteAccess)) {
 					if (createNotification) {
-						Utils.createNotification(userName + " n√£o possui regras.", NotificationType.BAD, foto);
+						Utils.createNotification(userName + " n„o possui regras.", NotificationType.BAD, foto);
 					}
 					return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 				}
@@ -1227,8 +1232,8 @@ public class HibernateUtil {
 			if(matchedAthleteAccess.getStatus().equals("INATIVO")) {
 				System.out.println("chegou no pedestre ");
 				
-				Utils.createNotification(" Acesso Negado, usu√°rio: " +userName +  "Inativo", NotificationType.BAD, foto);
-				motivo = "Usu√°rio inativo.";
+				Utils.createNotification(" Acesso Negado, usu·rio: " +userName +  "Inativo", NotificationType.BAD, foto);
+				motivo = "Usu·rio inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
 
@@ -1249,7 +1254,7 @@ public class HibernateUtil {
 				System.out.println("o que √© equipament" +equipament );
 				System.out.println("o que √© pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
-					Utils.createNotification(userName + " n√£o permitido nesse equipamento.", NotificationType.BAD,
+					Utils.createNotification(userName + " n„o permitido nesse equipamento.", NotificationType.BAD,
 							foto);
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedAthleteAccess };
 			}
@@ -1284,7 +1289,7 @@ public class HibernateUtil {
 						//fazer um for validando se existe regra livre ou com quantidade veazia, s√≥ assim libero
 
 						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l) 
-								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  &&matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
+								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  && matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
 								&& !Integer.valueOf(18).equals(origem) && usaUrna)
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 						
@@ -1359,7 +1364,7 @@ public class HibernateUtil {
 						// pode acessar
 						permitido = true;
 					} else {
-						// n√£o pode acessar
+						// n„o pode acessar
 						permitido = false;
 					}
 
@@ -1388,13 +1393,13 @@ public class HibernateUtil {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cart√£o na urna.", NotificationType.BAD,
+						Utils.createNotification(userName + " deve depositar cart„o na urna.", NotificationType.BAD,
 								foto);
-						motivo = "Deve depositar cart√£o na urna.";
+						motivo = "Deve depositar cart„o na urna.";
 
 					} else {
-						Utils.createNotification(userName + " n√£o deve depositar na urna", NotificationType.BAD, foto);
-						motivo = "N√£o deve depositar cart√£o na urna.";
+						Utils.createNotification(userName + " n„o deve depositar na urna", NotificationType.BAD, foto);
+						motivo = "N„o deve depositar cart„o na urna.";
 					}
 				}
 
@@ -1402,15 +1407,15 @@ public class HibernateUtil {
 				// para l√≥gica de cr√©ditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
-					Utils.createNotification(userName + " n√£o permitido.", NotificationType.BAD, foto);
-					motivo = "N√£o permitido.";
+					Utils.createNotification(userName + " n„o permitido.", NotificationType.BAD, foto);
+					motivo = "N„o permitido.";
 				}
 
 			} else if (!permitidoRetornar) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				if (createNotification) {
-					Utils.createNotification(userName + " n√£o pode retornar agora.", NotificationType.BAD, foto);
-					motivo = "N√£o pode retornar agora.";
+					Utils.createNotification(userName + " n„o pode retornar agora.", NotificationType.BAD, foto);
+					motivo = "N„o pode retornar agora.";
 				}
 
 			} else if (permitidoHoje) {
@@ -1437,8 +1442,8 @@ public class HibernateUtil {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
 					if (createNotification) {
-						Utils.createNotification(userName + " n√£o permitido.", NotificationType.BAD, foto);
-						motivo = "N√£o permitido.";
+						Utils.createNotification(userName + " n„o permitido.", NotificationType.BAD, foto);
+						motivo = "N„o permitido.";
 					}
 				}
 
@@ -1458,7 +1463,7 @@ public class HibernateUtil {
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
 				if (createNotification)
-					Utils.createNotification(userName + " j√° registrado hoje.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " j· registrado hoje.", NotificationType.BAD, foto);
 			}
 
 		} catch (Exception e) {
@@ -1507,13 +1512,19 @@ public class HibernateUtil {
 	}
 	
 	private static boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
-		if(pedestre.getPedestreRegra() == null) {
+		if(pedestre.getPedestreRegra() == null ) {
 			return false;
 		}
+		
+		
 		for(PedestreRegraEntity pedestreRegra :pedestre.getPedestreRegra()) {
-			if	(pedestreRegra.getQtdeDeCreditos() != null) {
-				return true;	
-			}
+			if	(pedestreRegra.getQtdeDeCreditos() != null 
+					&& pedestreRegra.getQtdeDeCreditos() > 0 
+					&& (pedestreRegra.getRemovidoNoDesktop() == null 
+						|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
+				return true;
+			} 
+			
 		}
 		
 		return false;
@@ -1689,9 +1700,9 @@ public class HibernateUtil {
 			return true;
 			
 		}
-//		Se origem diferentes das que n√£o s√£o permitidas como exemplo, biometria.
+//		Se origem diferentes das que n„o s√£o permitidas como exemplo, biometria.
 
-//			verificar o m√°ximo poss√≠vel para ver o que n√£o pode estar contido na mesma informa√ß√£o
+//			verificar o m·ximo possÌvel para ver o que n„o pode estar contido na mesma informa√ß√£o
 		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
@@ -1719,7 +1730,7 @@ public class HibernateUtil {
 		LogPedestrianAccessEntity lastAccess = (LogPedestrianAccessEntity) HibernateUtil
 				.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
-//		buscar pelo dia de "hoje" e confefir se tem datas, j√° dar entrada
+//		buscar pelo dia de "hoje" e confefir se tem datas, j· dar entrada
 		if (qtdAcessosAntesSinc != null && qtdAcessosAntesSinc > 0 && lastAccess == null) {
 
 			lastAccess = new LogPedestrianAccessEntity();
@@ -1844,7 +1855,7 @@ public class HibernateUtil {
 		if (equipament == null)
 			return true;
 
-		// n√£o tem bloqueo por equipamento
+		// n„o tem bloqueo por equipamento
 		if (equipamentos == null || equipamentos.isEmpty())
 			return true;
 
@@ -1976,14 +1987,10 @@ public class HibernateUtil {
 			}
 
 		} else {
-//			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
-//			logAccess.setStatus("INATIVO");
-//			if (createNotification)
-//				Utils.createNotification(userName + " n√£o permitido hoje.", NotificationType.BAD, foto);
-			resultadoVerificacao = VerificationResult.ALLOWED;
-			logAccess.setStatus("ATIVO");
+			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
+			logAccess.setStatus("INATIVO");
 			if (createNotification)
-				Utils.createNotification(userName + " Permitido.", NotificationType.GOOD, foto);
+				Utils.createNotification(userName + " n„o permitido hoje.", NotificationType.BAD, foto);
 		}
 		// }
 
@@ -2466,7 +2473,7 @@ public class HibernateUtil {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("usu√°rio j√° cadastrado: " + " " + confereID.getName() + e.getMessage());
+			Main.mainScreen.addEvento("usu·rio j· cadastrado: " + " " + confereID.getName() + e.getMessage());
 		}
 		return null;
 	}
@@ -3205,6 +3212,10 @@ public class HibernateUtil {
 		do {
 			List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) getResultListWithParams(
 					LogPedestrianAccessEntity.class, namedQuery, args, (offset * pageSize), pageSize);
+			
+			if(logList == null) {
+				continue;
+			}
 			
 			System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
 			JsonArray requestArray = new JsonArray();

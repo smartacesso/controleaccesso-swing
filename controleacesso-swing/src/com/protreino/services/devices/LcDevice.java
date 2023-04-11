@@ -97,7 +97,7 @@ public class LcDevice extends Device {
 			workerEnabled = true;
 			setMode(DeviceMode.VERIFICATION);
 			
-			nivelConfianca = getConfigurationValueAsInteger("NÃ­vel de confianÃ§a");
+			nivelConfianca = getConfigurationValueAsInteger("Nível de confiança");
 			
 			worker = new SwingWorker<Void, Void>(){
 				@Override
@@ -152,7 +152,7 @@ public class LcDevice extends Device {
 	public void createDefaultConfiguration() {
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
 		geralConfigurations.add(new ConfigurationTO("Catraca vinculada", "Nenhuma_NULL", FieldType.COMBOBOX, "Nenhuma_NULL;COMM_COMM;USB_USB"));
-		geralConfigurations.add(new ConfigurationTO("NÃ­vel de confianÃ§a", "1", FieldType.NUMERIC_LIST, "1;1;10"));
+		geralConfigurations.add(new ConfigurationTO("Nível de confiança", "1", FieldType.NUMERIC_LIST, "1;1;10"));
 		
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
@@ -238,13 +238,13 @@ public class LcDevice extends Device {
 			} else {
 				this.verificationResult = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Digital NÃ£o encontrada.", NotificationType.BAD);
+					Utils.createNotification("Digital Não encontrada.", NotificationType.BAD);
 			}
 		
 		} else {
 			this.verificationResult = VerificationResult.NOT_FOUND;
 			if (createNotification)
-				Utils.createNotification("Digital NÃ£o encontrada.", NotificationType.BAD);
+				Utils.createNotification("Digital Não encontrada.", NotificationType.BAD);
 		}
 	}
 	
@@ -496,7 +496,7 @@ public class LcDevice extends Device {
 				sendConfiguration();
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configuraÃ§Ãµes: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configurações: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();

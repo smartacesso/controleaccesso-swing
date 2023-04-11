@@ -137,7 +137,7 @@ public class ControlIdDevice extends Device {
 			doLogin();
 			
 			if (session == null)
-				throw new Exception("N√£o foi poss√≠vel iniciar uma sess√£o.");
+				throw new Exception("N„o foi possÌvel iniciar uma sess√£o.");
 			
 			setStatus(DeviceStatus.CONNECTED);
 			workerEnabled = true;
@@ -215,7 +215,7 @@ public class ControlIdDevice extends Device {
 			                    		message = messagePersonalizedInDevice;
 			                    	
 			                    	} else if (VerificationResult.ERROR.equals(verificationResult)) {
-			                    		event = 3; // par√¢metros de regra de identifica√ß√£o inv√°lidos
+			                    		event = 3; // par√¢metros de regra de identificaÁ„o inv√°lidos
 			                    		message = verificationResult.getMessage().replace(";", " ");
 			                    	
 			                    	} else if (VerificationResult.NOT_ALLOWED.equals(verificationResult)
@@ -226,7 +226,7 @@ public class ControlIdDevice extends Device {
 			                    		message = verificationResult.getMessage().replace(";", " ");
 			                    	
 			                    	} else if (VerificationResult.NOT_FOUND.equals(verificationResult)) {
-			                    		event = 3; // N√£o identificado
+			                    		event = 3; // N„o identificado
 			                    		message = verificationResult.getMessage().replace(";", " ");
 			                    	}
 			                    	
@@ -250,7 +250,7 @@ public class ControlIdDevice extends Device {
 									out.print(mensagemRetorno + "\r\n");
 									
 			                    } else if (caminho.startsWith("/fingerprint_create")) {
-			                    	// N√£o faz nada
+			                    	// N„o faz nada
 			                    	out.println("HTTP/1.1 200 OK" + "\r\n");
 			                    
 			                    } else if (caminho.startsWith("/template_create")) {
@@ -271,7 +271,7 @@ public class ControlIdDevice extends Device {
 			                    		|| caminho.startsWith("/device_is_alive")
 			                    		|| caminho.startsWith("/api/notifications")
 			                    		|| caminho.startsWith("/api/notification")) {
-			                    	// N√£o faz nada
+			                    	// N„o faz nada
 			                    	out.println("HTTP/1.1 200 OK\r\n");
 			                    
 			                    }else if (caminho.startsWith("/api/notifications/operation_mode")) {
@@ -396,7 +396,7 @@ public class ControlIdDevice extends Device {
 			synchronizer.execute();*/
 			
 		} catch (SocketTimeoutException ste) {
-			throw new SocketTimeoutException("N√£o foi poss√≠vel conectar na catraca: timeout");
+			throw new SocketTimeoutException("N„o foi possÌvel conectar na catraca: timeout");
 		} catch (Exception e){
 			throw e;
 		}
@@ -658,7 +658,7 @@ public class ControlIdDevice extends Device {
 			if ("connect timed out".equals(erro))
 				throw new SocketTimeoutException();
 			if (erro.contains("Service Not Available"))
-				throw new Exception("Catraca N√£o responde. Verifique as conex√µes.");
+				throw new Exception("Catraca N„o responde. Verifique as conex√µes.");
 			Response response = gson.fromJson(erro, Response.class);
 			if (response.code != null && response.error != null) {
 				if (response.code == 1)
@@ -667,7 +667,7 @@ public class ControlIdDevice extends Device {
 					erro = response.error;
 			}
 			else
-				erro = "N√£o foi poss√≠vel conectar";
+				erro = "N„o foi possÌvel conectar";
 			throw new Exception(erro);
 		}
 		if (responseString == null)
@@ -862,7 +862,7 @@ public class ControlIdDevice extends Device {
 			device.public_key = Utils.getPublicKey();
 			Integer changes = modifyObjects("devices", device, whereClause);
 			if (changes == null || changes < 1)
-				throw new Exception("N√£o foi poss√≠vel atualizar os dados do servidor.");
+				throw new Exception("N„o foi possÌvel atualizar os dados do servidor.");
 			return;
 		}
 		
@@ -871,7 +871,7 @@ public class ControlIdDevice extends Device {
 		values.add(new Device(-1, "ServidorSmartAcesso", serverIp + ":" + serverPort, Utils.getPublicKey()));
 		List<Integer> idsCriados = createObjects("devices", values);
 		if (idsCriados == null || idsCriados.isEmpty())
-			throw new Exception("N√£o foi poss√≠vel criar o servidor.");
+			throw new Exception("N„o foi possÌvel criar o servidor.");
 		serverId = idsCriados.get(0).toString();
 		
 		System.out.println(sdf.format(new Date()) + "  Servidor criado: " + serverId);
@@ -885,7 +885,7 @@ public class ControlIdDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO("Sentido da entrada", "Hor√°rio_clockwise", FieldType.COMBOBOX,
 				"Hor√°rio_clockwise;Anti-hor√°rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO("Modo de opera√ß√£o", "Ambos bloqueados_blocked", FieldType.COMBOBOX,
-				"Entrada liberada_entrance_open;Sa√≠da liberada_exit_open;Ambos bloqueados_blocked;Ambos liberados_both_open"));
+				"Entrada liberada_entrance_open;SaÌda liberada_exit_open;Ambos bloqueados_blocked;Ambos liberados_both_open"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de giro", "5000", FieldType.NUMERIC_LIST, "3000;1000;10000")); // inicio;passo;fim
 		geralConfigurations.add(new ConfigurationTO("Tempo da requisi√ß√£o", "10000", FieldType.NUMERIC_LIST, "2000;1000;20000")); // inicio;passo;fim
 		geralConfigurations.add(new ConfigurationTO("Enviar fotos", "false", FieldType.CHECKBOX));
@@ -1132,8 +1132,8 @@ public class ControlIdDevice extends Device {
 			values.add(new User(idUsuario, athleteAccessEntity.getName(), hash[0], hash[1]));
 			List<Integer> idsCriados = createObjects("users", values);
 			if (idsCriados == null || idsCriados.isEmpty()) {
-				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N√£o foi poss√≠vel criar o usuario: " + erro);
-				throw new Exception("N√£o foi poss√≠vel criar o usu√°rio.");
+				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N„o foi possÌvel criar o usuario: " + erro);
+				throw new Exception("N„o foi possÌvel criar o usu·rio.");
 			}
 			usuarioCriadoNestaCatraca = true;
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Usuario criado! Criando template...");
@@ -1143,10 +1143,10 @@ public class ControlIdDevice extends Device {
 			values.add(new Template(idUsuario, Base64.getEncoder().encodeToString(template)));
 			idsCriados = createObjects("templates", values);
 			if (idsCriados == null || idsCriados.isEmpty()) {
-				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N√£o foi poss√≠vel criar o template: " + erro);
+				System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N„o foi possÌvel criar o template: " + erro);
 				excluirUsuario(new PedestrianAccessEntity(athleteAccessEntity.getId()), false);
 				usuarioCriadoNestaCatraca = false;
-				throw new Exception("N√£o foi poss√≠vel criar o template.");
+				throw new Exception("N„o foi possÌvel criar o template.");
 			}
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Template criado! Replicando para outras catracas...");
 			
@@ -1169,8 +1169,8 @@ public class ControlIdDevice extends Device {
 							values.add(new User(idUsuario, athleteAccessEntity.getName(), hash[0], hash[1]));
 							idsCriados = otherDevice.createObjects("users", values);
 							if (idsCriados == null || idsCriados.isEmpty()) {
-								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N√£o foi poss√≠vel espelhar o usuario em " + device.getName());
-								throw new Exception("Erro ao espelhar usu√°rio na catraca " + otherDevice.getName());
+								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N„o foi possÌvel espelhar o usuario em " + device.getName());
+								throw new Exception("Erro ao espelhar usu·rio na catraca " + otherDevice.getName());
 							}
 							usuarioEspelhadoNestaCatraca = true;
 							System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Usuario replicada! Replicando template...");
@@ -1180,8 +1180,8 @@ public class ControlIdDevice extends Device {
 							values.add(new Template(idUsuario, Base64.getEncoder().encodeToString(template)));
 							idsCriados = otherDevice.createObjects("templates", values);
 							if (idsCriados == null || idsCriados.isEmpty()) {
-								// Nao foi possivel criar o template, entao apaga o usu√°rio criado anteriormente
-								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N√£o foi poss√≠vel espelhar o template em " + device.getName());
+								// Nao foi possivel criar o template, entao apaga o usu·rio criado anteriormente
+								System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - N„o foi possÌvel espelhar o template em " + device.getName());
 								otherDevice.excluirUsuario(new PedestrianAccessEntity(athleteAccessEntity.getId()), false);
 								usuarioEspelhadoNestaCatraca = false;
 								throw new Exception("Erro ao espelhar template na catraca " + otherDevice.getName());
@@ -1236,7 +1236,7 @@ public class ControlIdDevice extends Device {
 		values.add(user);
 		List<Integer> idsCriados = createObjects("users", values);
 		if (idsCriados == null || idsCriados.isEmpty())
-			throw new Exception("N√£o foi poss√≠vel criar o usu√°rio.");
+			throw new Exception("N„o foi possÌvel criar o usu·rio.");
 		return idsCriados.get(0);
 	}
 	
@@ -1246,7 +1246,7 @@ public class ControlIdDevice extends Device {
 		values.add(template);
 		List<Integer> idsCriados = createObjects("templates", values);
 		if (idsCriados == null || idsCriados.isEmpty()) {
-			throw new Exception("N√£o foi poss√≠vel criar o template.");
+			throw new Exception("N„o foi possÌvel criar o template.");
 		}
 		return idsCriados.get(0);
 	}
@@ -1254,11 +1254,11 @@ public class ControlIdDevice extends Device {
 	
 	public String excluirUsuario(PedestrianAccessEntity acesso, Boolean sincronizarExclusao){
 		try {
-			// apaga o usu√°rio na catraca
+			// apaga o usu·rio na catraca
 			WhereClause whereClause = new WhereClause(new User(acesso.getId().intValue()));
 			Integer retorno = removeObjects("users", whereClause);
 			if (retorno == null)
-				throw new Exception("N√£o foi poss√≠vel remover o usu√°rio.");
+				throw new Exception("N„o foi possÌvel remover o usu·rio.");
 			
 			// Verifica se ser√£o necess√°rio apagar tambem em outras catracas ControlId
 			if (sincronizarExclusao) {
@@ -1269,7 +1269,7 @@ public class ControlIdDevice extends Device {
 							&& device.isMirrorDevice()) {
 						ControlIdDevice otherDevice = (ControlIdDevice) device;
 						
-						// apaga o usu√°rio na catraca
+						// apaga o usu·rio na catraca
 						retorno = otherDevice.removeObjects("users", whereClause);
 						if (retorno == null)
 							throw new Exception("Erro ao espelhar exclus√£o na catraca " + otherDevice.getName());
@@ -1482,8 +1482,8 @@ public class ControlIdDevice extends Device {
 		private String name;
 		private String password;
 		private String salt;
-		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usu√°rio √© v√°lido.
-		private Integer end_time; // opcional, Inteiro rperesentando at√© que data e hora (unix timestamp) o usu√°rio √© v√°lido.
+		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usu·rio √© v√°lido.
+		private Integer end_time; // opcional, Inteiro rperesentando at√© que data e hora (unix timestamp) o usu·rio √© v√°lido.
 		
 		public User(Integer id, String name, String password, String salt) {
 			this.id = id;

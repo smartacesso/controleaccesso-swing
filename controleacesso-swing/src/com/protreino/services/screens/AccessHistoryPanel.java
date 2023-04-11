@@ -55,7 +55,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 	
 	private JTable accessHistoryTable;
 	private List<LogPedestrianAccessEntity> historicoAcesso;
-	private String[] columns = {"CÃ³digo", "CartÃ£o","Tipo", "Nome", "Data do acesso", "Tipo de acesso"};
+	private String[] columns = {"Código", "Cartão","Tipo", "Nome", "Data do acesso", "Tipo de acesso"};
 	private Integer[] columnWidths = {50, 60, 60, 270, 120, 130};
 	 
 	private JComboBox<SelectItem> filtroTipoJComboBox;
@@ -345,7 +345,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		}
 		accessHistoryTable.setModel(dataModel);
 		//int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
-		//countLabel.setText("NÃºmero de registros: " + numAcessos);
+		//countLabel.setText("Número de registros: " + numAcessos);
 		countLabel.setText("PÃ¡g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}

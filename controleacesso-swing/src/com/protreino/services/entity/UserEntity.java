@@ -133,6 +133,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Column(name="HABILITA_EXPEDIDORA", nullable=true)
 	private Boolean expedidora = false;
 	
+	@Type(type="org.hibernate.type.NumericBooleanType")
+	@Column(name="HABILITA_PEDESTRE", nullable=true)
+	private Boolean habilitaPedestre;
+	
 	public UserEntity() {}
 
 	public UserEntity(Long id, String loginName, String status, Date creationDate, String idClient, String name,
@@ -176,6 +180,23 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.expedidora = expedidora;
 	}
 	
+	public UserEntity(Long id, String loginName, String password, String status, Date creationDate, String idClient, String name,
+			Date lastSync, Integer qtdePadraoDigitosCartao, String unidade, String chaveIntegracaoComtele, Boolean expedidora, Boolean habilitaPedestre) {
+		this.id = id;
+		this.loginName = loginName;
+		this.password = password;
+		this.status = status;
+		this.creationDate = creationDate;
+		this.idClient = idClient;
+		this.name = name;
+		this.lastSync = lastSync;
+		this.qtdePadraoDigitosCartao = qtdePadraoDigitosCartao;
+		this.unitName = unidade;
+		this.chaveIntegracaoComtele = chaveIntegracaoComtele;
+		this.expedidora = expedidora;
+		this.habilitaPedestre = habilitaPedestre;
+	}
+	
 	public void update(UserEntity user) {
 		this.setEmail(user.getEmail() != null ? user.getEmail() : null);
 		this.setLoginName(user.getLoginName() != null ? user.getLoginName() : "");
@@ -186,6 +207,7 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.setRemoved(user.getRemoved());
 		this.setDataRemovido(user.getDataRemovido());
 		this.setDataAlteracao(new Date());
+		this.setHabilitaPedestre(user.getHabilitaPedestre());;
 	}
 
 	public Long getId() {
@@ -417,6 +439,14 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 
 	public void setExpedidora(Boolean expedidora) {
 		this.expedidora = expedidora;
+	}
+
+	public Boolean getHabilitaPedestre() {
+		return habilitaPedestre;
+	}
+
+	public void setHabilitaPedestre(Boolean habilitaPedestre) {
+		this.habilitaPedestre = habilitaPedestre;
 	}
 
 }

@@ -254,7 +254,7 @@ public class PedestrianScreen extends JFrame {
 		welcomeLabel.setForeground(firstColor);
 		welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		JLabel insiraCodigoLabel = new JLabel("Digite seu C贸digo");
+		JLabel insiraCodigoLabel = new JLabel("Digite seu C骴igo");
 		insiraCodigoLabel.setFont(bigFont);
 		insiraCodigoLabel.setForeground(firstColor);
 		insiraCodigoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -266,7 +266,7 @@ public class PedestrianScreen extends JFrame {
 		codigoTextField.setForeground(Main.firstColor);
 		codigoTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroCodigoLabel = new JLabel("C贸digo n茫o encontrado");
+		messageErroCodigoLabel = new JLabel("C骴igo n鉶 encontrado");
 		messageErroCodigoLabel.setFont(normalFont);
 		messageErroCodigoLabel.setForeground(Color.RED);
 		messageErroCodigoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -279,7 +279,7 @@ public class PedestrianScreen extends JFrame {
 		sampleLabel = new JLabel(semDigitalImageIcon);
 		sampleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroDigitalLabel = new JLabel("Digital n茫o encontrada");
+		messageErroDigitalLabel = new JLabel("Digital n鉶 encontrada");
 		messageErroDigitalLabel.setFont(normalFont);
 		messageErroDigitalLabel.setForeground(Color.RED);
 		messageErroDigitalLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -436,7 +436,7 @@ public class PedestrianScreen extends JFrame {
 			bottomContainer.add(lbl1);
 			bottomContainer.add(catracasCombobox);
 			bottomContainer.add(Box.createHorizontalStrut(30));
-			JLabel lbl2 = new JLabel("Leitor biom茅trico: ");
+			JLabel lbl2 = new JLabel("Leitor biom閠rico: ");
 			lbl2.setForeground(firstColor);
 			bottomContainer.add(lbl2);
 			bottomContainer.add(leitorLabel);
@@ -768,7 +768,7 @@ public class PedestrianScreen extends JFrame {
 	}
 	
 	/**
-	 * Metodo chamado apos o leitor/catraca processar uma requisicao de acesso por C贸digo.
+	 * Metodo chamado apos o leitor/catraca processar uma requisicao de acesso por C骴igo.
 	 * O metodo exibe as mensagens na tela de acordo com o resultado da verificacao recebido
 	 * @param sample
 	 * @param verificationResult
@@ -818,7 +818,7 @@ public class PedestrianScreen extends JFrame {
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			setErroCodigo("Erro ao procurar C贸digo.");
+			setErroCodigo("Erro ao procurar C骴igo.");
 		
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -928,7 +928,7 @@ public class PedestrianScreen extends JFrame {
     		switch (resultadoVerificacao) {
 	    		case ERROR:
 	    			if ("CODIGO".equals(tipoAcesso))
-	    				messageErroCodigoLabel.setText("Erro ao procurar C贸digo.");
+	    				messageErroCodigoLabel.setText("Erro ao procurar C骴igo.");
 	    			else if ("DIGITAL".equals(tipoAcesso)) {
 	    				messageErroDigitalLabel.setText("Erro ao procurar digital.");
 	    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
@@ -939,13 +939,13 @@ public class PedestrianScreen extends JFrame {
 	    		case NOT_FOUND:
 	    			if (!"FACIAL".equals(tipoAcesso)) {
 		    			if ("CODIGO".equals(tipoAcesso))
-		    				messageErroCodigoLabel.setText("C贸digo n茫o encontrado.");
+		    				messageErroCodigoLabel.setText("C骴igo n鉶 encontrado.");
 		    			else {
-		    				messageErroDigitalLabel.setText("Digital n茫o encontrada.");
+		    				messageErroDigitalLabel.setText("Digital n鉶 encontrada.");
 		    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
 		    			}
 	    			} else if("FACIAL".equals(tipoAcesso)) {
-	    				messageErroDigitalLabel.setText("Face n茫o reconhecida ou mal posicionada.");
+	    				messageErroDigitalLabel.setText("Face n鉶 reconhecida ou mal posicionada.");
 	    			}
 	    			break;
 	    		case NOT_ALLOWED:
@@ -1066,7 +1066,7 @@ public class PedestrianScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			if ("CODIGO".equals(tipoAcesso))
-				messageErroCodigoLabel.setText("Erro ao procurar C贸digo. " + e.getMessage());
+				messageErroCodigoLabel.setText("Erro ao procurar C骴igo. " + e.getMessage());
 			else if ("DIGITAL".equals(tipoAcesso))
 				messageErroDigitalLabel.setText("Erro ao procurar digital. " + e.getMessage());
 			else if ("FACIAL".equals(tipoAcesso))

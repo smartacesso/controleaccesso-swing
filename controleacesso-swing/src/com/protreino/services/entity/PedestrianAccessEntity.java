@@ -817,7 +817,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			boolean alterar = false;
 			if(templates != null && !templates.isEmpty()) {
 				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, j√° altera
+					//tamanhos diferentes, j· altera
 					alterar = true;
 					if(Main.desenvolvimento)
 						System.out.println("Digitais diferentes");

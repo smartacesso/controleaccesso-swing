@@ -156,7 +156,7 @@ public class NitgenDevice extends Device {
                 			
 							} else {
                 				if (bsp.GetErrorCode() != 516)
-                					System.out.println("Erro durante a coleta. C√≥digo: " + bsp.GetErrorCode());
+                					System.out.println("Erro durante a coleta. CÛdigo: " + bsp.GetErrorCode());
                 			}
 						
 						} catch (Throwable e) {
@@ -177,7 +177,7 @@ public class NitgenDevice extends Device {
 					getDeviceCard().openAthleteScreen();
 			}
 		} else
-			throw new Exception("N√£o foi poss√≥vel conectar.");
+			throw new Exception("N„o foi possÌvel conectar.");
 	}
 
 	@Override
@@ -262,7 +262,7 @@ public class NitgenDevice extends Device {
 		
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configura√ß√µes: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configuraÁıes: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();
@@ -357,14 +357,14 @@ public class NitgenDevice extends Device {
 
 	@Override
 	public void processAccessRequest(Object obj) {
-		// Primeiro √© feito o processo de match para identificar o usu√°rio.
-		// Ap√≥s a identifica√ß√£o √© verificado se o acesso √© permitido.
+		// Primeiro √© feito o processo de match para identificar o usu·rio.
+		// Ap√≥s a identificaÁ„o √© verificado se o acesso √© permitido.
 		try {
 			// digital coletada agora
 			INPUT_FIR capturedInputFIR = bsp.new INPUT_FIR();
 			capturedInputFIR.SetFIRHandle(capturedFIRHandle);
 			
-			Integer nivelSeguranca = getConfigurationValueAsInteger("N√≠vel de seguran√ßa do reconhecimento");
+			Integer nivelSeguranca = getConfigurationValueAsInteger("NÌvel de seguranÁa do reconhecimento");
 			if (nivelSeguranca == 0) {
 				nivelSeguranca = 6;
 			}
@@ -379,12 +379,12 @@ public class NitgenDevice extends Device {
 				if (bsp.GetErrorCode() == NBioBSPJNI.ERROR.NBioAPIERROR_INDEXSEARCH_IDENTIFY_FAIL)  {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital N√£o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 				
 				} else {
 					verificationResult = VerificationResult.ERROR;
 					if (createNotification)
-						Utils.createNotification("Erro na verifica√ß√£o. C√≥digo: " + bsp.GetErrorCode(), NotificationType.BAD);
+						Utils.createNotification("Erro na verificaÁ„o. CÛdigo: " + bsp.GetErrorCode(), NotificationType.BAD);
 				}
 				
 			} else {
@@ -400,7 +400,7 @@ public class NitgenDevice extends Device {
 				else {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital N√£o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
 				}
 			}
 			
@@ -408,7 +408,7 @@ public class NitgenDevice extends Device {
 			e.printStackTrace();
 			verificationResult = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Erro na verifica√ß√£o", NotificationType.BAD);
+				Utils.createNotification("Erro na verificaÁ„o", NotificationType.BAD);
 		}
 	}
 

@@ -465,7 +465,7 @@ public class MainScreen extends JFrame {
 			});
 			menuOpcoes.add(liberarAcessoMenuItem);
 
-			preferenciasMenuItem = new JMenuItem("Prefer√™ncias");
+			preferenciasMenuItem = new JMenuItem("PreferÍncias");
 			preferenciasMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -486,7 +486,7 @@ public class MainScreen extends JFrame {
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("N√£o foi poss√≠vel abri as prefer√™ncias", NotificationType.BAD);
+						Utils.createNotification("N„o foi possÌvel abri as preferÍncias", NotificationType.BAD);
 					}
 				}
 			});
@@ -511,7 +511,7 @@ public class MainScreen extends JFrame {
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Nao foi poss√≠vel sincronizar os usu√°rios", NotificationType.BAD);
+						Utils.createNotification("Nao foi possÌvel sincronizar os usu·rios", NotificationType.BAD);
 					}
 				}
 			});
@@ -526,7 +526,7 @@ public class MainScreen extends JFrame {
 			});
 			menuConfiguracoes.add(logsMenuItem);
 			
-			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualiza√ßoes");
+			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizaÁıes");
 			procurarAtualizacaoMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -610,6 +610,9 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
+		if(Main.loggedUser.getHabilitaPedestre() == false) {
+			return;
+		}
 		PedestrianAccessEntity pedestre = p;
 		if(pedestre == null) {
 			pedestre = new PedestrianAccessEntity();
@@ -801,8 +804,8 @@ public class MainScreen extends JFrame {
 		}else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
-			connectionStatusLabel.setToolTipText("<html>Sem conex√£o com servidor " + servidor + " os dados n√£o est√£o sendo sincronizados."
-					+ "<br/>Verifique sua internet ou verifique se o servidor est√° ligado!</html>" );
+			connectionStatusLabel.setToolTipText("<html>Sem conex√£o com servidor " + servidor + " os dados n„o est√£o sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor est· ligado!</html>" );
 		}
 		
 	}
@@ -901,7 +904,7 @@ public class MainScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.mainScreen
-					.addEvento("N√£o foi possivel abrir a pasta de logs. Navegue at√© ela manualmente: " + Main.logPath);
+					.addEvento("N„o foi possivel abrir a pasta de logs. Navegue at√© ela manualmente: " + Main.logPath);
 		}
 	}
 

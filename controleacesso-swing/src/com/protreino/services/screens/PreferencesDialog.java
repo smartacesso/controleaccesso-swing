@@ -187,7 +187,7 @@ public class PreferencesDialog extends JDialog {
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
 		
-		JButton resetarButton = new JButton("Valores padrão");
+		JButton resetarButton = new JButton("Valores padr�o");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
 		salvarButton.setPreferredSize(new Dimension(80, 30));
@@ -230,7 +230,7 @@ public class PreferencesDialog extends JDialog {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//Amanhã fazer a configuração da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
+//Amanhã fazer a configura��es da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
 		});
 
