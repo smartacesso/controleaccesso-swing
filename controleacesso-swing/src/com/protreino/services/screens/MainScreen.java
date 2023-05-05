@@ -102,6 +102,7 @@ public class MainScreen extends JFrame {
    // private LoginPanel loginPanel;
 	private AccessListPanel listaAcessoPanel;
 	private AccessHistoryPanel historicoAcessoPanel;
+	private ReconhecimentoFacialPanel reconhecimentoFacialPanel;
 	private DevicefromServerPanel devicefromServerPanel;
 	private AccessCardListPanel listaCartoesPanel;
 	private ImageIcon adicionarIcon;
@@ -227,6 +228,14 @@ public class MainScreen extends JFrame {
 		historicoAcessoPanel = new AccessHistoryPanel();
 		tabbedPane.addTab("Historico de acesso", historicoAcessoPanel);
 		label = new JLabel("Historico de acesso");
+		label.setPreferredSize(new Dimension(150, 25));
+		label.setForeground(Main.firstColor);
+		tabbedPane.setTabComponentAt(position, label);
+		position++;
+		
+		reconhecimentoFacialPanel = new ReconhecimentoFacialPanel();
+		tabbedPane.addTab("Reconhecimento Facial - HikiVision", reconhecimentoFacialPanel);
+		label = new JLabel("Reconhecimento Facial");
 		label.setPreferredSize(new Dimension(150, 25));
 		label.setForeground(Main.firstColor);
 		tabbedPane.setTabComponentAt(position, label);
