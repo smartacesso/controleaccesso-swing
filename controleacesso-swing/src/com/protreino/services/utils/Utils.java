@@ -470,6 +470,14 @@ public class Utils {
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+		
+		// Preferencias do nova Integração HIKIVISION
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
+				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
+				"Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionPasswordServerConnection",
+				"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null)
