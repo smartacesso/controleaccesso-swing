@@ -610,7 +610,7 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-		if(Main.loggedUser.getHabilitaPedestre() == false) {
+		if(Boolean.FALSE.equals(Main.loggedUser.getHabilitaPedestre())) {
 			return;
 		}
 		PedestrianAccessEntity pedestre = p;

@@ -100,7 +100,7 @@ import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.AttachedTO;
-import com.protreino.services.to.PreferenceTO;
+import com.protreino.services.to.PreferenceTO; 
 
 import javazoom.jl.player.Player;
 
@@ -1367,8 +1367,9 @@ public class Utils {
 	}
 
 	public static boolean isNullOrEmpty(String string) {
-		if (string == null || string.trim().isEmpty())
+		if (string == null || string.trim().isEmpty()) {
 			return true;
+		}
 		return false;
 	}
 
