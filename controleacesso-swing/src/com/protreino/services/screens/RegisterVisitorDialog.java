@@ -77,6 +77,7 @@ import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.CropImage;
 import com.protreino.services.utils.EncryptionUtils;
+import com.protreino.services.utils.HIkiVisionIntegrationService;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.QRCodeUtils;
 import com.protreino.services.utils.SelectItem;
@@ -196,6 +197,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JTextField loginTextField;
 	private JFormattedTextField senhaTextField;
 	private JComboBox<SelectItem> tipoAcessoJComboBox;
+	private HIkiVisionIntegrationService hIkiVisionIntegrationService;
 
 	public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
 		loadImages();
@@ -277,6 +279,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainContentPane.add(tabbedPane, BorderLayout.CENTER);
 		mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
 		mainContentPane.add(barraLateralPanel, BorderLayout.WEST);
+		
+		hIkiVisionIntegrationService = HIkiVisionIntegrationService.getInstace();
+		
+		hIkiVisionIntegrationService.getSystemInformation();
 		
 		addWindowListener(new WindowAdapter() {
 		    @Override

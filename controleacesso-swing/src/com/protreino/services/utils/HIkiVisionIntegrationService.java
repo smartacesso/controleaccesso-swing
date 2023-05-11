@@ -18,16 +18,16 @@ import okhttp3.Response;
 
 public class HIkiVisionIntegrationService {
 
-	private String url;
-	private String user;
-	private String password;
+	private static String url;
+	private static String user;
+	private static String password;
 
 	private static HIkiVisionIntegrationService instance;
 
 	private HIkiVisionIntegrationService() {
 	}
 
-	public HIkiVisionIntegrationService getInstace() {
+	public static HIkiVisionIntegrationService getInstace() {
 		if (instance == null) {
 			url = Utils.getPreference("hikivisionServerRecognizerURL");
 			user = Utils.getPreference("hikivisionUserServerConnection");
@@ -70,6 +70,7 @@ public class HIkiVisionIntegrationService {
 	private OkHttpClient getOkHttpClient() {
 		final DigestAuthenticator authenticator = new DigestAuthenticator(new Credentials(user, password));
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
+		
 		
 		return new OkHttpClient.Builder()
 				.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
