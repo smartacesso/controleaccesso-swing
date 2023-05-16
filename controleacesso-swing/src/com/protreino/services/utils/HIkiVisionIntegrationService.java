@@ -12,8 +12,10 @@ import com.burgstaller.okhttp.digest.DigestAuthenticator;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HIkiVisionIntegrationService {
@@ -52,25 +54,56 @@ public class HIkiVisionIntegrationService {
 				.addHeader("Content-Type", "application/json")
 				.build();
 		
-//		Response response = client.newCall(request).execute();
+		try {
+			Response response = client.newCall(request).execute();
+			System.out.println(response.body().string());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void listarDisposivos() {
+		final String body = "{"
+				+ "    \"SearchDescription\": {"
+				+ "        \"position\": 0,"
+				+ "        \"maxResult\": 100,"
+				+ "        \"Filter\": {"
+				+ "            \"key\": \"\","
+				+ "            \"devType\": \"\","
+				+ "            \"protocolType\": ["
+				+ "                \"ehomeV5\""
+				+ "            ],"
+				+ "            \"devStatus\": ["
+				+ "                \"online\","
+				+ "                \"offline\""
+				+ "            ]"
+				+ "        }"
+				+ "    }"
+				+ "}";
 
-		client.newCall(request)
-		.enqueue(new Callback() {
-			public void onResponse(Call call, Response response) throws IOException {
-				System.out.println(response.body().string());
-			}
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
 
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
-
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/ContentMgmt/DeviceMgmt/deviceList?format=json")
+				.post(requestBody)
+				.addHeader("Content-Type", "application/json")
+				.build();
+		
+		try {
+			Response response = client.newCall(request).execute();
+			System.out.println(response.body().string());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private OkHttpClient getOkHttpClient() {
 		final DigestAuthenticator authenticator = new DigestAuthenticator(new Credentials(user, password));
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
-		
 		
 		return new OkHttpClient.Builder()
 				.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))

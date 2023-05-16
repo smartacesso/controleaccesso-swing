@@ -282,7 +282,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		hIkiVisionIntegrationService = HIkiVisionIntegrationService.getInstace();
 		
-		hIkiVisionIntegrationService.getSystemInformation();
+		hIkiVisionIntegrationService.listarDisposivos();
 		
 		addWindowListener(new WindowAdapter() {
 		    @Override
