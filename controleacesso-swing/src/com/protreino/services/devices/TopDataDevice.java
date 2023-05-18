@@ -954,8 +954,10 @@ public class TopDataDevice extends Device {
 	@Override
 	public void disconnect(String... args) throws Exception {
 		super.disconnect();
-		if (easyInner != null)
-			encerrarConexao(args != null && args.length > 0 && "SAIR".equals(args[0]));
+		if (easyInner != null) {
+			encerrarConexao(args != null && args.length > 0 && "SAIR".equals(args[0]));			
+		}
+		
 		if (indexSearchEngine != null)  {
 			indexSearchEngine.dispose();
 			indexSearchEngine = null;
@@ -2035,10 +2037,11 @@ public class TopDataDevice extends Device {
 			}
 
 			EasyInner.DefinirPadraoCartao(getConfigurationValueAsInteger("Padr„o de cart„o"));
-			if (modo == Enumeradores.MODO_OFF_LINE)
+			if (modo == Enumeradores.MODO_OFF_LINE) {
 				EasyInner.ConfigurarInnerOffLine();
-			else
+			} else {
 				EasyInner.ConfigurarInnerOnLine();
+			}
 			EasyInner.ConfigurarAcionamento1(tipoCatraca, tempoLiberacao);
 			EasyInner.ConfigurarAcionamento2(tipoCatraca, tempoLiberacao);
 			EasyInner.HabilitarTeclado(habilitaTeclado, ecoarAsteriscos);
@@ -2056,9 +2059,10 @@ public class TopDataDevice extends Device {
 				EasyInner.InserirQuantidadeDigitoVariavel(14);
 				int retDigitos = EasyInner.InserirQuantidadeDigitoVariavel(16);
 				System.out.println("Configura digitos vari√°veis: " + retDigitos);
+			} else {
+				EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDigitosCartao);				
 			}
-			else
-				EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDigitosCartao);
+			
 			EasyInner.ConfigurarLeitor1(valorLeitor1);
 			EasyInner.ConfigurarLeitor2(valorLeitor2);
 			EasyInner.DefinirFuncaoDefaultSensorBiometria(Enumeradores.REGISTRAR_CONFORME_GIRO);
@@ -2169,8 +2173,11 @@ public class TopDataDevice extends Device {
 			EasyInner.DefinirMensagemSaidaOffLine(0, mensagemSaidaOffLine);
 			EasyInner.DefinirMensagemPadraoOffLine(1, mensagemPadraoOffLine);
 			EasyInner.EnviarMensagensOffLine(inner.Numero);
-			if(fechaPorta)
+			
+			if(fechaPorta) {
 				EasyInner.FecharPortaComunicacao();
+			}
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
