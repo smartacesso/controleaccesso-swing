@@ -75,6 +75,8 @@ import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.utils.CropImage;
 import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.HIkiVisionIntegrationService;
@@ -282,7 +284,15 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		hIkiVisionIntegrationService = HIkiVisionIntegrationService.getInstace();
 		
-		hIkiVisionIntegrationService.listarDisposivos();
+		hIkiVisionIntegrationService.getSystemInformation();
+		HikivisionDeviceTO devices = hIkiVisionIntegrationService.listarDisposivos();
+		
+		if(devices != null) {
+			for(MatchList matchList : devices.getSearchResult().getMatchList()) {
+				boolean usuarioJaEstaCadastrado = hIkiVisionIntegrationService.isUsuarioJaCadastrado(matchList.getDevice().getDevIndex(), "65465465");
+				System.out.println("usuarioJaEstaCadastrado: " + usuarioJaEstaCadastrado);
+			}
+		}
 		
 		addWindowListener(new WindowAdapter() {
 		    @Override
@@ -325,8 +335,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 		
 		String appPedestre = buscaParametroPeloNome("Habilita App do Pedestre");
-		if(appPedestre != null && !"".equals(appPedestre))
-			habilitaAppPedestre = Boolean.valueOf(appPedestre);
+		if(appPedestre != null && !"".equals(appPedestre)) {
+			habilitaAppPedestre = Boolean.valueOf(appPedestre);			
+		}
 	}
 
 	private JPanel montarPanelDadosBasicos() {

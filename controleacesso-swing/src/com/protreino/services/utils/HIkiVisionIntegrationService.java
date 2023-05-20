@@ -3,12 +3,15 @@ package com.protreino.services.utils;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
 import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
 import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
+import com.google.gson.Gson;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -23,6 +26,7 @@ public class HIkiVisionIntegrationService {
 	private static String url;
 	private static String user;
 	private static String password;
+	private static Gson gson;
 
 	private static HIkiVisionIntegrationService instance;
 
@@ -39,13 +43,15 @@ public class HIkiVisionIntegrationService {
 				throw new IllegalArgumentException("Url connection não pode ser nula");
 			}
 			
+			gson = new Gson();
+			
 			instance = new HIkiVisionIntegrationService();
 		}
 
 		return instance;
 	}
 
-	public void getSystemInformation() {
+	public boolean getSystemInformation() {
 		OkHttpClient client = getOkHttpClient();
 
 		Request request = new Request.Builder()
@@ -56,15 +62,53 @@ public class HIkiVisionIntegrationService {
 		
 		try {
 			Response response = client.newCall(request).execute();
-			System.out.println(response.body().string());
+			return response.isSuccessful();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
+		return false;
 	}
 	
-	public void listarDisposivos() {
+	public boolean isUsuarioJaCadastrado(final String deviceId, final String id) {
+		final String uuid = UUID.randomUUID().toString();
+		final String body = "{"
+				+ "		\"UserInfoSearchCond\": {"
+				+ "			\"searchID\": \""+ uuid +"\","
+				+ "			\"searchResultPosition\": 0,"
+				+ "			\"maxResults\": 1,"
+				+ "			\"EmployeeNoList\" : [{"
+				+ "				\"employeeNo\": \""+ id +"\""
+				+ "			}]"
+				+ "		}"
+				+ "	}";
+
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/UserInfo/Search?format=json&devIndex=" + deviceId)
+				.post(requestBody)
+				.addHeader("Content-Type", "application/json")
+				.build();
+		
+		try {
+			Response response = client.newCall(request).execute();
+			return response.isSuccessful();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
+	public void adicionarUsuario(final String deviceId ) {
+		
+	}
+	
+	public HikivisionDeviceTO listarDisposivos() {
 		final String body = "{"
 				+ "    \"SearchDescription\": {"
 				+ "        \"position\": 0,"
@@ -94,11 +138,15 @@ public class HIkiVisionIntegrationService {
 		
 		try {
 			Response response = client.newCall(request).execute();
-			System.out.println(response.body().string());
+			if(response.isSuccessful()) {
+				return gson.fromJson(response.peekBody(2048).string(), HikivisionDeviceTO.class);
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		return null;
 	}
 	
 	private OkHttpClient getOkHttpClient() {
