@@ -48,7 +48,6 @@ public class HIkiVisionIntegrationService {
 			instance = new HIkiVisionIntegrationService();
 		}
 
-		
 		return instance;
 	}
 
