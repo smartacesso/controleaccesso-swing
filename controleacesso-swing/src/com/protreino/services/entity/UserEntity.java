@@ -67,6 +67,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Temporal( TemporalType.TIMESTAMP)
 	@Column(name="LAST_SYNC_LOG", nullable=true, length=11)
 	private Date lastSyncLog;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="LAST_SYNC_HIKIVISION", nullable=true, length=11)
+	private Date lastSyncHikivision;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="LAST_SYNC_USER", nullable=true, length=11)
@@ -449,4 +453,11 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.habilitaPedestre = habilitaPedestre;
 	}
 
+	public Date getLastSyncHikivision() {
+		return lastSyncHikivision;
+	}
+
+	public void setLastSyncHikivision(Date lastSyncHikivision) {
+		this.lastSyncHikivision = lastSyncHikivision;
+	}
 }

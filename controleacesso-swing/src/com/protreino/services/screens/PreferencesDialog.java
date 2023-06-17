@@ -45,7 +45,7 @@ public class PreferencesDialog extends JDialog {
 	private Map<String, FieldTO> fieldMap;
 	
 	public PreferencesDialog() {
-		super(Main.mainScreen, "PreferÃªncias", true);
+		super(Main.mainScreen, "Preferências", true);
 		
 		loadImages();
 		

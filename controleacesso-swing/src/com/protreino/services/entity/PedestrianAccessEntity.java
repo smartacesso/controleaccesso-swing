@@ -192,10 +192,15 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "and (obj.removido is null or obj.removido = false) "
 					  + "order by obj.id asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findBylastID",
-	query = "select obj from PedestrianAccessEntity obj "
-		  + "where obj.removido is null and "
-		  + "obj.removido = false "
-		  + "order by obj.id desc"),
+				query = "select obj from PedestrianAccessEntity obj "
+					  + "where obj.removido is null and "
+					  + "obj.removido = false "
+					  + "order by obj.id desc"),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllWithPhotoByLastSync",
+				query = "select obj from PedestrianAccessEntity obj " +
+						"where obj.foto != null " +
+						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION" +
+						"order by obj.id asc")
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
@@ -423,7 +428,11 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Type(type = "org.hibernate.type.NumericBooleanType")
 	@Column(name="INVISIVEL", nullable=true, length=11)
 	private Boolean invisivel = false;
-	
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="DATA_CADASTRO_FOTO_HIKIVISION", nullable=true, length=30)
+	private Date dataCadastroFotoNaHikivision;
+
 	@Transient
 	private Integer origemCatraca;
 	
@@ -595,6 +604,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.dataFimPeriodo = athleteAccessTO.getDataFimPeriodo();
 		this.qtdAcessoAntesSinc = athleteAccessTO.getQtdAcessoAntesSinc();
 		this.idUsuario = athleteAccessTO.getIdUsuario();
+		this.dataCadastroFotoNaHikivision = athleteAccessTO.getDataCadastroFotoNaHikivision();
 		
 		//Dados de acesso
 		this.login = athleteAccessTO.getLogin();
@@ -700,7 +710,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			.append(login != null ? login : "").append(";")
 			.append(senha != null ? senha : "").append(";")
 			.append(tipoAcesso != null ? tipoAcesso : "").append(";")
-			.append(tipoQRCode != null ? tipoQRCode : "").append(";");
+			.append(tipoQRCode != null ? tipoQRCode : "").append(";")
+			.append(dataCadastroFotoNaHikivision != null ? dataCadastroFotoNaHikivision.getTime() : "");
 			
 		
 		if(this.mensagens != null) {
@@ -790,6 +801,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.dataFimPeriodo = athleteAccessTO.getDataFimPeriodo();
 		this.qtdAcessoAntesSinc = athleteAccessTO.getQtdAcessoAntesSinc();
 		this.idUsuario = athleteAccessTO.getIdUsuario();
+		this.dataCadastroFotoNaHikivision = athleteAccessTO.getDataCadastroFotoNaHikivision();
 		
 		//Dados de acesso
 		this.login = athleteAccessTO.getLogin();
@@ -857,10 +869,13 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 				novasDigitais = true;
 			}
 		} else {
-			if(Main.desenvolvimento)
+			if(Main.desenvolvimento) {
 //				System.out.println("Sem digitais no servidor!");
-			if (templates != null)
+			}
+
+			if (templates != null) {
 				templates.clear();
+			}
 		}
 		
 		//equipamentos
@@ -1594,6 +1609,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setNomeUuarioQueCriou(String nomeUuarioQueCriou) {
 		this.nomeUuarioQueCriou = nomeUuarioQueCriou;
+	}
+
+	public Date getDataCadastroFotoNaHikivision() {
+		return dataCadastroFotoNaHikivision;
+	}
+
+	public void setDataCadastroFotoNaHikivision(Date dataCadastroFotoNaHikivision) {
+		this.dataCadastroFotoNaHikivision = dataCadastroFotoNaHikivision;
 	}
 	
 }
