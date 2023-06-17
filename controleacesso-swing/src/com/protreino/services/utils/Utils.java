@@ -116,6 +116,12 @@ public class Utils {
 	private static List<JDialog> notifications = new ArrayList<JDialog>();
 	private static List<PreferenceTO> defaultPreferencesList;
 
+	public static boolean isHikivisionConfigValid() {
+		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
+
+		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
+	}
+
 	public static void sleep(long tempo) {
 		try {
 			Thread.sleep(tempo);

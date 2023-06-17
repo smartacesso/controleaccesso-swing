@@ -17,7 +17,7 @@ public abstract class Configurations {
 	public static final int TIME_CHECK_STATUS_CURRENT_REQUEST = 5000;
 	
 	public static final int TIME_LOG_ATHLETE_ACCESS = 1000 * 60 * 10;
-
+	public static final int TIME_SYNC_HIKIVISION = 1000 * 60 * 60;
 	public static final int TIME_LOG_USER_ACCESS_LIST = 1000 * 60 * 10;
 	
 	public static final int TIME_DATA_SENT = 2000;

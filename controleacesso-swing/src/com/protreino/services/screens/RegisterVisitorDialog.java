@@ -57,8 +57,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
@@ -79,7 +77,7 @@ import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.utils.CropImage;
 import com.protreino.services.utils.EncryptionUtils;
-import com.protreino.services.utils.HIkiVisionIntegrationService;
+import com.protreino.services.utils.HikiVisionIntegrationService;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.QRCodeUtils;
 import com.protreino.services.utils.SelectItem;
@@ -199,7 +197,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JTextField loginTextField;
 	private JFormattedTextField senhaTextField;
 	private JComboBox<SelectItem> tipoAcessoJComboBox;
-	private HIkiVisionIntegrationService hIkiVisionIntegrationService;
+	private HikiVisionIntegrationService hikiVisionIntegrationService;
 
 	public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
 		loadImages();
@@ -224,16 +222,16 @@ public class RegisterVisitorDialog extends BaseDialog {
 		tabbedPane = new JTabbedPane();
 		
 		JPanel dadosBasicosPanel = montarPanelDadosBasicos();
-		tabbedPane.add("Dados bÃ¡sicos", dadosBasicosPanel);
-		JLabel label = new JLabel("Dados bÃ¡sicos");
+		tabbedPane.add("Dados básicos", dadosBasicosPanel);
+		JLabel label = new JLabel("Dados básicos");
 		label.setPreferredSize(new Dimension(120, 25));
 		label.setForeground(Main.firstColor);
 		label.setFont(tabHeaderFont);
 		tabbedPane.setTabComponentAt(0, label);
 
 		JPanel enderecoPanel = montarPanelEndereco();
-		tabbedPane.add("EndereÃ§o", enderecoPanel);
-		label = new JLabel("EndereÃ§o");
+		tabbedPane.add("Endereço", enderecoPanel);
+		label = new JLabel("Endereço");
 		label.setPreferredSize(new Dimension(100, 25));
 		label.setForeground(Main.firstColor);
 		label.setFont(tabHeaderFont);
@@ -281,17 +279,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainContentPane.add(tabbedPane, BorderLayout.CENTER);
 		mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
 		mainContentPane.add(barraLateralPanel, BorderLayout.WEST);
-		
-		hIkiVisionIntegrationService = HIkiVisionIntegrationService.getInstace();
-		
-		hIkiVisionIntegrationService.getSystemInformation();
-		HikivisionDeviceTO devices = hIkiVisionIntegrationService.listarDisposivos();
-		
-		if(devices != null) {
-			for(MatchList matchList : devices.getSearchResult().getMatchList()) {
-				boolean usuarioJaEstaCadastrado = hIkiVisionIntegrationService.isUsuarioJaCadastrado(matchList.getDevice().getDevIndex(), "65465465");
-				System.out.println("usuarioJaEstaCadastrado: " + usuarioJaEstaCadastrado);
-			}
+
+		if(Utils.isHikivisionConfigValid()) {
+			hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
 		}
 		
 		addWindowListener(new WindowAdapter() {
@@ -1997,6 +1987,77 @@ public class RegisterVisitorDialog extends BaseDialog {
 		escolherFotoDialog.pack();
 		escolherFotoDialog.setLocationRelativeTo(null);
 		escolherFotoDialog.setVisible(true);
+		escolherFotoDialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				if(fotoVisitante != null && hikiVisionIntegrationService != null) {
+					//TODO verificar se o cardNumber != null?
+					salvarFotoVisitanteHikivision();
+				}
+			}
+		});
+	}
+
+	private void salvarFotoVisitanteHikivision() {
+		final boolean isHikivisionServerOnline = hikiVisionIntegrationService.getSystemInformation();
+
+		if(Boolean.FALSE.equals(isHikivisionServerOnline)) {
+			criarDialogoServidorHikivisionNaoConectado();
+			return;
+		}
+
+		final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDisposivos();
+
+		if(devices != null && devices.getSearchResult().getTotalMatches() > 0) {
+			for(MatchList matchList : devices.getSearchResult().getMatchList()) {
+				boolean usuarioJaEstaCadastrado = hikiVisionIntegrationService.isUsuarioJaCadastrado(matchList.getDevice().getDevIndex(), visitante.getCardNumber());
+
+				if(Boolean.FALSE.equals(usuarioJaEstaCadastrado)) {
+					hikiVisionIntegrationService.adicionarUsuario(matchList.getDevice().getDevIndex(), visitante.getCardNumber(), visitante.getName());
+				}
+
+				hikiVisionIntegrationService.adicionarFotoUsuario(matchList.getDevice().getDevIndex(), visitante.getCardNumber(), fotoVisitante);
+			}
+
+			visitante.setDataCadastroFotoNaHikivision(new Date());
+		}
+	}
+
+	private void criarDialogoServidorHikivisionNaoConectado() {
+		JDialog hivisionServerNaoConectadoDialog = new JDialog();
+		hivisionServerNaoConectadoDialog.setIconImage(Main.favicon);
+		hivisionServerNaoConectadoDialog.setModal(true);
+		hivisionServerNaoConectadoDialog.setTitle("Servidor Hikivision não conectado");
+		hivisionServerNaoConectadoDialog.setResizable(false);
+		hivisionServerNaoConectadoDialog.setLayout(new BorderLayout());
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+		JLabel mensagemLabel = new JLabel("Servidor para cadastro facial indisponível, não é possível cadastrar fotos para os pedestres");
+		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+		JButton okButton = new JButton("Ok");
+		okButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		okButton.addActionListener(e -> {
+			hivisionServerNaoConectadoDialog.dispose();
+		});
+
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+		confirmarPanel.add(okButton);
+
+		mainPanel.add(mensagemLabel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarPanel);
+
+		hivisionServerNaoConectadoDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		hivisionServerNaoConectadoDialog.pack();
+		hivisionServerNaoConectadoDialog.setLocationRelativeTo(null);
+		hivisionServerNaoConectadoDialog.setVisible(true);
 	}
 
 	private void criarFileChooserEscolherFoto() {
@@ -2008,9 +2069,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 		String caminho = fd.getDirectory() + fd.getFile();
 		
 		if (caminho != null && !"".equals(caminho)) {
-			
-			if(caminho.endsWith(".png") || caminho.endsWith(".jpg") || caminho.endsWith(".jpeg"))
-					criarDialogoCropImage(caminho);
+			if(caminho.endsWith(".png") || caminho.endsWith(".jpg") || caminho.endsWith(".jpeg")) {
+				criarDialogoCropImage(caminho);
+			}
 		}
 	}
 
@@ -2032,6 +2093,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 		cropImageButton.addActionListener(e -> {
 			this.fotoVisitante = cropImagePanel.getCropedImage();
 			this.bufferedImage = cropImagePanel.getBufferedImage();
+
+			if(this.fotoVisitante == null || this.bufferedImage == null) {
+				return;
+			}
+
 			habilitaLabelImagemVisitante();
 			cropImageDialog.dispose();
 			escolherFotoDialog.dispose();
@@ -2064,13 +2130,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 				habilitaLabelImagemVisitante();
 				
 				webCamCaptureViewer.dispose();
+				escolherFotoDialog.dispose();
 			}
 		});
 		
 		webCamCaptureViewer.start();
 	}
 
-	public void habilitaLabelImagemVisitante() {
+	private void habilitaLabelImagemVisitante() {
 		openImageSelectButton.setIcon(new ImageIcon(resizeToIconFotoVisitante(bufferedImage)));
 		panelInternoLateral.remove(openImageSelectButton);
 		GridBagConstraints c = getNewGridBag(0, 0, 20, 5);
@@ -2078,7 +2145,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		barraLateralPanel.updateUI();
 	}
 
-	public void salvarImagemCapturada() {
+	private void salvarImagemCapturada() {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "jpg", baos);

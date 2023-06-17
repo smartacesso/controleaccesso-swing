@@ -1,4 +1,4 @@
-﻿package com.protreino.services.devices;
+package com.protreino.services.devices;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -44,15 +44,10 @@ import Luxand.FSDKCam.HCamera;
 public class FacialDevice extends Device {
 
 	public static final int ORIGEM_FACIAL = 888;
-	private final int ICON_SIZE = 128; // tamanho em px da miniatura das fotos que aparece no card
+	private final int ICON_SIZE = 128;
 
-	// Referencia sobre device path
-	// https://www.silabs.com/community/interface/knowledge-base.entry.html/2013/11/21/windows_usb_devicep-aGxD
-
-	private String devicePath; // identificador unico e completo do dispositivo no Windows. E uma longa string
-								// que e usada como chave pela SDK
-	private String cameraShortId; // sequencia de digitos extraida do devicePath, com apenas 8 caracteres, e
-									// melhor para apresentar ao usuario
+	private String devicePath;
+	private String cameraShortId;
 	private HCamera cameraHandle;
 	private HImage imageHandle;
 	private BufferedImage frameCapturado;
@@ -279,7 +274,7 @@ public class FacialDevice extends Device {
 							System.out.println("Image handle is null");
 							continue;
 						}
-						
+
 						Image awtImage[] = new Image[1];
 						if (FSDK.SaveImageToAWTImage(imageHandle, awtImage,
 								FSDK_IMAGEMODE.FSDK_IMAGE_COLOR_24BIT) == FSDK.FSDKE_OK) {
@@ -334,7 +329,7 @@ public class FacialDevice extends Device {
 												boolean atualiza = false;
 												if (VerificationResult.ALLOWED.equals(verificationResult)
 														|| VerificationResult.TOLERANCE_PERIOD
-																.equals(verificationResult)) {
+														.equals(verificationResult)) {
 													allowAccess();
 													atualiza = true;
 												} else if (!VerificationResult.NOT_FOUND.equals(verificationResult)) {
@@ -355,7 +350,7 @@ public class FacialDevice extends Device {
 
 												if (VerificationResult.ALLOWED.equals(verificationResult)
 														|| VerificationResult.TOLERANCE_PERIOD
-																.equals(verificationResult)) {
+														.equals(verificationResult)) {
 													allowAccess();
 												} else if (!VerificationResult.NOT_FOUND.equals(verificationResult)) {
 													denyAccess();
@@ -473,7 +468,7 @@ public class FacialDevice extends Device {
 
 		if (this.ipCamera != null) {
 			cameraHandle = new HCamera();
-			
+
 			System.out.println("INit");
 			FSDKCam.InitializeCapturing();
 			System.out.println("Pos INit");
@@ -487,7 +482,7 @@ public class FacialDevice extends Device {
 				System.out.println("Falha ao conectar.");
 				throw new Exception("Não foi possível abrir a câmera " + name);
 			}
-			
+
 			imageHandle = LuxandService.getInstance().grabFrame(cameraHandle);
 
 		} else {

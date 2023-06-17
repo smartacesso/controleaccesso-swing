@@ -66,7 +66,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, boolean useLogin, boolean usePassword, boolean loginInterno){
-		super(owner, "AutentificaÃ§Ã£o", true);
+		super(owner, "Autentificação", true);
 		
 		setPreferredSize(new Dimension(300,260));
 		setMinimumSize(getPreferredSize());
@@ -213,7 +213,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, String mensagemDialogSenha, String mensagemProgressDialog){
-		super(owner, "AutentificaÃ§Ã£o", true);
+		super(owner, "Autentificação", true);
 		this.mensagemProgressDialog = mensagemProgressDialog;
 		
 		setIconImage(Main.favicon);
@@ -226,9 +226,10 @@ public class AutenticationDialog extends JDialog {
 		passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		passwordField.setMaximumSize(passwordField.getPreferredSize());
 		
-		if (Main.desenvolvimento)
+		if (Main.desenvolvimento) {
 			passwordField.setText("123456");
-		
+		}
+
 		invalidCredentialsLabel = new JLabel(" ");
 		invalidCredentialsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		invalidCredentialsLabel.setForeground(Color.RED);
@@ -240,7 +241,7 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha invÃ¡lida!");
+					invalidCredentialsLabel.setText("Senha inválida!");
 					return;
 				}
 				invalidCredentialsLabel.setText(" ");

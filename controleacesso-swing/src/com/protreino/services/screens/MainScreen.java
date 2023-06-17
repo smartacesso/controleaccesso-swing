@@ -84,6 +84,7 @@ public class MainScreen extends JFrame {
 	private JMenuItem logoutInternoMenuItem;
 	private JMenuItem liberarAcessoMenuItem;
 	private JMenuItem preferenciasMenuItem;
+	private JMenuItem hikivisionManualSyncMenuItem;
 	private JMenuItem syncUsersMenuItem;
 	private JMenuItem logsMenuItem;
 	private JMenuItem procurarAtualizacaoMenuItem;
@@ -95,6 +96,7 @@ public class MainScreen extends JFrame {
 	private JScrollPane listaEventosScrollPane;
 	private JPanel listaEventosPanel;
 	private PanelWithLabel connectionStatusLabel;
+	private PanelWithLabel hikivisionConnectionStatusLabel;
 
 	private Container mainContentPane;
 	private JTabbedPane tabbedPane;
@@ -491,6 +493,36 @@ public class MainScreen extends JFrame {
 				}
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
+
+			hikivisionManualSyncMenuItem = new JMenuItem("Sincronismo manual de dispositivos");
+			hikivisionManualSyncMenuItem.addActionListener(
+				e -> {
+					try {
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
+								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						Boolean retornoAuthentication = autenticationDialog.authenticate();
+						if (retornoAuthentication == null) {
+							return;
+						}
+						if (retornoAuthentication) {
+							new SincronizacaoManualDialog();
+							int index = tabbedPane.getSelectedIndex();
+							buildUI();
+							tabbedPane.setSelectedIndex(index);
+						} else {
+							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
+					}
+				}
+			);
+
+			if(Utils.isHikivisionConfigValid()) {
+				menuConfiguracoes.add(hikivisionManualSyncMenuItem);
+			}
 			
 			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
 			syncUsersMenuItem.addActionListener(new ActionListener() {
@@ -801,13 +833,35 @@ public class MainScreen extends JFrame {
 			connectionStatusLabel.setLabelColor(new Color(90, 196, 126));
 			connectionStatusLabel.setText("Online");
 			connectionStatusLabel.setToolTipText("Conectado ao servidor: " + servidor);
-		}else {
+		} else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
 			connectionStatusLabel.setToolTipText("<html>Sem conexÃ£o com servidor " + servidor + " os dados não estÃ£o sendo sincronizados."
 					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
 		}
-		
+	}
+
+	public void setHikivisionConnectionStatusLabel(final Boolean online) {
+		String servidor = Utils.getPreference("hikivisionServerRecognizerURL");
+
+		if(hikivisionConnectionStatusLabel == null) {
+			hikivisionConnectionStatusLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 5, 0);
+		}
+
+		if(online == null) {
+			hikivisionConnectionStatusLabel.setLabelColor(Color.GRAY);
+			hikivisionConnectionStatusLabel.setText("Verificando Hikivision...");
+			hikivisionConnectionStatusLabel.setToolTipText(servidor);
+		} else if(online) {
+			hikivisionConnectionStatusLabel.setLabelColor(new Color(90, 196, 126));
+			hikivisionConnectionStatusLabel.setText("Hikivision: Online");
+			hikivisionConnectionStatusLabel.setToolTipText("Conectado ao servidor Hikivision: " + servidor);
+		} else {
+			hikivisionConnectionStatusLabel.setLabelColor(Color.RED);
+			hikivisionConnectionStatusLabel.setText("Hikivision: Offline");
+			hikivisionConnectionStatusLabel.setToolTipText("<html>Sem conexão com servidor " + servidor + " os dados não estão sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+		}
 	}
 	
 	private JPanel montarPanelEventos() {
@@ -829,11 +883,18 @@ public class MainScreen extends JFrame {
 				Main.loggedUser != null ? Main.loggedUser.getName() + " - " + Main.loggedUser.getLoginName() : "");
 		
 		setConnectionStatusLabel(null);
+		setHikivisionConnectionStatusLabel(null);
 
 		JPanel toggleButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		toggleButtonPanel.add(toggleEventosButton);
 		toggleButtonPanel.add(Box.createHorizontalStrut(10));
 		toggleButtonPanel.add(loggedUserLabel);
+
+		if(Utils.isHikivisionConfigValid()) {
+			toggleButtonPanel.add(Box.createHorizontalStrut(10));
+			toggleButtonPanel.add(hikivisionConnectionStatusLabel);
+		}
+
 		toggleButtonPanel.add(Box.createHorizontalStrut(10));
 		toggleButtonPanel.add(connectionStatusLabel);
 		

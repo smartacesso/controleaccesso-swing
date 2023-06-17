@@ -333,15 +333,15 @@ public class DeviceCard extends JPanel {
 					catch (Exception ex){
 						ex.printStackTrace();
 						JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.", 
-								"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
+								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 					
 					if (retornoAuthentication == null)
 						return;
 					if (!retornoAuthentication) {
-						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha invÃ¡lida", 
-								"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
+								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 				}
@@ -357,7 +357,7 @@ public class DeviceCard extends JPanel {
 						return;
 					motivoLiberacao = releaseReasonDialog.getReason();
 					if (Utils.isNullOrEmpty(motivoLiberacao)) {
-						Utils.createNotification("Ã‰ necessÃ¡rio informar um motivo.", NotificationType.BAD);
+						Utils.createNotification("É necessário informar um motivo.", NotificationType.BAD);
 						return;
 					}
 				}
