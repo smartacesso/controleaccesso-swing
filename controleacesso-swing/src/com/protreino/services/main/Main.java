@@ -2001,35 +2001,7 @@ public class Main {
 				}
 			}
 
-			/*
-			private void enviaLogsDeAcesso() throws Exception {
-				HashMap<String, Object> args = new HashMap<String, Object>();
-    			args.put("LAST_SYNC", new Date(lastSyncLog));
-    			
-    			Long lastSyncLogBackup = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
-    			
-    			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
-    					"LogPedestrianAccessEntity.findByAccessDateCount", args);
-    			System.out.println("Quantidade total de logs online: " + countLogs);
-    			
-    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByAccessDate", args, false);
-    			
-    			countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
-    					"LogPedestrianAccessEntity.findByCreateDateCount", args);
-    			System.out.println("Quantidade total de logs offline: " + countLogs);
-    			
-    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByCreateDate", args, false);
-    			
-    			lastSyncLog = lastSyncLogBackup;
-				
-				if (loggedUser != null) {
-					loggedUser.setLastSyncLog(new Date(lastSyncLog));
-					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
-				}
-				
-				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
-			}
-			*/
+
 			
 			@SuppressWarnings("unchecked")
 			private void enviaLogsDeAcesso() throws Exception {
@@ -2043,8 +2015,10 @@ public class Main {
     					getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCreateDate", args);
     			
     			if(logListOff != null) {
-    				if(logList == null)
-        				logList = new ArrayList<LogPedestrianAccessEntity>();
+    				if(logList == null) {
+    					logList = new ArrayList<LogPedestrianAccessEntity>();    					
+    				}
+    				
     				logList.addAll(logListOff);
     			}
     			
@@ -2074,7 +2048,7 @@ public class Main {
 				}
 				
 				HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/registerlog");
-				int responseCode = con.sendResponse(responseArray.toString()) ;
+				int responseCode = con.sendResponse(responseArray.toString());
 				if (responseCode != 200) {
 					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode 
 							+ "  Error String: " + con.getErrorString());
@@ -2096,9 +2070,14 @@ public class Main {
 	
 	@SuppressWarnings("unchecked")
 	public static void dateSync(String inicio, String fim) throws ParseException {
+		SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		
+		HashMap<String, Object> args = new HashMap<>();
+		args.put("CURRENT_DATE_INICIO", sdf2.parse(inicio));
+		args.put("CURRENT_DATE_FIM", sdf2.parse(fim));
 		
 		List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateUtil.
-				getResultList(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findUnsubmittedLogs");
+				getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCurrentDate", args);
 	
 		JsonArray responseArray = new JsonArray();
 		System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + listaAcessoNaoEnvidados.size() + " registros sincronizados manualmente para enviar");
