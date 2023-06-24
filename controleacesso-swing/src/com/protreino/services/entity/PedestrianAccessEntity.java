@@ -199,7 +199,7 @@ import com.protreino.services.utils.HibernateUtil;
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithPhotoByLastSync",
 				query = "select obj from PedestrianAccessEntity obj " +
 						"where obj.foto != null " +
-						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION" +
+						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION " +
 						"order by obj.id asc")
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {

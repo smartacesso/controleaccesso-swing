@@ -2008,19 +2008,32 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDisposivos();
 
-		if(devices != null && devices.getSearchResult().getTotalMatches() > 0) {
-			for(MatchList matchList : devices.getSearchResult().getMatchList()) {
-				boolean usuarioJaEstaCadastrado = hikiVisionIntegrationService.isUsuarioJaCadastrado(matchList.getDevice().getDevIndex(), visitante.getCardNumber());
+		if(devices == null || devices.getSearchResult().getTotalMatches() == 0) {
+			return;
+		}
+		
+		for(MatchList matchList : devices.getSearchResult().getMatchList()) {
+			final String deviceId = matchList.getDevice().getDevIndex();
+			final boolean usuarioJaEstaCadastrado = hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, visitante.getCardNumber());
 
-				if(Boolean.FALSE.equals(usuarioJaEstaCadastrado)) {
-					hikiVisionIntegrationService.adicionarUsuario(matchList.getDevice().getDevIndex(), visitante.getCardNumber(), visitante.getName());
+			if(Boolean.FALSE.equals(usuarioJaEstaCadastrado)) {
+				boolean isAdicionado = hikiVisionIntegrationService.adicionarUsuario(deviceId, visitante.getCardNumber(), visitante.getName());
+				
+				if(!isAdicionado) {
+					continue;
 				}
-
-				hikiVisionIntegrationService.adicionarFotoUsuario(matchList.getDevice().getDevIndex(), visitante.getCardNumber(), fotoVisitante);
+			}
+			
+			final boolean isFotoUsuarioJaCadastrada = hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(deviceId, visitante.getCardNumber());
+			if(isFotoUsuarioJaCadastrada) {
+				hikiVisionIntegrationService.atualizarFotoUsuario(deviceId, visitante.getCardNumber(), fotoVisitante);
+			} else {
+				hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, visitante.getCardNumber(), fotoVisitante);
 			}
 
-			visitante.setDataCadastroFotoNaHikivision(new Date());
 		}
+
+		visitante.setDataCadastroFotoNaHikivision(new Date());
 	}
 
 	private void criarDialogoServidorHikivisionNaoConectado() {
