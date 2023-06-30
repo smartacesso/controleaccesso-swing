@@ -66,7 +66,11 @@ public class HikiVisionIntegrationService {
 		
 		try {
 			Response response = client.newCall(request).execute();
-			return response.isSuccessful();
+			
+			final boolean isSuccessFul = response.isSuccessful();
+			response.close();
+			
+			return isSuccessFul;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,6 +107,8 @@ public class HikiVisionIntegrationService {
 			if(response.isSuccessful()) {
 				final HikivisionUserInfoTO responseBody = gson.fromJson(response.peekBody(2048).string(), HikivisionUserInfoTO.class);
 				final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
+				
+				response.close();
 				
 				System.out.println(String.format("Usuario %s já cadastrado no device %s: %b", idUser, deviceId, isUsuarioCadastrado));
 				
@@ -145,6 +151,7 @@ public class HikiVisionIntegrationService {
 				final FaceInfoSearchTO responseBody = gson.fromJson(response.peekBody(2048).string(), FaceInfoSearchTO.class);
 				final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 				
+				response.close();
 				System.out.println(String.format("Foto do wsuario %s já cadastrado no device %s: %b", idUser, deviceId, isUsuarioCadastrado));
 				
 				return isUsuarioCadastrado;
@@ -188,10 +195,13 @@ public class HikiVisionIntegrationService {
 				
 				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
 				
+				response.close();
 				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
 				
 				return isCadastradoComSucesso;
 			}
+			
+			response.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -224,11 +234,7 @@ public class HikiVisionIntegrationService {
 			
 			System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
 			
-			final boolean isSuccesful = response.isSuccessful();
-			
-			if(!isSuccesful) {
-				response.close();
-			}
+			response.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -255,14 +261,11 @@ public class HikiVisionIntegrationService {
 		try {
 			Response response = client.newCall(request).execute();
 			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.peekBody(2048).string(), FaceDataRecordResponseTO.class);
-			final boolean isSuccesful = response.isSuccessful();
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 			
 			System.out.println(String.format("Foto do usuario %s atualizada no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
 			
-			if(!isSuccesful) {
-				response.close();
-			}
+			response.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -291,6 +294,7 @@ public class HikiVisionIntegrationService {
 
 		try {
 			Response response = client.newCall(request).execute();
+			response.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -328,8 +332,13 @@ public class HikiVisionIntegrationService {
 		try {
 			Response response = client.newCall(request).execute();
 			if(response.isSuccessful()) {
-				return gson.fromJson(response.peekBody(2048).string(), HikivisionDeviceTO.class);
+				final HikivisionDeviceTO responseBody = gson.fromJson(response.peekBody(2048).string(), HikivisionDeviceTO.class);
+				response.close();
+
+				return responseBody;
 			}
+			
+			response.close();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
