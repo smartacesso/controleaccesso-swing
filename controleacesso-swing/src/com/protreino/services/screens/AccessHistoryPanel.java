@@ -121,7 +121,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		datePickersPanel.setLayout(new BoxLayout(datePickersPanel, BoxLayout.X_AXIS));
 		datePickersPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		datePickersPanel.add(filtroDataInicioDatePicker);
-		datePickersPanel.add(new JLabel(" atÃ© "));
+		datePickersPanel.add(new JLabel(" até "));
 		datePickersPanel.add(filtroDataFimDatePicker);
 		JPanel filtroDataPanel= new JPanel();
 		filtroDataPanel.setLayout(new BoxLayout(filtroDataPanel, BoxLayout.Y_AXIS));
@@ -346,7 +346,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		accessHistoryTable.setModel(dataModel);
 		//int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
 		//countLabel.setText("Número de registros: " + numAcessos);
-		countLabel.setText("PÃ¡g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 
@@ -357,7 +357,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 							: ("INATIVO".equals(logAcesso.getStatus()) 
 									? "BLOQUEADO" 
 								    : ("INDEFINIDO".equals(logAcesso.getStatus()) 
-								    		? "NÃƒO GIROU" 
+								    		? "NÃO GIROU" 
 								    		: "LIBERADO PELO SISTEMA"));
 		if(logAcesso.getDirection() != null) {
 			texto += " " + logAcesso.getDirection();

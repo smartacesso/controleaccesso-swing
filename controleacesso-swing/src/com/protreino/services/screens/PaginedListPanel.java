@@ -27,7 +27,7 @@ public abstract class PaginedListPanel extends JPanel{
 	protected int registrosPorPagina = 15;
 	
 	protected JPanel createPaginatorControls() {
-		countLabel = new JLabel("PÃ¡g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel = new JLabel("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		first = new JButton("<<");
 		first.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

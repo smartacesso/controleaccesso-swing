@@ -90,7 +90,7 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 	
 	@Type(type = "org.hibernate.type.NumericBooleanType")
 	@Column(name="LOCAL", nullable=true, length=30)
-	private Boolean local = false; // indica que Ã© uma biometria local e que seria excluida na proxima sincronizacao para evitar duplicados
+	private Boolean local = false; // indica que é uma biometria local e que seria excluida na proxima sincronizacao para evitar duplicados
 	
 	@Transient
 	private Long idPedestrianAccess;

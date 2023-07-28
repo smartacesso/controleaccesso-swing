@@ -314,7 +314,7 @@ public class FieldTO {
 			}
 		
 		} else if (FieldType.COLOR_CHOOSER.equals(type)) {
-			String partes[] = (!Utils.isNullOrEmpty(defaultValue) ? defaultValue : (name.contains("primÃ¡ria") ? "39;57;74" : "70;178;202")).split(";");
+			String partes[] = (!Utils.isNullOrEmpty(defaultValue) ? defaultValue : (name.contains("primária") ? "39;57;74" : "70;178;202")).split(";");
 			Color color = new Color(Integer.valueOf(partes[0]), Integer.valueOf(partes[1]), Integer.valueOf(partes[2]));
 			colorChooser = new ColorChooserButton(color);
 			fieldPanel.add(colorChooser);
@@ -418,13 +418,13 @@ public class FieldTO {
 	}
 	
 	/**
-	 * MÃ©todo que retorno uma String representando o valor do campo. 
+	 * Método que retorno uma String representando o valor do campo. 
 	 * 
 	 * @ Para campos com valor booleano (CHECKBOX e YES_NO_COMBOBOX),
-	 * Ã© retornado "true" ou "false"
+	 * É retornado "true" ou "false"
 	 * 
-	 * @ Para um campo do tipo MESSAGE_LINES, que Ã© composto por dois TextFields, 
-	 * Ã© retornada uma String com um ";" separando os valores de cada TextField. Ex: "texto1;texto2"
+	 * @ Para um campo do tipo MESSAGE_LINES, que É composto por dois TextFields, 
+	 * É retornada uma String com um ";" separando os valores de cada TextField. Ex: "texto1;texto2"
 	 */
 	public String getValue() {
 		if (FieldType.TEXT.equals(type)){
@@ -514,9 +514,9 @@ public class FieldTO {
 	}
 	
 	/**
-	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES estÃ¡ de acordo com as definiÃ§Ãµes, isto Ã©
-	 * o tamanho não excede os limites mÃ­nimo e máximo de caracteres, e caso seja obrigatÃ³rio, não pode ser nulo ou vazio.
-	 * Por padrão o campos Ã© obrigatÃ³rio, mas pode ser alterado para deixar de ser.
+	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES estão de acordo com as definições, isto É
+	 * o tamanho não excede os limites máximo e máximo de caracteres, e caso seja obrigatório, não pode ser nulo ou vazio.
+	 * Por padrão o campos É obrigatório, mas pode ser alterado para deixar de ser.
 	 * @return
 	 */
 	public String checkField(){
@@ -525,24 +525,24 @@ public class FieldTO {
 		
 		if (FieldType.TEXT.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " Ã© obrigatÃ³rio.";
+				return "O campo " + name.toUpperCase() + " É obrigatório.";
 			if (maxCharacteres != null && textField.getText().trim().length() > maxCharacteres)
-				return "O campo " + name.toUpperCase() + " Ã© maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
 			if (minCharacteres != null && textField.getText().trim().length() < minCharacteres)
-				return "O campo " + name.toUpperCase() + " Ã© menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
 		
 		} else if (FieldType.MESSAGE_LINES.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " Ã© obrigatÃ³rio.";
+				return "O campo " + name.toUpperCase() + " É obrigatório.";
 			if (maxCharacteres != null 
 					&& (textField.getText().trim().length() > maxCharacteres 
 							|| textField2.getText().trim().length() > maxCharacteres)) {
-				return "O campo " + name.toUpperCase() + " Ã© maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
 			}
 			if (minCharacteres != null 
 					&& (textField.getText().trim().length() < minCharacteres 
 							|| textField2.getText().trim().length() < minCharacteres)) {
-				return "O campo " + name.toUpperCase() + " Ã© menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
 			}
 		}
 		

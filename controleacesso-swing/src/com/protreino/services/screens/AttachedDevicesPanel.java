@@ -36,7 +36,7 @@ import com.protreino.services.utils.Utils;
 public class AttachedDevicesPanel extends JPanel {
 
 	private JTable devicesListTable;
-	private String[] columns = {"Nome", "LocalizaÃ§ao"};
+	private String[] columns = {"Nome", "Localização"};
 	private Integer[] columnWidths = {280, 280};
 	
 	private Font headerFont;

@@ -136,7 +136,7 @@ public enum Manufacturer {
 	}
 	
 	public Boolean usePassword(){
-		// A senha da Proveu Ã© definida nas configuracoes da catraca
+		// A senha da Proveu é definida nas configuracoes da catraca
 		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
 			return true;
 		else
@@ -331,7 +331,7 @@ public enum Manufacturer {
 		
 		} else if (this.equals(FACIAL)) {
 			String[] opcoes = {"USB", "IP"};
-			fields.add(new FieldTO("Selecione o tipo de camÃªra", FieldType.COMBOBOX, null, opcoes));
+			fields.add(new FieldTO("Selecione o tipo de camêra", FieldType.COMBOBOX, null, opcoes));
 		
 		} else if(this.equals(LC_DEVICE)) {
 			fields.add(new FieldTO("Número do leitor", FieldType.TEXT, "1"));
@@ -343,19 +343,19 @@ public enum Manufacturer {
 		List<FieldTO> fields = new ArrayList<FieldTO>();
 		
 		if("USB".equals(tipoCamera)) {
-			fields.add(new FieldTO("Selecione uma cÃ¢mera", FieldType.COMBOBOX, null, Utils.getAvailableCameras()));
+			fields.add(new FieldTO("Selecione uma câmera", FieldType.COMBOBOX, null, Utils.getAvailableCameras()));
 			
 		} else if("IP".equals(tipoCamera)) {
-			fields.add(new FieldTO("URL da camÃªra", FieldType.TEXT, "http://192.168.2.148:4747/"));
+			fields.add(new FieldTO("URL da camêra", FieldType.TEXT, "http://192.168.2.148:4747/"));
 			fields.add(new FieldTO("Usuário (se necessario)", FieldType.TEXT, ""));
-			fields.add(new FieldTO("Senha (se necessÃ¡rio)", FieldType.TEXT, ""));
+			fields.add(new FieldTO("Senha (se necessário)", FieldType.TEXT, ""));
 		}
 		
 		return fields;
 	}
 	
 	/**
-	 * Indica se Ã© possível obter uma lista com os usuários cadastrados na catraca
+	 * Indica se é possível obter uma lista com os usuários cadastrados na catraca
 	 * @return
 	 */
 	public Boolean giveListRegisteredUsers(){
@@ -364,13 +364,13 @@ public enum Manufacturer {
 		return false;
 		
 		// CONTROL_ID fornece rapido
-		// TOPDATA fornece mas Ã© lento
-		// HENRY 8X fornece e nao testei para saber se Ã© rapido
+		// TOPDATA fornece mas é lento
+		// HENRY 8X fornece e nao testei para saber se é rapido
 	}
 	
 	
 	/**
-	 * Indica se o cadastro de usuários Ã© iniciado diretamente pela catraca usando o id do usuário
+	 * Indica se o cadastro de usuários é iniciado diretamente pela catraca usando o id do usuário
 	 * @return
 	 */
 	public Boolean isRegistrationProcessStartedOnDevice(){
@@ -380,7 +380,7 @@ public enum Manufacturer {
 			return false;
 		if (this.equals(SYSTEMTEC))
 			return false;
-		// if (this.equals(TOP_DATA)) informacao Ã© definida por configuracao especifica do dispositivo
+		// if (this.equals(TOP_DATA)) informacao é definida por configuracao especifica do dispositivo
 		return true;
 	}
 	

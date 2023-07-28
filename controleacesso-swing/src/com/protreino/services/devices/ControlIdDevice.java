@@ -132,7 +132,7 @@ public class ControlIdDevice extends Device {
 	public void connect(String... args) throws Exception {
 		try {
 			if (login == null || password == null)
-				throw new Exception("Login e senha s√£o obrigat√≥rios.");
+				throw new Exception("Login e senha s√£o obrigatÛrios.");
 			
 			doLogin();
 			
@@ -433,7 +433,7 @@ public class ControlIdDevice extends Device {
 		
 		String direction = "";
 
-		String modoOperacao = getConfigurationValue("Modo de opera√ß√£o");
+		String modoOperacao = getConfigurationValue("Modo de operaÁ„o");
 		Boolean bloquearSaida = "blocked".equals(modoOperacao) ? true : false;
 		
 		if (GiroCatraca.EVENT_TURN_RIGHT.equals(notificacao.event.name))
@@ -475,7 +475,7 @@ public class ControlIdDevice extends Device {
 		
 		Configuration configuration = new Configuration(serverIp, serverPort, serverId, 
 			getConfigurationValueAsBoolean("Habilita beep"), getConfigurationValue("Tempo de giro"), 
-			getConfigurationValue("Tempo da requisi√ß√£o"));
+			getConfigurationValue("Tempo da requisiÁ„o"));
 		Object[] retorno = send("http://" + ip + "/set_configuration.fcgi?session=" + session, configuration);
 		String erro = (String) retorno[0];
 		if (erro != null)
@@ -631,7 +631,7 @@ public class ControlIdDevice extends Device {
 	
 	@Override
 	public void processSampleForEnrollment(Object obj) {
-		// O processamento das digitais √© feito pela catraca
+		// O processamento das digitais È feito pela catraca
 	}
 	
 	@Override
@@ -671,7 +671,7 @@ public class ControlIdDevice extends Device {
 			throw new Exception(erro);
 		}
 		if (responseString == null)
-			throw new Exception("Sess√£o nula retornada.");
+			throw new Exception("Sess„o nula retornada.");
 		Response response = gson.fromJson(responseString, Response.class);
 		session = response.session;
 		System.out.println(sdf.format(new Date()) + "  Sessao: " + response.session);
@@ -882,12 +882,12 @@ public class ControlIdDevice extends Device {
 	public void createDefaultConfiguration(){
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
 		geralConfigurations.add(new ConfigurationTO("Habilita beep", "true", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Sentido da entrada", "Hor√°rio_clockwise", FieldType.COMBOBOX,
-				"Hor√°rio_clockwise;Anti-hor√°rio_anticlockwise"));
-		geralConfigurations.add(new ConfigurationTO("Modo de opera√ß√£o", "Ambos bloqueados_blocked", FieldType.COMBOBOX,
+		geralConfigurations.add(new ConfigurationTO("Sentido da entrada", "Hor·rio_clockwise", FieldType.COMBOBOX,
+				"Hor·rio_clockwise;Anti-hor·rio_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO("Modo de operaÁ„o", "Ambos bloqueados_blocked", FieldType.COMBOBOX,
 				"Entrada liberada_entrance_open;SaÌda liberada_exit_open;Ambos bloqueados_blocked;Ambos liberados_both_open"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de giro", "5000", FieldType.NUMERIC_LIST, "3000;1000;10000")); // inicio;passo;fim
-		geralConfigurations.add(new ConfigurationTO("Tempo da requisi√ß√£o", "10000", FieldType.NUMERIC_LIST, "2000;1000;20000")); // inicio;passo;fim
+		geralConfigurations.add(new ConfigurationTO("Tempo da requisiÁ„o", "10000", FieldType.NUMERIC_LIST, "2000;1000;20000")); // inicio;passo;fim
 		geralConfigurations.add(new ConfigurationTO("Enviar fotos", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));
 		
@@ -897,7 +897,7 @@ public class ControlIdDevice extends Device {
 		
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-		configurationGroups.add(new ConfigurationGroupTO("Personaliza√ß√£o", customConfigurations));
+		configurationGroups.add(new ConfigurationGroupTO("PersonalizaÁ„o", customConfigurations));
 	}
 	
 	protected void logout() {
@@ -1150,7 +1150,7 @@ public class ControlIdDevice extends Device {
 			}
 			System.out.println("\n\r" + sdf.format(new Date()) + "  ------ CADASTRO DE USUARIO - Template criado! Replicando para outras catracas...");
 			
-			// Verifica se ser√£o necess√°rio criar tambem em outras catracas ControlId
+			// Verifica se ser√£o necess·rio criar tambem em outras catracas ControlId
 			for (com.protreino.services.devices.Device device : Main.devicesList) {
 				if (!device.isTheSame(this) 
 						&& manufacturer.equals(device.getManufacturer())){
@@ -1260,7 +1260,7 @@ public class ControlIdDevice extends Device {
 			if (retorno == null)
 				throw new Exception("N„o foi possÌvel remover o usu·rio.");
 			
-			// Verifica se ser√£o necess√°rio apagar tambem em outras catracas ControlId
+			// Verifica se ser√£o necess·rio apagar tambem em outras catracas ControlId
 			if (sincronizarExclusao) {
 				for (com.protreino.services.devices.Device device : Main.devicesList) {
 					if (!device.isTheSame(this) 
@@ -1482,8 +1482,8 @@ public class ControlIdDevice extends Device {
 		private String name;
 		private String password;
 		private String salt;
-		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usu·rio √© v√°lido.
-		private Integer end_time; // opcional, Inteiro rperesentando at√© que data e hora (unix timestamp) o usu·rio √© v√°lido.
+		private Integer begin_time; // opcional, Inteiro representando a partir de que data e hora (unix timestamp) o usu·rio È v√°lido.
+		private Integer end_time; // opcional, Inteiro rperesentando atÈ que data e hora (unix timestamp) o usu·rio È v√°lido.
 		
 		public User(Integer id, String name, String password, String salt) {
 			this.id = id;

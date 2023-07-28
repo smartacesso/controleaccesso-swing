@@ -324,8 +324,8 @@ public class MainScreen extends JFrame {
 	}
 
 	/**
-	 * Cria o deviceCard. Chamado quando um novo dispositivo √© adicionado ou quando
-	 * a tela exibida e h√° dispositivos salvos na lista
+	 * Cria o deviceCard. Chamado quando um novo dispositivo È adicionado ou quando
+	 * a tela exibida e h· dispositivos salvos na lista
 	 * 
 	 * @param device
 	 */
@@ -610,9 +610,9 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-		if(Main.loggedUser.getHabilitaPedestre() == false) {
-			return;
-		}
+//		if(Main.loggedUser.getHabilitaPedestre() == false) {
+//			return;
+//		}
 		PedestrianAccessEntity pedestre = p;
 		if(pedestre == null) {
 			pedestre = new PedestrianAccessEntity();
@@ -804,7 +804,7 @@ public class MainScreen extends JFrame {
 		}else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
-			connectionStatusLabel.setToolTipText("<html>Sem conex√£o com servidor " + servidor + " os dados n„o est√£o sendo sincronizados."
+			connectionStatusLabel.setToolTipText("<html>Sem conex„o com servidor " + servidor + " os dados n„o est„o sendo sincronizados."
 					+ "<br/>Verifique sua internet ou verifique se o servidor est· ligado!</html>" );
 		}
 		
@@ -904,7 +904,7 @@ public class MainScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.mainScreen
-					.addEvento("N„o foi possivel abrir a pasta de logs. Navegue at√© ela manualmente: " + Main.logPath);
+					.addEvento("N„o foi possivel abrir a pasta de logs. Navegue atÈ ela manualmente: " + Main.logPath);
 		}
 	}
 

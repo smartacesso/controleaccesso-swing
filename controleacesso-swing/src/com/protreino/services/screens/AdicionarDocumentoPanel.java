@@ -74,7 +74,7 @@ public class AdicionarDocumentoPanel extends JPanel {
 		
 		JPanel escolherTirarFotoPanel = new JPanel();
 		escolherTirarFotoPanel.setLayout(new BoxLayout(escolherTirarFotoPanel, BoxLayout.Y_AXIS));
-		JLabel escolherTirarFotoLabel = new JLabel("Tirar foto com a c√¢mera");
+		JLabel escolherTirarFotoLabel = new JLabel("Tirar foto com a c‚mera");
 		escolherTirarFotoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		escolherTirarFotoPanel.add(escolherTirarFotoLabel);
 		escolherTirarFotoPanel.add(Box.createVerticalStrut(2));

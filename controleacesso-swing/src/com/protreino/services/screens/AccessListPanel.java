@@ -324,7 +324,7 @@ public class AccessListPanel extends PaginedListPanel {
 		totalRegistros =  HibernateUtil.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
 		
-		//calcula p√°ginas
+		//calcula p·gina
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
@@ -363,7 +363,7 @@ public class AccessListPanel extends PaginedListPanel {
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
 		//countLabel.setText("Total: " + numAcessos);
-		countLabel.setText("P√°g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("P·g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -373,15 +373,15 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		if("VISITANTE".equals(acesso.getTipo())) {
 			//visitante
-			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso √∫nico";
+			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso ˙nico";
 			if(acesso.getQuantidadeCreditos() != null && acesso.getQuantidadeCreditos() > 1l) {
-				texto = acesso.getQuantidadeCreditos() + "x cr√©ditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crÈditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " at√© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÈ " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			
 			} else if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " at√© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " atÈ " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -391,16 +391,16 @@ public class AccessListPanel extends PaginedListPanel {
 			
 			//pedestre
 			if(acesso.getQuantidadeCreditos() != null) {
-				texto = acesso.getQuantidadeCreditos() + "x cr√©ditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crÈditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " at√© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÈ " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			} else if(acesso.getValidadeCreditos() != null) {
 				texto += new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			}
 			
 			if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " at√© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " atÈ " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());

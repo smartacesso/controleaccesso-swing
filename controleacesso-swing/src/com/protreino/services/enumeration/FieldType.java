@@ -6,13 +6,13 @@ public enum FieldType {
 	 * Um JTextField simples. 
 	 * Podem ser definidos máximo e minimo de caracteres. Pode ser definido como campo numerico.
 	 * O valor padrão pode ser uma string qualquer.
-	 * Por padrão, Ã© um campo obrigatÃ³rio e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatÃ³rio.
+	 * Por padrão, é um campo obrigatório e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
 	 */
 	TEXT,
 	
 	/**
 	 * Um JCheckBox. 
-	 * Os valores booleanos sÃ£o representados pelas strings "true" e "false". 
+	 * Os valores booleanos são representados pelas strings "true" e "false". 
 	 * O valor padrão deve ser definido como "true" ou "false".
 	 */
 	CHECKBOX,
@@ -20,8 +20,8 @@ public enum FieldType {
 	/**
 	 * Um JComboBox de SelectItem. 
 	 * Deve ser passada uma string com os valores da lista do combobox no formato "LABEL_VALUE;LABEL_VALUE". 
-	 * Exemplo: "HorÃ¡rio_clockwise;AntihorÃ¡rio_anticlockwise;Ambos_both".
-	 * Podem ser passados quantos valores LABEL_VALUE forem necessÃ¡rios.
+	 * Exemplo: "Horário_clockwise;Antihorário_anticlockwise;Ambos_both".
+	 * Podem ser passados quantos valores LABEL_VALUE forem necessários.
 	 * O valor padrão deve ser definido no padrão "LABEL_VALUE".
 	 */
 	COMBOBOX,
@@ -40,17 +40,17 @@ public enum FieldType {
 	MESSAGE_LINES,
 	
 	/**
-	 * Um JComboBox com uma sequÃªncia numÃ©rica, apenas para números INTEIROS.
+	 * Um JComboBox com uma sequência numérica, apenas para números INTEIROS.
 	 * Os valores da lista devem ser definidos no formato "INICIO;PASSO;FIM". Por exemplo, a string "1;1;9" resulta na lista 1 2 3 4 5 6 7 8 9. 
 	 * O valor padrão pode ser definido apenas como "VALOR".
-	 * Por padrão, Ã© um campo obrigatÃ³rio e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatÃ³rio.
+	 * Por padrão, é um campo obrigatório e portanto não pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
 	 */
 	NUMERIC_LIST,
 	
 	/**
-	 * Um botÃ£oo para carregar uma imagem e um imageView para visualizar a imagem carregada.
-	 * A imagem Ã© convertida para uma string base64.
-	 * Não Ã© obrigatÃ³rio.
+	 * Um botão para carregar uma imagem e um imageView para visualizar a imagem carregada.
+	 * A imagem é convertida para uma string base64.
+	 * Não é obrigatório.
 	 */
 	IMAGE,
 	

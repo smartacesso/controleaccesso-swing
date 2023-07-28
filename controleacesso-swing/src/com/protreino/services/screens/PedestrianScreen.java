@@ -376,7 +376,7 @@ public class PedestrianScreen extends JFrame {
 		configButton.setMargin(new Insets(0, 0, 0, 0));
 		configButton.setContentAreaFilled(false);
 		configButton.setIcon(configImageIcon);
-		configButton.setToolTipText("OpÃ§Ãµes");
+		configButton.setToolTipText("Opções");
 		
 		leitorLabel = new JLabel(readerDevice.getName() + " - " 
 				+ (DeviceStatus.CONNECTED.equals(readerDevice.getStatus()) ? "conectado" : "desconectado"));
@@ -982,7 +982,7 @@ public class PedestrianScreen extends JFrame {
 	    			Long agora = Calendar.getInstance().getTimeInMillis();
 	    			
 	    			if (HibernateUtil.isAniversariante())
-						statusLabel.setText("ParabÃ©ns!");
+						statusLabel.setText("Parabéns!");
 	    			statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 	    			
 	    			//TODO : verificar mensagens personalizadas
@@ -991,7 +991,7 @@ public class PedestrianScreen extends JFrame {
 //						Long diasRestantes = TimeUnit.DAYS.convert(dataPermitido-agora, TimeUnit.MILLISECONDS);
 //						if (diasRestantes > 5) {
 //							if (HibernateUtil.isAniversariante())
-//								statusLabel.setText("ParabÃ©ns!");
+//								statusLabel.setText("Parabéns!");
 //							else
 //								statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 //						}
@@ -1037,7 +1037,7 @@ public class PedestrianScreen extends JFrame {
 //	    			calendar.add(Calendar.DAY_OF_YEAR, matchedAthleteAccess.getTolerance());
 //	    			Long dataTolerancia = calendar.getTime().getTime();
 //	    			Long diasRestantes = TimeUnit.DAYS.convert(dataTolerancia - Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
-//					statusLabel.setText("Sua mensalidade estÃ¡ vencida. VocÃª ainda tem " + diasRestantes + " para o pagamento.");
+//					statusLabel.setText("Sua mensalidade está vencida. Você ainda tem " + diasRestantes + " para o pagamento.");
 	    			resultadoLabel.setIcon(permitidoImageIcon);
 	    			if ("DIGITAL".equals(tipoAcesso))
 	    				sampleLabel.setIcon(digitalGenericaPermitidaImageIcon);

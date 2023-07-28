@@ -1,7 +1,7 @@
 //******************************************************************************
 //A Topdata Sistemas de Automação Ltda não se responsabiliza por qualquer
 //tipo de dano que este software possa causar, este exemplo deve ser utilizado
-//apenas para demonstrar a comunicação com os equipamentos da linha
+//apenas para demonstrar a comunica��o com os equipamentos da linha
 //inner e não deve ser alterado, por este motivo ele não deve ser incluso em
 //suas aplicações comerciais.
 //

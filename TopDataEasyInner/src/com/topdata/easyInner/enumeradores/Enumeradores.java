@@ -1,7 +1,7 @@
 //******************************************************************************
 //A Topdata Sistemas de Automação Ltda não se responsabiliza por qualquer
 //tipo de dano que este software possa causar, este exemplo deve ser utilizado
-//apenas para demonstrar a comunicação com os equipamentos da linha
+//apenas para demonstrar a comunica��o com os equipamentos da linha
 //inner e não deve ser alterado, por este motivo ele não deve ser incluso em
 //suas aplicações comerciais.
 //
@@ -168,7 +168,7 @@ public class Enumeradores {
     public static final int PADRAO_LIVRE = 1;
 //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Constantes do Método EntradasMudancaOnline">
+    //<editor-fold defaultstate="collapsed" desc="Constantes do M�todo EntradasMudancaOnline">
     public static final int NAO_ACEITA_ENTRADA_DADOS = 0;
     public static final int ACEITA_TECLADO = 1;
     public static final int ACEITA_LEITURA_LEITOR1 = 2;
@@ -203,7 +203,7 @@ public class Enumeradores {
     public static final int RESERVADO_USO_FUTURO = 0;
 //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Constantes de Origem do Método Receber Dados Online">
+    //<editor-fold defaultstate="collapsed" desc="Constantes de Origem do M�todo Receber Dados Online">
     public static final int VIA_TECLADO = 1;
     public static final int VIA_LEITOR1 = 2;
     public static final int VIA_LEITOR2 = 3;

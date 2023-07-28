@@ -823,7 +823,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 						System.out.println("Digitais diferentes");
 				} else {
 					//verifica se lista de digitais existes 
-					//Ã© igual a lista de digitais recebidas
+					//é igual a lista de digitais recebidas
 					List<String> templatesExistentes = new ArrayList<String>();
 					for (TemplateEntity t : templates) {
 						String existente = Base64.encodeBase64String(t.getTemplate());

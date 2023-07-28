@@ -138,12 +138,12 @@ public class ReleaseReasonDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Utils.isNullOrEmpty(reason)){
-					labelErro.setText("√â necess√°rio informar um motivo.");
+					labelErro.setText("… necess·rio informar um motivo.");
 					return;
 				}
 				if ("Outro: ".equals(reason)) {
 					if (Utils.isNullOrEmpty(outroTextField.getText())){
-						labelErro.setText("√â necess√°rio informar um motivo.");
+						labelErro.setText("… necess·rio informar um motivo.");
 						return;
 					}
 					reason = reason + outroTextField.getText();

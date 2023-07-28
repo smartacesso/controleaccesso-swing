@@ -135,7 +135,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		qtdeDeCreditosPanel = new JPanel();
 		qtdeDeCreditosPanel.setLayout(new BoxLayout(qtdeDeCreditosPanel, BoxLayout.Y_AXIS));
 		qtdeDeCreditosPanel.setVisible(false);
-		JLabel qtdeCreditosLabel = new JLabel("Qtde de crÃ©ditos");
+		JLabel qtdeCreditosLabel = new JLabel("Qtde de créditos");
 		qtdeCreditosLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		qtdeDeCreditosPanel.add(qtdeCreditosLabel);
 		qtdeDeCreditosPanel.add(Box.createVerticalStrut(2));
@@ -151,7 +151,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		validadeCreditosPanel = new JPanel();
 		validadeCreditosPanel.setLayout(new BoxLayout(validadeCreditosPanel, BoxLayout.Y_AXIS));
 		validadeCreditosPanel.setVisible(false);
-		JLabel validadeCreditosLabel = new JLabel("Validade dos crÃ©ditos em dias");
+		JLabel validadeCreditosLabel = new JLabel("Validade dos créditos em dias");
 		validadeCreditosLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		validadeCreditosPanel.add(validadeCreditosLabel);
 		validadeCreditosPanel.add(Box.createVerticalStrut(2));
@@ -166,7 +166,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		dataInicioPeriodoPanel = new JPanel();
 		dataInicioPeriodoPanel.setLayout(new BoxLayout(dataInicioPeriodoPanel, BoxLayout.Y_AXIS));
 		dataInicioPeriodoPanel.setVisible(false);
-		JLabel dataInicioPeriodoLabel = new JLabel("Data inÃ­cio perÃ­odo");
+		JLabel dataInicioPeriodoLabel = new JLabel("Data início período");
 		dataInicioPeriodoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		dataInicioPeriodoPanel.add(dataInicioPeriodoLabel);
 		dataInicioPeriodoPanel.add(Box.createVerticalStrut(2));
@@ -181,7 +181,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		dataFimPeriodoPanel = new JPanel();
 		dataFimPeriodoPanel.setLayout(new BoxLayout(dataFimPeriodoPanel, BoxLayout.Y_AXIS));
 		dataFimPeriodoPanel.setVisible(false);
-		JLabel dataFimPeriodoLabel = new JLabel("Data fim perÃ­odo");
+		JLabel dataFimPeriodoLabel = new JLabel("Data fim período");
 		dataFimPeriodoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		dataFimPeriodoPanel.add(dataFimPeriodoLabel);
 		dataFimPeriodoPanel.add(Box.createVerticalStrut(2));
@@ -319,7 +319,7 @@ public class AdicionarRegrasPanel extends JPanel {
 			
 			int countRegrasNaoRemovidas = countRegrasNaoRemovidas();
 			if(countRegrasNaoRemovidas >= 1) {
-				criarDialogoPadrao("Somente uma regra ativa", "VocÃª sÃ³ pode ter uma regra ativa.");
+				criarDialogoPadrao("Somente uma regra ativa", "Você só pode ter uma regra ativa.");
 				return;
 			}
 

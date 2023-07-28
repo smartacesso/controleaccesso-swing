@@ -269,7 +269,7 @@ public class LcDevice extends Device {
 		if(amostrasColetadas >= QUANTIDADE_TEMPLATES - 1) {
 			resp = interfaceJna.SFEP_GetTemplateForRegister(memorySpaceStTemplates, memorySpaceStRegTem);
 			if (resp != Aso15DefJNA.RES_OK) {
-				cancelaColeta("Ocorreu um erro na gera√ß√£o de template.");
+				cancelaColeta("Ocorreu um erro na geraÁ„o de template.");
 				return;
 			}
 			
@@ -307,7 +307,7 @@ public class LcDevice extends Device {
 						
 						String tStr = Base64.encodeBase64String(template2);
 						String tStr1 = Base64.encodeBase64String(template1);
-						//verificar se segunda est√° vazia
+						//verificar se segunda est· vazia
 						if(tStr.startsWith("AAAQAAAAAAAAAAA") )
 							template2 = null;
 						
@@ -336,7 +336,7 @@ public class LcDevice extends Device {
 	public static void extracTopDataTemplate(byte[] stRegTem, byte[] template1, byte[] template2) {
 		int bytes = 0;
 		byte [] cabecalho = new byte[] {0, 0, 16, 0};
-		//adiciona cabe√ßalho
+		//adiciona cabeÁalho
 		for (byte b : cabecalho) {
 			template1[bytes] = b;
 			template2[bytes] = b;
@@ -346,7 +346,7 @@ public class LcDevice extends Device {
 		int lcBytes = 0;
 		for (byte b : stRegTem) {
 			if(lcBytes < 498) {
-				//at√© aqui √© o template 1
+				//atÈ aqui È o template 1
 				template1[bytes] = b; 
 				bytes++;
 			}else {

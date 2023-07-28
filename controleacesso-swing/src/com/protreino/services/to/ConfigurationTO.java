@@ -14,7 +14,7 @@ public class ConfigurationTO implements Serializable {
 	private String value;
 	private FieldType type;
 	// uma string com os valores separados por ';' ou para listas numericas a sequencia 'inicio;passo;fim'
-	// Ex: "Hor√°rio_clockwise;Antihor√°rio_anticlockwise;Ambos_both" ou para listas numericas "3000;1000;10000"
+	// Ex: "Hor·rio_clockwise;Antihor·rio_anticlockwise;Ambos_both" ou para listas numericas "3000;1000;10000"
 	private String comboboxValues; 
 	private Integer maxCharacteres;
 	private Integer minCharacteres;

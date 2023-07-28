@@ -679,7 +679,7 @@ public class TcpServer {
 					response.setSuccess(true);
 					response.setUser(new SimpleUser(usuario.getId(), usuario.getName(), usuario.getIdClient()));
 				} else {
-					response.setErrorMessage("Dados invÃ¡lidos!");
+					response.setErrorMessage("Dados inválidos!");
 				}
 
 			} catch (Exception e) {
@@ -710,7 +710,7 @@ public class TcpServer {
 				ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
 			} catch (Exception e) {
 			}
-			System.out.println("Recebido cÃ³digo: " + codigo);
+			System.out.println("Recebido código: " + codigo);
 			System.out.println("Recebido catraca: " + deviceIdentifier);
 
 			VerificationResult verificationResult = VerificationResult.NOT_FOUND;
@@ -741,7 +741,7 @@ public class TcpServer {
 				device.setAllowedUserName((String) retorno[1]);
 				device.setMatchedFacialId(((PedestrianAccessEntity) retorno[2]).getId());
 
-				System.out.println("Resultado na anÃ¡lise: " + verificationResult);
+				System.out.println("Resultado na análise: " + verificationResult);
 				if (VerificationResult.ALLOWED.equals(verificationResult)
 						|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult)) {
 					device.allowAccess((PedestrianAccessEntity) retorno[2]);
@@ -750,7 +750,7 @@ public class TcpServer {
 				}
 			} else {
 				System.out.println("Libera sem catraca");
-				// se não tiver, realiza um processo de liberação genÃªrico
+				// se não tiver, realiza um processo de liberação genêrico
 				Object[] retorno = HibernateUtil.processAccessRequest(codigo, location, createNotification,
 						ignoraRegras);
 				if (retorno != null && retorno.length > 0)
@@ -814,7 +814,7 @@ public class TcpServer {
 		}
 
 		private String processaCartaoComanda(String receivedData, String responseData) {
-			// para liberação de cartÃµes
+			// para liberação de cartões
 			if (receivedData != null) {
 
 				if (receivedData.startsWith("SIER;STCSI;2")) {

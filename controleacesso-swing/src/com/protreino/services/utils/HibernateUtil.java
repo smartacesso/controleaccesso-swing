@@ -1251,8 +1251,8 @@ public class HibernateUtil {
 			
 			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
-				System.out.println("o que Ã© equipament" +equipament );
-				System.out.println("o que Ã© pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
+				System.out.println("o que é equipament" +equipament );
+				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
 					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
 							foto);
@@ -1286,7 +1286,7 @@ public class HibernateUtil {
 								&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 										.getValidadeCreditos().getTime() >= new Date().getTime());
 						
-						//fazer um for validando se existe regra livre ou com quantidade veazia, sÃ³ assim libero
+						//fazer um for validando se existe regra livre ou com quantidade veazia, são assim libero
 
 						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l) 
 								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  && matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
@@ -1326,7 +1326,7 @@ public class HibernateUtil {
 					 * verificar creditos
 					 */
 
-					// verifica se tem crÃ©ditos para passar
+					// verifica se tem créditos para passar
 					
 					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0 && !isPermitidoPedestreRegra(matchedAthleteAccess)
 							&& matchedAthleteAccess.getCardNumber() != null
@@ -1369,7 +1369,7 @@ public class HibernateUtil {
 					}
 
 				} else if (acessoRestrito) {
-					// verifica se hÃ¡ algum log de acesso para este aluno hoje
+					// verifica se há algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedAthleteAccess.getId());
 					List<LogPedestrianAccessEntity> list = (List<LogPedestrianAccessEntity>) HibernateUtil
@@ -1385,7 +1385,7 @@ public class HibernateUtil {
 			}
 
 			if (!permitidoSensor) {
-				// para lÃ³gica de urna
+				// para lógica de urna
 				if (origem != Origens.ORIGEM_LEITOR_2)
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
 				else
@@ -1404,7 +1404,7 @@ public class HibernateUtil {
 				}
 
 			} else if (!permitido) {
-				// para lÃ³gica de crÃ©ditos finalizados
+				// para lógica de créditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
 					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
@@ -1420,8 +1420,8 @@ public class HibernateUtil {
 
 			} else if (permitidoHoje) {
 
-				// para lÃ³gicas do pedestre:
-				// - horÃ¡rio
+				// para lógica do pedestre:
+				// - horário
 				// - periodo
 				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -1470,7 +1470,7 @@ public class HibernateUtil {
 			e.printStackTrace();
 			resultadoVerificacao = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Falha ao processar requisiÃ§Ã£o de acesso. " + e.getMessage(),
+				Utils.createNotification("Falha ao processar requisição de acesso. " + e.getMessage(),
 						NotificationType.BAD, foto);
 		}
 
@@ -1575,7 +1575,7 @@ public class HibernateUtil {
 
 	private static Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
 
-		// recupera Ãºltima entrada da pessoa
+		// recupera última entrada da pessoa
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("ID_PEDESTRE", matchedAthleteAccess.getId());
 		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
@@ -1700,9 +1700,9 @@ public class HibernateUtil {
 			return true;
 			
 		}
-//		Se origem diferentes das que não sÃ£o permitidas como exemplo, biometria.
+//		Se origem diferentes das que não são permitidas como exemplo, biometria.
 
-//			verificar o máximo possível para ver o que não pode estar contido na mesma informaÃ§Ã£o
+//			verificar o máximo possível para ver o que não pode estar contido na mesma informação
 		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
@@ -1951,23 +1951,23 @@ public class HibernateUtil {
 
 		VerificationResult resultadoVerificacao;
 
-		// verifica se hÃ¡ um dia liberado para acesso
+		// verifica se há um dia liberado para acesso
 //		if (Utils.isDiaLivre(matchedAthleteAccess.getDiasLivres())) {
 //			resultadoVerificacao = validado;
 //			logAccess.setStatus("ATIVO");
 //			aniversariante = Utils.isBirthday(matchedAthleteAccess);
 //			if (createNotification) {
 //				Utils.createNotification(userName + " permitido" 
-//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia." : "." ), 
+//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância." : "." ), 
 //						aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 //			}
 //		}
 //		else {
 
-		// verifica se hÃ¡ um dia permitido
+		// verifica se há um dia permitido
 		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
 
-			// verifica se estÃ¡ num horario permitido
+			// verifica se estão num horario permitido
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
@@ -1976,14 +1976,14 @@ public class HibernateUtil {
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem))
 					Utils.createNotification(
 							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia."
+									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância."
 											: "."),
 							aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 			} else {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification)
-					Utils.createNotification(userName + " fora do horÃ¡rio.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horário.", NotificationType.BAD, foto);
 			}
 
 		} else {
@@ -3070,14 +3070,17 @@ public class HibernateUtil {
 
 		System.out.println("chegou no apadaDados ");
 		Session session = getSessionFactory().getCurrentSession();
-		if (session.getTransaction() == null || !session.getTransaction().isActive())
-			session.beginTransaction();
+		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+			session.beginTransaction();			
+		}
 
 		try {
 //			antes o count
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
 					+ "	where  p.tipo = 'VISITANTE' "
+					+ " and p.cardNumber != null "
+					+ " and p.cardNumber != '' "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3118,13 +3121,13 @@ public class HibernateUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeGiro(Date data) {
-//		Parou na apagaDadosDeGIRO O QUE Ã‰ DATA?
+//		Parou na apagaDadosDeGIRO O QUE É DATA?
 
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-		// TODO : voltar a validaÃ§Ã£o da data de cadastro, porÃ©m para maior que
+		// TODO : voltar a validação da data de cadastro, porém para maior que
 		// a data calculada a baixo
 
 		Calendar c = Calendar.getInstance();
@@ -3133,9 +3136,12 @@ public class HibernateUtil {
 
 		try {
 			Query q = session.createQuery(
-					"update PedestrianAccessEntity p " + "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
+					"update PedestrianAccessEntity p " 
+							+ "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
 							+ "where p.qtdAcessoAntesSinc > 0 "
-							+ "		 and p.dataCriacao >= :DATA ");
+							+ " and p.cardNumber != null "
+							+ " and p.cardNumber != '' "
+							+ "	and p.dataCriacao >= :DATA ");
 			q.setParameter("DATA", data);
 			q.executeUpdate();
 			session.getTransaction().commit();

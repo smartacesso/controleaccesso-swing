@@ -63,7 +63,7 @@ public class CartaoComandaDialog extends JDialog {
 		numeroTextField.setMaximumSize(numeroTextField.getPreferredSize());
 		numeroTextField.setHorizontalAlignment(JTextField.LEFT);
 		
-		numeroAlternativoLabel = new JLabel("RÃ³tulo");
+		numeroAlternativoLabel = new JLabel("Rótulo");
 		numeroAlternativoTextField = new JTextField();
 		numeroAlternativoTextField.setColumns(20);
 		numeroAlternativoTextField.setMaximumSize(numeroAlternativoTextField.getPreferredSize());
@@ -78,7 +78,7 @@ public class CartaoComandaDialog extends JDialog {
 		removerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		removerButton.addActionListener(e -> {
 			
-			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartão/comanda?", "ConfirmaÃ§Ã£o", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartão/comanda?", "confirmação", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				
@@ -206,7 +206,7 @@ public class CartaoComandaDialog extends JDialog {
 				return true;
 		}
 		
-		//não tem cÃ³digo
+		//não tem código
 		return false;
 	}
 

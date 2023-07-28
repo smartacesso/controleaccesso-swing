@@ -149,7 +149,7 @@ public class EasyInnerUtils {
     public native long GetTickCount();
 
     /**
-     * Métodos Auxiliares para recuperar os segundos da máquina e para Sleep em
+     * M�todos Auxiliares para recuperar os segundos da máquina e para Sleep em
      * Milisegundos..
      *
      * @param ms

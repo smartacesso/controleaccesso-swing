@@ -333,15 +333,15 @@ public class DeviceCard extends JPanel {
 					catch (Exception ex){
 						ex.printStackTrace();
 						JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.", 
-								"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
+								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 					
 					if (retornoAuthentication == null)
 						return;
 					if (!retornoAuthentication) {
-						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha invÃ¡lida", 
-								"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida", 
+								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 				}
@@ -357,7 +357,7 @@ public class DeviceCard extends JPanel {
 						return;
 					motivoLiberacao = releaseReasonDialog.getReason();
 					if (Utils.isNullOrEmpty(motivoLiberacao)) {
-						Utils.createNotification("Ã‰ necessÃ¡rio informar um motivo.", NotificationType.BAD);
+						Utils.createNotification("É necessário informar um motivo.", NotificationType.BAD);
 						return;
 					}
 				}
@@ -727,7 +727,7 @@ public class DeviceCard extends JPanel {
 				}
 			}
 			
-			// InformaÃ§Ãµes de ip, porta e localizacao
+			// Informações de ip, porta e localizacao
 			JPanel deviceInfoPanel = new JPanel();
 			deviceInfoPanel.setLayout(new BoxLayout(deviceInfoPanel, BoxLayout.Y_AXIS));
 			deviceInfoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -852,15 +852,15 @@ public class DeviceCard extends JPanel {
 			dialog.setVisible(true);
 		
 		} else {
-			JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha invÃ¡lida",
-					"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
+					"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 		}
 	}
 	
 	private void showConfirmRemove(){
 		Object[] options = { DeviceStatus.CONNECTED.equals(device.getStatus()) ? "Desconectar e remover" : "Remover", "Cancelar"};
 		int result = JOptionPane.showOptionDialog(null, "Deseja realmente remover este dispositivo?",
-				"ConfirmaÃ§Ã£o", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
+				"Confirmação", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
 		if (result == JOptionPane.OK_OPTION) {
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override
@@ -898,7 +898,7 @@ public class DeviceCard extends JPanel {
 		TopDataDevice topData = (TopDataDevice) device;
 		if(topData.isConnected()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, 
-					"A sincronizaÃ§Ã£o de todas as digitais sÃ³ pode ser feita com o dispositivo desconectado.",
+					"A sincronização de todas as digitais só pode ser feita com o dispositivo desconectado.",
 					"Desconecte o dispositivo!",
 					JOptionPane.PLAIN_MESSAGE);
 			return;

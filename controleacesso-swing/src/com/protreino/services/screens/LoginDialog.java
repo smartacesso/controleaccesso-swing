@@ -58,7 +58,7 @@ public class LoginDialog extends JDialog {
 	private JButton cancelarButton;
 	
 	public LoginDialog(){
-		super(Main.mainScreen, "AutenticacÃ£o", true);
+		super(Main.mainScreen, "Autenticação", true);
 		
 		loadImages();
 		
@@ -186,7 +186,7 @@ public class LoginDialog extends JDialog {
 										Main.syncAthleteAccessList();
 										Main.syncLogAthleteAccess();
 										
-										// Buscando backup de dispostivos e preferÃªncias
+										// Buscando backup de dispostivos e preferêmcias
 										con = new HttpConnection(Main.urlApplication + "/restful-services/access/getBackupByUser?idUser=" + Main.loggedUser.getId().toString());
 										if (con.getResponseCode() == 200) {
 											JsonObject backupResponse = con.getResponseJsonObject();
@@ -232,11 +232,11 @@ public class LoginDialog extends JDialog {
 									setMessageErrorLogin("Usuário não encontrado!");
 								}
 							} else {
-								setMessageErrorLogin("Sem conexÃ£o!");
+								setMessageErrorLogin("Sem conexão!");
 							}
 					    
 				    	} catch (SocketException se){
-				    		setMessageErrorLogin("Sem conexÃ£o.");
+				    		setMessageErrorLogin("Sem conexão.");
 				    		Main.loggedUser = null;
 				    	
 				    	} catch (Throwable e) {
