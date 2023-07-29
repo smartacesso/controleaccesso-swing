@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="utils">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/commons-codec-1.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/gson-2.2.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/itextpdf-5.4.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/commons-io-2.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/app-locker-1.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/jdatepicker-2.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/javax.util.property-2_0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/junique-1.0.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/jnativehook-2.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/utils/jl1.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

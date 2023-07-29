@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+		"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
+		<property name="hibernate.connection.password">pro@2017</property>
+		<property name="hibernate.connection.url">jdbc:derby:database_services;create=true;territory=pt_BR;collation=TERRITORY_BASED:PRIMARY</property>
+		<property name="hibernate.connection.username">admin</property>
+		<property name="hibernate.default_schema">smartacesso</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
+		<property name="hibernate.show_sql">false</property>
+		<property name="hibernate.format_sql">false</property>
+		<property name="hibernate.hbm2ddl.auto">update</property>
+		<property name="hibernate.current_session_context_class">thread</property>
+		<property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
+		
+		
+		<!-- <property name="hibernate.c3p0.acquire_increment">5</property>
+		<property name="hibernate.c3p0.idle_test_period">100</property>
+		<property name="hibernate.c3p0.min_size">10</property>
+		<property name="hibernate.c3p0.max_size">50</property>
+		<property name="hibernate.c3p0.timeout">1800</property>
+		<property name="hibernate.c3p0.max_statements">50</property> -->
+		
+		
+		<!-- Mapped Entities -->
+		<!-- Estao sendo mapeadas no HibernateUtils -->
+		<mapping class="com.protreino.services.entity.PedestrianAccessEntity" />
+		<mapping class="com.protreino.services.entity.PedestrianEquipamentEntity" />
+		<mapping class="com.protreino.services.entity.PedestrianMessagesEntity" />
+		<mapping class="com.protreino.services.entity.UserEntity" />
+		<mapping class="com.protreino.services.entity.TemplateEntity" />
+		<mapping class="com.protreino.services.entity.LogPedestrianAccessEntity" />
+		<mapping class="com.protreino.services.entity.ConfigurationGroupEntity" />
+		<mapping class="com.protreino.services.entity.ConfigurationEntity" />
+		<mapping class="com.protreino.services.entity.DeviceEntity" />
+		<mapping class="com.protreino.services.entity.AllowedTimeEntity" />
+		<mapping class="com.protreino.services.entity.BiometricEntity" />
+		<mapping class="com.protreino.services.entity.PreferenceEntity" />
+		<mapping class="com.protreino.services.entity.EmpresaEntity" />
+		<mapping class="com.protreino.services.entity.DepartamentoEntity" />
+		<mapping class="com.protreino.services.entity.CentroCustoEntity" />
+		<mapping class="com.protreino.services.entity.CargoEntity" />
+		<mapping class="com.protreino.services.entity.RegraEntity" />
+		<mapping class="com.protreino.services.entity.HorarioEntity" />
+		<mapping class="com.protreino.services.entity.ParametroEntity" />
+		<mapping class="com.protreino.services.entity.PlanoEntity" />
+		<mapping class="com.protreino.services.entity.DocumentoEntity" />
+		<mapping class="com.protreino.services.entity.PedestreRegraEntity" />
+		<mapping class="com.protreino.services.entity.CartaoComandaEntity" />
+		<mapping class="com.protreino.services.entity.LogCartaoComandaEntity" />
+		
+	</session-factory>
+</hibernate-configuration>

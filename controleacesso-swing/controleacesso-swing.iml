@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="hibernate_5.2.1_derby" level="project" />
+    <orderEntry type="library" name="onetouch" level="project" />
+    <orderEntry type="library" name="luxand" level="project" />
+    <orderEntry type="library" name="utils" level="project" />
+    <orderEntry type="library" name="ticketGates" level="project" />
+    <orderEntry type="library" name="Topdata" level="project" />
+    <orderEntry type="library" name="webcam-capture" level="project" />
+    <orderEntry type="library" name="jackson" level="project" />
+    <orderEntry type="library" name="izpack-dist-5.1.2" level="project" />
+  </component>
+</module>

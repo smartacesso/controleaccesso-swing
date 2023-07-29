@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="luxand">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/luxand/FaceSDK.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/luxand/FSDK_RTSP.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/luxand/jna.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

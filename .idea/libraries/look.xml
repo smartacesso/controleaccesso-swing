@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="look">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/look/syntheticaPlain.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/look/syntheticaBlackStar.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/look/synthetica.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/look/looks-2.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/look/syntheticaAluOxide.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

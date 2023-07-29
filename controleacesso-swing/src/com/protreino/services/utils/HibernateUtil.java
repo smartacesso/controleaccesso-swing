@@ -571,6 +571,76 @@ public class HibernateUtil {
 		return resultList;
 	}
 
+	public static synchronized  List<LogPedestrianAccessEntity> buscaLogsDeAcessoPaginados(String namedQuery,
+																   HashMap<String, Object> args, Integer inicio, Integer quantidade) {
+		List<LogPedestrianAccessEntity> resultList = null;
+
+
+		if (Main.servidor != null ) {
+			if (!Main.servidor.isConnected())
+				return null;
+
+			verificaExecucaoDePing();
+			try {
+
+				TcpMessageTO req = new TcpMessageTO(TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS);
+				req.getParans().put("namedQuery", namedQuery);
+				req.getParans().put("args", args);
+				req.getParans().put("inicio", inicio);
+				req.getParans().put("quantidade", quantidade);
+
+				executando = true;
+				outToServer.writeObject(req);
+				outToServer.flush();
+
+				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+				resultList = (List<LogPedestrianAccessEntity>) resp.getParans().get("list");
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				executando = false;
+			}
+
+		} else {
+			Session session = getSessionFactory().getCurrentSession();
+			if (session.getTransaction() == null || !session.getTransaction().isActive())
+				session.beginTransaction();
+
+			try {
+				Query<LogPedestrianAccessEntity> query = session.createNamedQuery(namedQuery, LogPedestrianAccessEntity.class);
+
+				if(args != null) {
+					for (Map.Entry<String, Object> entry : args.entrySet()) {
+						query.setParameter(entry.getKey(), entry.getValue());
+					}
+				}
+
+				if (inicio != null) {
+					query.setFirstResult(inicio);
+				}
+
+				if (quantidade != null) {
+					query.setMaxResults(quantidade);
+				}
+
+				resultList = query.getResultList();
+				session.getTransaction().commit();
+
+			} catch (Exception e) {
+				resultList = null;
+				session.getTransaction().rollback();
+				e.printStackTrace();
+
+			} finally {
+				session.close();
+			}
+		}
+		return resultList;
+	}
+
 	public static synchronized Integer getResultListWithParamsCount(Class entityClass, String namedQuery,
 			HashMap<String, Object> args) {
 		Integer count = 0;

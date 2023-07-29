@@ -290,6 +290,10 @@ public class TcpServer {
 								.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevicesListServer(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
+						} else if (TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS
+								.equals(receivedTcpMessage.getType())) {
+							List<LogPedestrianAccessEntity> list = buscaLogsPaginados(receivedTcpMessage);
+							responseTcpMessage.getParans().put("list", list);
 						}
 						else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
@@ -700,6 +704,17 @@ public class TcpServer {
 			return devices;
 		}
 
+		private List<LogPedestrianAccessEntity> buscaLogsPaginados(TcpMessageTO receivedTcpMessage) {
+			String namedQuery = (String) receivedTcpMessage.getParans().get("namedQuery");
+			Integer quantidade = (Integer) receivedTcpMessage.getParans().get("quantidade");;
+			Integer inicio = (Integer) receivedTcpMessage.getParans().get("inicio");;
+
+			@SuppressWarnings("unchecked")
+			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
+
+			return HibernateUtil.buscaLogsDeAcessoPaginados(namedQuery, args, inicio, quantidade);
+		}
+
 		private VerificationResult processAccessRequestFromApp(TcpMessageTO receivedTcpMessage) {
 			String deviceIdentifier = (String) receivedTcpMessage.getParans().get("device_identifier");
 			String codigo = (String) receivedTcpMessage.getParans().get("codigo");
@@ -761,6 +776,8 @@ public class TcpServer {
 		}
 
 	}
+
+
 
 	public class ProcessPdvThread extends Thread {
 		private Socket socket;

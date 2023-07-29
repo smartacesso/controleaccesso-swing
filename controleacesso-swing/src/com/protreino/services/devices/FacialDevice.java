@@ -1,4 +1,4 @@
-Ôªøpackage com.protreino.services.devices;
+package com.protreino.services.devices;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -160,7 +160,7 @@ public class FacialDevice extends Device {
 
 					resolucoes = resolucoes + ";" + r + "_" + r;
 				}
-				geralConfigurations.add(new ConfigurationTO("Resolu√ß√£o", resolucaoPadrao + "_" + resolucaoPadrao,
+				geralConfigurations.add(new ConfigurationTO("ResoluÁ„o", resolucaoPadrao + "_" + resolucaoPadrao,
 						FieldType.COMBOBOX, resolucoes));
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Erro na Luxand FaceSDK",
@@ -371,7 +371,7 @@ public class FacialDevice extends Device {
 												if (unsuccessfulTriesInSequence == 3) {
 													unsuccessfulTriesInSequence = 0;
 													drawFace(resultadoDetectFace.getFace(), gr,
-															"Usu√°rio n√£o cadastrado.");
+															"Usu·rio n„o cadastrado.");
 
 													if (athleteScreen != null)
 														athleteScreen.requisicaoPorFoto(VerificationResult.NOT_FOUND,
@@ -380,7 +380,7 @@ public class FacialDevice extends Device {
 													timeMarkerRecognitionBlocked = System.currentTimeMillis() + 5000;
 
 													System.out
-															.println("Usu√°rio n√£o cadastrado. Aguardando 5 segundos.");
+															.println("Usu·rio n„o cadastrado. Aguardando 5 segundos.");
 												}
 											} else {
 												drawFace(resultadoDetectFace.getFace(), gr);
@@ -391,9 +391,9 @@ public class FacialDevice extends Device {
 													System.out.println("Erro no FeedFrame: "
 															+ resultadoFeedFrame.getResultDescription());
 
-													System.out.println("id do us√°rio Else  "
+													System.out.println("id do us·rio Else  "
 															+ resultadoDetectFace.getFace().getIdentifier());
-													System.out.println("nome do us√°rio no Else  "
+													System.out.println("nome do us·rio no Else  "
 															+ resultadoDetectFace.getFace().getName());
 												}
 											}
@@ -485,7 +485,7 @@ public class FacialDevice extends Device {
 
 			if (FSDK.FSDKE_OK != r) {
 				System.out.println("Falha ao conectar.");
-				throw new Exception("N√£o foi poss√≠vel abrir a c√¢mera " + name);
+				throw new Exception("N„o foi possÌvel abrir a c‚mera " + name);
 			}
 			
 			imageHandle = LuxandService.getInstance().grabFrame(cameraHandle);
@@ -494,7 +494,7 @@ public class FacialDevice extends Device {
 
 			devicePath = LuxandService.getInstance().getDevicePathFromDeviceId(cameraShortId);
 			if (devicePath == null)
-				throw new Exception("N√£o foi poss√≠vel encontrar a c√¢mera " + name);
+				throw new Exception("N„o foi possÌvel encontrar a c‚mera " + name);
 
 			if (!workerEnabled && isConnectMethod)
 				return;
@@ -510,20 +510,20 @@ public class FacialDevice extends Device {
 				return;
 
 			if (FSDKCam.SetVideoFormat(devicePath, format) != FSDK.FSDKE_OK)
-				throw new Exception("N√£o foi poss√≠vel definir o formato de v√≠deo da c√¢mera " + name);
+				throw new Exception("N„o foi possÌvel definir o formato de vÌdeo da c‚mera " + name);
 
 			if (!workerEnabled && isConnectMethod)
 				return;
 
 			if (FSDKCam.OpenVideoCamera(devicePath, cameraHandle) != FSDK.FSDKE_OK)
-				throw new Exception("N√£o foi poss√≠vel abrir a c√¢mera " + name);
+				throw new Exception("N„o foi possÌvel abrir a c‚mera " + name);
 
 			if (!workerEnabled && isConnectMethod)
 				return;
 
 			imageHandle = LuxandService.getInstance().grabFrame(cameraHandle);
 			if (imageHandle == null)
-				throw new Exception("N√£o foi capturar imagem da c√¢mera " + name);
+				throw new Exception("N„o foi capturar imagem da c‚mera " + name);
 		}
 	}
 
@@ -548,8 +548,8 @@ public class FacialDevice extends Device {
 	public void processAccessRequest(Object obj) {
 		try {
 			Face face = (Face) obj;
-			System.out.println("Predi√ß√£o: " + face.getName());
-			System.out.println("id do usus√°rio face " + face.getIdentifier());
+			System.out.println("PrediÁ„o: " + face.getName());
+			System.out.println("id do usus·rio face " + face.getIdentifier());
 
 			if (face.getName() == null) {
 				return;
@@ -599,7 +599,7 @@ public class FacialDevice extends Device {
 			e.printStackTrace();
 			verificationResult = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Erro na verifica√ß√£o", NotificationType.BAD);
+				Utils.createNotification("Erro na verificaÁ„o", NotificationType.BAD);
 		}
 	}
 
@@ -700,13 +700,13 @@ public class FacialDevice extends Device {
 
 				if (resultadoFeedFrame.getResultCode() == FSDK.FSDKE_USER_ALREADY_REGISTERED) {
 					facialDialog.setLuxandIdentifier(resultadoFeedFrame.getFace().getIdentifier().toString());
-					facialDialog.finishCollect("Usu√°rio j√° registrado.");
+					facialDialog.finishCollect("Usu·rio j· registrado.");
 				} else if (resultadoFeedFrame.getResultCode() == FSDK.FSDKE_USER_REGISTERED_WITH_OTHER_NAME) {
 					facialDialog
-							.cancelCollect("Usu√°rio registrado com o nome " + resultadoFeedFrame.getFace().getName());
+							.cancelCollect("Usu·rio registrado com o nome " + resultadoFeedFrame.getFace().getName());
 				} else if (resultadoFeedFrame.getResultCode() == FSDK.FSDKE_RECOGNITION_FAILED_DURING_ENROLLMENT) {
 					facialDialog.cancelCollect(
-							"N√£o foi poss√≠vel distinguir a pessoa ou usu√°rio cadastrado com outro nome.");
+							"N„o foi possÌvel distinguir a pessoa ou usu·rio cadastrado com outro nome.");
 				} else {
 					facialDialog.cancelCollect("Erro durante o cadastro: " + resultadoFeedFrame.getResultDescription());
 				}
@@ -774,9 +774,9 @@ public class FacialDevice extends Device {
 	}
 
 	private FSDK_VideoFormatInfo.ByValue getVideoFormatFromConfiguration() throws Exception {
-		String resolucao = getConfigurationValue("Resolu√ß√£o");
+		String resolucao = getConfigurationValue("ResoluÁ„o");
 		if (resolucao == null)
-			throw new Exception("N√£o foi poss√≠vel encontrar a configura√ß√£o de resolu√ß√£o da c√¢mera " + name);
+			throw new Exception("N„o foi possÌvel encontrar a configuraÁ„o de resoluÁ„o da c‚mera " + name);
 
 		if (videoFormatList == null)
 			getVideoFormatList();
@@ -801,12 +801,12 @@ public class FacialDevice extends Device {
 
 		devicePath = LuxandService.getInstance().getDevicePathFromDeviceId(cameraShortId);
 		if (devicePath == null)
-			throw new Exception("N√£o foi poss√≠vel encontrar a c√¢mera " + name);
+			throw new Exception("N„o foi possÌvel encontrar a c‚mera " + name);
 
 		videoFormatList = LuxandService.getInstance().getVideoFormatList(devicePath);
 
 		if (videoFormatList.length == 0)
-			throw new Exception("N√£o foi poss√≠vel retornar formatos de video da c√¢mera " + name);
+			throw new Exception("N„o foi possÌvel retornar formatos de video da c‚mera " + name);
 	}
 
 	private void drawFace(Face face, Graphics2D gr) {

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="izpack-dist-5.1.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/installer/izpack-dist-5.1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

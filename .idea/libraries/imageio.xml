@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="imageio">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/imageio-metadata-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/common-lang-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/imageio-core-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/common-image-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/imageio-jpeg-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/imageio/common-io-3.3.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="ticketGates">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/Nucleo_Integracao.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/TopDataEasyInner.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/ftd2xx.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/log4j-1.2.15.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/TcpCom.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/jna-4.5.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/ticketGates/NBioBSPJNI.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

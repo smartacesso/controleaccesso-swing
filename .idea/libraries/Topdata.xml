@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Topdata">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/controleacesso-swing/libs/Topdata.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
