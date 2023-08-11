@@ -21,7 +21,7 @@ public class HttpConnection {
 	}
 	
 	
-	public HttpConnection(String stringURL) throws IOException {
+	public HttpConnection(String stringURL) throws IOException{
 		makeConnection(stringURL);
 	}
 	

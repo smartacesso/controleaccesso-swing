@@ -571,76 +571,6 @@ public class HibernateUtil {
 		return resultList;
 	}
 
-	public static synchronized  List<LogPedestrianAccessEntity> buscaLogsDeAcessoPaginados(String namedQuery,
-																   HashMap<String, Object> args, Integer inicio, Integer quantidade) {
-		List<LogPedestrianAccessEntity> resultList = null;
-
-
-		if (Main.servidor != null ) {
-			if (!Main.servidor.isConnected())
-				return null;
-
-			verificaExecucaoDePing();
-			try {
-
-				TcpMessageTO req = new TcpMessageTO(TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS);
-				req.getParans().put("namedQuery", namedQuery);
-				req.getParans().put("args", args);
-				req.getParans().put("inicio", inicio);
-				req.getParans().put("quantidade", quantidade);
-
-				executando = true;
-				outToServer.writeObject(req);
-				outToServer.flush();
-
-				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
-				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
-
-				resultList = (List<LogPedestrianAccessEntity>) resp.getParans().get("list");
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				executando = false;
-			}
-
-		} else {
-			Session session = getSessionFactory().getCurrentSession();
-			if (session.getTransaction() == null || !session.getTransaction().isActive())
-				session.beginTransaction();
-
-			try {
-				Query<LogPedestrianAccessEntity> query = session.createNamedQuery(namedQuery, LogPedestrianAccessEntity.class);
-
-				if(args != null) {
-					for (Map.Entry<String, Object> entry : args.entrySet()) {
-						query.setParameter(entry.getKey(), entry.getValue());
-					}
-				}
-
-				if (inicio != null) {
-					query.setFirstResult(inicio);
-				}
-
-				if (quantidade != null) {
-					query.setMaxResults(quantidade);
-				}
-
-				resultList = query.getResultList();
-				session.getTransaction().commit();
-
-			} catch (Exception e) {
-				resultList = null;
-				session.getTransaction().rollback();
-				e.printStackTrace();
-
-			} finally {
-				session.close();
-			}
-		}
-		return resultList;
-	}
-
 	public static synchronized Integer getResultListWithParamsCount(Class entityClass, String namedQuery,
 			HashMap<String, Object> args) {
 		Integer count = 0;
@@ -1321,8 +1251,8 @@ public class HibernateUtil {
 			
 			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
-				System.out.println("o que é equipament" +equipament );
-				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
+				System.out.println("o que Ã© equipament" +equipament );
+				System.out.println("o que Ã© pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
 				if (createNotification)
 					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
 							foto);
@@ -1356,7 +1286,7 @@ public class HibernateUtil {
 								&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 										.getValidadeCreditos().getTime() >= new Date().getTime());
 						
-						//fazer um for validando se existe regra livre ou com quantidade veazia, são assim libero
+						//fazer um for validando se existe regra livre ou com quantidade veazia, sÃ³ assim libero
 
 						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l) 
 								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  && matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
@@ -1396,7 +1326,7 @@ public class HibernateUtil {
 					 * verificar creditos
 					 */
 
-					// verifica se tem créditos para passar
+					// verifica se tem crÃ©ditos para passar
 					
 					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0 && !isPermitidoPedestreRegra(matchedAthleteAccess)
 							&& matchedAthleteAccess.getCardNumber() != null
@@ -1439,7 +1369,7 @@ public class HibernateUtil {
 					}
 
 				} else if (acessoRestrito) {
-					// verifica se há algum log de acesso para este aluno hoje
+					// verifica se hÃ¡ algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedAthleteAccess.getId());
 					List<LogPedestrianAccessEntity> list = (List<LogPedestrianAccessEntity>) HibernateUtil
@@ -1455,7 +1385,7 @@ public class HibernateUtil {
 			}
 
 			if (!permitidoSensor) {
-				// para lógica de urna
+				// para lÃ³gica de urna
 				if (origem != Origens.ORIGEM_LEITOR_2)
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
 				else
@@ -1474,7 +1404,7 @@ public class HibernateUtil {
 				}
 
 			} else if (!permitido) {
-				// para lógica de créditos finalizados
+				// para lÃ³gica de crÃ©ditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
 					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
@@ -1490,8 +1420,8 @@ public class HibernateUtil {
 
 			} else if (permitidoHoje) {
 
-				// para lógica do pedestre:
-				// - horário
+				// para lÃ³gicas do pedestre:
+				// - horÃ¡rio
 				// - periodo
 				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -1540,7 +1470,7 @@ public class HibernateUtil {
 			e.printStackTrace();
 			resultadoVerificacao = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Falha ao processar requisição de acesso. " + e.getMessage(),
+				Utils.createNotification("Falha ao processar requisiÃ§Ã£o de acesso. " + e.getMessage(),
 						NotificationType.BAD, foto);
 		}
 
@@ -1645,7 +1575,7 @@ public class HibernateUtil {
 
 	private static Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
 
-		// recupera última entrada da pessoa
+		// recupera Ãºltima entrada da pessoa
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("ID_PEDESTRE", matchedAthleteAccess.getId());
 		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
@@ -1770,9 +1700,9 @@ public class HibernateUtil {
 			return true;
 			
 		}
-//		Se origem diferentes das que não são permitidas como exemplo, biometria.
+//		Se origem diferentes das que não sÃ£o permitidas como exemplo, biometria.
 
-//			verificar o máximo possível para ver o que não pode estar contido na mesma informação
+//			verificar o máximo possível para ver o que não pode estar contido na mesma informaÃ§Ã£o
 		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
@@ -2021,23 +1951,23 @@ public class HibernateUtil {
 
 		VerificationResult resultadoVerificacao;
 
-		// verifica se há um dia liberado para acesso
+		// verifica se hÃ¡ um dia liberado para acesso
 //		if (Utils.isDiaLivre(matchedAthleteAccess.getDiasLivres())) {
 //			resultadoVerificacao = validado;
 //			logAccess.setStatus("ATIVO");
 //			aniversariante = Utils.isBirthday(matchedAthleteAccess);
 //			if (createNotification) {
 //				Utils.createNotification(userName + " permitido" 
-//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância." : "." ), 
+//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia." : "." ), 
 //						aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 //			}
 //		}
 //		else {
 
-		// verifica se há um dia permitido
+		// verifica se hÃ¡ um dia permitido
 		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
 
-			// verifica se estão num horario permitido
+			// verifica se estÃ¡ num horario permitido
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
@@ -2046,14 +1976,14 @@ public class HibernateUtil {
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem))
 					Utils.createNotification(
 							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância."
+									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia."
 											: "."),
 							aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 			} else {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification)
-					Utils.createNotification(userName + " fora do horário.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horÃ¡rio.", NotificationType.BAD, foto);
 			}
 
 		} else {
@@ -3140,17 +3070,14 @@ public class HibernateUtil {
 
 		System.out.println("chegou no apadaDados ");
 		Session session = getSessionFactory().getCurrentSession();
-		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
-			session.beginTransaction();			
-		}
+		if (session.getTransaction() == null || !session.getTransaction().isActive())
+			session.beginTransaction();
 
 		try {
 //			antes o count
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
 					+ "	where  p.tipo = 'VISITANTE' "
-					+ " and p.cardNumber != null "
-					+ " and p.cardNumber != '' "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3191,13 +3118,13 @@ public class HibernateUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeGiro(Date data) {
-//		Parou na apagaDadosDeGIRO O QUE É DATA?
+//		Parou na apagaDadosDeGIRO O QUE Ã‰ DATA?
 
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-		// TODO : voltar a validação da data de cadastro, porém para maior que
+		// TODO : voltar a validaÃ§Ã£o da data de cadastro, porÃ©m para maior que
 		// a data calculada a baixo
 
 		Calendar c = Calendar.getInstance();
@@ -3206,12 +3133,9 @@ public class HibernateUtil {
 
 		try {
 			Query q = session.createQuery(
-					"update PedestrianAccessEntity p " 
-							+ "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
+					"update PedestrianAccessEntity p " + "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
 							+ "where p.qtdAcessoAntesSinc > 0 "
-							+ " and p.cardNumber != null "
-							+ " and p.cardNumber != '' "
-							+ "	and p.dataCriacao >= :DATA ");
+							+ "		 and p.dataCriacao >= :DATA ");
 			q.setParameter("DATA", data);
 			q.executeUpdate();
 			session.getTransaction().commit();

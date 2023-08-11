@@ -100,7 +100,7 @@ import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.AttachedTO;
-import com.protreino.services.to.PreferenceTO;
+import com.protreino.services.to.PreferenceTO; 
 
 import javazoom.jl.player.Player;
 
@@ -115,6 +115,12 @@ public class Utils {
 	private static int dialogHeight = 67;
 	private static List<JDialog> notifications = new ArrayList<JDialog>();
 	private static List<PreferenceTO> defaultPreferencesList;
+
+	public static boolean isHikivisionConfigValid() {
+		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
+
+		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
+	}
 
 	public static void sleep(long tempo) {
 		try {
@@ -339,9 +345,9 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccessDays", "Limite de acessos",
 				FieldType.NUMERIC_LIST, "1", "1;1;5"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "toleranceAccess",
-				"Tolerância de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"TolerÃ¢ncia de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "minTimeBetweenAccess",
-				"Tempo máximo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tempo mÃ­nimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeAccessList",
 				"Tempo de atualização da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeUserAccessList",
@@ -410,12 +416,12 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedToday",
 				"Mensagem de pedestre fora do dia permitido", FieldType.MESSAGE_LINES, "PEDESTRE NAO;PERMITIDO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNow",
-				"Mensagem de pedestre fora do horário permitido", FieldType.MESSAGE_LINES,
+				"Mensagem de pedestre fora do horÃ¡rio permitido", FieldType.MESSAGE_LINES,
 				"PEDESTRE NAO;PERMITIDO AGORA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageError",
 				"Mensagem de erro na verificação", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageTolerancePeriod",
-				"Mensagem de pedestre no período de tolerância", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
+				"Mensagem de pedestre no perÃ­odo de tolerÃ¢ncia", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso permitido", FieldType.TEXT, "Liberado!"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedAthleteScreen",
@@ -423,15 +429,15 @@ public class Utils {
 				"Não permitido. Procure a secretaria."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedFaceRequired",
 				"(Tela do pedestre) Mensagem de cadastro de face obrigatório", FieldType.TEXT,
-				"Obrigatório cadastro facial"));
+				"ObrigatÃ³rio cadastro facial"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedOnlyOnceAthleteScreen",
 				"(Tela do pedestre) Mensagem pedestre que já acessou no dia", FieldType.TEXT,
 				"Não permitido mais hoje."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedTodayAthleteScreen",
 				"(Tela do pedestre) Mensagem fora do dia permitido", FieldType.TEXT, "Fora do dia permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNowAthleteScreen",
-				"(Tela do pedestre) Mensagem fora do horário permitido", FieldType.TEXT,
-				"Fora do horário permitido."));
+				"(Tela do pedestre) Mensagem fora do horÃ¡rio permitido", FieldType.TEXT,
+				"Fora do horÃ¡rio permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedOrigem",
 				"Mensagem para pedestre não permitido nesse equipamento", FieldType.TEXT,
 				"Não permitido;no equipamento."));
@@ -439,7 +445,7 @@ public class Utils {
 				"Mensagem para pedestre que não depositou cartão na urna", FieldType.TEXT,
 				"Deposite;o cartao na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageSMSAfterPassInDevice",
-				"Mensagem SMS após passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
+				"Mensagem SMS apÃ³s passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedBox",
 				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
 
@@ -452,7 +458,7 @@ public class Utils {
 				"Cor secundária da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.secondColor.getRed() + ";" + Main.secondColor.getGreen() + ";" + Main.secondColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenTimeout",
-				"Tempo limite para apresentação dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
+				"Tempo limite para apresentaÃ§Ã£o dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "samplesNumberForTraining",
 				"Número de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
@@ -463,13 +469,21 @@ public class Utils {
 				"intervalBetweenCapturesForRecognition", "Intervalo entre capturas para reconhecimento (em ms)",
 				FieldType.NUMERIC_LIST, "50", "30;10;200"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "waitTimeAfterRecognizer",
-				"Tempo de espera após reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
+				"Tempo de espera apÃ³s reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "maxTimeForFaceCapturing",
 				"Tempo máximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "serverRecognizerIP",
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+		
+		// Preferencias do nova Integração HIKIVISION
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
+				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
+				"Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionPasswordServerConnection",
+				"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null)
@@ -920,13 +934,13 @@ public class Utils {
 				desktop.browse(url.toURI());
 			else
 				JOptionPane.showConfirmDialog(null,
-						"Não foi possível abrir a página de download.\nTente abri-la manualmente através do link:\n"
+						"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
 								+ link,
 						title, JOptionPane.OK_CANCEL_OPTION);
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showConfirmDialog(null,
-					"Não foi possível abrir a página de download.\nTente abri-la manualmente através do link:\n"
+					"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
 							+ link,
 					title, JOptionPane.OK_CANCEL_OPTION);
 		}
@@ -1359,8 +1373,9 @@ public class Utils {
 	}
 
 	public static boolean isNullOrEmpty(String string) {
-		if (string == null || string.trim().isEmpty())
+		if (string == null || string.trim().isEmpty()) {
 			return true;
+		}
 		return false;
 	}
 
@@ -1653,7 +1668,7 @@ public class Utils {
 				} catch (Exception exe) {
 					String data = null;
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-					if(element.getAsString().contains("+0000")) {
+					if(element.getAsString().contains(".000+0000")) {
 						data = element.getAsString().replace(".000+0000", "");
 					}
 					return sdf.parse(data);
@@ -1679,7 +1694,7 @@ public class Utils {
 		return null;
 	}
 
-	// colocar conversor de ABATRACK para WIGAN aqui como estático
+	// colocar conversor de ABATRACK para WIGAN aqui como estÃ¡tico
 
 	public static String toHEX(String Cartao) {
 
@@ -1689,7 +1704,7 @@ public class Utils {
 			long fclong = Long.parseLong(Cartao);
 			String hexAbatrack = Long.toHexString(longAbatrack);
 			String hexWigan = hexAbatrack.substring(hexAbatrack.length() - 4);
-//			olhar a posição pegar exatamente o mesmo if
+//			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
 			String fcWiegand = "";
 			String temp = "";
 			fcWiegand = hexAbatrack.substring(hexAbatrack.length() - 6);
@@ -1721,7 +1736,7 @@ public class Utils {
 		String aux = "8591641950";
 		String temp = "";
 
-		System.out.println(" o que é cartão " + toHEX(aux));
+		System.out.println(" o que Ã© cartão " + toHEX(aux));
 
 		String n5 = "1237";
 		if (n5.matches("^(?=\\d{3}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
@@ -1732,61 +1747,42 @@ public class Utils {
 
 	}
 
-	public static String conversorHexaDecimal(String Cartao) {
-		try {
-			System.out.println("Cartão : " + Cartao );
-			if(Cartao.startsWith("00")) {
-				return Cartao;
-			}
-			if(Cartao.length()< 8) {
-				return Cartao;
-			}
-			long longAbatrack = Long.parseLong(Cartao);
-			long fclong = Long.parseLong(Cartao);
-			String hexAbatrack = Long.toHexString(longAbatrack);
-			String hexWigan = hexAbatrack.substring(hexAbatrack.length()-4);
-//			olhar a posição pegar exatamente o mesmo if
-			String fcWiegand = "";
-			String temp = "";
-			fcWiegand = hexAbatrack.substring(0, 4);
-			
-			System.out.println("hexAbatrack : " + hexAbatrack);
-			System.out.println("hexWigan : " + hexWigan);
-			System.out.println("fcWigan : " + fcWiegand);
-			
-			temp += fcWiegand.charAt(0);
-			temp += fcWiegand.charAt(1);
-			temp += fcWiegand.charAt(2);
-			temp += fcWiegand.charAt(3);
-			
-			longAbatrack  = new BigInteger(hexWigan, 16).longValue();
-			fclong  = new BigInteger(temp, 16).longValue();
-			System.out.println("---------------- ");
-			System.out.println("longaba depois : " + longAbatrack);
-			System.out.println("fcling depois : " + fclong);
-			
-			String wiegand = String.valueOf(longAbatrack);
-			String fcwiegand = String.valueOf(fclong);
-			
-			if(Cartao.startsWith("0")) {
-				fcwiegand = "0" + String.valueOf(fclong);
-			}
-			
-			if(wiegand.length() < 4) {
-				wiegand = "00"+ wiegand;
-			}
-			if(wiegand.length() < 5) {
-				wiegand = "0"+ wiegand;
-			}
-			
-			String fcwiegandtg = fcwiegand+wiegand;
-	        return fcwiegandtg;
-	       
-		}catch (Exception e) {
-			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
-			return Cartao;
-		}
-	
-	}
+//	public static String conversorHexaDeciimal(String Cartao) {
+//		try {
+//			if(Cartao.startsWith("00")) {
+//				return Cartao;
+//			}
+//			if(Cartao.length()< 8) {
+//				return Cartao;
+//			}
+//			long longAbatrack = Long.parseLong(Cartao);
+//			long fclong = Long.parseLong(Cartao);
+//			String hexAbatrack = Long.toHexString(longAbatrack);
+//			String hexWigan = hexAbatrack.substring(hexAbatrack.length()-4);
+////			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
+//			String fcWiegand = "";
+//			String temp = "";
+//			fcWiegand = hexAbatrack.substring(0, 4);
+//			temp += fcWiegand.charAt(0);
+//			temp += fcWiegand.charAt(1);
+//			temp += fcWiegand.charAt(2);
+//			temp += fcWiegand.charAt(3);
+//			
+//			longAbatrack  = new BigInteger(hexWigan, 16).longValue();
+//			fclong  = new BigInteger(temp, 16).longValue();
+//			String wiegand = String.valueOf(longAbatrack);
+//			if(hexWigan.startsWith("0")) {
+//				wiegand = "0"+wiegand;
+//			}
+//			String fcwiegand = String.valueOf(fclong);
+//			String fcwiegandtg = fcwiegand+wiegand;
+//	        return fcwiegandtg;
+//	       
+//		}catch (Exception e) {
+//			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
+//			return Cartao;
+//		}
+//	
+//	}
 
 }

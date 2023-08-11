@@ -230,7 +230,7 @@ public class PreferencesDialog extends JDialog {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//Amanhã fazer a configurações da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
+//AmanhÃ£ fazer a configurações da funÃ§Ã£o e terminar de executar tanto a requisiÃ§Ã£o, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
 		});
 
@@ -261,7 +261,7 @@ public class PreferencesDialog extends JDialog {
 				if(Main.servidor == null)
 					Utils.exportPreferences();
 				
-				JOptionPane.showMessageDialog(Main.mainScreen, "Preferências salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(Main.mainScreen, "PreferÃªncias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();
 			}
 		});
@@ -286,7 +286,7 @@ public class PreferencesDialog extends JDialog {
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmação", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "ConfirmaÃ§Ã£o", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (dialogResult == JOptionPane.YES_OPTION){
 					Main.lastSync = 0l;

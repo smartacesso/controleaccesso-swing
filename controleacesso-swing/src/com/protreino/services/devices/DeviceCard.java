@@ -340,7 +340,7 @@ public class DeviceCard extends JPanel {
 					if (retornoAuthentication == null)
 						return;
 					if (!retornoAuthentication) {
-						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida", 
+						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
 								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
@@ -727,7 +727,7 @@ public class DeviceCard extends JPanel {
 				}
 			}
 			
-			// Informações de ip, porta e localizacao
+			// InformaÃ§Ãµes de ip, porta e localizacao
 			JPanel deviceInfoPanel = new JPanel();
 			deviceInfoPanel.setLayout(new BoxLayout(deviceInfoPanel, BoxLayout.Y_AXIS));
 			deviceInfoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -852,15 +852,15 @@ public class DeviceCard extends JPanel {
 			dialog.setVisible(true);
 		
 		} else {
-			JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
-					"Erro na validação", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha invÃ¡lida",
+					"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
 		}
 	}
 	
 	private void showConfirmRemove(){
 		Object[] options = { DeviceStatus.CONNECTED.equals(device.getStatus()) ? "Desconectar e remover" : "Remover", "Cancelar"};
 		int result = JOptionPane.showOptionDialog(null, "Deseja realmente remover este dispositivo?",
-				"Confirmação", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
+				"ConfirmaÃ§Ã£o", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
 		if (result == JOptionPane.OK_OPTION) {
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override
@@ -898,7 +898,7 @@ public class DeviceCard extends JPanel {
 		TopDataDevice topData = (TopDataDevice) device;
 		if(topData.isConnected()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, 
-					"A sincronização de todas as digitais só pode ser feita com o dispositivo desconectado.",
+					"A sincronizaÃ§Ã£o de todas as digitais sÃ³ pode ser feita com o dispositivo desconectado.",
 					"Desconecte o dispositivo!",
 					JOptionPane.PLAIN_MESSAGE);
 			return;

@@ -161,7 +161,7 @@ public class ServerDevice extends Device {
 	}
 	
 	/**
-	 * método usado para varredura de ip
+	 * MÃ©todo usado para varredura de ip
 	 */
 	private boolean quickConnect() throws Exception {
 		client.connect();

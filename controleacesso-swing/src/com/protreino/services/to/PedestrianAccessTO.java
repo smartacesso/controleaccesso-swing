@@ -77,7 +77,8 @@ public class PedestrianAccessTO extends BaseEntity{
 	private String senha;
 	private String tipoAcesso;
 	private String tipoQRCode;
-	
+	private Date dataCadastroFotoNaHikivision;
+
 	public PedestrianAccessTO() {
 	}
 
@@ -142,7 +143,8 @@ public class PedestrianAccessTO extends BaseEntity{
 			.append(login != null ? login : "").append(";")
 			.append(senha != null ? senha : "").append(";")
 			.append(tipoAcesso != null ? tipoAcesso : "").append(";")
-			.append(tipoQRCode != null ? tipoQRCode : "").append(";");
+			.append(tipoQRCode != null ? tipoQRCode : "").append(";")
+			.append(dataCadastroFotoNaHikivision != null ? dataCadastroFotoNaHikivision.getTime() : "");
 		
 		if(this.mensagens != null) {
 			for(PedestrianMessagesEntity m : this.mensagens)
@@ -580,6 +582,14 @@ public class PedestrianAccessTO extends BaseEntity{
 
 	public void setTipoQRCode(String tipoQRCode) {
 		this.tipoQRCode = tipoQRCode;
+	}
+
+	public Date getDataCadastroFotoNaHikivision() {
+		return dataCadastroFotoNaHikivision;
+	}
+
+	public void setDataCadastroFotoNaHikivision(Date dataCadastroFotoNaHikivision) {
+		this.dataCadastroFotoNaHikivision = dataCadastroFotoNaHikivision;
 	}
 	
 }

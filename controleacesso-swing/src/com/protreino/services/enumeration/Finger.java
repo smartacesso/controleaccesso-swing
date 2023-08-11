@@ -19,21 +19,21 @@ public enum Finger {
 		else if(this.equals(RIGHT_THUMB))
 			return "Polegar direito";
 		else if(this.equals(RIGHT_MIDDLE))
-			return "Médio direito";
+			return "MÃ©dio direito";
 		else if(this.equals(RIGHT_RING))
 			return "Anelar direito";
 		else if(this.equals(RIGHT_LITTLE))
-			return "Mínimo direito";
+			return "MÃ­nimo direito";
 		else if(this.equals(LEFT_INDEX))
 			return "Indicador esquerdo";
 		else if(this.equals(LEFT_THUMB))
 			return "Polegar esquerdo";
 		else if(this.equals(LEFT_MIDDLE))
-			return "Médio esquerdo";
+			return "MÃ©dio esquerdo";
 		else if(this.equals(LEFT_RING))
 			return "Anelar esquerdo";
 		else if(this.equals(LEFT_LITTLE))
-			return "Mínimo esquerdo";
+			return "MÃ­nimo esquerdo";
 		return "";
 	}
 	
@@ -42,21 +42,21 @@ public enum Finger {
 			return Finger.RIGHT_INDEX;
 		}else if(importValue.equals("Polegar direito")){
 			return Finger.RIGHT_THUMB;
-		}else if(importValue.equals("Médio direito")){
+		}else if(importValue.equals("MÃ©dio direito")){
 			return Finger.RIGHT_MIDDLE;
 		}else if(importValue.equals("Anelar direito")){
 			return Finger.RIGHT_RING;
-		}else if(importValue.equals("Mínimo direito")){
+		}else if(importValue.equals("MÃ­nimo direito")){
 			return Finger.RIGHT_LITTLE;
 		}else if(importValue.equals("Indicador esquerdo")){
 			return Finger.LEFT_INDEX;
 		}else if(importValue.equals("Polegar esquerdo")){
 			return Finger.LEFT_THUMB;
-		}else if(importValue.equals("Médio esquerdo")){
+		}else if(importValue.equals("MÃ©dio esquerdo")){
 			return Finger.LEFT_MIDDLE;
 		}else if(importValue.equals("Anelar esquerdo")){
 			return Finger.LEFT_RING;
-		}else if(importValue.equals("Mínimo esquerdo")){
+		}else if(importValue.equals("MÃ­nimo esquerdo")){
 			return Finger.LEFT_LITTLE;
 		}
 		else

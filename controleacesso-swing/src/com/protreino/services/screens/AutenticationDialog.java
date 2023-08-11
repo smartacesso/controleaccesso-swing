@@ -66,7 +66,7 @@ public class AutenticationDialog extends JDialog {
 	}
 	
 	public AutenticationDialog(Frame owner, boolean useLogin, boolean usePassword, boolean loginInterno){
-		super(owner, "autentificação", true);
+		super(owner, "Autentificação", true);
 		
 		setPreferredSize(new Dimension(300,260));
 		setMinimumSize(getPreferredSize());
@@ -105,15 +105,15 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Utils.isNullOrEmpty(loginField.getText())) {
-					invalidCredentialsLabel.setText("Login inválido!");
+					invalidCredentialsLabel.setText("Login invÃ¡lido!");
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inválida!");
+					invalidCredentialsLabel.setText("Senha invÃ¡lida!");
 					return;
 				}
 				
-				//IDENTIFICAR QUEM ESTÁ CHAMANDO A TELA
+				//IDENTIFICAR QUEM ESTÃ� CHAMANDO A TELA
 				if(loginInterno) {
 					PlanoEntity planoComMaiorVencimento = buscaPlanoAtivoComMaiorDataVencimento();
 					
@@ -226,9 +226,10 @@ public class AutenticationDialog extends JDialog {
 		passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		passwordField.setMaximumSize(passwordField.getPreferredSize());
 		
-		if (Main.desenvolvimento)
+		if (Main.desenvolvimento) {
 			passwordField.setText("123456");
-		
+		}
+
 		invalidCredentialsLabel = new JLabel(" ");
 		invalidCredentialsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		invalidCredentialsLabel.setForeground(Color.RED);

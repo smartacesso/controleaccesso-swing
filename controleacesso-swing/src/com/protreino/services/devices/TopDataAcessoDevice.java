@@ -66,8 +66,8 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		
 		EasyInner.LigarLedVerde(inner.Numero);
 		EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
-		EasyInner.ManterRele1Acionado(inner.Numero);
-		EasyInner.ManterRele2Acionado(inner.Numero);
+		//EasyInner.ManterRele1Acionado(inner.Numero);
+		//EasyInner.ManterRele2Acionado(inner.Numero);
 		EasyInner.AcionarBipCurto(inner.Numero);
 		
 		

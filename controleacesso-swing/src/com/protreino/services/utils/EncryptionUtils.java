@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * 
  * Criptografa e descriptografa Strings.
- * Poder ser utilizado para qualquer pr髉osito
+ * Poder ser utilizado para qualquer prop贸sito
  * 
  * @author Gustavo Diniz
  *
@@ -16,7 +16,7 @@ import java.util.UUID;
 public final class EncryptionUtils {
 	
 	/**
-	 * Criptografa String Usando o m閠odo SHA-256
+	 * Criptografa String Usando o M茅todo SHA-256
 	 * 
 	 * @param value
 	 * @return
@@ -37,7 +37,7 @@ public final class EncryptionUtils {
 	}
 	
 	/**
-	 * Retorna senha alet髍ia com 8 d韌tos
+	 * Retorna senha aleat贸ria com 8 d铆gitos
 	 * de 128 bits
 	 * 
 	 * @return
@@ -51,7 +51,7 @@ public final class EncryptionUtils {
 	}
 	
 	/**
-	 * Retorna senha aleat髍ia com 8 d韌itos
+	 * Retorna senha aleat贸ria com 8 d铆gitos
 	 * de 128 bits
 	 * 
 	 * @return
@@ -65,7 +65,7 @@ public final class EncryptionUtils {
 	}
 	
 	/**
-	 * Testa encripta玢o
+	 * Testa encripta莽茫o
 	 * 
 	 * @param args
 	 */
@@ -76,9 +76,9 @@ public final class EncryptionUtils {
 			System.out.println("Criptografa 'sescts18': " + encrypt("sescts18"));
 			System.out.println("Criptografa '123456': " + encrypt("123456"));
 			
-			System.out.println("Senha aleat髍ia: " + getRandomPassword());
-			System.out.println("Senha aleat髍ia: " + getRandomPassword());
-			System.out.println("Senha aleat髍ia: " + getRandomPassword());
+			System.out.println("Senha aleat贸ria: " + getRandomPassword());
+			System.out.println("Senha aleat贸ria: " + getRandomPassword());
+			System.out.println("Senha aleat贸ria: " + getRandomPassword());
 			
 		}catch (Exception e) {
 			e.printStackTrace();

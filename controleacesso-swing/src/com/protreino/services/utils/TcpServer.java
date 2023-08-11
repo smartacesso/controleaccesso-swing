@@ -290,10 +290,6 @@ public class TcpServer {
 								.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevicesListServer(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
-						} else if (TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS
-								.equals(receivedTcpMessage.getType())) {
-							List<LogPedestrianAccessEntity> list = buscaLogsPaginados(receivedTcpMessage);
-							responseTcpMessage.getParans().put("list", list);
 						}
 						else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
@@ -683,7 +679,7 @@ public class TcpServer {
 					response.setSuccess(true);
 					response.setUser(new SimpleUser(usuario.getId(), usuario.getName(), usuario.getIdClient()));
 				} else {
-					response.setErrorMessage("Dados inválidos!");
+					response.setErrorMessage("Dados invÃ¡lidos!");
 				}
 
 			} catch (Exception e) {
@@ -704,17 +700,6 @@ public class TcpServer {
 			return devices;
 		}
 
-		private List<LogPedestrianAccessEntity> buscaLogsPaginados(TcpMessageTO receivedTcpMessage) {
-			String namedQuery = (String) receivedTcpMessage.getParans().get("namedQuery");
-			Integer quantidade = (Integer) receivedTcpMessage.getParans().get("quantidade");;
-			Integer inicio = (Integer) receivedTcpMessage.getParans().get("inicio");;
-
-			@SuppressWarnings("unchecked")
-			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
-
-			return HibernateUtil.buscaLogsDeAcessoPaginados(namedQuery, args, inicio, quantidade);
-		}
-
 		private VerificationResult processAccessRequestFromApp(TcpMessageTO receivedTcpMessage) {
 			String deviceIdentifier = (String) receivedTcpMessage.getParans().get("device_identifier");
 			String codigo = (String) receivedTcpMessage.getParans().get("codigo");
@@ -725,7 +710,7 @@ public class TcpServer {
 				ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
 			} catch (Exception e) {
 			}
-			System.out.println("Recebido código: " + codigo);
+			System.out.println("Recebido cÃ³digo: " + codigo);
 			System.out.println("Recebido catraca: " + deviceIdentifier);
 
 			VerificationResult verificationResult = VerificationResult.NOT_FOUND;
@@ -756,7 +741,7 @@ public class TcpServer {
 				device.setAllowedUserName((String) retorno[1]);
 				device.setMatchedFacialId(((PedestrianAccessEntity) retorno[2]).getId());
 
-				System.out.println("Resultado na análise: " + verificationResult);
+				System.out.println("Resultado na anÃ¡lise: " + verificationResult);
 				if (VerificationResult.ALLOWED.equals(verificationResult)
 						|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult)) {
 					device.allowAccess((PedestrianAccessEntity) retorno[2]);
@@ -765,7 +750,7 @@ public class TcpServer {
 				}
 			} else {
 				System.out.println("Libera sem catraca");
-				// se não tiver, realiza um processo de liberação genêrico
+				// se não tiver, realiza um processo de liberação genÃªrico
 				Object[] retorno = HibernateUtil.processAccessRequest(codigo, location, createNotification,
 						ignoraRegras);
 				if (retorno != null && retorno.length > 0)
@@ -776,8 +761,6 @@ public class TcpServer {
 		}
 
 	}
-
-
 
 	public class ProcessPdvThread extends Thread {
 		private Socket socket;
@@ -831,7 +814,7 @@ public class TcpServer {
 		}
 
 		private String processaCartaoComanda(String receivedData, String responseData) {
-			// para liberação de cartões
+			// para liberação de cartÃµes
 			if (receivedData != null) {
 
 				if (receivedData.startsWith("SIER;STCSI;2")) {

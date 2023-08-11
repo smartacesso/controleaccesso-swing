@@ -29,23 +29,23 @@ import org.hibernate.annotations.Type;
 	
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDateCount", 
 				query = "select count(obj) from LogPedestrianAccessEntity obj "
-					  + " where obj.accessDate between :LAST_SYNC and :NEW_LAST_SYNC "
+					  + " where obj.accessDate > :LAST_SYNC"
 					  + " and (obj.offline is null or obj.offline = false) "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByAccessDate", 
 				query = "select obj from LogPedestrianAccessEntity obj "
-					  + " where obj.accessDate between :LAST_SYNC and :NEW_LAST_SYNC "
+					  + " where obj.accessDate > :LAST_SYNC"
 					  + " and (obj.offline is null or obj.offline = false) "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false)"),
 	
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDateCount", 
 				query = "select count(obj) from LogPedestrianAccessEntity obj "
-					  + " where obj.dataCriacao between :LAST_SYNC and :NEW_LAST_SYNC "
+					  + " where obj.dataCriacao > :LAST_SYNC "
 					  + " and obj.offline = true "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCreateDate", 
 				query = "select obj from LogPedestrianAccessEntity obj "
-					  + " where obj.dataCriacao between :LAST_SYNC and :NEW_LAST_SYNC  "
+					  + " where obj.dataCriacao > :LAST_SYNC "
 					  + " and obj.offline = true "
 					  + " and (obj.onlyLocal is null or obj.onlyLocal = false) "),
 	
@@ -152,6 +152,7 @@ import org.hibernate.annotations.Type;
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCurrentDate",
 	query = "select obj from LogPedestrianAccessEntity obj "
 		  + "where obj.dataCriacao is not null "
+		  + "and  obj.idPedestrian = :ID_PEDESTRE  "
 		  + "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM "
 		  + "order by obj.dataCriacao desc ")
 })

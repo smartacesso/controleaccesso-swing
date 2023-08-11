@@ -114,7 +114,7 @@ public class NewDeviceDialog extends JDialog{
 				}
 				
 				if(Manufacturer.TOP_DATA_EXPEDIDORA.equals(manufacturer) && !Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
-					//Só adiciona expedidora se usuário poder
+					//sÃ³ adiciona expedidora se usuário poder
 					continue;
 				}
 				
@@ -201,7 +201,7 @@ public class NewDeviceDialog extends JDialog{
 											double height = fieldPanel.getPreferredSize().getHeight();
 											fieldPanel.setMaximumSize(new Dimension(Double.valueOf(width).intValue(), Double.valueOf(height).intValue()));
 										
-										} else if("Selecione o tipo de câmera".equals(field.getName())) {
+										} else if("Selecione o tipo de camÃªra".equals(field.getName())) {
 											JComboBox<String> comboTipoCamera = (JComboBox<String>) field.getField()[0];
 											
 											comboTipoCamera.addActionListener(e -> {
@@ -222,7 +222,7 @@ public class NewDeviceDialog extends JDialog{
 										dadosDispositivoPanel.add(Box.createVerticalStrut(7));
 									}
 									
-									PanelWithLabel label = new PanelWithLabel("Insira as informações do dispositivo:", FlowLayout.LEFT, true, 0, 10);
+									PanelWithLabel label = new PanelWithLabel("Insira as informaÃ§Ãµes do dispositivo:", FlowLayout.LEFT, true, 0, 10);
 									mainNewDevicePanel.add(label);
 									mainNewDevicePanel.add(dadosDispositivoPanel);
 									
@@ -281,7 +281,7 @@ public class NewDeviceDialog extends JDialog{
 							if (field.getValue() != null && !"".equals(field.getValue()))
 								identifier.append(field.getValue() + ";");
 							else {
-								mensagem.setText("Todos os campos são necessários");
+								mensagem.setText("Todos os campos sÃ£o necessÃ¡rios");
 								return;
 							}
 						}
@@ -289,9 +289,9 @@ public class NewDeviceDialog extends JDialog{
 						if(cameraDeviceFiels != null && Manufacturer.FACIAL.equals(fabricante)) {
 							for(FieldTO field : cameraDeviceFiels) {
 								if("IP".equals(tipoCamera) 
-										&& "URL da camêra".equalsIgnoreCase(field.getName())
+										&& "URL da camÃªra".equalsIgnoreCase(field.getName())
 											&& field.getValue().trim().isEmpty()) {
-									mensagem.setText("A URL é obrigatória.");
+									mensagem.setText("A URL Ã© obrigatÃ³ria.");
 									return;
 								}
 								String valor = field.getValue().isEmpty() ? " " : field.getValue();
@@ -300,9 +300,9 @@ public class NewDeviceDialog extends JDialog{
 							}
 						}
 						
-						if (fabricante.useLogin()) // login será pedido quando conectar, mas precisar estar presente no identificador
+						if (fabricante.useLogin()) // login serÃ¡ pedido quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
-						if (fabricante.usePassword()) // senha será pedida quando conectar, mas precisar estar presente no identificador
+						if (fabricante.usePassword()) // senha serÃ¡ pedida quando conectar, mas precisar estar presente no identificador
 							identifier.append(" ;");
 						newDevice = fabricante.getNewDevice(identifier.toString());
 					
@@ -313,7 +313,7 @@ public class NewDeviceDialog extends JDialog{
 						}
 						SelectItem item = (SelectItem) foundDevicesComboBox.getSelectedItem();
 						if (item.getValue() == null) {
-							mensagem.setText("Selecione um dispositivo válido");
+							mensagem.setText("Selecione um dispositivo vÃ¡lido");
 							return;
 						}
 						newDevice = (Device) item.getValue();
@@ -395,7 +395,7 @@ public class NewDeviceDialog extends JDialog{
 	
 	private String fazerVarreduraIps(){
 		
-		// cria o dialog com as informações
+		// cria o dialog com as informaÃ§Ãµes
 		JDialog dialog = new JDialog(null, "Procurando a catraca na rede...", ModalityType.APPLICATION_MODAL);
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -418,7 +418,7 @@ public class NewDeviceDialog extends JDialog{
 				
 				Manufacturer fabricante = (Manufacturer) fabricanteComboBox.getSelectedItem();
 				
-				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q iniciá-lo toda vez
+				// Inicia o nucle RWTECH para ja ficar pronto e nao ter q iniciÃ¡-lo toda vez
 //				if (Manufacturer.RWTECH.equals(fabricante)){
 //					RWTechDevice deviceTeste = new RWTechDevice(5000, " ; ;");
 //					deviceTeste.iniciarNucleoIntegracao();
@@ -446,7 +446,7 @@ public class NewDeviceDialog extends JDialog{
 					String ip = "192.168." + subrede + "." + String.valueOf(i);
 					instrucoesLabel1.setText("Procurando a catraca na rede: " + ip);
 					
-					// ping no ip e vê se tem alguma resposta, se responder é um possivel ip de catraca, e ai tenta conectar nele
+					// ping no ip e vÃª se tem alguma resposta, se responder Ã© um possivel ip de catraca, e ai tenta conectar nele
 					if (!ping(ip))
 						continue;
 					
@@ -516,7 +516,7 @@ public class NewDeviceDialog extends JDialog{
 		progressBar.setPreferredSize(new Dimension(200, 30));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		// Adicionar um botao para cancelar a ação quando for possível
+		// Adicionar um botao para cancelar a aÃ§Ã£o quando for possível
 		JButton cancelButton = new JButton("Cancelar");
 		cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		cancelButton.setPreferredSize(new Dimension(100, 50));

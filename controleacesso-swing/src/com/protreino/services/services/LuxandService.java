@@ -53,7 +53,7 @@ public class LuxandService {
 
 			int ret = FSDK.ActivateLibrary(key);
 			if (ret != FSDK.FSDKE_OK)
-				throw new Exception("Não foi possível ativar a Luxand FaceSDK. Verifique a chave de licença.");
+				throw new Exception("Não foi possível ativar a Luxand FaceSDK. Verifique a chave de licenÃ§a.");
 
 			ret = FSDK.Initialize();
 			if (ret != FSDK.FSDKE_OK)
@@ -69,11 +69,11 @@ public class LuxandService {
 					Boolean.valueOf(configurationsMap.get("DetermineFaceRotationAngle")),
 					Integer.valueOf(configurationsMap.get("InternalResizeWidth")));
 			if (ret != FSDK.FSDKE_OK)
-				throw new Exception("Não foi possível setar os parâmetros de detecção da Luxand FaceSDK.");
+				throw new Exception("Não foi possível setar os parÃªmetros de detecÃ§Ã£o da Luxand FaceSDK.");
 
 			ret = FSDK.SetFaceDetectionThreshold(Integer.valueOf(configurationsMap.get("FaceDetectionThreshold")));
 			if (ret != FSDK.FSDKE_OK)
-				throw new Exception("Não foi possível setar o parâmetro threshold da Luxand FaceSDK.");
+				throw new Exception("Não foi possível setar o parÃ¢metro threshold da Luxand FaceSDK.");
 
 			if (Boolean.valueOf(configurationsMap.get("FacilitateRecognizeWithMask"))) {
 				int[] erros = new int[10];
@@ -81,7 +81,7 @@ public class LuxandService {
 						"FaceDetectionModel=" + PATH_FILE_MASKS_BIN + ";TrimFacesWithUncertainFacialFeatures=false",
 						erros);
 				if (ret != FSDK.FSDKE_OK)
-					throw new Exception("Não foi possível setar o parâmetro modelo de deteccão de faces.");
+					throw new Exception("Não foi possível setar o parÃ¢metro modelo de detecÃ§Ã£o de faces.");
 			}
 
 			ret = FSDKCam.SetCameraNaming(true); // UseDevicePathAsName
@@ -112,7 +112,7 @@ public class LuxandService {
 		FSDKCam.FinalizeCapturing();
 
 		if (ret != FSDK.FSDKE_OK) {
-			JOptionPane.showMessageDialog(null, "Não foi possível retornar lista de nomes das câmeras.",
+			JOptionPane.showMessageDialog(null, "Não foi possível retornar lista de nomes das cÃ£meras.",
 					"Erro na Luxand FaceSDK", JOptionPane.PLAIN_MESSAGE);
 			return new String[0];
 		}
@@ -125,7 +125,7 @@ public class LuxandService {
 				cameras[i] = cameraNameList.cameras[i] + " (" + cameraId + ")";
 			}
 		} else {
-			JOptionPane.showMessageDialog(null, "Nenhuma câmera encontrada.", "Erro na Luxand FaceSDK",
+			JOptionPane.showMessageDialog(null, "Nenhuma cÃ£mera encontrada.", "Erro na Luxand FaceSDK",
 					JOptionPane.PLAIN_MESSAGE);
 		}
 

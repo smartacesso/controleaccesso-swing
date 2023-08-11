@@ -312,8 +312,8 @@ public class ComputerIdDevice extends Device {
 	@Override
 	public void processAccessRequest(Object obj) {
 		
-		// Primeiro é feito o processo de match para identificar o usuário.
-		// aspós a identificação é verificado se o acesso é permitido.
+		// Primeiro Ã© feito o processo de match para identificar o usuário.
+		// ApÃ³s a identificação Ã© verificado se o acesso Ã© permitido.
 		
 		Long idEncontrado = null;
 		DPFPSample sample = (DPFPSample) obj;

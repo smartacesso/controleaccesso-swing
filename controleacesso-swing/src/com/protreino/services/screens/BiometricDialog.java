@@ -315,7 +315,7 @@ public class BiometricDialog extends JDialog{
 				}
 
 			} else if (Manufacturer.NITGEN.equals(selectedDevice.getManufacturer())) {
-				//adicionar também nas outras catracas conectadas
+				//adicionar tambÃ©m nas outras catracas conectadas
 				for(Device device : Main.devicesList) {
 					if(device != null && device instanceof TopDataDevice) {
 						//verifica se pode adicionar
@@ -360,7 +360,7 @@ public class BiometricDialog extends JDialog{
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.NEW_TEMPLATE, temp));
 			}
 			
-			JOptionPane.showMessageDialog(this, "Biometria cadastrada com sucesso!", "Coleta concluí-da", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Biometria cadastrada com sucesso!", "Coleta concluÃ­da", JOptionPane.PLAIN_MESSAGE);
 			dispose();
 		
 		} catch (Exception e) {
