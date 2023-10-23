@@ -1503,7 +1503,8 @@ public class HibernateUtil {
 				if ("ATIVO".equals(matchedAthleteAccess.getStatus())) {
 					resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedAthleteAccess,
 							logAccess, VerificationResult.ALLOWED, foto, origem, data);
-
+					
+					Utils.createNotification(userName + " Liberado.", NotificationType.GOOD, foto);
 					// indefine acesso
 //					if ("ATIVO".equals(logAccess.getStatus()))
 //						logAccess.setStatus("INDEFINIDO");
