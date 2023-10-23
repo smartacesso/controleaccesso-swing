@@ -324,8 +324,8 @@ public class MainScreen extends JFrame {
 	}
 
 	/**
-	 * Cria o deviceCard. Chamado quando um novo dispositivo é adicionado ou quando
-	 * a tela exibida e há dispositivos salvos na lista
+	 * Cria o deviceCard. Chamado quando um novo dispositivo ï¿½ adicionado ou quando
+	 * a tela exibida e hï¿½ dispositivos salvos na lista
 	 * 
 	 * @param device
 	 */
@@ -465,7 +465,7 @@ public class MainScreen extends JFrame {
 			});
 			menuOpcoes.add(liberarAcessoMenuItem);
 
-			preferenciasMenuItem = new JMenuItem("Preferências");
+			preferenciasMenuItem = new JMenuItem("PreferÃªncias");
 			preferenciasMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -486,7 +486,7 @@ public class MainScreen extends JFrame {
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
+						Utils.createNotification("Nï¿½o foi possï¿½vel abri as preferï¿½ncias", NotificationType.BAD);
 					}
 				}
 			});
@@ -511,7 +511,7 @@ public class MainScreen extends JFrame {
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Nao foi possível sincronizar os usuários", NotificationType.BAD);
+						Utils.createNotification("Nao foi possï¿½vel sincronizar os usuï¿½rios", NotificationType.BAD);
 					}
 				}
 			});
@@ -526,7 +526,7 @@ public class MainScreen extends JFrame {
 			});
 			menuConfiguracoes.add(logsMenuItem);
 			
-			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizações");
+			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizaï¿½ï¿½es");
 			procurarAtualizacaoMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -723,18 +723,18 @@ public class MainScreen extends JFrame {
 					.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
 		}
 		
-		List <DeviceTO> devicesFromServer = HibernateUtil.getListDeviceFromServer();
-		if(devicesFromServer != null && !devicesFromServer.isEmpty()) {
-			for (DeviceTO deviceTO : devicesFromServer) {
-				Device device = null;
-				if(Manufacturer.TOP_DATA.equals(deviceTO.getManufacturer())) {
-					 // device = new TopDataDevice();
-				}
-				addDeviceCard(device);
-				device.getDeviceCard()
-						.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
-			}
-		}
+//		List <DeviceTO> devicesFromServer = HibernateUtil.getListDeviceFromServer();
+//		if(devicesFromServer != null && !devicesFromServer.isEmpty()) {
+//			for (DeviceTO deviceTO : devicesFromServer) {
+//				Device device = null;
+//				if(Manufacturer.TOP_DATA.equals(deviceTO.getManufacturer())) {
+//					 // device = new TopDataDevice();
+//				}
+//				addDeviceCard(device);
+//				device.getDeviceCard()
+//						.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
+//			}
+//		}
 		// Habilita/desabilita o botao de liberar acesso nas catracas que estiverem
 		// vinculadas
 		verificaCatracasVinculadas();
@@ -804,8 +804,8 @@ public class MainScreen extends JFrame {
 		}else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
-			connectionStatusLabel.setToolTipText("<html>Sem conexão com servidor " + servidor + " os dados não estão sendo sincronizados."
-					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+			connectionStatusLabel.setToolTipText("<html>Sem conexï¿½o com servidor " + servidor + " os dados nï¿½o estï¿½o sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor estï¿½ ligado!</html>" );
 		}
 		
 	}
@@ -904,7 +904,7 @@ public class MainScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.mainScreen
-					.addEvento("Não foi possivel abrir a pasta de logs. Navegue até ela manualmente: " + Main.logPath);
+					.addEvento("Nï¿½o foi possivel abrir a pasta de logs. Navegue atÃ© ela manualmente: " + Main.logPath);
 		}
 	}
 

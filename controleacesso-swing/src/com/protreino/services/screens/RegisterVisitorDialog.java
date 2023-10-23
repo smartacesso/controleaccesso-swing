@@ -220,16 +220,16 @@ public class RegisterVisitorDialog extends BaseDialog {
 		tabbedPane = new JTabbedPane();
 		
 		JPanel dadosBasicosPanel = montarPanelDadosBasicos();
-		tabbedPane.add("Dados básicos", dadosBasicosPanel);
-		JLabel label = new JLabel("Dados básicos");
+		tabbedPane.add("Dados bÃ¡sicos", dadosBasicosPanel);
+		JLabel label = new JLabel("Dados bÃ¡sicos");
 		label.setPreferredSize(new Dimension(120, 25));
 		label.setForeground(Main.firstColor);
 		label.setFont(tabHeaderFont);
 		tabbedPane.setTabComponentAt(0, label);
 
 		JPanel enderecoPanel = montarPanelEndereco();
-		tabbedPane.add("Endereço", enderecoPanel);
-		label = new JLabel("Endereço");
+		tabbedPane.add("EndereÃ§o", enderecoPanel);
+		label = new JLabel("EndereÃ§o");
 		label.setPreferredSize(new Dimension(100, 25));
 		label.setForeground(Main.firstColor);
 		label.setFont(tabHeaderFont);
@@ -294,7 +294,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		habilitaBuscaCPF = false;
 		habilitaBuscaRG  = false;
 		
-		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
+		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatï¿½rios para cadastro de pedestres");
 		if(camposObrigatorios.contains("cpf")) 
 			habilitaBuscaCPF = true;
 		
@@ -305,14 +305,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 		if(qrCode != null && !"".equals(qrCode)) {
 			habilitaQRCode = Boolean.valueOf(qrCode);
 			if(habilitaQRCode) {
-				//busca outras configurações do QRCODE
-				String qrCodeDinamico = buscaParametroPeloNome("Permitir acesso via QR Code: Habilita QRCode dinâmico");
+				//busca outras configuraï¿½ï¿½es do QRCODE
+				String qrCodeDinamico = buscaParametroPeloNome("Permitir acesso via QR Code: Habilita QRCode dinï¿½mico");
 				if(qrCodeDinamico != null && !"".equals(qrCodeDinamico)) 
 					habilitaQRCodeDinamico = Boolean.valueOf(qrCodeDinamico);
-				String tempoQRCode = buscaParametroPeloNome("Permitir acesso via QR Code: Tempo para renovação do tipo QRCode Dinâmico por tempo (em minutos)");
+				String tempoQRCode = buscaParametroPeloNome("Permitir acesso via QR Code: Tempo para renovaï¿½ï¿½o do tipo QRCode Dinï¿½mico por tempo (em minutos)");
 				if(tempoQRCode != null && !"".equals(tempoQRCode)) 
 					this.tempoQRCode = tempoQRCode;
-				String tipoQRCodePadrao = buscaParametroPeloNome("Permitir acesso via QR Code: Tipo padrão");
+				String tipoQRCodePadrao = buscaParametroPeloNome("Permitir acesso via QR Code: Tipo padrï¿½o");
 				if(tipoQRCodePadrao != null && !"".equals(tipoQRCodePadrao)) 
 					this.tipoQRCodePadrao = tipoQRCodePadrao;
 			}
@@ -399,7 +399,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		itens.add(new SelectItem("MASCULINO", "MASCULINO"));
 		itens.add(new SelectItem("FEMININO", "FEMININO"));
 
-		generoLabel = getNewLabel("Gênero");
+		generoLabel = getNewLabel("GÃªnero");
 		generoJComboBox = new JComboBox<SelectItem>(itens);
 		JPanel generoPanel = new JPanel();
 
@@ -469,13 +469,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JPanel celularPanel = getNewMiniPanel(celularLabel, celularTextField);
 		panel.add(celularPanel, getNewGridBag(1, 2, 30, 5));
 
-		responsavelLabel = getNewLabel("Responsável");
+		responsavelLabel = getNewLabel("ResponsÃ¡vel");
 		responsavelTextField = getNewTextField(25);
 		responsavelTextField.setMinimumSize(new Dimension(300, 25));
 		JPanel responsavelPanel = getNewMiniPanel(responsavelLabel, responsavelTextField);
 		panel.add(responsavelPanel, getNewGridBag(2, 2, 30, 5));
 
-		obsLabel = getNewLabel("Observações");
+		obsLabel = getNewLabel("ObservaÃ§Ãµes");
 		obsTextArea = new JTextArea();
 		obsTextArea.setColumns(40);
 		obsTextArea.setRows(4);
@@ -513,7 +513,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-		String mensagem = String.format("Documento já existente, tem certeza que quer mudar o tipo do Usuário de %s para %s?", 
+		String mensagem = String.format("Documento jï¿½ existente, tem certeza que quer mudar o tipo do Usuï¿½rio de %s para %s?", 
 				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.PEDESTRE : TipoPedestre.VISITANTE,
 				TipoPedestre.PEDESTRE.toString().equals(existente.getTipo()) ? TipoPedestre.VISITANTE : TipoPedestre.PEDESTRE);
 
@@ -546,7 +546,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}.start();
 		});
 
-		JButton naoButton = new JButton("não");
+		JButton naoButton = new JButton("nï¿½o");
 		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		naoButton.addActionListener(e -> {
@@ -759,7 +759,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JPanel logradouroPanel = getNewMiniPanel(logradouroLabel, logradouroTextField);
 		panel.add(logradouroPanel, getNewGridBag(1, 0, 30, 5));
 
-		JLabel numeroLabel = getNewLabel("Número");
+		JLabel numeroLabel = getNewLabel("Nï¿½mero");
 		numeroTextField = getNewTextField(10);
 		JPanel numeroPanel = getNewMiniPanel(numeroLabel, numeroTextField);
 		panel.add(numeroPanel, getNewGridBag(2, 0, 30, 5));
@@ -850,7 +850,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 
 		JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
-		cartaoAcessoLabel = new JLabel("Cartão de acesso");
+		cartaoAcessoLabel = new JLabel("CartÃ£o de acesso");
 		c = getNewGridBag(0, 0, 0, 0);
 		cartaoAcessoPanel.add(cartaoAcessoLabel, c);
 		cartaoAcessoTextField = Utils.getNewJFormattedTextField(15);
@@ -867,7 +867,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		JPanel matriculaPanel = new JPanel(new GridBagLayout());
 		matriculaPanel.setVisible(isExibeCampoMatricula());
-		matriculaLabel = new JLabel("Matrícula");
+		matriculaLabel = new JLabel("Matrï¿½cula");
 		c = getNewGridBag(0, 0, 0, 0);
 		matriculaPanel.add(matriculaLabel, c);
 		matriculaTextField = getNewTextField(15);
@@ -903,7 +903,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private boolean exibeBotaoSempreLiberado() {
-		String exibeBotaoSempreLiberadoParaTodos = buscaParametroPeloNome("Exibe escolha \"Sempre liberado\" para todos os usuários");
+		String exibeBotaoSempreLiberadoParaTodos = buscaParametroPeloNome("Exibe escolha \"Sempre liberado\" para todos os usuï¿½rios");
 		
 		return Boolean.TRUE.equals(Boolean.valueOf(exibeBotaoSempreLiberadoParaTodos))
 						|| "PEDESTRE".equals(visitante.getTipo());
@@ -1070,9 +1070,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 			//adiciona dados de escolha de tipo
 			JLabel escolhaTipoQRCodeLabel = new JLabel("Escolha o tipo de QRCode");
 			Vector<SelectItem> itens = new Vector<SelectItem>();
-			itens.add(new SelectItem("estático", null));
-			itens.add(new SelectItem("dinâmico por tempo", "DINAMICO_TEMPO"));
-			itens.add(new SelectItem("dinâmico por uso", "DINAMICO_USO"));
+			itens.add(new SelectItem("estï¿½tico", null));
+			itens.add(new SelectItem("dinï¿½mico por tempo", "DINAMICO_TEMPO"));
+			itens.add(new SelectItem("dinï¿½mico por uso", "DINAMICO_USO"));
 			tipoQRCodeJComboBox = new JComboBox<SelectItem>(itens);
 			criaPainelComboBox(escolhaTipoQRCodeLabel, tipoQRCodeJComboBox, mainPanel, 0, 0);
 			
@@ -1082,7 +1082,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 								: (tipoQRCodePadrao.equals("DINAMICO_USO") ? 2 : 0 ) );
 			
 		}else {
-			//somente confirmação
+			//somente confirmaï¿½ï¿½o
 			JLabel mensagemLabel = new JLabel("Deseja gerar um QRCode para esse pedestre?");
 			mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 			mainPanel.add(mensagemLabel);
@@ -1117,10 +1117,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private void gerarQRCode(String tipo, JDialog qrCodeDialog) {
 		if(tipo == null
 				|| "ESTATICO".equals(tipo)) {
-			//gera QRCode estático
+			//gera QRCode estï¿½tico
 			visitante.setQrCodeParaAcesso(Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
 		}else{
-			//gera QRCode genêrico
+			//gera QRCode genï¿½rico
 			String qrCode = EncryptionUtils.getRandomString(4);
 			if("DINAMICO_USO".equals(tipo)) {
 				//adiciona primeiro giro
@@ -1253,7 +1253,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainPanel.add(code);
 		mainPanel.add(Box.createVerticalStrut(10));
 		if("DINAMICO_USO".equals(visitante.getTipoQRCode())) {
-			JLabel mensagemLabel = new JLabel("* Este QRCode é válido somente uma vez. Depois de usado, ele será renovado.");
+			JLabel mensagemLabel = new JLabel("* Este QRCode ï¿½ vï¿½lido somente uma vez. Depois de usado, ele serï¿½ renovado.");
 			mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 			mainPanel.add(mensagemLabel);
 			mainPanel.add(Box.createVerticalStrut(10));
@@ -1263,10 +1263,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 	private void qrCodeDinamicoTempo(JDialog qrCodeDialog, JPanel mainPanel) {
 		
-		qrCodeDialog.setTitle("QRCode dinâmico por Tempo");
+		qrCodeDialog.setTitle("QRCode dinï¿½mico por Tempo");
 		
-		JLabel mensagemLabel = new JLabel("<html>O QRCode gerado é do tipo dinâmico por tempo, renovando-se automaticamente de tempos em tempos,"
-				+ "<br/>não sendo possível a verificação do mesmo fora do App do Pedestre. Você deseja excluir esse QRCode?</html>");
+		JLabel mensagemLabel = new JLabel("<html>O QRCode gerado ï¿½ do tipo dinï¿½mico por tempo, renovando-se automaticamente de tempos em tempos,"
+				+ "<br/>nï¿½o sendo possï¿½vel a verificaï¿½ï¿½o do mesmo fora do App do Pedestre. Vocï¿½ deseja excluir esse QRCode?</html>");
 		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
 		JButton simButton = new JButton("Sim");
@@ -1276,7 +1276,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			apagarQRCode(qrCodeDialog);
 		});
 
-		JButton naoButton = new JButton("não");
+		JButton naoButton = new JButton("nï¿½o");
 		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		naoButton.addActionListener(e -> {
@@ -1311,13 +1311,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 			
 		} else {
 			
-			//verifica se já existe um visitante novo
-			if(visitante.getIdTemp() == null) {
-				PedestrianAccessEntity cadastrado = (PedestrianAccessEntity) 
-						HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, visitante.getId());
-				if(cadastrado != null && cadastrado.getId() != null)
-					visitante = cadastrado;
-			}
+			//verifica se jï¿½ existe um visitante novo
+//			if(visitante.getIdTemp() == null) {
+//				PedestrianAccessEntity cadastrado = (PedestrianAccessEntity) 
+//						HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, visitante.getId());
+//				if(cadastrado != null && cadastrado.getId() != null)
+//					visitante = cadastrado;
+//			}
 			
 			visitante.setEditadoNoDesktop(true);
 		}
@@ -1445,8 +1445,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 				&& !"".equals(cartaoAcessoTextField.getText().replace("0", ""))
 				&& (visitante.getCardNumber() == null  || "".equals(visitante.getCardNumber().replace("0", "")))){
 
-			//não muda valor do cartão adicionado anteriormente
-			System.out.println("não muda valor do cartão");
+			//nï¿½o muda valor do cartÃ£o adicionado anteriormente
+			System.out.println("nï¿½o muda valor do cartÃ£o");
 
 		} else {
 
@@ -1475,7 +1475,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			loginTextField.setText(visitante.getLogin());
 			tipoAcessoJComboBox.setSelectedIndex(visitante.getTipoAcesso() == null || "".equals(visitante.getTipoAcesso()) 
 					? 0 : ("NORMAL".equals(visitante.getTipoAcesso()) ? 1 : 2));
-			senhaLabel.setText("Senha (somente para alteração)");
+			senhaLabel.setText("Senha (somente para alteraï¿½ï¿½o)");
 		}
 
 		if(visitante.getEquipamentos() != null)
@@ -1494,14 +1494,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private boolean validarCampos() {
 		boolean valido = true;
 		
-		cpfLabel.setText(cpfLabel.getText().replace(" já existente", ""));
-		rgLabel.setText(rgLabel.getText().replace(" já existente", ""));
-		cartaoAcessoLabel.setText(cartaoAcessoLabel.getText().replace(" já existente", ""));
-		matriculaLabel.setText(matriculaLabel.getText().replace(" já existente", ""));
+		cpfLabel.setText(cpfLabel.getText().replace(" jï¿½ existente", ""));
+		rgLabel.setText(rgLabel.getText().replace(" jï¿½ existente", ""));
+		cartaoAcessoLabel.setText(cartaoAcessoLabel.getText().replace(" jï¿½ existente", ""));
+		matriculaLabel.setText(matriculaLabel.getText().replace(" jï¿½ existente", ""));
 
 		restauraFontLabel();
 
-		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
+		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatï¿½rios para cadastro de pedestres");
 		
 		if ("".equals(nomeTextField.getText().trim())) {
 			redAndBoldFont(nomeLabel);
@@ -1615,7 +1615,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		//valida login
 		if(loginTextField != null && !"".equals(loginTextField.getText().trim())) {
-			//se login preenchido, então verifica se os outros campos estão
+			//se login preenchido, entï¿½o verifica se os outros campos estï¿½o
 			//preenchidos tambem
 			if(visitante.getId() == null 
 					&& visitante.getSenha() == null 
@@ -1641,7 +1641,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JDialog regraObrigatoriaDialog = new JDialog();
 		regraObrigatoriaDialog.setIconImage(Main.favicon);
 		regraObrigatoriaDialog.setModal(true);
-		regraObrigatoriaDialog.setTitle("Regra obrigatória");
+		regraObrigatoriaDialog.setTitle("Regra obrigatï¿½ria");
 		regraObrigatoriaDialog.setResizable(false);
 		regraObrigatoriaDialog.setLayout(new BorderLayout());
 
@@ -1688,7 +1688,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 														visitante.getId() != null ? visitante.getId() : 0l);
 
 				if(cpfExiste) {
-					cpfLabel.setText(cpfLabel.getText() + " já existente");
+					cpfLabel.setText(cpfLabel.getText() + " jï¿½ existente");
 					redAndBoldFont(cpfLabel);
 					valido = false;
 				}
@@ -1705,7 +1705,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 													visitante.getId() != null ? visitante.getId() : 0l);
 				
 				if(rgExiste) {
-					rgLabel.setText(rgLabel.getText() + " já existente");
+					rgLabel.setText(rgLabel.getText() + " jï¿½ existente");
 					redAndBoldFont(rgLabel);
 					valido = false;
 				}
@@ -1715,13 +1715,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 		if(cartaoAcessoTextField != null
 				&& !cartaoAcessoTextField.getText().isEmpty()
 				&& !cartaoAcessoTextField.getText().replace( "0", "").equals("")) {
-			String validaCartaoAcessoDuplicado = buscaParametroPeloNome("Validar cartão de acesso duplicado");
+			String validaCartaoAcessoDuplicado = buscaParametroPeloNome("Validar cartÃ£o de acesso duplicado");
 			validaCartaoAcessoDuplicado = "true";
 			if(Boolean.TRUE.equals(Boolean.valueOf(validaCartaoAcessoDuplicado))) {
 				boolean cartaoExiste = verificaCartaoAcessoExistente(cartaoAcessoTextField.getText(),
 																	visitante.getId() != null ? visitante.getId() : 0l);
 				if(cartaoExiste) {
-					cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " já existente");
+					cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " jï¿½ existente");
 					redAndBoldFont(cartaoAcessoLabel);
 					valido = false;
 				}
@@ -1732,14 +1732,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 				&& !matriculaTextField.getText().isEmpty()
 				&& visitante.getTipo().equals("PEDESTRE")) {
 			
-			String validaMatriculaDuplicada = buscaParametroPeloNome("Validar matrículas duplicadas");
+			String validaMatriculaDuplicada = buscaParametroPeloNome("Validar matrï¿½culas duplicadas");
 			
 			if(Boolean.TRUE.equals(Boolean.valueOf(validaMatriculaDuplicada))) {
 				boolean matriculaExiste = verificaMatriculaExistente(matriculaTextField.getText(),
 																	visitante.getId() != null ? visitante.getId() : 0l);
 				
 				if(matriculaExiste) {
-					matriculaLabel.setText( " já existente");
+					matriculaLabel.setText( " jï¿½ existente");
 					redAndBoldFont(matriculaLabel);
 					valido = false;
 				}
@@ -1806,8 +1806,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		args.put("CARD_NUMBER", cartaoAcesso);
 		args.put("ID_PEDESTRE", idPedestre);
-//		verifica se o cartão dos pedestres novos estão sendo vincualdos a pessas já cadastradas
-//		se já, o cartão é removido da pessoa exluida e já atribuido ao novo
+//		verifica se o cartÃ£o dos pedestres novos estï¿½o sendo vincualdos a pessas jï¿½ cadastradas
+//		se jï¿½, o cartÃ£o ï¿½ removido da pessoa exluida e jï¿½ atribuido ao novo
 		
 		List<PedestrianAccessEntity> pedestrianExcluded = (List<PedestrianAccessEntity>) HibernateUtil
 				.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByRemovedCardNumber", args);
@@ -2199,7 +2199,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JDialog visitanteNaoDisponivelParaCadastroDialog = new JDialog();
 		visitanteNaoDisponivelParaCadastroDialog.setIconImage(Main.favicon);
 		visitanteNaoDisponivelParaCadastroDialog.setModal(true);
-		visitanteNaoDisponivelParaCadastroDialog.setTitle("Cadastro não disponível");
+		visitanteNaoDisponivelParaCadastroDialog.setTitle("Cadastro nï¿½o disponÃ­vel");
 		visitanteNaoDisponivelParaCadastroDialog.setResizable(false);
 		visitanteNaoDisponivelParaCadastroDialog.setLayout(new BorderLayout());
 
@@ -2207,8 +2207,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-		JLabel mensagemLabel = new JLabel("Este visitante não está disponível para cadastro de faces.");
-		JLabel mensagemLabel2 = new JLabel("faça a sincronização com o sistema web antes de cadastrar faces.");
+		JLabel mensagemLabel = new JLabel("Este visitante nï¿½o estï¿½ disponÃ­vel para cadastro de faces.");
+		JLabel mensagemLabel2 = new JLabel("faï¿½a a sincronizaï¿½ï¿½o com o sistema web antes de cadastrar faces.");
 		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		mensagemLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -2309,7 +2309,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 			RegisterUserDialog rUser = new RegisterUserDialog(Main.mainScreen, deviceSelecionado);
 			if (deviceSelecionado.isCatraca()) {
-				// exibe apenas um pequeno dialog na tela. O processo é acompanhado no visor da catraca
+				// exibe apenas um pequeno dialog na tela. O processo ï¿½ acompanhado no visor da catraca
 				rUser.cadastrarOuRemoverUsuario("CADASTRO", this.visitante);
 			} else {
 				// exibe a tela de coleta de biometria
@@ -2341,7 +2341,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-		JLabel mensagemLabel = new JLabel("Tem certeza que deseja adicionar um crédito para este visitante?");
+		JLabel mensagemLabel = new JLabel("Tem certeza que deseja adicionar um crï¿½dito para este visitante?");
 		mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		JButton simButton = new JButton("Sim");
@@ -2354,9 +2354,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 				if(visitante.getPedestreRegra() != null) {
 					for(PedestreRegraEntity pedestreRegra : visitante.getPedestreRegra()) {
 						RegraEntity regra = pedestreRegra.getRegra();
-						if(regra.getTipo().equals(TipoRegra.ACESSO_PERIODO)) {
-							pedestreRegra.setRemovidoNoDesktop(true);
-							break;
+						if(regra != null) {
+							if(regra.getTipo().equals(TipoRegra.ACESSO_PERIODO)) {
+								pedestreRegra.setRemovidoNoDesktop(true);
+								break;
+							}		
 						}
 					}
 				}
@@ -2376,7 +2378,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				
 			}
 			visitante.setValidadeCreditos(null);
-			//adicionar credito na regra de acesso unico e não na regra livre
+			//adicionar credito na regra de acesso unico e nï¿½o na regra livre
 
 			boolean valido = validarCampos();
 
@@ -2402,7 +2404,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		});
 
-		JButton naoButton = new JButton("não");
+		JButton naoButton = new JButton("nï¿½o");
 		naoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		naoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		naoButton.addActionListener(e -> {
@@ -2596,7 +2598,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private boolean isExibeCampoMatricula() {
-		String permiteCampoAdicionalMatricula = buscaParametroPeloNome("Permitir campo adicional de crachá/matricula");
+		String permiteCampoAdicionalMatricula = buscaParametroPeloNome("Permitir campo adicional de crachï¿½/matricula");
 		
 		if(permiteCampoAdicionalMatricula != null
 				&& !permiteCampoAdicionalMatricula.isEmpty()) {

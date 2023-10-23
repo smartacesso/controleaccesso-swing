@@ -46,42 +46,42 @@ public class DetectFaceResult {
 	Map<Integer, String> errors = new HashMap<Integer, String>() {{
 		put(0, "OK"); // FSDKE_OK
 		put(-1, "Falha"); // FSDKE_FAILED
-		put(-2, "SDK não ativada"); // FSDKE_NOT_ACTIVATED
-		put(-3, "Falta de memória"); // FSDKE_OUT_OF_MEMORY
-		put(-4, "Argumentos inválidos"); // FSDKE_INVALID_ARGUMENT
+		put(-2, "SDK nï¿½o ativada"); // FSDKE_NOT_ACTIVATED
+		put(-3, "Falta de memï¿½ria"); // FSDKE_OUT_OF_MEMORY
+		put(-4, "Argumentos invï¿½lidos"); // FSDKE_INVALID_ARGUMENT
 		put(-5, "Erro de entrada de dados"); // FSDKE_IO_ERROR
 		put(-6, "Imagem muito pequena"); // FSDKE_IMAGE_TOO_SMALL
-		put(-7, "Rosto não encontrado"); // FSDKE_FACE_NOT_FOUND
+		put(-7, "Rosto nï¿½o encontrado"); // FSDKE_FACE_NOT_FOUND
 		put(-8, "Tamanho de buffer insuficiente"); // FSDKE_INSUFFICIENT_BUFFER_SIZE
-		put(-9, "Extensão de arquivo não suportado"); // FSDKE_UNSUPPORTED_IMAGE_EXTENSION
-		put(-10, "Não foi possível abrir o arquivo"); // FSDKE_CANNOT_OPEN_FILE
-		put(-11, "Não foi possível criar o arquivo"); // FSDKE_CANNOT_CREATE_FILE
-		put(-12, "Formato de arquivo inválido"); // FSDKE_BAD_FILE_FORMAT
-		put(-13, "Arquivo não encontrado"); // FSDKE_FILE_NOT_FOUND
-		put(-14, "Conexão fechada"); // FSDKE_CONNECTION_CLOSED
-		put(-15, "Conexão falhou"); // FSDKE_CONNECTION_FAILED
-		put(-16, "Inicialização IP falhou"); // FSDKE_IP_INIT_FAILED
-		put(-17, "Necessita ativação do servidor"); // FSDKE_NEED_SERVER_ACTIVATION
-		put(-18, "ID não encontrado"); // FSDKE_ID_NOT_FOUND
-		put(-19, "Atributo não detectado"); // FSDKE_ATTRIBUTE_NOT_DETECTED
-		put(-20, "Limite de memória do tracker insuficiente"); // FSDKE_INSUFFICIENT_TRACKER_MEMORY_LIMIT
+		put(-9, "Extensï¿½o de arquivo nï¿½o suportado"); // FSDKE_UNSUPPORTED_IMAGE_EXTENSION
+		put(-10, "Nï¿½o foi possï¿½vel abrir o arquivo"); // FSDKE_CANNOT_OPEN_FILE
+		put(-11, "Nï¿½o foi possï¿½vel criar o arquivo"); // FSDKE_CANNOT_CREATE_FILE
+		put(-12, "Formato de arquivo invï¿½lido"); // FSDKE_BAD_FILE_FORMAT
+		put(-13, "Arquivo nï¿½o encontrado"); // FSDKE_FILE_NOT_FOUND
+		put(-14, "Conexï¿½o fechada"); // FSDKE_CONNECTION_CLOSED
+		put(-15, "Conexï¿½o falhou"); // FSDKE_CONNECTION_FAILED
+		put(-16, "Inicializaï¿½ï¿½o IP falhou"); // FSDKE_IP_INIT_FAILED
+		put(-17, "Necessita ativaï¿½ï¿½o do servidor"); // FSDKE_NEED_SERVER_ACTIVATION
+		put(-18, "ID nï¿½o encontrado"); // FSDKE_ID_NOT_FOUND
+		put(-19, "Atributo nï¿½o detectado"); // FSDKE_ATTRIBUTE_NOT_DETECTED
+		put(-20, "Limite de memï¿½ria do tracker insuficiente"); // FSDKE_INSUFFICIENT_TRACKER_MEMORY_LIMIT
 		put(-21, "Atributo desconhecido"); // FSDKE_UNKNOWN_ATTRIBUTE
-		put(-22, "Versão de arquivo não suportada"); // FSDKE_UNSUPPORTED_FILE_VERSION
+		put(-22, "VersÃ£o de arquivo nï¿½o suportada"); // FSDKE_UNSUPPORTED_FILE_VERSION
 		put(-23, "Erro de sintaxe"); // FSDKE_SYNTAX_ERROR
-		put(-24, "Parâmetro não encontrado"); // FSDKE_PARAMETER_NOT_FOUND
-		put(-25, "Template inválido"); // FSDKE_INVALID_TEMPLATE
-		put(-26, "Versão do template não suportada"); // FSDKE_UNSUPPORTED_TEMPLATE_VERSION
-		put(-27, "Índice da câmera não existe"); // FSDKE_CAMERA_INDEX_DOES_NOT_EXIST
-		put(-28, "Plataforma não licensiada"); // FSDKE_PLATFORM_NOT_LICENSED
+		put(-24, "Parï¿½metro nï¿½o encontrado"); // FSDKE_PARAMETER_NOT_FOUND
+		put(-25, "Template invï¿½lido"); // FSDKE_INVALID_TEMPLATE
+		put(-26, "VersÃ£o do template nï¿½o suportada"); // FSDKE_UNSUPPORTED_TEMPLATE_VERSION
+		put(-27, "ï¿½ndice da cï¿½mera nï¿½o existe"); // FSDKE_CAMERA_INDEX_DOES_NOT_EXIST
+		put(-28, "Plataforma nï¿½o licensiada"); // FSDKE_PLATFORM_NOT_LICENSED
 		put(-29, "Muitos rostos na imagem"); // FSDKE_TOO_MANY_FACES_ON_IMAGE
-		put(-30, "Excessão no servidor"); // FSDKE_SERVER_EXCEPTION
-		put(-31, "Usuário já registrado"); // FSDKE_USER_ALREADY_REGISTERED
-		put(-32, "Usuário registrado com outro nome"); // FSDKE_USER_REGISTERED_WITH_OTHER_NAME
+		put(-30, "Excessï¿½o no servidor"); // FSDKE_SERVER_EXCEPTION
+		put(-31, "Usuï¿½rio jï¿½ registrado"); // FSDKE_USER_ALREADY_REGISTERED
+		put(-32, "Usuï¿½rio registrado com outro nome"); // FSDKE_USER_REGISTERED_WITH_OTHER_NAME
 		put(-33, "Reconhecimento falhou"); // FSDKE_RECOGNITION_FAILED
 		put(-34, "Erro ao converter imagem para buffer"); // FSDKE_IMAGE_TO_BUFFER_ERROR
-		put(-35, "Usuário não encontrado"); // FSDKE_USER_NOT_FOUND
-		put(-36, "Usuário não estão logado no servidor"); // FSDKE_USER_NOT_LOGGED_IN
-		put(-37, "Excessão local"); // FSDKE_LOCAL_EXCEPTION
+		put(-35, "Usuï¿½rio nï¿½o encontrado"); // FSDKE_USER_NOT_FOUND
+		put(-36, "Usuï¿½rio nï¿½o estï¿½o logado no servidor"); // FSDKE_USER_NOT_LOGGED_IN
+		put(-37, "Excessï¿½o local"); // FSDKE_LOCAL_EXCEPTION
 	}};
 
 }

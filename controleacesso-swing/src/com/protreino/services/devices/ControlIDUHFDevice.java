@@ -56,23 +56,23 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 	public void createDefaultConfiguration(){
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
 		geralConfigurations.add(new ConfigurationTO("Habilita beep", "true", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Tempo da requesição", "10000", FieldType.NUMERIC_LIST, "2000;1000;20000")); // inicio;passo;fim
-		geralConfigurations.add(new ConfigurationTO("Sentido da entrada", "Horário_clockwise", FieldType.COMBOBOX,
-				"Horário_clockwise;Anti-horário_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO("Tempo da requesiï¿½ï¿½o", "10000", FieldType.NUMERIC_LIST, "2000;1000;20000")); // inicio;passo;fim
+		geralConfigurations.add(new ConfigurationTO("Sentido da entrada", "Horï¿½rio_clockwise", FieldType.COMBOBOX,
+				"Horï¿½rio_clockwise;Anti-horï¿½rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de abertura", "10000", FieldType.NUMERIC_LIST, "10000;10000;60000")); // inicio;passo;fim
 		
-		geralConfigurations.add(new ConfigurationTO("Bits de identificação", "32", FieldType.COMBOBOX, "26;32;34;66"));
+		geralConfigurations.add(new ConfigurationTO("Bits de identificaï¿½ï¿½o", "32", FieldType.COMBOBOX, "26;32;34;66"));
 		geralConfigurations.add(new ConfigurationTO("Ordem dos bytes", "default", FieldType.COMBOBOX, "default;lsb"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de leitura (milissegundos)", "250", FieldType.TEXT));
-		geralConfigurations.add(new ConfigurationTO("Tempo de leitura mesmo cartão  (milissegundos)", "0", FieldType.TEXT));
-		geralConfigurations.add(new ConfigurationTO("Potência de transmissão", "2400", FieldType.NUMERIC_LIST, "1500;100;2400"));
+		geralConfigurations.add(new ConfigurationTO("Tempo de leitura mesmo cartÃ£o  (milissegundos)", "0", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO("Potï¿½ncia de transmissï¿½o", "2400", FieldType.NUMERIC_LIST, "1500;100;2400"));
 		geralConfigurations.add(new ConfigurationTO("Canal de trabalho", "1-10", FieldType.TEXT));
-		geralConfigurations.add(new ConfigurationTO("Modo de operação", "cont", FieldType.COMBOBOX, "cont;trigger")); 
+		geralConfigurations.add(new ConfigurationTO("Modo de operaï¿½ï¿½o", "cont", FieldType.COMBOBOX, "cont;trigger")); 
 		geralConfigurations.add(new ConfigurationTO("Trigger timeout (milissegundos)", "250", FieldType.TEXT)); 
 		geralConfigurations.add(new ConfigurationTO("Trigger ocioso", "0", FieldType.COMBOBOX, "0;1"));
 		
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Usa lógica de calculo de Entrada/Saída", "true", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO("Usa lï¿½gica de calculo de Entrada/Saï¿½da", "true", FieldType.CHECKBOX));
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
 	}
@@ -83,10 +83,10 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 			return;
 		Configuration configuration = new Configuration(serverIp, serverPort, serverId, 
 			getConfigurationValueAsBoolean("Habilita beep"), getConfigurationValue("Tempo de giro"), 
-			getConfigurationValue("Tempo da requisição"), Integer.valueOf(getConfigurationValue("Bits de identificação")),
+			getConfigurationValue("Tempo da requisiï¿½ï¿½o"), Integer.valueOf(getConfigurationValue("Bits de identificaï¿½ï¿½o")),
 			getConfigurationValue("Ordem dos bytes"), Integer.valueOf(getConfigurationValue("Tempo de leitura (milissegundos)")),
-			Integer.valueOf(getConfigurationValue("Tempo de leitura mesmo cartão  (milissegundos)")), Integer.valueOf(getConfigurationValue("Potência de transmissão")),
-			getConfigurationValue("Canal de trabalho"), getConfigurationValue("Modo de operação"),
+			Integer.valueOf(getConfigurationValue("Tempo de leitura mesmo cartÃ£o  (milissegundos)")), Integer.valueOf(getConfigurationValue("Potï¿½ncia de transmissï¿½o")),
+			getConfigurationValue("Canal de trabalho"), getConfigurationValue("Modo de operaï¿½ï¿½o"),
 			Integer.valueOf(getConfigurationValue("Trigger timeout (milissegundos)")), Integer.valueOf(getConfigurationValue("Trigger ocioso")));
 		Object[] retorno = send("http://" + ip + "/set_configuration.fcgi?session=" + session, configuration);
 		String erro = (String) retorno[0];
@@ -147,7 +147,7 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 		
 		
 		String direction = Tipo.ENTRADA;
-		if(getConfigurationValueAsBoolean("Usa lógica de calculo de Entrada/Saída"))
+		if(getConfigurationValueAsBoolean("Usa lï¿½gica de calculo de Entrada/Saï¿½da"))
 			direction =  ANTICLOCKWISE.equals(decideLadoLiberarCatraca(sentidoEntrada)) ? Tipo.ENTRADA : Tipo.SAIDA;// ANTICLOCKWISE.equals(sentidoEntrada) ? "ENTRADA" : "SAIDA";
 		else
 			direction =  ANTICLOCKWISE.equals(sentidoEntrada) ? Tipo.ENTRADA : Tipo.SAIDA;

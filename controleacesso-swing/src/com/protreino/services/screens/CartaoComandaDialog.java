@@ -42,7 +42,7 @@ public class CartaoComandaDialog extends JDialog {
 	public static boolean abertoPeloAtalho = false;
 	
 	public CartaoComandaDialog(CartaoComandaEntity cartaoComanda){
-		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cartão/comanda" : "Alterar cartão/comanda", true);
+		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cartÃ£o/comanda" : "Alterar cartÃ£o/comanda", true);
 		
 		setIconImage(Main.favicon);
 		setResizable(false);
@@ -57,13 +57,13 @@ public class CartaoComandaDialog extends JDialog {
 		    }
 		});
 		
-		numeroLabel = new JLabel("Número");
+		numeroLabel = new JLabel("Nï¿½mero");
 		numeroTextField = new JTextField();
 		numeroTextField.setColumns(20);
 		numeroTextField.setMaximumSize(numeroTextField.getPreferredSize());
 		numeroTextField.setHorizontalAlignment(JTextField.LEFT);
 		
-		numeroAlternativoLabel = new JLabel("Rótulo");
+		numeroAlternativoLabel = new JLabel("Rï¿½tulo");
 		numeroAlternativoTextField = new JTextField();
 		numeroAlternativoTextField.setColumns(20);
 		numeroAlternativoTextField.setMaximumSize(numeroAlternativoTextField.getPreferredSize());
@@ -78,7 +78,7 @@ public class CartaoComandaDialog extends JDialog {
 		removerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		removerButton.addActionListener(e -> {
 			
-			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartão/comanda?", "confirmação", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartÃ£o/comanda?", "confirmaï¿½ï¿½o", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				
@@ -206,7 +206,7 @@ public class CartaoComandaDialog extends JDialog {
 				return true;
 		}
 		
-		//não tem código
+		//nï¿½o tem cï¿½digo
 		return false;
 	}
 

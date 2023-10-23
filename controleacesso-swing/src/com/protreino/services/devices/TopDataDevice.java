@@ -203,7 +203,14 @@ public class TopDataDevice extends Device {
 									|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE
 									|| inner.TipoLeitor == Enumeradores.CODIGO_DE_BARRAS 
 									|| inner.TipoLeitor ==  Enumeradores.CODIGO_BARRAS_SERIAL) {
-								ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
+								
+								if(inner.TipoLeitor == Enumeradores.CODIGO_DE_BARRAS 
+										|| inner.TipoLeitor ==  Enumeradores.CODIGO_BARRAS_SERIAL) {
+									ret = EasyInner.ReceberDadosOnLine(inner.Numero, iArrBCartaoRb, Cartao);
+								}else {
+									ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);									
+								}
+
 								if(iArrBCartaoRb[0] == 18)
 									Cartao = new StringBuffer("0000000000");
 
@@ -215,8 +222,6 @@ public class TopDataDevice extends Device {
 										
 										if (inner.TipoLeitor == Enumeradores.QRCODE 
 												|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE
-//												|| inner.TipoLeitor == Enumeradores.CODIGO_DE_BARRAS 
-//												|| inner.TipoLeitor ==  Enumeradores.CODIGO_BARRAS_SERIAL
 												) {
 											Cartao = new StringBuffer(Utils.toHEX(Cartao.toString().replaceAll("[^a-zA-Z0-9]+","")));
 										} else {
@@ -240,7 +245,7 @@ public class TopDataDevice extends Device {
 								try {
 									StringBuffer cartaoMaster = new StringBuffer(Utils.getPreference("cardMaster"));
 									if(cartaoMaster.equals(Cartao+"")) {
-										System.out.printf("Habilitou o cart�o Master, com o n�mero: ", cartaoMaster);
+										System.out.printf("Habilitou o cartão Master, com o número: ", cartaoMaster);
 										EasyInner.DefinirNumeroCartaoMaster(cartaoMaster+"");
 										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 									}
@@ -258,7 +263,7 @@ public class TopDataDevice extends Device {
 									
 									} else if(iArrBCartaoRb[0] == Enumeradores.ORIGEM_URNA) {
 										inner.BilheteInner.Origem = iArrBCartaoRb[0];
-										//cart�o na urna
+										//cartão na urna
 										//System.out.println("caiu na urna");
 										allowAccess();
 										
@@ -733,7 +738,7 @@ public class TopDataDevice extends Device {
 				&& !inner.BilheteInner.Cartao.toString().isEmpty()
 				&& !"".equals(inner.BilheteInner.Cartao.toString().replace("0",""))
 				&& !"".equals(inner.BilheteInner.Cartao.toString())) {
-			System.out.println("Registra giro com cart�o: " + inner.BilheteInner.Cartao.toString());
+			System.out.println("Registra giro com cartão: " + inner.BilheteInner.Cartao.toString());
 			
 			args.put("NUMERO_CARTAO_RECEBIDO", inner.BilheteInner.Cartao.toString());
 			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
@@ -914,7 +919,7 @@ public class TopDataDevice extends Device {
                                     		 sentido = bilhete[0];
                                     	} else {
 	                                		 if(bilhete[0] == 10 || bilhete[0] == 11) {
-	                                         	//cart�o
+	                                         	//cartão
 	                                        		sentido = bilhete[0] == 10 ? 0 : 1;
 	                                         	inner.BilheteInner.Origem = 2;
 	                                         } else {
@@ -934,7 +939,7 @@ public class TopDataDevice extends Device {
                                     }
                                 
                                 } else{
-                                	System.out.println("cart�o vazio!");
+                                	System.out.println("cartão vazio!");
                                 }
                             }
                             else {
@@ -1224,7 +1229,7 @@ public class TopDataDevice extends Device {
 			EasyInner.InserirUsuarioListaAcesso(temp, 101);
 			System.out.println("quem est� sendo enviado   " + pedestre.getName());
 			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
-			System.out.println("qual cart�o   " + temp);
+			System.out.println("qual cartão   " + temp);
 		}
 		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateUtil.buscaPedestresAtivosComBiometria();
 		for (PedestrianAccessEntity biometria : biometriasNaoRemovidas) {
@@ -1636,13 +1641,13 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"C�digo de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		//if(Main.loggedUser != null && Main.loggedUser.getQtdePadraoDigitoscart�o() != null) {
-		//	geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cart�o", 
+		//	geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cartão", 
 		//			Main.loggedUser.getQtdePadraoDigitoscart�o().toString(), FieldType.NUMERIC_LIST, "4;1;16"));
 		//} else {
-			geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cart�o", "5", FieldType.NUMERIC_LIST, "4;1;16"));
+			geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cartão", "5", FieldType.NUMERIC_LIST, "4;1;16"));
 		//}
 		geralConfigurations.add(new ConfigurationTO("Modelo biom�trico", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Tipo biom�trico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
@@ -1653,7 +1658,7 @@ public class TopDataDevice extends Device {
 				"Desativado_0;Somente entrada_1;Somente sa�da_2;Entrada e sa�da_3;sa�da e entrada_4"));
 		geralConfigurations.add(new ConfigurationTO("identifica��o Biom�trica", "Sim_1", FieldType.COMBOBOX, "Sim_1;N�o_0"));
 		geralConfigurations.add(new ConfigurationTO("Verifica��o Biom�trica", "N�o_0", FieldType.COMBOBOX, "Sim_1;N�o_0"));
-		geralConfigurations.add(new ConfigurationTO("Padr�o de cart�o", "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
+		geralConfigurations.add(new ConfigurationTO("Padr�o de cartão", "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
 		geralConfigurations.add(new ConfigurationTO("L�gica da catraca com urna", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Coleta cart�es offline", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Ignorar regras de acesso", "false", FieldType.CHECKBOX));
@@ -1674,7 +1679,7 @@ public class TopDataDevice extends Device {
 	
 	protected void configureInner(){
 		this.inner.Numero = innerNumber;
-		this.inner.QtdDigitos = getConfigurationValueAsInteger("Quantidade d�gitos cart�o");
+		this.inner.QtdDigitos = getConfigurationValueAsInteger("Quantidade d�gitos cartão");
 		this.inner.Teclado = getConfigurationValueAsBoolean("Habilitar teclado");
 		this.inner.Lista = false;
 		this.inner.ListaBio = false;
@@ -2055,7 +2060,7 @@ public class TopDataDevice extends Device {
 				quantidadeDigitosCartao = 0;
 			}
 
-			EasyInner.DefinirPadraoCartao(getConfigurationValueAsInteger("Padr�o de cart�o"));
+			EasyInner.DefinirPadraoCartao(getConfigurationValueAsInteger("Padr�o de cartão"));
 			if (modo == Enumeradores.MODO_OFF_LINE)
 				EasyInner.ConfigurarInnerOffLine();
 			else

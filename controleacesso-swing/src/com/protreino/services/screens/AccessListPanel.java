@@ -54,7 +54,7 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Código", "Cartão", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
+	private String[] columns = {"CÃ³digo", "CartÃ£o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
 	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
@@ -85,7 +85,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroIdPanel= new JPanel();
 		filtroIdPanel.setLayout(new BoxLayout(filtroIdPanel, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("Código");
+		JLabel filtroIdLabel = new JLabel("CÃ³digo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdPanel.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 8);
@@ -95,7 +95,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroCartaoPanel= new JPanel();
 		filtroCartaoPanel.setLayout(new BoxLayout(filtroCartaoPanel, BoxLayout.Y_AXIS));
-		JLabel filtroCartaoLabel = new JLabel("Cartão");
+		JLabel filtroCartaoLabel = new JLabel("CartÃ£o");
 		filtroCartaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoLabel);
 		filtroCartaoTextField = new JTextField("", 8);
@@ -324,7 +324,7 @@ public class AccessListPanel extends PaginedListPanel {
 		totalRegistros =  HibernateUtil.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
 		
-		//calcula página
+		//calcula pï¿½gina
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
@@ -363,7 +363,7 @@ public class AccessListPanel extends PaginedListPanel {
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
 		//countLabel.setText("Total: " + numAcessos);
-		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("PÃ¡g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -373,15 +373,15 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		if("VISITANTE".equals(acesso.getTipo())) {
 			//visitante
-			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso único";
+			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso ï¿½nico";
 			if(acesso.getQuantidadeCreditos() != null && acesso.getQuantidadeCreditos() > 1l) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crï¿½ditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			
 			} else if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -391,16 +391,16 @@ public class AccessListPanel extends PaginedListPanel {
 			
 			//pedestre
 			if(acesso.getQuantidadeCreditos() != null) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x crï¿½ditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			} else if(acesso.getValidadeCreditos() != null) {
 				texto += new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			}
 			
 			if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " atÃ© " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -503,7 +503,7 @@ public class AccessListPanel extends PaginedListPanel {
 	            
 	            if(Main.getDefaultDevice() != null 
             		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
-            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saída"))) {
+            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saï¿½da"))) {
 	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
 
 	            } else {

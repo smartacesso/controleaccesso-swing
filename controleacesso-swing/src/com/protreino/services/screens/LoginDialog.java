@@ -58,7 +58,7 @@ public class LoginDialog extends JDialog {
 	private JButton cancelarButton;
 	
 	public LoginDialog(){
-		super(Main.mainScreen, "Autenticação", true);
+		super(Main.mainScreen, "AutenticaÃ§Ã£o", true);
 		
 		loadImages();
 		
@@ -86,7 +86,7 @@ public class LoginDialog extends JDialog {
 		unidadeTextField.setMaximumSize(unidadeTextField.getPreferredSize());
 		unidadeTextField.setHorizontalAlignment(JTextField.CENTER);
 		
-		JLabel usernameLabel = new JLabel("Usuário");
+		JLabel usernameLabel = new JLabel("Usuï¿½rio");
 		usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
 		usernameTextField = new JTextField();
@@ -180,13 +180,13 @@ public class LoginDialog extends JDialog {
 										Main.releaseTicketGateMenuItem.setEnabled(true);
 										Main.updateAccessListMenuItem.setEnabled(true);
 										
-										loginMessageLabel.setText("Coletando configurações e pedestres...");
+										loginMessageLabel.setText("Coletando configuraï¿½ï¿½es e pedestres...");
 										//tras dados gerais antes de abrir
 										Main.syncUsersAccessList();
 										Main.syncAthleteAccessList();
 										Main.syncLogAthleteAccess();
 										
-										// Buscando backup de dispostivos e preferêmcias
+										// Buscando backup de dispostivos e preferï¿½mcias
 										con = new HttpConnection(Main.urlApplication + "/restful-services/access/getBackupByUser?idUser=" + Main.loggedUser.getId().toString());
 										if (con.getResponseCode() == 200) {
 											JsonObject backupResponse = con.getResponseJsonObject();
@@ -209,16 +209,16 @@ public class LoginDialog extends JDialog {
 										}
 										
 										Main.mainScreen.buildUI();
-										Utils.createNotification("Usuário logado com sucesso!", NotificationType.GOOD);
+										Utils.createNotification("Usuï¿½rio logado com sucesso!", NotificationType.GOOD);
 										dispose();
 									
 									} else {
-										setMessageErrorLogin("Usuário não autorizado!");
+										setMessageErrorLogin("Usuï¿½rio nï¿½o autorizado!");
 										Main.loggedUser = null;
 									}
 								
 								} else {
-									setMessageErrorLogin("Usuário inativo!");
+									setMessageErrorLogin("Usuï¿½rio inativo!");
 									Main.loggedUser = null;
 								}
 							
@@ -229,14 +229,14 @@ public class LoginDialog extends JDialog {
 									setMessageErrorLogin("Senha incorreta!");
 								
 								} else{
-									setMessageErrorLogin("Usuário não encontrado!");
+									setMessageErrorLogin("Usuï¿½rio nï¿½o encontrado!");
 								}
 							} else {
-								setMessageErrorLogin("Sem conexão!");
+								setMessageErrorLogin("Sem conexï¿½o!");
 							}
 					    
 				    	} catch (SocketException se){
-				    		setMessageErrorLogin("Sem conexão.");
+				    		setMessageErrorLogin("Sem conexï¿½o.");
 				    		Main.loggedUser = null;
 				    	
 				    	} catch (Throwable e) {

@@ -339,19 +339,19 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccessDays", "Limite de acessos",
 				FieldType.NUMERIC_LIST, "1", "1;1;5"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "toleranceAccess",
-				"Tolerância de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tolerï¿½ncia de entrada e saï¿½da (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "minTimeBetweenAccess",
-				"Tempo máximo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tempo mï¿½ximo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeAccessList",
-				"Tempo de atualização da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
+				"Tempo de atualizaï¿½ï¿½o da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeUserAccessList",
-				"Tempo de atualização das lista de usuários (em minutos)", FieldType.TEXT, "2", true, 10));
+				"Tempo de atualizaï¿½ï¿½o das lista de usuï¿½rios (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "printLog", "Imprimir log com o servidor",
 				FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessRequiresPassword",
-				"Exigir senha de administrador para liberação de acesso", FieldType.CHECKBOX, "false"));
+				"Exigir senha de administrador para liberaï¿½ï¿½o de acesso", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessReason",
-				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
+				"Motivos para liberaï¿½ï¿½o de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
 				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
@@ -367,21 +367,21 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "importExportDevices",
 				"Importar/Exportar dispositivos do servidor", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageSizeRequestServer",
-				"Tamanho das fotos recebidas do servidor (dimensão em px)", FieldType.TEXT, "48", true, 10));
+				"Tamanho das fotos recebidas do servidor (dimensï¿½o em px)", FieldType.TEXT, "48", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registerAccessWithoutConnectedDevices",
-				"Registrar acesso mesmo que não haja dispositivos conectados", FieldType.CHECKBOX, "false"));
+				"Registrar acesso mesmo que nï¿½o haja dispositivos conectados", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "pedestrianAlwaysOpen",
-				"Cadastro de pedestre/visitante em série", FieldType.CHECKBOX, "false"));
+				"Cadastro de pedestre/visitante em sï¿½rie", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hourAutomaticRoutines",
-				"Hora para execução das rotinas automáticas", FieldType.NUMERIC_LIST, "00", "0;1;23"));
+				"Hora para execuï¿½ï¿½o das rotinas automï¿½ticas", FieldType.NUMERIC_LIST, "00", "0;1;23"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardAcessClear",
-				"Habilita 'baixa' automática de cartões", FieldType.CHECKBOX, "false"));
+				"Habilita 'baixa' automï¿½tica de cartï¿½es", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableDirectionClear",
-				"Habilita reset de direções registradas pelos pedestres", FieldType.CHECKBOX, "false"));
+				"Habilita reset de direï¿½ï¿½es registradas pelos pedestres", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardReset",
-				"Habilita reset status de cartão/comanda", FieldType.CHECKBOX, "false"));
+				"Habilita reset status de cartÃ£o/comanda", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableOfflineCard",
-				"Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
+				"Enviar cartï¿½es para Catraca Offline", FieldType.CHECKBOX, "false"));
 
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
 
@@ -400,62 +400,62 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageEntryAllowed",
 				"Mensagem de entrada permitida", FieldType.TEXT, "ENTRE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageExitAllowed",
-				"Mensagem de saída permitida", FieldType.TEXT, "SAIA"));
+				"Mensagem de saï¿½da permitida", FieldType.TEXT, "SAIA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowed",
 				"Mensagem de acesso negado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO PERMITIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotFound",
-				"Mensagem de pedestre não encontrado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO ENCONTRADO"));
+				"Mensagem de pedestre nï¿½o encontrado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO ENCONTRADO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedOnlyOnce",
-				"Mensagem de pedestre que já acessou no dia", FieldType.MESSAGE_LINES, "PEDESTRE JA;REGISTRADO HOJE"));
+				"Mensagem de pedestre que jï¿½ acessou no dia", FieldType.MESSAGE_LINES, "PEDESTRE JA;REGISTRADO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedToday",
 				"Mensagem de pedestre fora do dia permitido", FieldType.MESSAGE_LINES, "PEDESTRE NAO;PERMITIDO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNow",
-				"Mensagem de pedestre fora do horário permitido", FieldType.MESSAGE_LINES,
+				"Mensagem de pedestre fora do horï¿½rio permitido", FieldType.MESSAGE_LINES,
 				"PEDESTRE NAO;PERMITIDO AGORA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageError",
-				"Mensagem de erro na verificação", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
+				"Mensagem de erro na verificaï¿½ï¿½o", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageTolerancePeriod",
-				"Mensagem de pedestre no período de tolerância", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
+				"Mensagem de pedestre no perï¿½odo de tolerï¿½ncia", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso permitido", FieldType.TEXT, "Liberado!"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso negado", FieldType.TEXT,
-				"Não permitido. Procure a secretaria."));
+				"Nï¿½o permitido. Procure a secretaria."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedFaceRequired",
-				"(Tela do pedestre) Mensagem de cadastro de face obrigatório", FieldType.TEXT,
-				"Obrigatório cadastro facial"));
+				"(Tela do pedestre) Mensagem de cadastro de face obrigatï¿½rio", FieldType.TEXT,
+				"Obrigatï¿½rio cadastro facial"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedOnlyOnceAthleteScreen",
-				"(Tela do pedestre) Mensagem pedestre que já acessou no dia", FieldType.TEXT,
-				"Não permitido mais hoje."));
+				"(Tela do pedestre) Mensagem pedestre que jï¿½ acessou no dia", FieldType.TEXT,
+				"Nï¿½o permitido mais hoje."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedTodayAthleteScreen",
 				"(Tela do pedestre) Mensagem fora do dia permitido", FieldType.TEXT, "Fora do dia permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNowAthleteScreen",
-				"(Tela do pedestre) Mensagem fora do horário permitido", FieldType.TEXT,
-				"Fora do horário permitido."));
+				"(Tela do pedestre) Mensagem fora do horï¿½rio permitido", FieldType.TEXT,
+				"Fora do horï¿½rio permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedOrigem",
-				"Mensagem para pedestre não permitido nesse equipamento", FieldType.TEXT,
-				"Não permitido;no equipamento."));
+				"Mensagem para pedestre nï¿½o permitido nesse equipamento", FieldType.TEXT,
+				"Nï¿½o permitido;no equipamento."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedSensor",
-				"Mensagem para pedestre que não depositou cartão na urna", FieldType.TEXT,
+				"Mensagem para pedestre que nï¿½o depositou cartÃ£o na urna", FieldType.TEXT,
 				"Deposite;o cartao na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageSMSAfterPassInDevice",
-				"Mensagem SMS após passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
+				"Mensagem SMS apï¿½s passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedBox",
-				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
+				"Mensagem de cartÃ£o nï¿½o permitido na urna", FieldType.TEXT, "Nï¿½o permitido;na urna."));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenBackgroundImage",
 				"Imagem de fundo da tela do pedestre", FieldType.IMAGE, ""));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenFirstColor",
-				"Cor primária da tela do pedestre", FieldType.COLOR_CHOOSER,
+				"Cor primï¿½ria da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.firstColor.getRed() + ";" + Main.firstColor.getGreen() + ";" + Main.firstColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenSecondColor",
-				"Cor secundária da tela do pedestre", FieldType.COLOR_CHOOSER,
+				"Cor secundï¿½ria da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.secondColor.getRed() + ";" + Main.secondColor.getGreen() + ";" + Main.secondColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenTimeout",
-				"Tempo limite para apresentação dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
+				"Tempo limite para apresentaï¿½ï¿½o dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "samplesNumberForTraining",
-				"Número de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
+				"Nï¿½mero de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER,
 				"intervalBetweenCapturesForTraining", "Intervalo entre capturas para treinamento (em ms)",
 				FieldType.NUMERIC_LIST, "250", "100;50;500"));
@@ -463,13 +463,13 @@ public class Utils {
 				"intervalBetweenCapturesForRecognition", "Intervalo entre capturas para reconhecimento (em ms)",
 				FieldType.NUMERIC_LIST, "50", "30;10;200"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "waitTimeAfterRecognizer",
-				"Tempo de espera após reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
+				"Tempo de espera apï¿½s reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "maxTimeForFaceCapturing",
-				"Tempo máximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
+				"Tempo mï¿½ximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "serverRecognizerIP",
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
-				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+				"Definir nÃºmero do cartÃ£o Master", FieldType.TEXT, "", true, 12));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null)
@@ -920,13 +920,13 @@ public class Utils {
 				desktop.browse(url.toURI());
 			else
 				JOptionPane.showConfirmDialog(null,
-						"Não foi possível abrir a página de download.\nTente abri-la manualmente através do link:\n"
+						"Nï¿½o foi possï¿½vel abrir a pï¿½gina de download.\nTente abri-la manualmente atravï¿½s do link:\n"
 								+ link,
 						title, JOptionPane.OK_CANCEL_OPTION);
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showConfirmDialog(null,
-					"Não foi possível abrir a página de download.\nTente abri-la manualmente através do link:\n"
+					"Nï¿½o foi possï¿½vel abrir a pï¿½gina de download.\nTente abri-la manualmente atravï¿½s do link:\n"
 							+ link,
 					title, JOptionPane.OK_CANCEL_OPTION);
 		}
@@ -1679,7 +1679,7 @@ public class Utils {
 		return null;
 	}
 
-	// colocar conversor de ABATRACK para WIGAN aqui como estático
+	// colocar conversor de ABATRACK para WIGAN aqui como estï¿½tico
 
 	public static String toHEX(String Cartao) {
 
@@ -1689,7 +1689,7 @@ public class Utils {
 			long fclong = Long.parseLong(Cartao);
 			String hexAbatrack = Long.toHexString(longAbatrack);
 			String hexWigan = hexAbatrack.substring(hexAbatrack.length() - 4);
-//			olhar a posição pegar exatamente o mesmo if
+//			olhar a posiï¿½ï¿½o pegar exatamente o mesmo if
 			String fcWiegand = "";
 			String temp = "";
 			fcWiegand = hexAbatrack.substring(hexAbatrack.length() - 6);
@@ -1710,7 +1710,7 @@ public class Utils {
 			return fcwiegandtg;
 
 		} catch (Exception e) {
-			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
+			System.out.println("Nï¿½o foi possï¿½vel converter cartÃ£o " + Cartao + "\n motivo " + e.getMessage());
 			return Cartao;
 		}
 
@@ -1721,7 +1721,7 @@ public class Utils {
 		String aux = "8591641950";
 		String temp = "";
 
-		System.out.println(" o que é cartão " + toHEX(aux));
+		System.out.println(" o que ï¿½ cartÃ£o " + toHEX(aux));
 
 		String n5 = "1237";
 		if (n5.matches("^(?=\\d{3}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
@@ -1734,7 +1734,7 @@ public class Utils {
 
 	public static String conversorHexaDecimal(String Cartao) {
 		try {
-			System.out.println("Cartão : " + Cartao );
+			System.out.println("CartÃ£o : " + Cartao );
 			if(Cartao.startsWith("00")) {
 				return Cartao;
 			}
@@ -1745,7 +1745,7 @@ public class Utils {
 			long fclong = Long.parseLong(Cartao);
 			String hexAbatrack = Long.toHexString(longAbatrack);
 			String hexWigan = hexAbatrack.substring(hexAbatrack.length()-4);
-//			olhar a posição pegar exatamente o mesmo if
+//			olhar a posiï¿½ï¿½o pegar exatamente o mesmo if
 			String fcWiegand = "";
 			String temp = "";
 			fcWiegand = hexAbatrack.substring(0, 4);
@@ -1783,7 +1783,7 @@ public class Utils {
 	        return fcwiegandtg;
 	       
 		}catch (Exception e) {
-			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
+			System.out.println("Nï¿½o foi possï¿½vel converter cartÃ£o " + Cartao + "\n motivo " + e.getMessage());
 			return Cartao;
 		}
 	

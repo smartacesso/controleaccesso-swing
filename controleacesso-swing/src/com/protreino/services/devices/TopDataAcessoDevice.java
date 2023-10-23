@@ -243,9 +243,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"C�digo de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
-		geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cart�o", "5", FieldType.NUMERIC_LIST, "4;1;16"));
+		geralConfigurations.add(new ConfigurationTO("Quantidade d�gitos cartão", "5", FieldType.NUMERIC_LIST, "4;1;16"));
 		geralConfigurations.add(new ConfigurationTO("Modelo biom�trico", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Tipo biom�trico", "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 		geralConfigurations.add(new ConfigurationTO("Dois leitores", "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
@@ -255,7 +255,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 				"Desativado_0;Somente entrada_1;Somente Sa�da_2"));
 		geralConfigurations.add(new ConfigurationTO("identifica��o Biom�trica", "Sim_1", FieldType.COMBOBOX, "Sim_1;N�o_0"));
 		geralConfigurations.add(new ConfigurationTO("Verifica��o Biom�trica", "N�o_0", FieldType.COMBOBOX, "Sim_1;N�o_0"));
-		geralConfigurations.add(new ConfigurationTO("Padr�o de cart�o", "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
+		geralConfigurations.add(new ConfigurationTO("Padr�o de cartão", "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
 		geralConfigurations.add(new ConfigurationTO("L�gica da catraca com urna", "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Usa torniquete", "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO("Aciona relé 2", "false", FieldType.CHECKBOX));
