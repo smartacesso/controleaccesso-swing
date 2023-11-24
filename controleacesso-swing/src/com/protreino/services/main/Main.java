@@ -6,7 +6,7 @@ import com.protreino.services.constants.Configurations;
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.*;
-import com.protreino.services.entity.*;
+import com.protreino.services.entity.*; 
 import com.protreino.services.enumeration.*;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.screens.*;
@@ -16,6 +16,7 @@ import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.utils.*;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -990,6 +991,7 @@ public class Main {
         //e que tenham um crédito
         HibernateUtil.apagaDadosCartao();
         HibernateUtil.apagaDadosDeUltimoSentido();
+        HibernateUtil.apagaQuantidadeAcessosAsinc();
     }
 
     public static Device getDefaultDevice() {
@@ -1415,7 +1417,8 @@ public class Main {
                 HashMap<String, Object> args = new HashMap<>();
                 args.put("LAST_SYNC_HIKIVISION", new Date(lastSyncHikivision));
 
-                final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+                @SuppressWarnings("unchecked")
+				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
                         .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhotoByLastSync", args);
 
                 for (PedestrianAccessEntity pedestre : pedestres) {
@@ -1427,6 +1430,7 @@ public class Main {
                             hikiVisionIntegrationService.adicionarFotoUsuario(device.getDevice().getDevIndex(), pedestre.getCardNumber(), pedestre.getFoto());
                         }
                     }
+                    
                 }
 
             }
@@ -1440,7 +1444,7 @@ public class Main {
         }
 
         if (Main.servidor != null) {
-            System.out.println(sdf.format(new Date()) + " Sincronização desabilitada: Máquina possui servidor");
+            System.out.println(sdf.format(new Date()) + " Sincroniza��o desabilitada: M�quina possui servidor");
             return;
         }
 
@@ -1764,13 +1768,15 @@ public class Main {
                     return;
                 }
 
-                if ("true".equals(Utils.getPreference("printLog")))
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: Response string: " + gson.toJson(athleteAccessTOList, type));
+                if ("true".equals(Utils.getPreference("printLog"))) {
+                	System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: Response string: " + gson.toJson(athleteAccessTOList, type));                	
+                }
 
                 boolean atualizaDigitais = false;
                 for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
-                    if (loggedUser == null) // usuario deslogou durante a sincronizacao
-                        break;
+                    if (loggedUser == null) { // usuario deslogou durante a sincronizacao
+                    	break;
+                    }
 
                     // TODO : criar novo método para pegar pedestre removido ou n�o
                     //        isso pode resolver vários bugs
@@ -1806,12 +1812,18 @@ public class Main {
 //							System.out.println("Estou deletando automaticamente, face: " + idFacial);
 //							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
 //						}
+                        
+                        if(athleteAccessTO.getRemovido() && athleteAccessTO.getDataCadastroFotoNaHikivision() != null 
+                        		&& Utils.isHikivisionConfigValid() ) {
+                        	apagarUsuarioHikivision(existentAthleteAccess.getCardNumber());
+                        	existentAthleteAccess.setDataCadastroFotoNaHikivision(null);
+                        }
 
                         existentAthleteAccess.update(athleteAccessTO);
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
                         }
-
+                        
                         HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                     } else {
@@ -1820,8 +1832,6 @@ public class Main {
                             atualizaDigitais = true;
                         }
                         HibernateUtil.save(PedestrianAccessEntity.class, newAthleteAccess);
-
-
                     }
                 }
 
@@ -1872,7 +1882,21 @@ public class Main {
                 }
             }
 
-            @SuppressWarnings("unchecked")
+            private void apagarUsuarioHikivision(String cardNumber) {
+            	HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
+            	final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDisposivos();
+
+                if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
+                    return;
+                }
+                
+                for (MatchList matchList : devices.getSearchResult().getMatchList()) {
+                    final String deviceId = matchList.getDevice().getDevIndex();
+                    hikiVisionIntegrationService.apagarUsuario(deviceId, cardNumber);
+                }
+			}
+
+			@SuppressWarnings("unchecked")
             private void enviaBiometriasColetadasLocalmente() throws IOException {
                 // Enviando as biometrias coletadas localmente
                 List<BiometricEntity> biometriasLocais = (List<BiometricEntity>) HibernateUtil.getResultList(BiometricEntity.class, "BiometricEntity.findAll");

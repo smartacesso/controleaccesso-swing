@@ -412,9 +412,9 @@ public class MainScreen extends JFrame {
 				listaCartoesPanel.cleanFilter();
 				listaCartoesPanel.updateUI();
 			}
+			
 			listaAcessoPanel.cleanFilter();
 			listaAcessoPanel.updateUI();
-			
 			
 		}
 	}

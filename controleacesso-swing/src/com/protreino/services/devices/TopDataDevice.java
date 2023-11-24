@@ -202,6 +202,7 @@ public class TopDataDevice extends Device {
 							if (inner.TipoLeitor == Enumeradores.QRCODE 
 											|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE) {
 								ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
+
 								if(iArrBCartaoRb[0] == 18)
 									Cartao = new StringBuffer("0000000000");
 
@@ -1053,12 +1054,12 @@ public class TopDataDevice extends Device {
 //			long qtdeAcessos = HibernateUtil.countAcessosPedestre(matchedAthleteAccess.getId());
 			
 			if(inner.BilheteInner.Origem == Enumeradores.ORIGEM_URNA || inner.BilheteInner.Origem == Origens.ORIGEM_LEITOR_2) {
-				ret = !"anticlockwise".equals(sentidoCatraca) 
-						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+//				ret = !"anticlockwise".equals(sentidoCatraca) 
+//						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+//								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				
-//				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-//				EasyInner.AcionarBipCurto(inner.Numero);
+				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+				EasyInner.AcionarBipCurto(inner.Numero);
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
 											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
@@ -1073,20 +1074,24 @@ public class TopDataDevice extends Device {
 			System.out.println(" ultimo acesso " + lastAccess);
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
 
-				ret = "anticlockwise".equals(sentidoCatraca) 
-						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
-//				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-//				EasyInner.AcionarBipCurto(inner.Numero);
+//				ret = "anticlockwise".equals(sentidoCatraca) 
+//						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+//								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				
+				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+				EasyInner.AcionarBipCurto(inner.Numero);
+				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty())
 					mensagemPermitido = defineMensagemPermitido(sentidoCatraca, espacoEntrar, entrar);
 
 			} else {
-				ret = !"anticlockwise".equals(sentidoCatraca) 
-						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
-//				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-//				EasyInner.AcionarBipCurto(inner.Numero);
+//				ret = !"anticlockwise".equals(sentidoCatraca) 
+//						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+//								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				
+				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+				EasyInner.AcionarBipCurto(inner.Numero);
+				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
 											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
@@ -1108,10 +1113,12 @@ public class TopDataDevice extends Device {
 				mensagemPermitido = !"anticlockwise".equals(sentidoCatraca) 
 						? formatMessage("<-" + espacoEntrar + sair + ";" + "") 
 						: formatMessage(sair + espacoEntrar + "->" + ";" + "");
-				return !"anticlockwise".equals(sentidoCatraca) 
-						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
-//				return EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+//				return !"anticlockwise".equals(sentidoCatraca) 
+//						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+//								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				
+				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+				EasyInner.AcionarBipCurto(inner.Numero);
 				
 			}
 			if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
@@ -1119,11 +1126,12 @@ public class TopDataDevice extends Device {
 										? formatMessage("<-" + espacoEntrar + entrar + ";" + "") 
 										: formatMessage(entrar + espacoEntrar + "->" + ";" + "");
 			}
-			ret = "anticlockwise".equals(sentidoCatraca) 
-					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
-//			EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-//			EasyInner.AcionarBipCurto(inner.Numero);
+//			ret = "anticlockwise".equals(sentidoCatraca) 
+//					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+//							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+			
+			EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+			EasyInner.AcionarBipCurto(inner.Numero);
 		}
 		
 		return ret;

@@ -5,7 +5,6 @@ import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.SearchResult;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HikiVisionIntegrationService;
 import com.protreino.services.utils.Utils;
@@ -19,324 +18,459 @@ import java.awt.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.*;
 
+@SuppressWarnings("serial")
 public class SincronizacaoManualDialog extends BaseDialog {
 
-    private Font font;
-    private Font tabHeaderFont;
-    private Container mainContentPane;
-    private JTabbedPane tabbedPane;
-    private HikiVisionIntegrationService hikiVisionService;
-    private String[] columns = {"Device Id", "Device Name", "Status", "Sincronizar"};
-    private Integer[] columnWidths = {280, 200, 150, 80};
-    private JTable deviceListTable;
+	private Font font;
+	private Font tabHeaderFont;
+	private Container mainContentPane;
+	private HikiVisionIntegrationService hikiVisionService;
+	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" };
+	private Integer[] columnWidths = { 280, 200, 150, 80 };
+	private JTable deviceListTable;
 
-    private JButton syncALl;
+	private JButton syncAll;
 
-    private JButton syncByDate;
+	private JButton syncByDate;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	private JButton addDevice;
 
-    private static final int CHECKBOX_COLUMN = 3;
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-    private List<HikivisionDeviceTO> deviceList;
+	private static final int CHECKBOX_COLUMN = 3;
 
-    public SincronizacaoManualDialog() {
-        setIconImage(Main.favicon);
-        setModal(true);
-        setTitle("Sincronismo manual de dispositivos");
-        setResizable(true);
-        setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(920, 718));
-        setMinimumSize(getPreferredSize());
-        hikiVisionService = HikiVisionIntegrationService.getInstace();
+	public SincronizacaoManualDialog() {
+		setIconImage(Main.favicon);
+		setModal(true);
+		setTitle("Sincronismo manual de dispositivos");
+		setResizable(false);
+		setLayout(new BorderLayout());
+		setPreferredSize(new Dimension(920, 718));
+		setMinimumSize(getPreferredSize());
+		
+		hikiVisionService = HikiVisionIntegrationService.getInstace();
 
-        font = new JLabel().getFont();
-        Font font2 = font;
-        tabHeaderFont = new Font(font2.getFontName(), Font.BOLD, font2.getSize() + 1);
+		font = new JLabel().getFont();
+		Font font2 = font;
+		tabHeaderFont = new Font(font2.getFontName(), Font.BOLD, font2.getSize() + 1);
 
-        mainContentPane = new Container();
-        mainContentPane.setLayout(new BorderLayout());
+		mainContentPane = new Container();
+		mainContentPane.setLayout(new BorderLayout());
 
+		Font font = new JLabel().getFont();
+		Font headerFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
 
-        Font font = new JLabel().getFont();
-        Font headerFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
+		JPanel deviceListTablePanel = new JPanel();
+		deviceListTablePanel.setLayout(new BoxLayout(deviceListTablePanel, BoxLayout.Y_AXIS));
+		deviceListTablePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		deviceListTable = new JTable(new DefaultTableModel(columns, 0));
+		formatTable();
+		deviceListTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		deviceListTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		deviceListTable.getTableHeader().setReorderingAllowed(false);
+		deviceListTable.getTableHeader().setOpaque(false);
+		deviceListTable.getTableHeader().setForeground(Main.firstColor);
+		deviceListTable.getTableHeader().setBackground(Main.secondColor);
+		deviceListTable.getTableHeader().setFont(headerFont);
+		deviceListTable.setRowHeight(30);
+		deviceListTable.setSelectionBackground(Main.firstColor);
+		deviceListTable.setSelectionForeground(Color.WHITE);
+		TableCellRenderer rendererFromHeader = deviceListTable.getTableHeader().getDefaultRenderer();
+		JLabel headerLabel = (JLabel) rendererFromHeader;
+		headerLabel.setHorizontalAlignment(JLabel.CENTER);
+		JScrollPane scrollPane = new JScrollPane(deviceListTable);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+		deviceListTablePanel.add(scrollPane);
 
-        JPanel deviceListTablePanel = new JPanel();
-        deviceListTablePanel.setLayout(new BoxLayout(deviceListTablePanel, BoxLayout.Y_AXIS));
-        deviceListTablePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        deviceListTable = new JTable(new DefaultTableModel(columns, 0));
-        formatTable();
-        deviceListTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        deviceListTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        deviceListTable.getTableHeader().setReorderingAllowed(false);
-        deviceListTable.getTableHeader().setOpaque(false);
-        deviceListTable.getTableHeader().setForeground(Main.firstColor);
-        deviceListTable.getTableHeader().setBackground(Main.secondColor);
-        deviceListTable.getTableHeader().setFont(headerFont);
-        deviceListTable.setRowHeight(30);
-        deviceListTable.setSelectionBackground(Main.firstColor);
-        deviceListTable.setSelectionForeground(Color.WHITE);
-        TableCellRenderer rendererFromHeader = deviceListTable.getTableHeader().getDefaultRenderer();
-        JLabel headerLabel = (JLabel) rendererFromHeader;
-        headerLabel.setHorizontalAlignment(JLabel.CENTER);
-        JScrollPane scrollPane = new JScrollPane(deviceListTable);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
-        deviceListTablePanel.add(scrollPane);
+		syncAll = new JButton("Sincronização Total");
+		syncAll.setBorder(new EmptyBorder(10, 15, 10, 15));
+		syncAll.setPreferredSize(new Dimension(180, 40));
+		syncAll.addActionListener(e -> {
+			syncDevices(null, null);
+		});
 
+		syncByDate = new JButton("Sincronização por data");
+		syncByDate.setBorder(new EmptyBorder(10, 15, 10, 15));
+		syncByDate.setPreferredSize(new Dimension(180, 40));
+		syncByDate.addActionListener(e -> {
+			criarDialogoDeSincronizacaoPorData();
+		});
 
-        syncALl = new JButton("Sincronização Total");
-        syncALl.setBorder(new EmptyBorder(10, 15, 10, 15));
-        syncALl.setPreferredSize(new Dimension(180, 40));
+		addDevice = new JButton("Adicionar Câmera");
+		addDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
+		addDevice.setPreferredSize(new Dimension(180, 40));
+		addDevice.addActionListener(e -> {
+			adicionarDevice();
+		});
 
-        syncByDate = new JButton("Sincronização por data");
-        syncByDate.setBorder(new EmptyBorder(10, 15, 10, 15));
-        syncByDate.setPreferredSize(new Dimension(180, 40));
-        syncByDate.addActionListener(e -> {
-            criarDialogoDeSincronizacaoPorData();
-        });
+		JPanel actionsPanel = new JPanel();
+		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
+		actionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		actionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+		actionsPanel.add(addDevice);
+		actionsPanel.add(Box.createHorizontalGlue());
+		actionsPanel.add(syncAll);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(syncByDate);
 
-        JPanel actionsPanel = new JPanel();
-        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
-        actionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        actionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-        actionsPanel.add(Box.createHorizontalGlue());
-        actionsPanel.add(syncALl);
-        actionsPanel.add(Box.createHorizontalStrut(10));
-        actionsPanel.add(syncByDate);
+		populateTable();
 
+		mainContentPane.add(deviceListTablePanel, BorderLayout.CENTER);
+		mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
+		getContentPane().add(mainContentPane, BorderLayout.CENTER);
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
 
-        populateTable();
+	private void adicionarDevice() {
+		JDialog adicionarDeviceDialog = new JDialog();
+		adicionarDeviceDialog.setIconImage(Main.favicon);
+		adicionarDeviceDialog.setModal(true);
+		adicionarDeviceDialog.setTitle("Adicionar Device");
+		adicionarDeviceDialog.setResizable(false);
+		adicionarDeviceDialog.setLayout(new BorderLayout());
 
-        mainContentPane.add(deviceListTablePanel, BorderLayout.CENTER);
-        mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
-        getContentPane().add(mainContentPane, BorderLayout.CENTER);
-        setVisible(true);
-        pack();
-        setLocationRelativeTo(null);
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+		JLabel addressLabel = new JLabel("Ip Da Câmera");
+		addressLabel.setPreferredSize(new Dimension(120, 25));
+		addressLabel.setForeground(Main.firstColor);
+		addressLabel.setFont(tabHeaderFont);
+		JFormattedTextField addressTextField = Utils.getNewJFormattedTextField(12);
+		addressTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		JPanel addressPanel = getNewMiniPanel(addressLabel, addressTextField);
 
-    }
+		JLabel portLabel = new JLabel("Porta da Câmera");
+		portLabel.setPreferredSize(new Dimension(120, 25));
+		portLabel.setForeground(Main.firstColor);
+		portLabel.setFont(tabHeaderFont);
+		JFormattedTextField portTextField = Utils.getNewJFormattedTextField(12);
+		portTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		JPanel portPanel = getNewMiniPanel(portLabel, portTextField);
 
-    private void criarDialogoDeSincronizacaoPorData() {
+		JLabel userLabel = new JLabel("Usuário da Câmera");
+		userLabel.setPreferredSize(new Dimension(120, 25));
+		userLabel.setForeground(Main.firstColor);
+		userLabel.setFont(tabHeaderFont);
+		JFormattedTextField userTextField = Utils.getNewJFormattedTextField(12);
+		userTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		JPanel userPanel = getNewMiniPanel(userLabel, userTextField);
 
-        JDialog sincronizacaoPorDataDialog = new JDialog();
-        sincronizacaoPorDataDialog.setIconImage(Main.favicon);
-        sincronizacaoPorDataDialog.setModal(true);
-        sincronizacaoPorDataDialog.setTitle("Confirmar");
-        sincronizacaoPorDataDialog.setResizable(false);
-        sincronizacaoPorDataDialog.setLayout(new BorderLayout());
+		JLabel passwordLabel = new JLabel("Senha da Câmera");
+		passwordLabel.setPreferredSize(new Dimension(120, 25));
+		passwordLabel.setForeground(Main.firstColor);
+		passwordLabel.setFont(tabHeaderFont);
+		JFormattedTextField passwordTextField = Utils.getNewJFormattedTextField(12);
+		passwordTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		JPanel passwordPanel = getNewMiniPanel(passwordLabel, passwordTextField);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		JLabel deviceNameLabel = new JLabel("Nome da Câmera");
+		deviceNameLabel.setPreferredSize(new Dimension(120, 25));
+		deviceNameLabel.setForeground(Main.firstColor);
+		deviceNameLabel.setFont(tabHeaderFont);
+		JFormattedTextField deviceNameTextField = Utils.getNewJFormattedTextField(12);
+		deviceNameTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		JPanel deviceNamedPanel = getNewMiniPanel(deviceNameLabel, deviceNameTextField);
 
-        JLabel dataInicioLabel = new JLabel("Data de Início");
-        JFormattedTextField dataInicioTextField = Utils.getNewJFormattedTextField(12);
-        dataInicioTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        MaskFormatter mask = Utils.getNewMaskFormatter("##/##/#### ##:##");
-        mask.install(dataInicioTextField);
-        JPanel dataInicioPanel = getNewMiniPanel(dataInicioLabel, dataInicioTextField);
+		JButton confirmarButton = new JButton("Confirmar");
+		confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		confirmarButton.addActionListener(e -> {
+			restauraFontLabel(addressLabel, portLabel, userLabel, passwordLabel, deviceNameLabel);
 
+			boolean valido = true;
 
-        JLabel dataFimLabel = new JLabel("Data de Fim");
-        JFormattedTextField dataFimTextField = Utils.getNewJFormattedTextField(12);
-        dataFimTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        mask = Utils.getNewMaskFormatter("##/##/#### ##:##");
-        mask.install(dataFimTextField);
-        JPanel dataFinalPanel = getNewMiniPanel(dataFimLabel, dataFimTextField);
+			if (!isValidIpAddress(addressTextField.getText())) {
+				redAndBoldFont(addressLabel);
+				valido = false;
+			}
 
+			if (!isValidPort(portTextField.getText())) {
+				redAndBoldFont(portLabel);
+				valido = false;
+			}
 
-        JButton confirmarButton = new JButton("Confirmar");
-        confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
-        confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        confirmarButton.addActionListener(e -> {
+			if ("".equals(userTextField.getText())) {
+				redAndBoldFont(userLabel);
+				valido = false;
+			}
 
-            Date dataInicio = null;
-            Date dataFim = null;
+			if ("".equals(passwordTextField.getText())) {
+				redAndBoldFont(passwordLabel);
+				valido = false;
+			}
 
-            try {
-                dataInicio = sdf.parse(dataInicioTextField.getText());
-                dataFim = sdf.parse(dataFimTextField.getText());
+			if ("".equals(deviceNameTextField.getText())) {
+				redAndBoldFont(deviceNameLabel);
+				valido = false;
+			}
 
-            } catch (ParseException ex) {
-                ex.printStackTrace();
-            }
-            syncDevices(dataInicio, dataFim);
+			if (!valido) {
+				return;
+			}
 
-            sincronizacaoPorDataDialog.dispose();
-        });
-        mainPanel.add(dataInicioPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(dataFinalPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(confirmarButton);
-        sincronizacaoPorDataDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
-        sincronizacaoPorDataDialog.pack();
-        sincronizacaoPorDataDialog.setLocationRelativeTo(null);
-        sincronizacaoPorDataDialog.setVisible(true);
+			hikiVisionService.adicionarDispositivo(addressTextField.getText(),
+					Integer.parseInt(portTextField.getText()), userTextField.getText(), passwordTextField.getText(),
+					deviceNameTextField.getText());
+			populateTable();
+			adicionarDeviceDialog.dispose();
+		});
 
-    }
+		mainPanel.add(addressPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(portPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(userPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(passwordPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(deviceNamedPanel);
+		mainPanel.add(Box.createVerticalStrut(70));
+		mainPanel.add(confirmarButton);
+		
+		adicionarDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		adicionarDeviceDialog.pack();
+		adicionarDeviceDialog.setLocationRelativeTo(null);
+		adicionarDeviceDialog.setVisible(true);
+	}
 
-    private void syncDevices(final Date inicio, final Date fim) {
-        TableModel model = deviceListTable.getModel();
-        List<String> devicesToSync = new ArrayList<>();
-        for (int i = 0; i < model.getRowCount(); i++) {
-            System.out.println(model.getValueAt(i, 3));
-            if (Boolean.valueOf(model.getValueAt(i, 3).toString())) {
-                devicesToSync.add(model.getValueAt(i, 0).toString());
-            }
-        }
-        if (devicesToSync.isEmpty()) {
-            return;
-        }
-        List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim);
+	private boolean isValidPort(String port) {
+		if(port == null || port.isEmpty()) {
+			return false;			
+		}
+		
+		final String regex = "^([0-9]){1,5}$";
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(port);
+		
+		return m.matches();
+	}
 
-        devicesToSync.forEach(device -> {
-            pedestresParaSicronizar.forEach(pedestre ->{
-                if(pedestre.getRemovido() || pedestre.getFoto() == null) {
-                    hikiVisionService.apagarUsuario(device, pedestre.getCardNumber());
-                }
-                else {
-                    if(!hikiVisionService.isUsuarioJaCadastrado(device, pedestre.getCardNumber())) {
-                        hikiVisionService.adicionarUsuario(device, pedestre.getCardNumber(), pedestre.getName());
-                    }
-                   if(hikiVisionService.isFotoUsuarioJaCadastrada(device, pedestre.getCardNumber())) {
-                       hikiVisionService.apagarFotoUsuario(device, pedestre.getCardNumber());
-                   }
-                    hikiVisionService.adicionarFotoUsuario(device, pedestre.getCardNumber(), pedestre.getFoto());
-                }
-            });
-        });
-    }
+	private boolean isValidIpAddress(String ipAddress) {
+		if(ipAddress == null || ipAddress.isEmpty()) {
+			return false;			
+		}
+		
+		final String regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(ipAddress);
+		
+		return m.matches();
+	}
 
-    private List<PedestrianAccessEntity> buscaPedestresParaSicronizar(Date inicio, Date fim) {
-        if (inicio != null && fim != null) {
-            //query por data
-            HashMap<String, Object> args = new HashMap<>();
-            args.put("INIT_DATE", inicio);
-            args.put("END_DATE", fim);
+	private void restauraFontLabel(JLabel addressLabel, JLabel portLabel, JLabel userLabel, JLabel passwordLabel,
+			JLabel deviceNameLabel) {
+		setFirstColorFont(addressLabel);
+		setFirstColorFont(portLabel);
+		setFirstColorFont(userLabel);
+		setFirstColorFont(passwordLabel);
+		setFirstColorFont(deviceNameLabel);
+	}
 
-            return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(
-                    PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate", args);
-        }
+	private void criarDialogoDeSincronizacaoPorData() {
+		JDialog sincronizacaoPorDataDialog = new JDialog();
+		sincronizacaoPorDataDialog.setIconImage(Main.favicon);
+		sincronizacaoPorDataDialog.setModal(true);
+		sincronizacaoPorDataDialog.setTitle("Confirmar");
+		sincronizacaoPorDataDialog.setResizable(false);
+		sincronizacaoPorDataDialog.setLayout(new BorderLayout());
 
-        return (List<PedestrianAccessEntity>) HibernateUtil.getResultList(
-                PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred");
-    }
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-    private void formatTable() {
+		JLabel dataInicioLabel = new JLabel("Data de Início");
+		JFormattedTextField dataInicioTextField = Utils.getNewJFormattedTextField(12);
+		dataInicioTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		MaskFormatter mask = Utils.getNewMaskFormatter("##/##/#### ##:##");
+		mask.install(dataInicioTextField);
+		JPanel dataInicioPanel = getNewMiniPanel(dataInicioLabel, dataInicioTextField);
 
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        deviceListTable.setDefaultRenderer(String.class, centerRenderer);
+		JLabel dataFimLabel = new JLabel("Data de Fim");
+		JFormattedTextField dataFimTextField = Utils.getNewJFormattedTextField(12);
+		dataFimTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		mask = Utils.getNewMaskFormatter("##/##/#### ##:##");
+		mask.install(dataFimTextField);
+		JPanel dataFinalPanel = getNewMiniPanel(dataFimLabel, dataFimTextField);
 
+		JButton confirmarButton = new JButton("Confirmar");
+		confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		confirmarButton.addActionListener(e -> {
 
-        for (int i = 0; i < deviceListTable.getColumnCount(); i++) {
-            TableColumn column = deviceListTable.getColumnModel().getColumn(i);
-            column.setPreferredWidth(columnWidths[i]);
-        }
-    }
+			Date dataInicio = null;
+			Date dataFim = null;
 
-    public void populateTable() {
+			try {
+				dataInicio = sdf.parse(dataInicioTextField.getText());
+				dataFim = sdf.parse(dataFimTextField.getText());
 
-        DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {
+			} catch (ParseException ex) {
+				ex.printStackTrace();
+			}
+			syncDevices(dataInicio, dataFim);
 
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                Class clazz = String.class;
-                switch (columnIndex) {
-                    case CHECKBOX_COLUMN:
-                        clazz = Boolean.class;
-                        break;
-                }
-                return clazz;
-            }
+			sincronizacaoPorDataDialog.dispose();
+		});
+		
+		mainPanel.add(dataInicioPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(dataFinalPanel);
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarButton);
+		sincronizacaoPorDataDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		sincronizacaoPorDataDialog.pack();
+		sincronizacaoPorDataDialog.setLocationRelativeTo(null);
+		sincronizacaoPorDataDialog.setVisible(true);
+	}
 
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == CHECKBOX_COLUMN;
-            }
+	private void syncDevices(final Date inicio, final Date fim) {
+		TableModel model = deviceListTable.getModel();
+		List<String> devicesToSync = new ArrayList<>();
+		for (int i = 0; i < model.getRowCount(); i++) {
+			System.out.println(model.getValueAt(i, 3));
+			if (Boolean.valueOf(model.getValueAt(i, 3).toString())) {
+				devicesToSync.add(model.getValueAt(i, 0).toString());
+			}
+		}
+		if (devicesToSync.isEmpty()) {
+			return;
+		}
+		List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim);
+		System.out.println("Pedestre encontrados: " + pedestresParaSicronizar.size());
 
-            @Override
-            public void setValueAt(Object aValue, int row, int column) {
-                if (aValue instanceof Boolean && column == CHECKBOX_COLUMN) {
-                    Vector rowData = (Vector) getDataVector().get(row);
-                    rowData.set(CHECKBOX_COLUMN, (boolean) aValue);
-                    fireTableCellUpdated(row, column);
-                }
-            }
-        };
-        //HikivisionDeviceTO hikivisionDevice = hikiVision.listarDisposivos();
-        HikivisionDeviceTO hikivisionDevice = new HikivisionDeviceTO();
-        SearchResult searchResult = new SearchResult();
-        List<MatchList> MatchList = new ArrayList<>();
-        MatchList matchListcurrent = new MatchList();
+		devicesToSync.forEach(device -> {
+			pedestresParaSicronizar.forEach(pedestre -> {
+				if (pedestre.getRemovido() || pedestre.getFoto() == null) {
+					hikiVisionService.apagarUsuario(device, pedestre.getCardNumber());
+				} else {
+					boolean isUsuarioCadastrado = true;
+					if (!hikiVisionService.isUsuarioJaCadastrado(device, pedestre.getCardNumber())) {
+						isUsuarioCadastrado = hikiVisionService.adicionarUsuario(device, pedestre.getCardNumber(), pedestre.getName());
+					}
+					
+					if (hikiVisionService.isFotoUsuarioJaCadastrada(device, pedestre.getCardNumber())) {
+						hikiVisionService.apagarFotoUsuario(device, pedestre.getCardNumber());
+					}
 
-        Device deviceCurrent = new Device();
-        deviceCurrent.setDevIndex("1");
-        deviceCurrent.setDevStatus("ativo");
-        deviceCurrent.setDevName("camera 1");
-        matchListcurrent.setDevice(deviceCurrent);
-        MatchList.add(matchListcurrent);
-        MatchList.add(matchListcurrent);
-        searchResult.setMatchList(MatchList);
-        searchResult.setNumOfMatches(1);
-        searchResult.setTotalMatches(1);
-        hikivisionDevice.setSearchResult(searchResult);
+					if(isUsuarioCadastrado) {
+						hikiVisionService.adicionarFotoUsuario(device, pedestre.getCardNumber(), pedestre.getFoto());
+						
+						final boolean isCartaoJaCadastrado = hikiVisionService.isCartaoJaCadastrado(device, pedestre.getCardNumber());
+			            
+			            if(!isCartaoJaCadastrado) {
+			            	hikiVisionService.adicionarCartaoDePedestre(device, pedestre.getCardNumber());
+			            }
+					}
+					
+				}
+			});
+		});
+	}
 
+	@SuppressWarnings("unchecked")
+	private List<PedestrianAccessEntity> buscaPedestresParaSicronizar(Date inicio, Date fim) {
+		if (inicio != null && fim != null) {
+			// query por data
+			HashMap<String, Object> args = new HashMap<>();
+			args.put("INIT_DATE", inicio);
+			args.put("END_DATE", fim);
 
-        if (hikivisionDevice == null || hikivisionDevice.getSearchResult() == null ||
-                hikivisionDevice.getSearchResult().getTotalMatches() == 0) {
-            deviceListTable.setModel(dataModel);
-            return;
-        }
+			return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
+					"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate", args);
+		}
 
-        for (MatchList matchList : hikivisionDevice.getSearchResult().getMatchList()) {
-            Device device = matchList.getDevice();
-            Object[] obj = new Object[4];
-            obj[0] = device.getDevIndex();
-            obj[1] = device.getDevName();
-            obj[2] = device.getDevStatus();
-            obj[3] = true;
+		return (List<PedestrianAccessEntity>) HibernateUtil.getResultList(PedestrianAccessEntity.class,
+				"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred");
+	}
 
-            dataModel.addRow(obj);
+	private void formatTable() {
 
-        }
-        deviceListTable.setModel(dataModel);
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		deviceListTable.setDefaultRenderer(String.class, centerRenderer);
 
-    }
+		for (int i = 0; i < deviceListTable.getColumnCount(); i++) {
+			TableColumn column = deviceListTable.getColumnModel().getColumn(i);
+			column.setPreferredWidth(columnWidths[i]);
+		}
+	}
 
-    private JPanel getNewMiniPanel(JLabel label, JTextComponent text) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+	public void populateTable() {
 
-        GridBagConstraints c = new GridBagConstraints();
+		DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {
 
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        panel.add(label, c);
+			@Override
+			public Class<?> getColumnClass(int columnIndex) {
+				Class clazz = String.class;
+				switch (columnIndex) {
+				case CHECKBOX_COLUMN:
+					clazz = Boolean.class;
+					break;
+				}
+				return clazz;
+			}
 
-        c.gridx = 0;
-        c.gridy = 1;
-        panel.add(text, c);
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return column == CHECKBOX_COLUMN;
+			}
 
-        return panel;
-    }
+			@Override
+			public void setValueAt(Object aValue, int row, int column) {
+				if (aValue instanceof Boolean && column == CHECKBOX_COLUMN) {
+					Vector rowData = (Vector) getDataVector().get(row);
+					rowData.set(CHECKBOX_COLUMN, (boolean) aValue);
+					fireTableCellUpdated(row, column);
+				}
+			}
+		};
+		HikivisionDeviceTO hikivisionDevice = hikiVisionService.listarDisposivos();
 
-    private GridBagConstraints getNewGridBag(int x, int y, int iY, int iX) {
-        GridBagConstraints c = new GridBagConstraints();
+		if (hikivisionDevice == null || hikivisionDevice.getSearchResult() == null
+				|| hikivisionDevice.getSearchResult().getTotalMatches() == 0) {
+			deviceListTable.setModel(dataModel);
+			return;
+		}
 
-        c.gridx = x;
-        c.gridy = y;
-        c.ipady = iY;
-        c.ipadx = iX;
-        c.anchor = GridBagConstraints.LINE_START;
+		for (MatchList matchList : hikivisionDevice.getSearchResult().getMatchList()) {
+			Device device = matchList.getDevice();
+			Object[] obj = new Object[4];
+			obj[0] = device.getDevIndex();
+			obj[1] = device.getDevName();
+			obj[2] = device.getDevStatus();
+			obj[3] = true;
 
-        return c;
-    }
+			dataModel.addRow(obj);
+		}
 
+		deviceListTable.setModel(dataModel);
+	}
+
+	private JPanel getNewMiniPanel(JLabel label, JTextComponent text) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+
+		GridBagConstraints c = new GridBagConstraints();
+
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = 0;
+		panel.add(label, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		panel.add(text, c);
+
+		return panel;
+	}
 
 }

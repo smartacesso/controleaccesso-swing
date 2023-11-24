@@ -119,6 +119,19 @@ import com.protreino.services.utils.HibernateUtil;
 				query = "select count(*) "
 					  + "from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
+	
+	@NamedQuery(name  = "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUserPedestre",
+				query = "select count(*) "
+					  + "from PedestrianAccessEntity obj "
+					  + "where obj.tipo = 'PEDESTRE'and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
+	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
+					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
+					  + "from PedestrianAccessEntity obj "
+					  + "left join obj.templates temp "
+					  + "where obj.tipo = 'PEDESTRE' and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
+					  + "group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier "
+					  + "order by obj.name"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllComFotoParaUpload",
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where obj.latestPhotosTaken > :LAST_SYNC_PHOTO "
@@ -198,6 +211,7 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "order by obj.id desc"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithPhotoByLastSync",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.foto, obj.cardNumber, obj.name, obj.removido)  " +
+						"from PedestrianAccessEntity obj " +
 						"where obj.foto != null " +
 						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION " +
 						"order by obj.id asc"),

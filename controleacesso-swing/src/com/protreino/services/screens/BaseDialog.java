@@ -7,6 +7,8 @@ import java.awt.Frame;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 
+import com.protreino.services.main.Main;
+
 @SuppressWarnings("serial")
 public class BaseDialog extends JDialog {
 	
@@ -29,6 +31,10 @@ public class BaseDialog extends JDialog {
 		label.setForeground(Color.BLACK);
 		Font f = label.getFont();
 		label.setFont(f.deriveFont(f.getStyle() & ~Font.BOLD));
+	}
+	
+	protected void setFirstColorFont(JLabel label) {
+		label.setForeground(Main.firstColor);
 	}
 
 }

@@ -324,19 +324,10 @@ public class AutenticationDialog extends JDialog {
 			SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
 			    @Override
 			    public Boolean doInBackground() {
-			    	try {
-
-			    		long inicio = new Date().getTime();
+			    	try {			    		
 			    		String senhaEncriptado = EncryptionUtils.encrypt(senha);
-			    		long fim = new Date().getTime();
-			    		System.out.println("Tempo gasto para encripitar senha em ms: " + (fim - inicio));
-			    		
-			    		inicio = new Date().getTime();
 			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
-			    		fim = new Date().getTime();
-			    		System.out.println("Tempo gasto para buscar usuario no banco em ms: " + (fim - inicio));
 
-			    		
 			    	//	fazer o enable se não achar motivo para sennha
 			    		long inicioTimer = new Date().getTime();
 			    	

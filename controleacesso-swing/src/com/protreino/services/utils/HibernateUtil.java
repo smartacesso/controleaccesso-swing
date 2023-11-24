@@ -3078,6 +3078,8 @@ public class HibernateUtil {
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
 					+ "	where  p.tipo = 'VISITANTE' "
+					+ " and p.cardNumber != null "
+					+ " and p.cardNumber != '' "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3133,10 +3135,39 @@ public class HibernateUtil {
 
 		try {
 			Query q = session.createQuery(
-					"update PedestrianAccessEntity p " + "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
+					"update PedestrianAccessEntity p " 
+							+ "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
 							+ "where p.qtdAcessoAntesSinc > 0 "
-							+ "		 and p.dataCriacao >= :DATA ");
+							+ " and p.cardNumber != null "
+							+ " and p.cardNumber != '' "
+							+ "	and p.dataCriacao >= :DATA ");
 			q.setParameter("DATA", data);
+			q.executeUpdate();
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			session.getTransaction().rollback();
+			e.printStackTrace();
+
+		} finally {
+			session.close();
+		}
+
+	}
+	
+	public static void apagaQuantidadeAcessosAsinc() {
+		System.out.println("Entrou no apagaQuantidadeAcessosAsinc");
+
+		Session session = getSessionFactory().getCurrentSession();
+		if (session.getTransaction() == null || !session.getTransaction().isActive())
+			session.beginTransaction();
+
+
+		try {
+			Query q = session.createQuery(
+					"update PedestrianAccessEntity p "
+							+ "set p.qtdAcessoAntesSinc = 0 "
+							+ "where p.qtdAcessoAntesSinc > 0 "
+					);
 			q.executeUpdate();
 			session.getTransaction().commit();
 		} catch (Exception e) {

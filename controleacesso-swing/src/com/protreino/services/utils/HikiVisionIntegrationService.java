@@ -55,16 +55,13 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
-
+        try (Response response = client.newCall(request).execute();) {
             final boolean isSuccessFul = response.isSuccessful();
-            response.close();
 
             return isSuccessFul;
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	System.out.println(e.getMessage());
         }
 
         return false;
@@ -92,14 +89,10 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
-
+        try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
                 final HikivisionUserInfoTO responseBody = gson.fromJson(response.peekBody(2048).string(), HikivisionUserInfoTO.class);
                 final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
-
-                response.close();
 
                 System.out.println(String.format("Usuario %s já cadastrado no device %s: %b", idUser, deviceId, isUsuarioCadastrado));
 
@@ -135,14 +128,11 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
-
+        try (Response response = client.newCall(request).execute();) {
             if (response.isSuccessful()) {
                 final FaceInfoSearchTO responseBody = gson.fromJson(response.peekBody(2048).string(), FaceInfoSearchTO.class);
                 final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 
-                response.close();
                 System.out.println(String.format("Foto do wsuario %s já cadastrado no device %s: %b", idUser, deviceId, isUsuarioCadastrado));
 
                 return isUsuarioCadastrado;
@@ -160,14 +150,14 @@ public class HikiVisionIntegrationService {
     public boolean adicionarUsuario(final String deviceId, final String idUser, final String name) {
         final String body = "{" +
                 "\"UserInfo\" : [{" +
-                "\"employeeNo\": \"" + idUser + "\"," +
-                "\"name\": \"" + name + "\"," +
-                "\"Valid\" : {" +
-                "\"beginTime\": \"2017-08-01T17:30:08\"," +
-                "\"endTime\": \"2037-12-31T23:59:59\"" +
-                "}" +
+                	"\"employeeNo\": \"" + idUser + "\"," +
+                	"\"name\": \"" + name + "\"," +
+                	"\"Valid\" : {" +
+                		"\"beginTime\": \"2017-08-01T17:30:08\"," +
+                		"\"endTime\": \"2037-12-31T23:59:59\"" +
+            		"}" +
                 "}]" +
-                "}";
+            "}";
 
         RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
         OkHttpClient client = getOkHttpClient();
@@ -178,21 +168,16 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
-
+        try(Response response = client.newCall(request).execute();) {
             if (response.isSuccessful()) {
                 final UserInfoTO responseBody = gson.fromJson(response.peekBody(2048).string(), UserInfoTO.class);
 
                 final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
 
-                response.close();
                 System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
 
                 return isCadastradoComSucesso;
             }
-
-            response.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -201,7 +186,8 @@ public class HikiVisionIntegrationService {
         return false;
     }
 
-    public void adicionarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
+    @SuppressWarnings("deprecation")
+	public void adicionarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
         OkHttpClient client = getOkHttpClient();
 
         final String jsonRequestBody = "{\"FaceInfo\": {\"employeeNo\": \"" + idUser + "\" } }";
@@ -214,26 +200,93 @@ public class HikiVisionIntegrationService {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://127.0.0.1:8082/ISAPI/Intelligent/FDLib/FaceDataRecord?format=json&devIndex=" + deviceId)
+                .url(url + "/ISAPI/Intelligent/FDLib/FaceDataRecord?format=json&devIndex=" + deviceId)
                 .method("POST", body)
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try(Response response = client.newCall(request).execute();) {
             final FaceDataRecordResponseTO responseBody = gson.fromJson(response.peekBody(2048).string(), FaceDataRecordResponseTO.class);
             final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
             System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
-
-            response.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+    
+    public void adicionarCartaoDePedestre(final String deviceId, final String idUser) {
+        final String body = "{"
+                + "		\"CardInfo\": {"
+                + "			\"employeeNo\": \"" + idUser + "\","
+                + "			\"cardNo\": \"" + idUser + "\""
+                + "		}"
+                + "}";
+    	
+        RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+        OkHttpClient client = getOkHttpClient();
 
-    public void atualizarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
+        Request request = new Request.Builder()
+                .url(url + "/ISAPI/AccessControl/CardInfo/Record?format=json&devIndex=" + deviceId)
+                .post(requestBody)
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        try(Response response = client.newCall(request).execute();) {
+            System.out.println("Cartão cadastrado com sucesso: " + response.code());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    
+    public boolean isCartaoJaCadastrado(final String deviceId, final String idUser) {
+    	final String uuid = UUID.randomUUID().toString().substring(0, 6);
+    	final String body = "{"
+                + "		\"CardInfoSearchCond\": {"
+                + "			\"searchID\": \"" + uuid + "\","
+                + "			\"searchResultPosition\": 0,"
+                + "			\"maxResults\": 1,"
+                + "			\"CardNoList\": ["
+                + "				{"
+                + "					\"cardNo\": \"" + idUser + "\""
+        		+ "				}"
+        		+ "			]"
+                + "		}"
+                + "}";
+    	
+        RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+        OkHttpClient client = getOkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url + "/ISAPI/AccessControl/CardInfo/Search?format=json&devIndex=" + deviceId)
+                .post(requestBody)
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        try (Response response = client.newCall(request).execute();){
+            final CardInfoSearchTO responseBody = gson.fromJson(response.peekBody(2048).string(), CardInfoSearchTO.class);
+            
+            if(response.code() != 200) {
+            	return false;
+            }
+            
+            final boolean isCartaoJaCadastrado = "OK".equalsIgnoreCase(responseBody.CardInfoSearch.responseStatusStrg);
+            System.out.println(String.format("Cartão do usuario %s já cadastrado no device %s: %b", idUser, deviceId, isCartaoJaCadastrado));
+            
+            return isCartaoJaCadastrado;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+
+    @SuppressWarnings("deprecation")
+	public void atualizarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
         OkHttpClient client = getOkHttpClient();
 
         final String jsonRequestBody = "{\"FPID\": \"" + idUser + "\" }";
@@ -245,18 +298,15 @@ public class HikiVisionIntegrationService {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://127.0.0.1:8082/ISAPI/Intelligent/FDLib/FDSetUp?format=json&devIndex=" + deviceId)
+                .url(url + "/ISAPI/Intelligent/FDLib/FDSetUp?format=json&devIndex=" + deviceId)
                 .method("PUT", body)
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try(Response response = client.newCall(request).execute();) {
             final FaceDataRecordResponseTO responseBody = gson.fromJson(response.peekBody(2048).string(), FaceDataRecordResponseTO.class);
             final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
             System.out.println(String.format("Foto do usuario %s atualizada no device %s com sucesso: %b", idUser, deviceId, isCadastradoComSucesso));
-
-            response.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -266,13 +316,13 @@ public class HikiVisionIntegrationService {
 
     public void apagarUsuario(final String deviceId, final String idUser) {
         final String body = "{" +
-                "\"UserInfoDetail\" : {" +
-                "\"mode\": \"byEmployeeNo\"," +
-                "\"EmployeeNoList\" : [{" +
-                "\"employeeNo\": \"" + idUser + "\"" +
-                "}]" +
-                "}" +
-                "}";
+            "\"UserInfoDetail\" : {" +
+            	"\"mode\": \"byEmployeeNo\"," +
+            	"\"EmployeeNoList\" : [{" +
+            		"\"employeeNo\": \"" + idUser + "\"" +
+            	"}]" +
+            "}" +
+    	"}";
 
         RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
         OkHttpClient client = getOkHttpClient();
@@ -283,9 +333,9 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
-            response.close();
+        try (Response response = client.newCall(request).execute();){
+        	System.out.println(String.format("Apagando usuario [%s], na camera [%s]", idUser, deviceId));
+            System.out.println(String.format("Response: %s", response.code()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -310,10 +360,8 @@ public class HikiVisionIntegrationService {
 				.addHeader("Content-Type", "application/json")
 				.build();
 
-		try {
-			Response response = client.newCall(request).execute();
-			response.close();
-
+		try (Response response = client.newCall(request).execute();){
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -347,22 +395,57 @@ public class HikiVisionIntegrationService {
                 .addHeader("Content-Type", "application/json")
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try(Response response = client.newCall(request).execute();) {
             if (response.isSuccessful()) {
                 final HikivisionDeviceTO responseBody = gson.fromJson(response.peekBody(2048).string(), HikivisionDeviceTO.class);
-                response.close();
 
                 return responseBody;
             }
-
-            response.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+    
+    public void adicionarDispositivo(final String address, final Integer port, final String user, final String password, final String deviceName) {
+    	final String body = "{" +
+				"\"DeviceInList\": [{" +
+					"\"Device\": {" +
+						"\"protocolType\": \"ISAPI\"," +
+						"\"EhomeParams\": {" +
+							"\"EhomeID\": \"111\"," +
+							"\"EhomeKey\": \"\"" +
+						"}," +
+						"\"ISAPIParams\": {" +
+							"\"addressingFormatType\": \"IPV4Address\"," +
+							"\"address\": \"" + address + "\"," +
+							"\"portNo\": " + port + "," +
+							"\"userName\": \"" + user + "\"," +
+							"\"password\": \"" + password + "\"" +
+						"}," + 
+						"\"devName\": \"" + deviceName + "\"," +
+						"\"devType\": \"AccessControl\"" +
+					"}" +
+				"}" +
+			"]" +
+		"}";
+
+        RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+        OkHttpClient client = getOkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url + "/ISAPI/ContentMgmt/DeviceMgmt/addDevice?format=json")
+                .post(requestBody)
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        try (Response response = client.newCall(request).execute();){
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private OkHttpClient getOkHttpClient() {
@@ -376,6 +459,5 @@ public class HikiVisionIntegrationService {
                 .writeTimeout(1000, TimeUnit.MILLISECONDS)
                 .build();
     }
-
 
 }

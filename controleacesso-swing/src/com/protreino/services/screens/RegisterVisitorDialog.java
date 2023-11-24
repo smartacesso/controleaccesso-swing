@@ -44,6 +44,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 
     private JDialog escolherFotoDialog;
     private JDialog cropImageDialog;
+    
+//    JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
 
     private JLabel nomeLabel;
     private JLabel dataNascimentoLabel;
@@ -148,6 +150,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     private JFormattedTextField senhaTextField;
     private JComboBox<SelectItem> tipoAcessoJComboBox;
     private HikiVisionIntegrationService hikiVisionIntegrationService;
+	private boolean isFotoModificada = false;
 
     public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
         loadImages();
@@ -239,8 +242,15 @@ public class RegisterVisitorDialog extends BaseDialog {
             public void windowClosing(WindowEvent e) {
                 abertoPeloAtalho = false;
             }
+            
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if(isFotoModificada && hikiVisionIntegrationService != null) {
+                	salvarFotoVisitanteHikivision();
+                }
+            }
         });
-
+        
         getContentPane().add(mainContentPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(null);
@@ -808,12 +818,14 @@ public class RegisterVisitorDialog extends BaseDialog {
             qtdeDigitosCartao = 5;
         }
 
-        JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
+        
         cartaoAcessoLabel = new JLabel("Cartão de acesso");
         c = getNewGridBag(0, 0, 0, 0);
+        JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
         cartaoAcessoPanel.add(cartaoAcessoLabel, c);
         cartaoAcessoTextField = Utils.getNewJFormattedTextField(15);
         cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
+
         cartaoAcessoTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -855,9 +867,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 //			visitante.setSempreLiberado(e.getStateChange() == ItemEvent.SELECTED);
 //		});
         panelInternoLateral.add(sempreLiberado, getNewGridBag(0, 6, 20, 5));
-
-        panelExterno.add(panelInternoLateral, BorderLayout.NORTH);
-
+        panelExterno.add(panelInternoLateral, BorderLayout.NORTH);          
         return panelExterno;
     }
 
@@ -868,6 +878,22 @@ public class RegisterVisitorDialog extends BaseDialog {
                 || "PEDESTRE".equals(visitante.getTipo());
     }
 
+    private boolean exibeCartaoAcesso() {
+    	System.out.println("cartao : " + cartaoAcessoTextField);
+    	System.out.println("cartao : " + cartaoAcessoTextField.getText());
+    	System.out.println("Cartao : " + cartaoAcessoTextField.getText().replace("0", "").equals(""));
+        if("PEDESTRE".equals(visitante.getTipo())
+        		&& visitante.getDataCadastroFotoNaHikivision() != null
+        		&& (cartaoAcessoTextField != null
+                        && !cartaoAcessoTextField.getText().isEmpty()
+                        && !cartaoAcessoTextField.getText().replace("0", "").equals(""))) {
+        	return false;
+        }else {
+        	return true;
+        }
+                 
+    }
+    
     private JPanel montarPainelAcoes() {
 
         geraQRCodeButton = new JButton("QRCode");
@@ -1266,7 +1292,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setId(new Date().getTime());
             visitante.setIdTemp(visitante.getId());
             visitante.setCadastradoNoDesktop(true);
-            visitante.setIdUsuario(Main.loggedUser.getId());
+            visitante.setIdUsuario(Main.internoLoggedUser.getId());
 
         } else {
 
@@ -1379,7 +1405,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
         }
 
-        HibernateUtil.save(PedestrianAccessEntity.class, visitante);
+        visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
     private void preencheDadosVisitanteEditando() {
@@ -1448,8 +1474,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         if (visitante.getDocumentos() != null)
             panelAdicionarDocumento.setDocumentos(visitante.getDocumentos());
+        
+//        cartaoAcessoPanel.setVisible(exibeCartaoAcesso());
     }
-
+    
+    
+    
     private boolean validarCampos() {
         boolean valido = true;
 
@@ -1460,7 +1490,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         restauraFontLabel();
 
-        String camposObrigatorios = buscaParametroPeloNome("Campos obrigatÃ³rios para cadastro de pedestres");
+        String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
 
         if ("".equals(nomeTextField.getText().trim())) {
             redAndBoldFont(nomeLabel);
@@ -1588,7 +1618,7 @@ public class RegisterVisitorDialog extends BaseDialog {
                 valido = false;
             }
         }
-
+        
 
         if (valido)
             valido = validaCamposDuplicados();
@@ -1887,7 +1917,6 @@ public class RegisterVisitorDialog extends BaseDialog {
         estadoTextField.setText("");
         matriculaLabel.setText("");
 
-
         new Thread() {
             public void run() {
                 Runtime.getRuntime().gc();
@@ -1895,7 +1924,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 
             ;
         }.start();
-
     }
 
     private void criarDialogoEscolherFoto() {
@@ -1958,8 +1986,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             @Override
             public void windowClosed(WindowEvent e) {
                 if (fotoVisitante != null && hikiVisionIntegrationService != null) {
-                    //TODO verificar se o cardNumber != null?
-                    salvarFotoVisitanteHikivision();
+                	isFotoModificada = true;
                 }
             }
         });
@@ -1969,6 +1996,9 @@ public class RegisterVisitorDialog extends BaseDialog {
         final boolean isHikivisionServerOnline = hikiVisionIntegrationService.getSystemInformation();
 
         if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
+        	visitante.setDataCadastroFotoNaHikivision(new Date());
+            visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
+
             criarDialogoServidorHikivisionNaoConectado();
             return;
         }
@@ -1997,10 +2027,16 @@ public class RegisterVisitorDialog extends BaseDialog {
             } else {
                 hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, visitante.getCardNumber(), fotoVisitante);
             }
-
+            
+            final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId, visitante.getCardNumber());
+            
+            if(!isCartaoJaCadastrado) {
+            	hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId, visitante.getCardNumber());
+            }
         }
 
         visitante.setDataCadastroFotoNaHikivision(new Date());
+        visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
     private void criarDialogoServidorHikivisionNaoConectado() {
