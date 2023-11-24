@@ -8,6 +8,7 @@ import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.*;
 import com.protreino.services.entity.*; 
 import com.protreino.services.enumeration.*;
+import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.screens.*;
 import com.protreino.services.services.LuxandService;
@@ -15,8 +16,11 @@ import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.to.RegraTO;
+<<<<<<< HEAD
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
+=======
+>>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
 import com.protreino.services.utils.*;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -66,21 +70,19 @@ public class Main {
 
     public static ServerDevice servidor;
 
-    public static Long lastSync = 0l;
-    public static Long lastSyncLog = 0l;
-    public static Long lastSyncHikivision = 0l;
+    public static Long lastSync = 0L;
+    public static Long lastSyncLog = 0L;
 
-    public static Long lastSyncGetUsers = 0l;
-    public static Long lastSyncGetEmpresas = 0l;
-    public static Long lastSyncGetRegras = 0l;
-    public static Long lastSyncGetParametros = 0l;
-    public static Long lastSyncGetPlanos = 0l;
+    public static Long lastSyncGetUsers = 0L;
+    public static Long lastSyncGetEmpresas = 0L;
+    public static Long lastSyncGetRegras = 0L;
+    public static Long lastSyncGetParametros = 0L;
+    public static Long lastSyncGetPlanos = 0L;
 
-    public static Long lastSyncUploadPhotos = 0l;
+    public static Long lastSyncUploadPhotos = 0L;
 
     public static boolean updatingAthleteAccessList = false;
     public static boolean updatingLogAccessList = false;
-    public static boolean updatingHikivisionAccessList = false;
     public static boolean updatingUsersAccessList = false;
     public static boolean uploadingPhotosPedestres = false;
 
@@ -105,7 +107,6 @@ public class Main {
     public static Timer timerSyncUsersAccessList;
     public static Timer timerSyncAthleteAccessList;
     public static Timer timerSyncLogAthleteAccess;
-    public static Timer timerSyncHikivision;
     public static Timer timerOnline;
     public static Timer timerHidePopupMenu;
     public static java.util.Timer timerTasksOfDay;
@@ -133,7 +134,7 @@ public class Main {
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
 
-    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integração Comtele";
+    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integra��o Comtele";
 
     public static void main(String[] args) {
 
@@ -141,7 +142,7 @@ public class Main {
 //		String jvmArchitecture = Utils.getJvmArchitecture();
 //		if ("64".equals(jvmArchitecture)) {
 //			Object[] options = {"OK"};
-//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada. ï¿½ necessário uma JVM de 32 bits.","JVM 32 bits necessï¿½ria",
+//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada.  necess�rio uma JVM de 32 bits.","JVM 32 bits necess�ria",
 //		                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 //		    System.exit(0);
 //		}
@@ -179,7 +180,7 @@ public class Main {
                 }
             });
         } catch (AlreadyLockedException e) {
-            JUnique.sendMessage(nomeAplicacao + "_Controle_Acesso_lockInstance", "Olá!");
+            JUnique.sendMessage(nomeAplicacao + "_Controle_Acesso_lockInstance", "Ol�!");
             alreadyRunning = true;
         }
 
@@ -194,7 +195,7 @@ public class Main {
     private static void configureWorkersLimits() {
         int corePoolSize = 280;
         int maximumPoolSize = 280;
-        long keepAliveTime = 1l;
+        long keepAliveTime = 1L;
         TimeUnit unit = TimeUnit.HOURS;
         BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(maximumPoolSize);
         sun.awt.AppContext.getAppContext().put(SwingWorker.class,
@@ -216,19 +217,15 @@ public class Main {
     }
 
     public static void verificaValidandoAcesso() {
-        if (desenvolvimento)
-            System.out.println("Validando acesso");
         int count = 0;
         while (Main.validandoAcesso) {
-            Utils.sleep(20000);
+            Utils.sleep(2000);
             count++;
             if (count >= 3) {
                 Main.validandoAcesso = false;
                 break;
             }
         }
-        if (desenvolvimento)
-            System.out.println("Terminou de validar acesso");
     }
 
     public void init(String[] args) {
@@ -286,11 +283,8 @@ public class Main {
     }
 
     private void recoverArgs(String[] args) {
-        if (args != null && args.length > 0 && "dev".equals(args[0]))
-            desenvolvimento = true;
-        else
-            desenvolvimento = false;
-		
+        desenvolvimento = args != null && args.length > 0 && "dev".equals(args[0]);
+
 		/*if (desenvolvimento)
 			urlApplication = "http://localhost:8080";*/
     }
@@ -356,9 +350,9 @@ public class Main {
                                             if (DeviceStatus.DISCONNECTED.equals(device.getStatus())
                                                     && DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
 
-                                                //verifica se é topdata e se esta sincronizando
+                                                //verifica se � topdata e se esta sincronizando
 //												if(device instanceof TopDataDevice) {
-//													TopDataDevice 
+//													TopDataDevice
 //												}
 
                                                 device.setDesiredStatus(DeviceStatus.DISCONNECTED);
@@ -402,24 +396,22 @@ public class Main {
         devicesList = new ArrayList<Device>();
         loggedUser = HibernateUtil.getLoggedUser("UserEntity.findAll");
         if (loggedUser != null) {
-            lastSync = loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0l;
-            lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0l;
-            lastSyncHikivision = loggedUser.getLastSyncHikivision() != null
-                    ? loggedUser.getLastSyncHikivision().getTime() : 0l;
+            lastSync = loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L;
+            lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
 
             lastSyncGetUsers = loggedUser.getLastSyncUser() != null
-                    ? loggedUser.getLastSyncUser().getTime() : 0l;
+                    ? loggedUser.getLastSyncUser().getTime() : 0L;
             lastSyncGetEmpresas = loggedUser.getLastSyncEmpresa() != null
-                    ? loggedUser.getLastSyncEmpresa().getTime() : 0l;
+                    ? loggedUser.getLastSyncEmpresa().getTime() : 0L;
             lastSyncGetRegras = loggedUser.getLastSyncRegra() != null
-                    ? loggedUser.getLastSyncRegra().getTime() : 0l;
+                    ? loggedUser.getLastSyncRegra().getTime() : 0L;
             lastSyncGetParametros = loggedUser.getLastSyncParametro() != null
-                    ? loggedUser.getLastSyncParametro().getTime() : 0l;
+                    ? loggedUser.getLastSyncParametro().getTime() : 0L;
             lastSyncGetPlanos = loggedUser.getLastSyncPlano() != null
-                    ? loggedUser.getLastSyncPlano().getTime() : 0l;
+                    ? loggedUser.getLastSyncPlano().getTime() : 0L;
 
             lastSyncUploadPhotos = loggedUser.getLastSyncUploadPhotos() != null
-                    ? loggedUser.getLastSyncUploadPhotos().getTime() : 0l;
+                    ? loggedUser.getLastSyncUploadPhotos().getTime() : 0L;
 
             releaseTicketGateMenuItem.setEnabled(true);
             updateAccessListMenuItem.setEnabled(true);
@@ -427,7 +419,7 @@ public class Main {
             inicializaTimers();
 
 
-            //tarefas diárias
+            //tarefas di�rias
 
             String hora = Utils.getPreference("hourAutomaticRoutines");
             hora = (hora == null || "".equals(hora) ? "0" : hora);
@@ -438,11 +430,10 @@ public class Main {
 
 
             inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-
-            inicio.set(Calendar.MINUTE, 05);
+            inicio.set(Calendar.MINUTE, 0);
             inicio.set(Calendar.SECOND, 0);
             if (new Date().getTime() > inicio.getTimeInMillis()) {
-                //registra pra iniciar amanhã
+                //registra pra iniciar smanh�
                 inicio.add(Calendar.DATE, 1);
             }
             timerTasksOfDay.scheduleAtFixedRate(uTimerTask, inicio.getTime(),
@@ -474,7 +465,6 @@ public class Main {
         timerSyncUsersAccessList.start();
         timerSyncAthleteAccessList.start();
         timerSyncLogAthleteAccess.start();
-        timerSyncHikivision.start();
     }
 
     /**
@@ -583,15 +573,15 @@ public class Main {
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.",
-                                    "Erro na validação", JOptionPane.PLAIN_MESSAGE);
+                                    "Erro na valida��o", JOptionPane.PLAIN_MESSAGE);
                             return null;
                         }
 
                         if (retornoAuthentication == null)
                             return null;
                         if (!retornoAuthentication) {
-                            JOptionPane.showMessageDialog(null, "N�o foi possssivel validar a senha, ou senha inválida",
-                                    "Erro na validação", JOptionPane.PLAIN_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "N�o foi possssivel validar a senha, ou senha inv�lida",
+                                    "Erro na valida��o", JOptionPane.PLAIN_MESSAGE);
                             return null;
                         }
                     }
@@ -614,7 +604,7 @@ public class Main {
                         motivoLiberacao = releaseReasonDialog.getReason();
 
                         if (Utils.isNullOrEmpty(motivoLiberacao)) {
-                            Utils.createNotification("ɉ necessário informar um motivo.", NotificationType.BAD);
+                            Utils.createNotification("� necess�rio informar um motivo.", NotificationType.BAD);
                             Utils.sleep(1000);
                             apertouF9 = false;
                             apertouF10 = false;
@@ -719,57 +709,41 @@ public class Main {
         servidor = null;
         devicesList = new ArrayList<Device>();
 
-        if (timerSyncAthleteAccessList.isRunning()) {
+        if (timerSyncAthleteAccessList.isRunning())
             timerSyncAthleteAccessList.stop();
-        }
-        if (timerSyncLogAthleteAccess.isRunning()) {
+        if (timerSyncLogAthleteAccess.isRunning())
             timerSyncLogAthleteAccess.stop();
-        }
-        if (timerSyncUsersAccessList.isRunning()) {
+        if (timerSyncUsersAccessList.isRunning())
             timerSyncUsersAccessList.stop();
-        }
-        if (timerSyncHikivision.isRunning()) {
-            timerSyncHikivision.stop();
-        }
 
-        lastSyncGetUsers = 0l;
-        lastSyncGetEmpresas = 0l;
-        lastSyncGetRegras = 0l;
-        lastSyncGetParametros = 0l;
-        lastSyncGetPlanos = 0l;
+        lastSyncGetUsers = 0L;
+        lastSyncGetEmpresas = 0L;
+        lastSyncGetRegras = 0L;
+        lastSyncGetParametros = 0L;
+        lastSyncGetPlanos = 0L;
 
-        while (updatingAthleteAccessList) { // aguarda atualizacao corrente perceber que foi desconectado e parar atualizacao
+        while (updatingAthleteAccessList) // aguarda atualizacao corrente perceber que foi desconectado e parar atualizacao
             Utils.sleep(50);
-        }
 
-        while (updatingHikivisionAccessList) {
-            Utils.sleep(50);
-        }
-
-        if (!updatingLogAccessList) { // tenta enviar log de acesso antes de apagar tudo
+        if (!updatingLogAccessList) // tenta enviar log de acesso antes de apagar tudo
             syncLogAthleteAccess();
-        }
-        while (updatingLogAccessList) {
+        while (updatingLogAccessList)
             Utils.sleep(50);
-        }
 
-        while (updatingUsersAccessList) {
+        while (updatingUsersAccessList)
             Utils.sleep(50);
-        }
 
-        while (uploadingPhotosPedestres) {
+        while (uploadingPhotosPedestres)
             Utils.sleep(50);
-        }
 
         Boolean sessaoLimpa = HibernateUtil.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sessão de usu�rio encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sess�o de usu�rio encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
-        } else {
+        } else
             Utils.createNotification("Ocorreu um erro ao finalizar a sess�o.", NotificationType.BAD);
-        }
 
     }
 
@@ -784,11 +758,9 @@ public class Main {
         systemTray.remove(trayIcon);
         HibernateUtil.shutdown();
         finalizeDevices();
-        if (!desenvolvimento) {
+        if (!desenvolvimento)
             //closeLogFile();
-        }
-
-        System.exit(0);
+            System.exit(0);
     }
 
     private void configureTimers() {
@@ -820,8 +792,6 @@ public class Main {
                 }
             });
 
-            timerSyncHikivision = new Timer(Configurations.TIME_SYNC_HIKIVISION, e -> syncHikivisionAccessList());
-
             timerOnline = new Timer(10000, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     verificaOnline();
@@ -839,8 +809,6 @@ public class Main {
             timerSyncUsersAccessList.stop();
             timerSyncAthleteAccessList.stop();
             timerSyncLogAthleteAccess.stop();
-            timerSyncHikivision.stop();
-
             //inicia antes de todos
             if (!timerOnline.isRunning()) {
                 verificaOnline();
@@ -859,31 +827,14 @@ public class Main {
                     HttpConnection con = new HttpConnection(urlApplication + "/restful-services/login/action");
                     int responseCode = con.getResponseCode();
 
-                    if (mainScreen != null) {
+                    if (mainScreen != null)
                         mainScreen.setConnectionStatusLabel(responseCode == 200);
-                    }
 
                 } catch (Exception e) {
                     mainScreen.setConnectionStatusLabel(false);
                 }
-
-                try {
-                    boolean hikivisionServerIsConnected = false;
-                    if (Utils.isHikivisionConfigValid()) {
-                        HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
-                        hikivisionServerIsConnected = hikiVisionIntegrationService.getSystemInformation();
-                    }
-
-                    if (mainScreen != null) {
-                        mainScreen.setHikivisionConnectionStatusLabel(hikivisionServerIsConnected);
-                    }
-
-                } catch (Exception e) {
-                    mainScreen.setHikivisionConnectionStatusLabel(false);
-                }
             }
 
-            ;
         }.start();
     }
 
@@ -904,19 +855,19 @@ public class Main {
 
     }
 	/*
-	
+
 	private static void enviarLogsComFalhaAoEnviar() {
 		try {
-			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
+			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class,
 					"LogPedestrianAccessEntity.findUnsubmittedLogsCount", null);
 			System.out.println("Quantidade total de logs com falha ao enviar: " + countLogs);
-			
+
 			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findUnsubmittedLogs", null, true);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 	*/
 
@@ -939,7 +890,6 @@ public class Main {
                 Runtime.getRuntime().gc();
             }
 
-            ;
         }.start();
 
         System.out.println("Saiu limpa telas");
@@ -958,20 +908,18 @@ public class Main {
     private static void limpaSentidoTodos() {
 
         //verifica se est� ativado
-        if (Main.servidor != null) {
+        if (Main.servidor != null)
             return;
-        }
 
-        if (!Utils.getPreferenceAsBoolean("enableDirectionClear")) {
+        if (!Utils.getPreferenceAsBoolean("enableDirectionClear"))
             return;
-        }
 
         //adiciona data para que os calculos de quantidade
         //de giros sejam refeitos
         loggedUser.setDateNewAccess(new Date());
         HibernateUtil.save(UserEntity.class, loggedUser);
 
-        //apaga também dados de giros anteriores n�o registrados
+        //apaga tamb�m dados de giros anteriores n�o registrados
         HibernateUtil.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 
         System.out.println("Saiu limpaSentidoTodos");
@@ -988,7 +936,7 @@ public class Main {
             return;
 
         //pesquisa todos os pedestres que est�o com cart�o ativado
-        //e que tenham um crédito
+        //e que tenham um cr�dito
         HibernateUtil.apagaDadosCartao();
         HibernateUtil.apagaDadosDeUltimoSentido();
         HibernateUtil.apagaQuantidadeAcessosAsinc();
@@ -1069,7 +1017,7 @@ public class Main {
 
             private void requestAllUsers() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllUsers"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSyncGetUsers
                         + "&version=" + Configurations.VERSION);
 
@@ -1132,7 +1080,7 @@ public class Main {
 
             private void requestAllEmpresas() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllEmpresas"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSyncGetEmpresas
                         + "&version=" + Configurations.VERSION);
 
@@ -1188,7 +1136,7 @@ public class Main {
 
             private void requestAllRegras() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllRegras"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSyncGetRegras);
 
                 Integer responseCode = con.getResponseCode();
@@ -1244,7 +1192,7 @@ public class Main {
 
             private void requestAllParametros() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllParametros"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSyncGetParametros);
 
                 Integer responseCode = con.getResponseCode();
@@ -1300,7 +1248,7 @@ public class Main {
 
             private void requestAllPlanos() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllPlanos"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSyncGetPlanos);
 
                 Integer responseCode = con.getResponseCode();
@@ -1355,6 +1303,7 @@ public class Main {
         worker.execute();
     }
 
+<<<<<<< HEAD
     public static void syncHikivisionAccessList() {
         if (updatingHikivisionAccessList) {
             return;
@@ -1438,13 +1387,19 @@ public class Main {
         worker.execute();
     }
 
+=======
+>>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
     public static void syncAthleteAccessList() {
         if (updatingAthleteAccessList) {
             return;
         }
 
         if (Main.servidor != null) {
+<<<<<<< HEAD
             System.out.println(sdf.format(new Date()) + " Sincroniza��o desabilitada: M�quina possui servidor");
+=======
+            System.out.println(sdf.format(new Date()) + " Sincroniza��o desabilitada: M�quina possui servidor");
+>>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
             return;
         }
 
@@ -1492,7 +1447,7 @@ public class Main {
                         return null;
                     }
 
-                    Long backUpLastSync = lastSync != null ? lastSync.longValue() : 0l;
+                    Long backUpLastSync = lastSync != null ? lastSync.longValue() : 0L;
 
                     List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
 
@@ -1514,8 +1469,9 @@ public class Main {
                     System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Exception: " + e.getMessage());
 
                 } finally {
-                    if (loggedUser != null)
+                    if (loggedUser != null) {
                         timerSyncAthleteAccessList.start();
+                    }
 
                     updatingAthleteAccessList = false;
                     trayIcon.setImage(trayIconImage);
@@ -1536,7 +1492,6 @@ public class Main {
                         Runtime.getRuntime().gc();
                     }
 
-                    ;
                 }.start();
 
                 return null;
@@ -1562,22 +1517,17 @@ public class Main {
                 Main.verificaValidandoAcesso();
 
                 List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateUtil
-                        .getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100l);
+                        .getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100L);
 
                 if (visitantesLocais == null || visitantesLocais.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  PEDESTRES/VISITANTES LOCAIS: sem registros para enviar");
                     return null;
                 }
 
+                System.out.println("Iniciando sincronismo de pedestres para web");
+
                 JsonArray responseArray = new JsonArray();
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
-
-                    if (desenvolvimento) {
-                        System.out.println("Pedestre : " + visitante.getId() + "/" + visitante.getName());
-                        System.out.println("Templates: " + (visitante.getTemplates() == null || visitante.getTemplates().isEmpty()
-                                ? "0" : visitante.getTemplates().size()));
-                    }
-
                     // se foi criado, envia os dados para o servidor
                     // porque est� sem o ID
                     if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
@@ -1587,13 +1537,12 @@ public class Main {
                                 && !visitante.getListaAcessosTransient().isEmpty()) {
                             int countAtivos = 0;
                             for (LogPedestrianAccessEntity l : visitante.getListaAcessosTransient()) {
-                                System.out.println("Acessos antes: " + l.getStatus());
                                 if (!"Regras ignoradas".equals(l.getReason())
                                         && l.getStatus() != null
-                                        && "ATIVO".toUpperCase().equals(l.getStatus().toUpperCase()))
+                                        && "ATIVO".equalsIgnoreCase(l.getStatus())) {
                                     countAtivos++;
+                                }
                             }
-
                             if (countAtivos > 0) {
                                 visitante.setQtdAcessoAntesSinc(countAtivos);
                             }
@@ -1605,6 +1554,8 @@ public class Main {
                     JsonObject responseObj = getNewVisitanteResponseObj(visitante);
                     responseArray.add(responseObj);
                 }
+
+                System.out.println("Enviando request com visitantes: " + responseArray.size());
 
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/uploadVisitantes");
                 int responseCode = con.sendResponse(responseArray.toString());
@@ -1623,31 +1574,38 @@ public class Main {
             }
 
             private void atualizaDadosAlterados(List<PedestrianAccessEntity> visitantesLocais) {
-                if (visitantesLocais == null || visitantesLocais.isEmpty())
+                if (visitantesLocais == null || visitantesLocais.isEmpty()) {
                     return;
+                }
 
-                //antes de alterar dados, verifica se existe validação de acesso em andamento
+                //antes de alterar dados, verifica se existe valida��o de acesso em andamento
                 Main.verificaValidandoAcesso();
 
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
-
                     if (!Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
 
-                        if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty())
-                            for (PedestrianMessagesEntity m : visitante.getMensagens())
+                        if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
+                            for (PedestrianMessagesEntity m : visitante.getMensagens()) {
                                 HibernateUtil.remove(m);
+                            }
+                        }
 
-                        if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty())
-                            for (DocumentoEntity d : visitante.getDocumentos())
+                        if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
+                            for (DocumentoEntity d : visitante.getDocumentos()) {
                                 HibernateUtil.remove(d);
+                            }
+                        }
 
-                        if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty())
-                            for (PedestreRegraEntity pr : visitante.getPedestreRegra())
+                        if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
+                            for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
                                 HibernateUtil.remove(pr);
+                            }
+                        }
 
                         if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
-                            for (PedestrianEquipamentEntity pe : visitante.getEquipamentos())
+                            for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
                                 HibernateUtil.remove(pe);
+                            }
                         }
 
                         visitante.setDocumentos(new ArrayList<>());
@@ -1662,10 +1620,8 @@ public class Main {
             }
 
             private void apagaDadosNovos(List<PedestrianAccessEntity> visitantesLocais) {
-
-                //antes de alterar dados, verifica se existe validação de acesso em andamento
+                //antes de alterar dados, verifica se existe valida��o de acesso em andamento
                 Main.verificaValidandoAcesso();
-
 
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
                     if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
@@ -1726,7 +1682,7 @@ public class Main {
                             HibernateUtil.remove(visitante);
 
                         } catch (Exception e) {
-                            //visitante será excluído na próxima sincronização
+                            //visitante ser�o exclu�do na pr�xima sincroniza��o
                             //marca para n�o aparecer nas listagens
 
                             visitante = (PedestrianAccessEntity) HibernateUtil
@@ -1734,8 +1690,6 @@ public class Main {
                             visitante.setInvisivel(true);
 
                             HibernateUtil.update(PedestrianAccessEntity.class, visitante);
-
-
                         }
                     }
                 }
@@ -1743,7 +1697,7 @@ public class Main {
 
             private void recebePedestresEBiometriasDaWeb() throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/request"
-                        + "?client=" + loggedUser.getIdClient().toString()
+                        + "?client=" + loggedUser.getIdClient()
                         + "&lastsync=" + lastSync
                         + "&version=" + Configurations.VERSION);
                 Integer responseCode = con.getResponseCode();
@@ -1778,8 +1732,8 @@ public class Main {
                     	break;
                     }
 
-                    // TODO : criar novo método para pegar pedestre removido ou n�o
-                    //        isso pode resolver vários bugs
+                    // TODO : criar novo m�todo para pegar pedestre removido ou n�o
+                    //        isso pode resolver v�rios bugs
                     // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
                     //		  aqui ou ne
 
@@ -1799,7 +1753,7 @@ public class Main {
                             existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
                         }
 
-                        //verifica se usu�rio foi apagado e se tem facial para apagar também no servidor facial
+                        //verifica se usu�rio foi apagado e se tem facial para apagar tamb�m no servidor facial
                         String idFacial = null;
                         if ((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
                                 || !"ATIVO".equals(athleteAccessTO.getStatus()))
@@ -1843,7 +1797,6 @@ public class Main {
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 }
@@ -1868,7 +1821,7 @@ public class Main {
                         }
                     }
                 } else {
-                    System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem alterações de templates para catracas");
+                    System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem altera��es de templates para catracas");
                 }
 
                 Utils.sleep(1000);
@@ -1938,7 +1891,7 @@ public class Main {
 
             private void buscaFotosDosPedestres(Long backUpLastSync) throws IOException {
                 HttpConnection con = new HttpConnection(urlApplication + "/restful-services/photo/query?client="
-                        + loggedUser.getIdClient().toString() + "&lastsync=" + backUpLastSync);
+                        + loggedUser.getIdClient() + "&lastsync=" + backUpLastSync);
 
                 int responseCode = con.getResponseCode();
 
@@ -1968,7 +1921,7 @@ public class Main {
 
                     // busca o pacote de fotos
                     con = new HttpConnection(urlApplication + "/restful-services/photo/request?ids="
-                            + stringBuilder.toString() + "&type=PEDESTRES&resize=true&imageSize="
+                            + stringBuilder + "&type=PEDESTRES&resize=true&imageSize="
                             + imageSize);
                     responseCode = con.getResponseCode();
                     if (responseCode == 200) {
@@ -2040,10 +1993,6 @@ public class Main {
                 } catch (Exception e) {
                     System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Exception: " + e.getMessage());
 
-//					lastSyncLog = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
-//					loggedUser.setLastSyncLog(new Date(lastSyncLog));
-//					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
-
                 } finally {
                     if (loggedUser != null)
                         timerSyncLogAthleteAccess.start();
@@ -2093,104 +2042,114 @@ public class Main {
                 }
             }
 
-			/*
-			private void enviaLogsDeAcesso() throws Exception {
-				HashMap<String, Object> args = new HashMap<String, Object>();
-    			args.put("LAST_SYNC", new Date(lastSyncLog));
-    			
-    			Long lastSyncLogBackup = Calendar.getInstance(new Locale("pt","BR")).getTimeInMillis();
-    			
-    			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
-    					"LogPedestrianAccessEntity.findByAccessDateCount", args);
-    			System.out.println("Quantidade total de logs online: " + countLogs);
-    			
-    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByAccessDate", args, false);
-    			
-    			countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class, 
-    					"LogPedestrianAccessEntity.findByCreateDateCount", args);
-    			System.out.println("Quantidade total de logs offline: " + countLogs);
-    			
-    			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findByCreateDate", args, false);
-    			
-    			lastSyncLog = lastSyncLogBackup;
-				
-				if (loggedUser != null) {
-					loggedUser.setLastSyncLog(new Date(lastSyncLog));
-					Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
-				}
-				
-				System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
-			}
-			*/
 
             @SuppressWarnings("unchecked")
             private void enviaLogsDeAcesso() throws Exception {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("LAST_SYNC", new Date(lastSyncLog));
+                final Date newLastSyncLog = new Date();
+                final int pageSize = 100;
+                final int qtdeLogsOnline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByAccessDateCount");
+                final int qtdeLogsOffline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByCreateDateCount");
+                int offsetLogsOnline = 0;
+                int offsetLogsOffline = 0;
 
-                List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) HibernateUtil.
-                        getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByAccessDate", args);
+                while ((offsetLogsOnline < qtdeLogsOnline) || (offsetLogsOffline < qtdeLogsOffline)) {
+                    List<LogPedestrianAccessEntity> logsOnline = null;
+                    List<LogPedestrianAccessEntity> logsOffline = null;
 
-                List<LogPedestrianAccessEntity> logListOff = (List<LogPedestrianAccessEntity>) HibernateUtil.
-                        getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCreateDate", args);
+                    if (offsetLogsOnline < qtdeLogsOnline) {
+                        logsOnline = buscaLogsAcesso(offsetLogsOnline, pageSize, lastSyncLog, newLastSyncLog, "findByAccessDate");
+                        offsetLogsOnline += pageSize;
+                    }
 
-                if (logListOff != null) {
-                    if (logList == null)
-                        logList = new ArrayList<LogPedestrianAccessEntity>();
-                    logList.addAll(logListOff);
+                    if (offsetLogsOffline < qtdeLogsOffline) {
+                        logsOffline = buscaLogsAcesso(offsetLogsOffline, pageSize, lastSyncLog, newLastSyncLog, "findByCreateDate");
+                        offsetLogsOffline += pageSize;
+                    }
+
+                    if (logsOffline != null) {
+                        if (logsOnline == null) {
+                            logsOnline = new ArrayList<LogPedestrianAccessEntity>();
+                        }
+                        logsOnline.addAll(logsOffline);
+                    }
+                    if (logsOnline == null || logsOnline.isEmpty()) {
+                        System.out.println("Sem logs para enviar");
+                        break;
+                    }
+                    enviaLogsParaWeb(logsOnline);
+
                 }
-
-                if (logList == null || logList.isEmpty()) {
-                    System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: sem dados para enviar");
-                    Utils.sleep(1000);
-                    return;
-                }
-
-                System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
-                JsonArray responseArray = new JsonArray();
-                for (LogPedestrianAccessEntity log : logList) {
-                    JsonObject responseObj = new JsonObject();
-                    responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
-                    responseObj.addProperty("idPedestrian", log.getIdPedestrian() == null
-                            ? "" : log.getIdPedestrian().toString());
-                    responseObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
-                    responseObj.addProperty("status", log.getStatus());
-                    responseObj.addProperty("location", log.getLocation());
-                    responseObj.addProperty("reason", log.getReason());
-                    responseObj.addProperty("direction", log.getDirection() == null ? "ENTRADA" : log.getDirection());
-                    responseObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
-                    responseObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
-                    responseObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null
-                            ? log.getCartaoAcessoRecebido() : "");
-                    responseArray.add(responseObj);
-                }
-
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/registerlog");
-                int responseCode = con.sendResponse(responseArray.toString());
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode
-                            + "  Error String: " + con.getErrorString());
-                    return;
-                }
-
                 if (loggedUser != null) {
-                    lastSyncLog = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
+                    lastSyncLog = newLastSyncLog.getTime();
                     loggedUser.setLastSyncLog(new Date(lastSyncLog));
                     Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
                 }
                 System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
+
             }
-
-
         };
         worker.execute();
+
+    }
+
+    private static void enviaLogsParaWeb(List<LogPedestrianAccessEntity> logsOnline) throws IOException {
+        JsonArray responseArray = new JsonArray();
+        for (LogPedestrianAccessEntity log : logsOnline) {
+            JsonObject responseObj = new JsonObject();
+            responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
+            responseObj.addProperty("idPedestrian", log.getIdPedestrian() == null
+                    ? "" : log.getIdPedestrian().toString());
+            responseObj.addProperty("accessDate", String.valueOf(log.getAccessDate().getTime()));
+            responseObj.addProperty("status", log.getStatus());
+            responseObj.addProperty("location", log.getLocation());
+            responseObj.addProperty("reason", log.getReason());
+            responseObj.addProperty("direction", log.getDirection() == null ? "ENTRADA" : log.getDirection());
+            responseObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
+            responseObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
+            responseObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null
+                    ? log.getCartaoAcessoRecebido() : "");
+            responseArray.add(responseObj);
+        }
+
+        HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/registerlog");
+        int responseCode = con.sendResponse(responseArray.toString());
+        if (responseCode != 200) {
+            System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode
+                    + "  Error String: " + con.getErrorString());
+            throw new ErrorOnSendLogsToWebException(" ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode);
+        }
+
+    }
+
+    private static int buscaQuantidadeDeLogsDeAcesso(Long lastSyncLog, Date newLastSyncLog, String namedQuery) {
+
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("LAST_SYNC", new Date(lastSyncLog));
+        args.put("NEW_LAST_SYNC", newLastSyncLog);
+
+        return HibernateUtil.
+                getResultListWithParamsCount(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity." + namedQuery, args);
+    }
+
+    private static List<LogPedestrianAccessEntity> buscaLogsAcesso(int offset, int pageSize, Long lastSyncLog, Date newLastSyncLog, String namedQuery) {
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("LAST_SYNC", new Date(lastSyncLog));
+        args.put("NEW_LAST_SYNC", newLastSyncLog);
+
+        return (List<LogPedestrianAccessEntity>) HibernateUtil.
+                buscaLogsDeAcessoPaginados("LogPedestrianAccessEntity." + namedQuery, args, offset, pageSize);
     }
 
     @SuppressWarnings("unchecked")
     public static void dateSync(String inicio, String fim) throws ParseException {
+        SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        HashMap<String, Object> args = new HashMap<>();
+        args.put("CURRENT_DATE_INICIO", sdf2.parse(inicio));
+        args.put("CURRENT_DATE_FIM", sdf2.parse(fim));
 
         List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateUtil.
-                getResultList(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findUnsubmittedLogs");
+                getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCurrentDate", args);
 
         JsonArray responseArray = new JsonArray();
         System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + listaAcessoNaoEnvidados.size() + " registros sincronizados manualmente para enviar");
@@ -2200,7 +2159,7 @@ public class Main {
             responseObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
             responseObj.addProperty("idPedestrian", log.getIdPedestrian() == null
                     ? "" : log.getIdPedestrian().toString());
-            responseObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
+            responseObj.addProperty("accessDate", String.valueOf(log.getAccessDate().getTime()));
             responseObj.addProperty("status", log.getStatus());
             responseObj.addProperty("location", log.getLocation());
             responseObj.addProperty("reason", log.getReason());
@@ -2233,7 +2192,7 @@ public class Main {
 
         if (!SystemTray.isSupported()) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(null, "N�o é poss�vel adicionar ícones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
+            JOptionPane.showOptionDialog(null, "N�o � poss�vel adicionar �cones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateUtil.shutdown();
             System.exit(0);
@@ -2289,7 +2248,7 @@ public class Main {
             systemTray.add(trayIcon);
         } catch (AWTException e) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(mainScreen, "N�o foi poss�vel adicionar ícones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
+            JOptionPane.showOptionDialog(mainScreen, "N�o foi poss�vel adicionar �cones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateUtil.shutdown();
             System.exit(0);
@@ -2511,7 +2470,7 @@ public class Main {
         }
 
         responseObj.addProperty("idTemp", visitante.getIdTemp() != null ? visitante.getIdTemp().toString() : "");
-        responseObj.addProperty("idCliente", loggedUser.getIdClient().toString());
+        responseObj.addProperty("idCliente", loggedUser.getIdClient());
         responseObj.addProperty("idUsuario", visitante.getIdUsuario() != null ? visitante.getIdUsuario().toString() : "");
 
         //Dados basicos
@@ -2548,12 +2507,6 @@ public class Main {
         responseObj.addProperty("enviaSmsAoPassarNaCatraca", visitante.getEnviaSmsAoPassarNaCatraca() != null
                 ? visitante.getEnviaSmsAoPassarNaCatraca().toString() : "false");
 
-        try {
-            responseObj.addProperty("dataCadastroFotoNaHikivision", sdf.format(visitante.getDataCadastroFotoNaHikivision()));
-        } catch (Exception e) {
-            responseObj.addProperty("dataCadastroFotoNaHikivision", "");
-        }
-
         //Dados endereco
         responseObj.addProperty("cep", visitante.getCep() != null ? visitante.getCep() : "");
         responseObj.addProperty("logradouro", visitante.getLogradouro() != null ? visitante.getLogradouro() : "");
@@ -2566,14 +2519,16 @@ public class Main {
                 visitante.getQuantidadeCreditos().toString() : "");
 
         responseObj.addProperty("luxandIdentifier", visitante.getLuxandIdentifier() != null ?
-                visitante.getLuxandIdentifier().toString() : "");
+                visitante.getLuxandIdentifier() : "");
         responseObj.addProperty("idRegra", visitante.getIdRegra() != null ? visitante.getIdRegra().toString() : "");
 
-        responseObj.addProperty("login", visitante.getLogin() != null ? visitante.getLogin().toString() : "");
-        responseObj.addProperty("senha", visitante.getSenha() != null ? visitante.getSenha().toString() : "");
-        responseObj.addProperty("tipoAcesso", visitante.getTipoAcesso() != null ? visitante.getTipoAcesso().toString() : "");
-        responseObj.addProperty("tipoQRCode", visitante.getTipoQRCode() != null ? visitante.getTipoQRCode().toString() : "");
-        responseObj.addProperty("qrCodeParaAcesso", visitante.getQrCodeParaAcesso() != null ? visitante.getQrCodeParaAcesso().toString() : "");
+        responseObj.addProperty("login", visitante.getLogin() != null ? visitante.getLogin() : "");
+        responseObj.addProperty("senha", visitante.getSenha() != null ? visitante.getSenha() : "");
+        responseObj.addProperty("tipoAcesso", visitante.getTipoAcesso() != null ? visitante.getTipoAcesso() : "");
+        responseObj.addProperty("tipoQRCode", visitante.getTipoQRCode() != null ? visitante.getTipoQRCode() : "");
+        responseObj.addProperty("qrCodeParaAcesso", visitante.getQrCodeParaAcesso() != null ? visitante.getQrCodeParaAcesso() : "");
+        responseObj.addProperty("qtdeAcessosAntesSinc", visitante.getQtdAcessoAntesSinc() != null
+                ? visitante.getQtdAcessoAntesSinc().toString() : "");
 
         adicionaListaDeRegras(responseObj, visitante.getPedestreRegra());
 
@@ -2584,8 +2539,6 @@ public class Main {
         adicionaListaDeMensagens(responseObj, visitante.getMensagens());
 
         adicionaListaDeAcessosTransiente(responseObj, visitante.getListaAcessosTransient());
-        responseObj.addProperty("qtdeAcessosAntesSinc", visitante.getQtdAcessoAntesSinc() != null
-                ? visitante.getQtdAcessoAntesSinc().toString() : "");
 
         adicionaListaDeBiometriasTransiente(responseObj, visitante.getListaBiometriasTransient());
 
@@ -2685,7 +2638,7 @@ public class Main {
                 continue;
 
             JsonObject equipamentoObj = new JsonObject();
-            equipamentoObj.addProperty("idEquipamento", equipamento.getIdEquipamento() != null ? equipamento.getIdEquipamento().toString() : "");
+            equipamentoObj.addProperty("idEquipamento", equipamento.getIdEquipamento() != null ? equipamento.getIdEquipamento() : "");
             try {
                 equipamentoObj.addProperty("validadeEquipamento", sdf.format(equipamento.getValidadeEquipamento()));
 
@@ -2800,8 +2753,8 @@ public class Main {
                 && acessosVisitantesLocais.get(0) != null
                 && "INDEFINIDO".equals(acessosVisitantesLocais.get(0).getStatus())) {
             //Aguarda um pouco e pesquisa mais, pode estar passando
-            System.out.println("Aguarda para pesquisar mais dados.");
-            Utils.sleep(20000);
+            System.out.println("Visitante com log de acesso Indefinido. Aguarda para pesquisar mais dados.");
+            Utils.sleep(2000);
             acessosVisitantesLocais = (List<LogPedestrianAccessEntity>)
                     HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class,
                             "LogPedestrianAccessEntity.findAllByPedestre", args);
