@@ -1866,7 +1866,7 @@ public class Main {
                     if (timerSyncLogAthleteAccess.isRunning()) {
                         timerSyncLogAthleteAccess.stop();
                     }
-
+                    
                     trayIcon.setImage(trayIconImageLoading);
 
                     enviaBackupAndPreferences();
@@ -1929,7 +1929,7 @@ public class Main {
             @SuppressWarnings("unchecked")
             private void enviaLogsDeAcesso() throws Exception {
                 final Date newLastSyncLog = new Date();
-                final int pageSize = 100;
+                final int pageSize = Utils.getPreferenceAsInteger("syncLogPageSize");
                 final int qtdeLogsOnline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByAccessDateCount");
                 final int qtdeLogsOffline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByCreateDateCount");
                 int offsetLogsOnline = 0;
@@ -1959,6 +1959,7 @@ public class Main {
                         System.out.println("Sem logs para enviar");
                         break;
                     }
+                    
                     enviaLogsParaWeb(logsOnline);
 
                 }

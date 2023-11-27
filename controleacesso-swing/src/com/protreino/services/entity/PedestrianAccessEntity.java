@@ -119,6 +119,18 @@ import com.protreino.services.utils.HibernateUtil;
 				query = "select count(*) "
 					  + "from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
+	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
+					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
+					  + "from PedestrianAccessEntity obj "
+					  + "left join obj.templates temp "
+					  + "where obj.tipo = 'PEDESTRE' and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
+					  + "group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier "
+					  + "order by obj.name"),
+	@NamedQuery(name  = "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUserPedestre",
+				query = "select count(*) "
+					  + "from PedestrianAccessEntity obj "
+					  + "where obj.tipo = 'PEDESTRE'and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllComFotoParaUpload",
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where obj.latestPhotosTaken > :LAST_SYNC_PHOTO "
@@ -817,13 +829,13 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			boolean alterar = false;
 			if(templates != null && !templates.isEmpty()) {
 				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, já altera
+					//tamanhos diferentes, jï¿½ altera
 					alterar = true;
 					if(Main.desenvolvimento)
 						System.out.println("Digitais diferentes");
 				} else {
 					//verifica se lista de digitais existes 
-					//é igual a lista de digitais recebidas
+					//ï¿½ igual a lista de digitais recebidas
 					List<String> templatesExistentes = new ArrayList<String>();
 					for (TemplateEntity t : templates) {
 						String existente = Base64.encodeBase64String(t.getTemplate());

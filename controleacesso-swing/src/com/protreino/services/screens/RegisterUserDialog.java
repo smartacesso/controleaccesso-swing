@@ -527,13 +527,13 @@ public class RegisterUserDialog extends JDialog{
 		filtroNomeTextField.setText("");
 		
 		totalRegistros =  HibernateUtil.
-				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUser");
+				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUserPedestre");
 		
 		//calcula p�ginas
 		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-				getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser", (long)registrosPorPagina);
+				getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre", (long)registrosPorPagina);
 		verificarRegistradosNaCatraca();
 		populateTable(listaAcesso);
 		

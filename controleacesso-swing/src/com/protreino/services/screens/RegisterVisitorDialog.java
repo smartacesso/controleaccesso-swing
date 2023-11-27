@@ -1307,7 +1307,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setId(new Date().getTime());
 			visitante.setIdTemp(visitante.getId());
 			visitante.setCadastradoNoDesktop(true);
-			visitante.setIdUsuario(Main.loggedUser.getId());
+			visitante.setIdUsuario(Main.internoLoggedUser.getId());
 			
 		} else {
 			

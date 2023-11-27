@@ -470,6 +470,8 @@ public class Utils {
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
+				"Tamanho da página na sincronização de logs", FieldType.TEXT, "100", true, 12));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null)
@@ -1718,17 +1720,13 @@ public class Utils {
 
 	public static void main(String[] args) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
-		String aux = "8591641950";
+		String aux = "1145200000";
 		String temp = "";
+		
+		System.out.println(" ANTES " + aux);
+		System.out.println(" DEPOIS para hex : " + toHEX(aux));
+		System.out.println(" DEPOIS depois para HexaDecimal : " + conversorHexaDecimal(aux));
 
-		System.out.println(" o que � cartão " + toHEX(aux));
-
-		String n5 = "1237";
-		if (n5.matches("^(?=\\d{3}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
-			System.out.println("true");
-		} else {
-			System.out.println("false");
-		}
 
 	}
 
@@ -1750,9 +1748,9 @@ public class Utils {
 			String temp = "";
 			fcWiegand = hexAbatrack.substring(0, 4);
 			
-			System.out.println("hexAbatrack : " + hexAbatrack);
-			System.out.println("hexWigan : " + hexWigan);
-			System.out.println("fcWigan : " + fcWiegand);
+//			System.out.println("hexAbatrack : " + hexAbatrack);
+//			System.out.println("hexWigan : " + hexWigan);
+//			System.out.println("fcWigan : " + fcWiegand);
 			
 			temp += fcWiegand.charAt(0);
 			temp += fcWiegand.charAt(1);
@@ -1761,9 +1759,9 @@ public class Utils {
 			
 			longAbatrack  = new BigInteger(hexWigan, 16).longValue();
 			fclong  = new BigInteger(temp, 16).longValue();
-			System.out.println("---------------- ");
-			System.out.println("longaba depois : " + longAbatrack);
-			System.out.println("fcling depois : " + fclong);
+//			System.out.println("---------------- ");
+//			System.out.println("longaba depois : " + longAbatrack);
+//			System.out.println("fcling depois : " + fclong);
 			
 			String wiegand = String.valueOf(longAbatrack);
 			String fcwiegand = String.valueOf(fclong);
