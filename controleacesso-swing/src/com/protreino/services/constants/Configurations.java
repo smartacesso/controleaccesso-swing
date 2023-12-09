@@ -31,6 +31,8 @@ public abstract class Configurations {
 	public static final String IMAGE_FOLDER = "/com/protreino/services/resources/img/";
 	
 	public static final String LC_DATABASE_PATH = Utils.getAppDataFolder();
+	 // A Luxand_key só funciona na versao 7.2.1
+	//https://www.luxand.com/download/oldvrs/7.2.1/Luxand_FaceSDK_Setup.exe
 	
 	public static final String LUXAND_KEY = "dte7wp+ICiX8FNYiviQNDLgkhuOYb7zd/mu/iBUFbw+BSqz8r7vea0wKQOHrxYe6pxoBOQDxGBNCBahyKvtFq+t3i/32RsOOfHsl/t/PQn4++zz8w4b1fzCd4XQ0kKOqALFSCpNfjb/NPiPCCoSlC1AR9ymK/dksdi5SD06EyH8=";
 

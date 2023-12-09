@@ -34,12 +34,13 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		this.desiredStatus = deviceEntity.getDesiredStatus();
 		this.defaultDevice = deviceEntity.getDefaultDevice();
 		this.athleteScreenConfig = deviceEntity.getAthleteScreenConfig();
-		String attachedDevices = deviceEntity.getAttachedDevices();
 		
 		Gson gson = new GsonBuilder().create();
-		List<AttachedTO> list = gson.fromJson(attachedDevices, new TypeToken<List<AttachedTO>>() {}.getType());
+		List<AttachedTO> attachedDevices = gson.fromJson(deviceEntity.getAttachedDevices(), new TypeToken<List<AttachedTO>>() {}.getType());
+		List<AttachedTO> attachedHikivisionCameras = gson.fromJson(deviceEntity.getAttachedHikivisionCameras(), new TypeToken<List<AttachedTO>>() {}.getType());
 
-		this.setAttachedDevices(list);
+		this.setAttachedDevices(attachedDevices);
+		this.setAttachedHikivisionCameras(attachedHikivisionCameras);
 	}
 	
 	public TopDataAcessoDevice(String identifier){

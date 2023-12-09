@@ -56,6 +56,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.screens.AttachedDevicesPanel;
 import com.protreino.services.screens.AutenticationDialog;
 import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
+import com.protreino.services.screens.HikivisionAttachedDevicesPanel;
 import com.protreino.services.screens.PedestrianScreen;
 import com.protreino.services.screens.ProgressDialog;
 import com.protreino.services.screens.RegisterUserDialog;
@@ -756,7 +757,6 @@ public class DeviceCard extends JPanel {
 			
 			boolean exibeAbaCatracaVinculada = !(device instanceof FacialDevice)
 													&& !(device instanceof ServerDevice);
-			
 			if(exibeAbaCatracaVinculada) {
 				JPanel catracasPanel = new AttachedDevicesPanel(device);
 				catracasPanel.setLayout(new BoxLayout(catracasPanel, BoxLayout.Y_AXIS));
@@ -768,6 +768,22 @@ public class DeviceCard extends JPanel {
 				scrollCatracasPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 				
 				tabbedPane.addTab("Catracas vinculadas", scrollCatracasPane);
+			}
+			
+			boolean exibeAbaCamerasHikivision = !(device instanceof FacialDevice)
+					&& !(device instanceof ServerDevice)
+					&& Utils.isHikivisionConfigValid();
+			if(exibeAbaCamerasHikivision) {
+				JPanel camerasHikivisionPanel = new HikivisionAttachedDevicesPanel(device);
+				camerasHikivisionPanel.setLayout(new BoxLayout(camerasHikivisionPanel, BoxLayout.Y_AXIS));
+				camerasHikivisionPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+				
+				JScrollPane scrollCamerasHikivisionPane = new JScrollPane(camerasHikivisionPanel, 
+						ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+						ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				scrollCamerasHikivisionPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+				
+				tabbedPane.addTab("Cameras Hikivision", scrollCamerasHikivisionPane);
 			}
 			
 			erroConfigurationLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 10, 0);

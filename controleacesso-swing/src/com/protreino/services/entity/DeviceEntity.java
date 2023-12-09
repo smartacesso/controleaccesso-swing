@@ -89,6 +89,9 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 	@Column(name="ATTACEHD_DEVICES", nullable=true, length=1000)
 	private String attachedDevices;
 	
+	@Column(name="ATTACHED_HIKIVISION_CAMERAS", nullable=true, length=10000)
+	private String attachedHikivisionCameras;
+	
 	@Temporal( TemporalType.TIMESTAMP)
 	@Column(name="LAST_SYNC", nullable=true, length=11)
 	private Date ultimaAtualizacao;
@@ -110,10 +113,11 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 		this.mirrorDevice = device.isMirrorDevice();
 		this.syncUsers = device.isSyncUsers();
 		this.athleteScreenConfig = device.getAthleteScreenConfig();
-		if (device.getConfigurationGroups() != null){
+		if (device.getConfigurationGroups() != null) {
 			configurationGroups = new ArrayList<ConfigurationGroupEntity>();
-			for (ConfigurationGroupTO configGroupTO : device.getConfigurationGroups())
-				configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));
+			for (ConfigurationGroupTO configGroupTO : device.getConfigurationGroups()) {
+				configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));				
+			}
 		}
 	}
 
@@ -169,11 +173,13 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 	
 	public List<ConfigurationGroupTO> getConfigurationGroupsTO() {
 		List<ConfigurationGroupTO> configuracoes = new ArrayList<ConfigurationGroupTO>();
-		if (configurationGroups == null)
+		if (configurationGroups == null) {
 			return null;
+		}
 		
-		for (ConfigurationGroupEntity groupEntity : configurationGroups)
+		for (ConfigurationGroupEntity groupEntity : configurationGroups) {
 			configuracoes.add(new ConfigurationGroupTO(groupEntity));
+		}
 		
 		return configuracoes;
 	}
@@ -192,8 +198,9 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 		}
 		
 		configurationGroups = new ArrayList<ConfigurationGroupEntity>();
-		for (ConfigurationGroupTO configGroupTO : configurationGroupsTO)
+		for (ConfigurationGroupTO configGroupTO : configurationGroupsTO) {
 			configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));
+		}
 	}
 	
 	public void setConfigurationGroups(List<ConfigurationGroupEntity> configurationGroups) {
@@ -280,6 +287,14 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 
 	public void setUltimaAtualizacao(Date ultimaAtualizacao) {
 		this.ultimaAtualizacao = ultimaAtualizacao;
+	}
+
+	public String getAttachedHikivisionCameras() {
+		return attachedHikivisionCameras;
+	}
+
+	public void setAttachedHikivisionCameras(String attachedHikivisionCameras) {
+		this.attachedHikivisionCameras = attachedHikivisionCameras;
 	}
 
 }

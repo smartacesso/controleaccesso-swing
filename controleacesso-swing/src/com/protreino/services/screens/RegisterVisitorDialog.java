@@ -2003,7 +2003,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             return;
         }
 
-        final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDisposivos();
+        final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDispositivos();
 
         if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
             return;

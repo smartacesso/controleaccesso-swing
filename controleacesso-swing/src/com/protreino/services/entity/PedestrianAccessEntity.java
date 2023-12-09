@@ -210,21 +210,23 @@ import com.protreino.services.utils.HibernateUtil;
 					  + "obj.removido = false "
 					  + "order by obj.id desc"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithPhotoByLastSync",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.foto, obj.cardNumber, obj.name, obj.removido)  " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido)  " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.foto != null " +
 						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION " +
 						"order by obj.id asc"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.cardNumber != null " + 
 						"order by obj.id asc"),
 		@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
+						"and obj.cardNumber != null " +
 						"order by obj.id asc")
 
 })
@@ -488,6 +490,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	}
 
 	public PedestrianAccessEntity(byte[] foto, String cardNumber, String name, Boolean removido) {
+		this.foto = foto;
+		this.cardNumber = cardNumber;
+		this.name = name;
+		this.removido = removido;
+	}
+	
+	public PedestrianAccessEntity(Long id, byte[] foto, String cardNumber, String name, Boolean removido) {
+		this.id = id;
 		this.foto = foto;
 		this.cardNumber = cardNumber;
 		this.name = name;

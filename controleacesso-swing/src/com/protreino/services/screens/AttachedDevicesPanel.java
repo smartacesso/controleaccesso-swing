@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -22,9 +21,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.protreino.services.devices.Device;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;

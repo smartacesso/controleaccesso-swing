@@ -86,6 +86,7 @@ public abstract class Device implements IDevice {
 	protected Device catracaVinculada;
 	
 	private List<AttachedTO> attachedDevices = new ArrayList<>();
+	private List<AttachedTO> attachedHikivisionCameras = new ArrayList<>();
 	
 	protected SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
@@ -321,6 +322,7 @@ public abstract class Device implements IDevice {
 		
 		Gson gson = new GsonBuilder().create();
 		deviceEntity.setAttachedDevices(gson.toJson(attachedDevices));
+		deviceEntity.setAttachedHikivisionCameras(gson.toJson(attachedHikivisionCameras));
 		
 		saveEntity();
 	}
@@ -513,6 +515,14 @@ public abstract class Device implements IDevice {
 
 	public PedestrianAccessEntity getMatchedAthleteAccess() {
 		return matchedAthleteAccess;
+	}
+
+	public List<AttachedTO> getAttachedHikivisionCameras() {
+		return attachedHikivisionCameras;
+	}
+
+	public void setAttachedHikivisionCameras(List<AttachedTO> attachedHikivisionCameras) {
+		this.attachedHikivisionCameras = attachedHikivisionCameras;
 	}
 
 }

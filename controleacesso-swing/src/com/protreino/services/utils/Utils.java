@@ -33,6 +33,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -231,8 +232,10 @@ public class Utils {
 			e.printStackTrace();
 		}
 		// caso nao tenha preferencia definida, retorna valor padrao
-		if (value == null)
-			value = getDefaultPreference(key);
+		if (value == null) {
+			value = getDefaultPreference(key);			
+		}
+		
 		return value;
 	}
 
@@ -345,19 +348,19 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccessDays", "Limite de acessos",
 				FieldType.NUMERIC_LIST, "1", "1;1;5"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "toleranceAccess",
-				"Tolerância de entrada e sa�da (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"TolerÃ¢ncia de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "minTimeBetweenAccess",
-				"Tempo mínimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tempo mÃ­nimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeAccessList",
-				"Tempo de atualiza��o da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
+				"Tempo de atualização da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeUserAccessList",
-				"Tempo de atualiza��o das lista de usu�rios (em minutos)", FieldType.TEXT, "2", true, 10));
+				"Tempo de atualização das lista de usuários (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "printLog", "Imprimir log com o servidor",
 				FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessRequiresPassword",
-				"Exigir senha de administrador para libera��o de acesso", FieldType.CHECKBOX, "false"));
+				"Exigir senha de administrador para liberação de acesso", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessReason",
-				"Motivos para libera��o de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
+				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
 				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
@@ -373,21 +376,21 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "importExportDevices",
 				"Importar/Exportar dispositivos do servidor", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageSizeRequestServer",
-				"Tamanho das fotos recebidas do servidor (dimens�o em px)", FieldType.TEXT, "48", true, 10));
+				"Tamanho das fotos recebidas do servidor (dimensão em px)", FieldType.TEXT, "48", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registerAccessWithoutConnectedDevices",
-				"Registrar acesso mesmo que n�o haja dispositivos conectados", FieldType.CHECKBOX, "false"));
+				"Registrar acesso mesmo que não haja dispositivos conectados", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "pedestrianAlwaysOpen",
-				"Cadastro de pedestre/visitante em s�rie", FieldType.CHECKBOX, "false"));
+				"Cadastro de pedestre/visitante em série", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hourAutomaticRoutines",
-				"Hora para execu��o das rotinas autom�ticas", FieldType.NUMERIC_LIST, "00", "0;1;23"));
+				"Hora para execução das rotinas automáticas", FieldType.NUMERIC_LIST, "00", "0;1;23"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardAcessClear",
-				"Habilita 'baixa' autom�tica de cart�es", FieldType.CHECKBOX, "false"));
+				"Habilita 'baixa' automática de cartões", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableDirectionClear",
-				"Habilita reset de dire��es registradas pelos pedestres", FieldType.CHECKBOX, "false"));
+				"Habilita reset de direções registradas pelos pedestres", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardReset",
-				"Habilita reset status de cart�o/comanda", FieldType.CHECKBOX, "false"));
+				"Habilita reset status de cartão/comanda", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableOfflineCard",
-				"Enviar cart�es para Catraca Offline", FieldType.CHECKBOX, "false"));
+				"Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
 
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
 
@@ -406,62 +409,62 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageEntryAllowed",
 				"Mensagem de entrada permitida", FieldType.TEXT, "ENTRE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageExitAllowed",
-				"Mensagem de sa�da permitida", FieldType.TEXT, "SAIA"));
+				"Mensagem de saída permitida", FieldType.TEXT, "SAIA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowed",
 				"Mensagem de acesso negado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO PERMITIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotFound",
-				"Mensagem de pedestre n�o encontrado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO ENCONTRADO"));
+				"Mensagem de pedestre não encontrado", FieldType.MESSAGE_LINES, "PEDESTRE;NAO ENCONTRADO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedOnlyOnce",
-				"Mensagem de pedestre que j� acessou no dia", FieldType.MESSAGE_LINES, "PEDESTRE JA;REGISTRADO HOJE"));
+				"Mensagem de pedestre que já acessou no dia", FieldType.MESSAGE_LINES, "PEDESTRE JA;REGISTRADO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedToday",
 				"Mensagem de pedestre fora do dia permitido", FieldType.MESSAGE_LINES, "PEDESTRE NAO;PERMITIDO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNow",
-				"Mensagem de pedestre fora do horário permitido", FieldType.MESSAGE_LINES,
+				"Mensagem de pedestre fora do horÃ¡rio permitido", FieldType.MESSAGE_LINES,
 				"PEDESTRE NAO;PERMITIDO AGORA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageError",
-				"Mensagem de erro na verifica��o", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
+				"Mensagem de erro na verificação", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageTolerancePeriod",
-				"Mensagem de pedestre no período de tolerância", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
+				"Mensagem de pedestre no perÃ­odo de tolerÃ¢ncia", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso permitido", FieldType.TEXT, "Liberado!"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso negado", FieldType.TEXT,
-				"N�o permitido. Procure a secretaria."));
+				"Não permitido. Procure a secretaria."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedFaceRequired",
-				"(Tela do pedestre) Mensagem de cadastro de face obrigat�rio", FieldType.TEXT,
-				"Obrigatório cadastro facial"));
+				"(Tela do pedestre) Mensagem de cadastro de face obrigatório", FieldType.TEXT,
+				"ObrigatÃ³rio cadastro facial"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedOnlyOnceAthleteScreen",
-				"(Tela do pedestre) Mensagem pedestre que j� acessou no dia", FieldType.TEXT,
-				"N�o permitido mais hoje."));
+				"(Tela do pedestre) Mensagem pedestre que já acessou no dia", FieldType.TEXT,
+				"Não permitido mais hoje."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedTodayAthleteScreen",
 				"(Tela do pedestre) Mensagem fora do dia permitido", FieldType.TEXT, "Fora do dia permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNowAthleteScreen",
-				"(Tela do pedestre) Mensagem fora do horário permitido", FieldType.TEXT,
-				"Fora do horário permitido."));
+				"(Tela do pedestre) Mensagem fora do horÃ¡rio permitido", FieldType.TEXT,
+				"Fora do horÃ¡rio permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedOrigem",
-				"Mensagem para pedestre n�o permitido nesse equipamento", FieldType.TEXT,
-				"N�o permitido;no equipamento."));
+				"Mensagem para pedestre não permitido nesse equipamento", FieldType.TEXT,
+				"Não permitido;no equipamento."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedSensor",
-				"Mensagem para pedestre que n�o depositou cart�o na urna", FieldType.TEXT,
+				"Mensagem para pedestre que não depositou cartão na urna", FieldType.TEXT,
 				"Deposite;o cartao na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageSMSAfterPassInDevice",
-				"Mensagem SMS após passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
+				"Mensagem SMS apÃ³s passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedBox",
-				"Mensagem de cart�o n�o permitido na urna", FieldType.TEXT, "N�o permitido;na urna."));
+				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenBackgroundImage",
 				"Imagem de fundo da tela do pedestre", FieldType.IMAGE, ""));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenFirstColor",
-				"Cor prim�ria da tela do pedestre", FieldType.COLOR_CHOOSER,
+				"Cor primária da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.firstColor.getRed() + ";" + Main.firstColor.getGreen() + ";" + Main.firstColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenSecondColor",
-				"Cor secund�ria da tela do pedestre", FieldType.COLOR_CHOOSER,
+				"Cor secundária da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.secondColor.getRed() + ";" + Main.secondColor.getGreen() + ";" + Main.secondColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenTimeout",
-				"Tempo limite para apresentação dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
+				"Tempo limite para apresentaÃ§Ã£o dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "samplesNumberForTraining",
-				"N�mero de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
+				"Número de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER,
 				"intervalBetweenCapturesForTraining", "Intervalo entre capturas para treinamento (em ms)",
 				FieldType.NUMERIC_LIST, "250", "100;50;500"));
@@ -469,21 +472,23 @@ public class Utils {
 				"intervalBetweenCapturesForRecognition", "Intervalo entre capturas para reconhecimento (em ms)",
 				FieldType.NUMERIC_LIST, "50", "30;10;200"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "waitTimeAfterRecognizer",
-				"Tempo de espera após reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
+				"Tempo de espera apÃ³s reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "maxTimeForFaceCapturing",
-				"Tempo m�ximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
+				"Tempo máximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "serverRecognizerIP",
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
-				"Definir n�mero do cart�o Master", FieldType.TEXT, "", true, 12));
+				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
 		
-		// Preferencias do nova Integra��o HIKIVISION
+		// Preferencias do nova Integração HIKIVISION
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
-				"Usu�rio para conex�o ao Servidor", FieldType.TEXT, "admin", false, 10));
+				"Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionPasswordServerConnection",
-				"Senha para conex�o ao Servidor", FieldType.TEXT, "123456", false, 10));
+				"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "tcpServerHikivisionSocketPort",
+				"Porta do servidor TCP Hikivision para receber os eventos", FieldType.TEXT, "2025", true, 10));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null)
@@ -695,6 +700,23 @@ public class Utils {
 						}
 					}
 					deviceObj.add("attachedDevices", attachedDevicesArray);
+					deviceArray.add(deviceObj);
+					
+					JsonArray hikivisionAttachedCamerasArray = new JsonArray();
+					if (deviceEntity.getAttachedHikivisionCameras() != null && !deviceEntity.getAttachedHikivisionCameras().isEmpty()) {
+						String hikivisionAttachedCameras = deviceEntity.getAttachedHikivisionCameras();
+						Gson gson = new GsonBuilder().create();
+						List<AttachedTO> list = gson.fromJson(hikivisionAttachedCameras, new TypeToken<List<AttachedTO>>() {
+						}.getType());
+
+						for (AttachedTO attachedTO : list) {
+							JsonObject attachedHikivisionCamerasObj = new JsonObject();
+							attachedHikivisionCamerasObj.addProperty("nomeDevice", attachedTO.getNomeDevice());
+							attachedHikivisionCamerasObj.addProperty("idDevice", attachedTO.getIdDevice());
+							hikivisionAttachedCamerasArray.add(attachedHikivisionCamerasObj);
+						}
+					}
+					deviceObj.add("hikivisionAttachedCameras", hikivisionAttachedCamerasArray);
 					deviceArray.add(deviceObj);
 				}
 			}
@@ -934,13 +956,13 @@ public class Utils {
 				desktop.browse(url.toURI());
 			else
 				JOptionPane.showConfirmDialog(null,
-						"N�o foi poss�vel abrir a página de download.\nTente abri-la manualmente através do link:\n"
+						"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
 								+ link,
 						title, JOptionPane.OK_CANCEL_OPTION);
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showConfirmDialog(null,
-					"N�o foi poss�vel abrir a página de download.\nTente abri-la manualmente através do link:\n"
+					"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
 							+ link,
 					title, JOptionPane.OK_CANCEL_OPTION);
 		}
@@ -962,6 +984,18 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return ip;
+	}
+	
+	public static String getLocalIpAddress() {
+		try {
+			InetAddress IP = InetAddress.getLocalHost();
+			return IP.getHostAddress();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 
 	public static List<InetAddress> getAllLocalHostLANAddress() throws UnknownHostException {
@@ -1694,7 +1728,7 @@ public class Utils {
 		return null;
 	}
 
-	// colocar conversor de ABATRACK para WIGAN aqui como estático
+	// colocar conversor de ABATRACK para WIGAN aqui como estÃ¡tico
 
 	public static String toHEX(String Cartao) {
 
@@ -1704,7 +1738,7 @@ public class Utils {
 			long fclong = Long.parseLong(Cartao);
 			String hexAbatrack = Long.toHexString(longAbatrack);
 			String hexWigan = hexAbatrack.substring(hexAbatrack.length() - 4);
-//			olhar a posição pegar exatamente o mesmo if
+//			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
 			String fcWiegand = "";
 			String temp = "";
 			fcWiegand = hexAbatrack.substring(hexAbatrack.length() - 6);
@@ -1725,18 +1759,267 @@ public class Utils {
 			return fcwiegandtg;
 
 		} catch (Exception e) {
-			System.out.println("N�o foi poss�vel converter cart�o " + Cartao + "\n motivo " + e.getMessage());
+			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
 			return Cartao;
 		}
 
 	}
+	
+	public static String getFirstJsonFromString(String input) {
+        List<Character> stack = new ArrayList<Character>();
+
+        String temp = "";
+        
+        for(char eachChar: input.toCharArray()) {
+            if(stack.isEmpty() && eachChar == '{') {
+                stack.add(eachChar);
+                temp += eachChar;
+            } else if(!stack.isEmpty()) {
+                temp += eachChar;
+                if(stack.get(stack.size()-1).equals('{') && eachChar == '}') {
+                    stack.remove(stack.size()-1);
+                    if(stack.isEmpty()) {
+                    	return temp;
+                    }
+                } else if(eachChar == '{' || eachChar == '}') {
+                	stack.add(eachChar);
+                }
+            } else if(temp.length() > 0 && stack.isEmpty()) {
+            	return temp;
+            }
+        }
+        
+        return "";
+    }
 
 	public static void main(String[] args) {
+		final String te = "POST /event/notification HTTP/1.1\r\n"
+				+ "Host: 192.168.15.4:8090\r\n"
+				+ "Accept: */*\r\n"
+				+ "Content-Type: multipart/form-data; boundary=MIME_boundary\r\n"
+				+ "Connection: keep-alive\r\n"
+				+ "Content-Length: 64308\r\n"
+				+ "\r\n"
+				+ "--MIME_boundary\r\n"
+				+ "Content-Disposition: form-data; name=\"event_log\"\r\n"
+				+ "Content-Type: application/json\r\n"
+				+ "Content-Length: 956\r\n"
+				+ "\r\n"
+				+ "{\r\n"
+				+ "	\"ipAddress\":	\"192.168.15.133\",\r\n"
+				+ "	\"ipv6Address\":	\"2804:1b2:1001:3e3:be5e:33ff:fe5c:3adb\",\r\n"
+				+ "	\"portNo\":	8090,\r\n"
+				+ "	\"protocol\":	\"HTTP\",\r\n"
+				+ "	\"macAddress\":	\"bc:5e:33:5c:3a:db\",\r\n"
+				+ "	\"channelID\":	1,\r\n"
+				+ "	\"dateTime\":	\"2023-12-01T02:48:43+08:00\",\r\n"
+				+ "	\"activePostCount\":	1,\r\n"
+				+ "	\"eventType\":	\"AccessControllerEvent\",\r\n"
+				+ "	\"eventState\":	\"active\",\r\n"
+				+ "	\"eventDescription\":	\"Access Controller Event\",\r\n"
+				+ "	\"AccessControllerEvent\":	{\r\n"
+				+ "		\"deviceName\":	\"cam 3\",\r\n"
+				+ "		\"majorEventType\":	5,\r\n"
+				+ "		\"subEventType\":	75,\r\n"
+				+ "		\"cardNo\":	\"1768\",\r\n"
+				+ "		\"cardType\":	1,\r\n"
+				+ "		\"name\":	\"Boss\",\r\n"
+				+ "		\"cardReaderKind\":	1,\r\n"
+				+ "		\"cardReaderNo\":	1,\r\n"
+				+ "		\"verifyNo\":	140,\r\n"
+				+ "		\"employeeNoString\":	\"3\",\r\n"
+				+ "		\"serialNo\":	42,\r\n"
+				+ "		\"userType\":	\"normal\",\r\n"
+				+ "		\"currentVerifyMode\":	\"cardOrFace\",\r\n"
+				+ "		\"frontSerialNo\":	0,\r\n"
+				+ "		\"attendanceStatus\":	\"undefined\",\r\n"
+				+ "		\"label\":	\"\",\r\n"
+				+ "		\"statusValue\":	0,\r\n"
+				+ "		\"mask\":	\"no\",\r\n"
+				+ "		\"helmet\":	\"unknown\",\r\n"
+				+ "		\"picturesNumber\":	1,\r\n"
+				+ "		\"purePwdVerifyEnable\":	true,\r\n"
+				+ "		\"FaceRect\":	{\r\n"
+				+ "			\"height\":	0.304,\r\n"
+				+ "			\"width\":	0.496,\r\n"
+				+ "			\"x\":	0.5,\r\n"
+				+ "			\"y\":	0.487\r\n"
+				+ "		}\r\n"
+				+ "	}\r\n"
+				+ "}\r\n"
+				+ "--MIME_boundary\r\n"
+				+ "Content-Disposition: form-data; name=\"Picture\"; filename=\"Picture.jpg\"\r\n"
+				+ "Content-Type: image/jpeg\r\n"
+				+ "Content-Length: 63041\r\n"
+				+ "Content-ID: pictureImage\r\n"
+				+ "\r\n"
+				+ "ÿØÿà>JPEGæ S    INFô                                                                                                                        2023-12-1 2:48:43                  F1x                   `              *\r\n"
+				+ "                           -   -   Z                  áõ áõ                                                                   œNü\bTç,\r\n"
+				+ "öFèÐ !2@±`x§r¼M‡}Ä {ÊHþx5–ú0ŽQ                                            è                   pµ       \r\n"
+				+ "           P'ò 0Q                                                                                      .                                                              ­\r\n"
+				+ "                                                         FR700006       ê(¼\r\n"
+				+ "ÑÏãåVy@8#Þ†,¼Æ›mîV4Þ÷Lÿ sm2ÿ ×IÃÌ(¨¤–Ýÿ ½:Õ$/ÜiÞx=*\r\n"
+				+ "wW,“RÔ£Ê=jºO(| wæ•¥˜¯2 Aš5ØN%…\r\n"
+				+ "yùÓv¯Rß@g›oË'žcPO);tÀÁüi0FÒø¨Ä„ò´ÖÃçüŠdò’<Gï\r\n"
+				+ "ŽHUó‘íG)äožär2tÐŽk8ÊaEWžÉ\r\n"
+				+ "qW’U²S¯ñU\\‰@È“DŠ6wPIs–÷5ÏjÞ’\"Ý>ñ®ÌÄ­ÿ -9ëŠ­=›Is“EÙŒ©itŽOê†T„sƒœóÔ?!Y÷zM›î¹\f$_˜°+¿–ÜcîtíÚ³ït,¤éßëÚ©´ÕÇõ(¬Œ²Jã¾}k˜Ö'†-^F”ÆöÎ+©Û¶Bcã9åxïÿ êýk”ñLhº‹;Žá—åëÁçÛµy´ÝÙèI~ïB\r\n"
+				+ "‰Li•—¶îÞ¿Ê¢2`g°õíQ<ï)&SÆþžÜõé¾wúB¨ëÆ:žýþ¿¥vÇ¡Èì·/A8C¹›vz\f}+cÂ2@÷\r\n"
+				+ "ûÎ£8ÇN+Ÿ™ö‘žO×îûVÏ„â\"ï(ç,9÷ÿ <þu2B	Ö$Þl¢5L\fuÝO»t‘\"I÷zŸóôýiÖšmÌ™§*FáŽŸçÓÞ´&ÒWåRÛy®{¨³Ÿ–¥­b‹,ŒÙ\r\n"
+				+ "»üôþu\f±ÝHO•o–9°- Pª£§9©¸:{\r\n"
+				+ "ÑP£'-L¸t	î~Ñòäç§J¿aá­:#µþb*ý¬7>~>µ*E\fs|ÏùSöºQ ž£`µ³…ó\f#9«ð+¹ÀK\r\n"
+				+ "…É«++ç*(rêU1ì¤6•V2yj™¹4Õ'vsK­Ê5Ô„+ÏZ –~p }j6—\r\n"
+				+ "œÔx‘Îìþµ>õµ6åHšI•Nwþ b¢y7Ê§ñ4»BœäzúR° Îiî_.š –E<w¥>d€ï4ãÇ­ec’O<ÐØÔ;ˆêPr>œÓYFsÅJ!‘º®iæÊác'g7ê_!Q•¾öÓJ!cÔ{Õ¥ðšD‰÷äŠ».åR„¶HïÒ»†ú­¸Òµ?\fjq†Žê2Ñ’{íÚGò?…skmó\fœZÞøs ßkÞ0³Ñ4ø·Ïrì‘F?ˆí'¡ªR¶ÄÎ‰Ê½™Š_,ŽPã>´ôŒç%k¤ñß„5O	x²ïÃÚµ“Á,lkŒeXdËò¬t¶ÙÉZ­z—K]J/Ý»¾\\Wä·Ù˜ð9?wô¨léå(ÉÕâ¡#ò«­y\"š¶Ù;€ªLÂPl¬–¥†Hêh{bË´øÕ¸ápÙSDð0â´R9¥O±›4Œ‚Ó$³ùw¬˜õUóÜK/ãLxÔS­UÌœ\r\n"
+				+ "ÒLáˆÇó¤TA&ÚºcÊôï“QÍn¹ÝŠW)@®QçæL§5:EÇÍÓÞ”GÇJ\r\n"
+				+ "å¹WËão#šd&ñüªe\\¶w  VÀ´\"Ä*\r\n"
+				+ "ŒÒ2äg?Z˜ bšêÝ •W%Ä…R6šFÝ÷A©\fCvi’)ƒÞÈkAÎ7nãÔšxÆ‘†\bïEÈwê1œ	ÉP¹;ÔŽ •úS\b%xâ®æv¹ ƒUåbÄ\r\n"
+				+ "¼çš³¼íÜã·zŽêH¢]îq“MkêsñÁq,r äuü?ÏZæüwnlî#Ï;ðsøŒJìYƒíê~÷§zÉñî›öø­Ù˜+\f.py¯•oßYž\"tô80í,‡ÉCÈóÅ]Óô=[S›e­£·¡Øqÿ Ö­Ãºd;KBÄðà€\r\n"
+				+ "wo•gòUFWTã¨—Jîž%CTŽ9SîsWÂ»¹\r\n"
+				+ "É«]¤KÔ¤|°ö®»IðÎ‰¤mû%¢î–a’i·­¥²šéGãP'Ší·•¶‡w©Ïé\\’¯Vª ”o±ºctc™$HÄo<ôëYM­4èÑ9#pãüÿ ž´A¨Ÿ$©lsP¥>åû6Ú4‘~`3I÷ñÇj«óËâ:tç­<¬¥·g5pææÐÙÁ[¹bK… cÓ4”aÕ¨†=¹ÀÁïïHmNÏ½ÍZ•Íy4¹vÕÇFjÄyfÊzÔ60ÈÄ§Š¼‘dóV5®Ä[\br\r\n"
+				+ "# Þ&¬˜sÎi$‡q«EÜîA\"2¶ô©»Y×\r\n"
+				+ "VV3Œ0§\r\n"
+				+ "aØÔîõfŠEHƒ+#¿5fxÅ‚;Ô«h|Ã¯Zr‰$€‚Ÿ=M9-¹Ø0 ¡<ŒÕ«KQåò*Å´M$k¸}jÌvjƒh©rî8Âú•>Ì£…õ©D“«ÙOJ–;vÛÒ³rêl¡©ö<±j6µ).Ö_z×†Ó2`¯zY´Ï2Mõ¢•µfÙ‘ö}ÌJþ5«à¿j ñv™ãm:\r\n"
+				+ "óiWÑÝ\"aË'ü	r?–](ò£¨ã³ í\r\n"
+				+ "Þ‹÷)SÓSéø(—ÃòÏÂ?´G‚)4}zÅm¥ž7/nIÇ÷“ê˜¯˜§²?tšûoöLÐö©ýˆ|aû<M2Ï¬xbG“Hþú#–¸´aì&Y£ú2ŒWÇrY0’æØÅ,nÑÈ’\fÝI\f¤z‚\b­[ÚFtbãx>†3éÍéM{·¥n½¢•ÜEA5žFTVNNçj§îÜÆk ‹’”‘Ø÷µþÉ…ÆÊdV£y=*ÓfU!±•ö&È¤›Opü­k½ iíš|–jã V‰œÓ¦a=ƒœTM`Ywb·ÚÇŒÕw±gãm;™¸˜mfP}Þj6µ,>ílKe†À¨ZÛ‚\bæ™†_Ár˜ÊUúÕy¡(x‹péSqòY“ü)\r\n"
+				+ "aöU–ˆnÎ{Ôr¡VÜE¹½ÊòFPð:Ò2Ž­S\\!ëQ¾YwbªîäÊ$mÏQøÔnªÜ©Jg¶‘U}51’\"uÏ\r\n"
+				+ "I´\r\n"
+				+ "šqBAõÌú\r\n"
+				+ "w3å¹$òÜÿ Zg åOÖ¤`«ü<Ð2¿xU\\‡£\r\n"
+				+ "|»Vº‚Gjê7\fÕ¦ðOÒ¢ —Ç¥R–¤¸„aeóIÀôª~(ÑZòËÊœ“œb¯hÚŠÞY¬ÞnáŽOjuÎ¹¥ù-L®åxE<×ÍÝÃTvÆmÓÔã'°’Ð4S?ûKŽ3ùÿ žjªkW-@Óc?Ý=kcY²’æÌ˜Ãwÿ ž•ÎÃE’íü8çŸ­wÂÓ…Ìog©*N’>%ÝçÏùâ¯Å$m!Ž==GåYVŸ$›CëŽÞ•©§@òI¿7qëèÆ¶”S*èhiöòHã?/ãý*Ì‰wá²8Ûž•jÆÂI ß\r\n"
+				+ "t?×¥kZi\bÜ>c×Þ°ç‚º.éôËgTØWŽ¼Õô¶Á\fÂŸ·“1CÜÕÉ1ÜsPäú!)ib½´²Ui^2óSÚ•C´RÈ¬š¨ÊãÝjOb˜Œ|¼÷«Ü8¨ôä,y«Š\b} uëMèÊŽ±+í\r\n"
+				+ "Å\r\n"
+				+ "Ûš°öùn”¦”üµqz#e\r\n"
+				+ "½JÂ0@#š”Û°ÇbÚÉä\"ÖŒ:9˜(“Š¦ìtF:hfÛDå\r\n"
+				+ "§Eoò+[_Ø†Ý°óß4°éA²qMrÞ:Úm³ã§N*êZeúU«8	Hutç\r\n"
+				+ "Âÿ õê^@Œ{™bÀƒµ46L[Ík¦œ›0Wš–\r\n"
+				+ "?k}ÊÉ³¢0ÙñÙ2HIZœÙîÇJ×}1÷/P;Ñýšãæ\r\n"
+				+ "N.å¨Jû«`­Á<Qý|ªsë[I¦6Ýá9ïš·”Ó`l?•[}M;Äï?aŒ«û<þÓÞñ]õéƒFÖ'7ˆOamp@Iýs˜Bÿ @Õ»ÿ #ø§|(ý¤5\r\n"
+				+ "oÃ–k“âäþÕµ…3¶œâê?ûùócý¾‚¼¦ÿ CimdŽÚ?ŸaòÏ÷[  óþUõ‡í¿ ÞøßöeðÅ¹d3Æëg(¸+Ô\\Û'_øõ«Œÿ vÌ%I,LmÕ[î>&ky_ÌSf°$goÒº¯ì¶wcääb«6»ª¶ik¹ÕM_C›]<‘œt¨&±e—!k¨::ª©ÝiŒ¯´­8n*‘÷nÎ}ìÛ!”bžÖ¿.\b­y´Ö	µµ\r\n"
+				+ "áÒµ9e,Ú’Ù+PKnGU­¶¶ÏµEu§ 9îsò3\r\n"
+				+ "klüÕ]íÈlâ·ZËrggN*ŒöedÀOÂ›¹š‡VaÝ[ílT\r\n"
+				+ "mákjïN%òS{R§a\\TßCNIO\r\n"
+				+ "ÍEq-–5§-¢«g^âÝWæÛÞ‚%\r\n"
+				+ "2Ä ÃÇáP˜)À­·ÝHªÂ&ÁUÑ”âQpÇ¯¥G&2 5nX™‚{ÔBÙéUs	D®ìIäTXù±ùÕ‡ˆ‘øÔ)ÎqLÉÄŽPÙã­7%ˆ'\r\n"
+				+ "8:“Œ÷£Íˆüúý½m¥¶øÍÀh[>øoþ¿ë^\r\n"
+				+ "2í$Èzq_JÁDôàŸ!º1ýü®~¹¯šu c!ç­~³;ài3êð½(²•üÇ:ÌžfI9=jKéÈ}êœ²N+õŠ:Â'ÒÓØÌàòzÒµÀÛ’jåWÔe˜É°šÙ4iÍÕ“í3¾1šÖÓ<?s>ÝÜ/Ri4M.7äk©µH Œ*žqMÛq¦ú·‰tOìèÄðköúe„†“ b»_5ƒñÎ+Íõ\bn’f;#Ò•ôÔ9í_Fñ&§r.aÕ¤‰‡Ý\r\n"
+				+ "Ä*ì¼-­ê©`¶:¤¾d‘ü¢SüuJÊaä39çµIl$™ƒÆzÎ‰6ãd‰ÚW¹ÑG,|îÇ­W½¾,Û¥sÍg=ôñFK½bkRKª¡\\ínœÖ)­ÙÒ4‰(ÊŸþ½6d`Ó5Éx.ëS²ºk[ÙÙ—' öæºÉŸrníŽkU'Íddù·ÂFRA=êë˜cT¬Ê±,9çò«ÛÄRSè\r\n"
+				+ " á:´|j9%!3Q+!\r\n"
+				+ "Ó4LãsT¾\"î42Ï =*IãnóQG°ÊF)Òa=½i«\\—a,¬êõmTs#b¾Ûý›ü&žð”;— Ê#üûWÊŸ¼,Þ)ñÕ´1ÆÛÜŠû‡Â:lzF…\r\n"
+				+ "´qí;lõÎ+ç8Ž¿.Q]O+Sì#àŸ‹,üFÕ5ÍÀ¤×c#ºŽ}‡ûþÑíñ Âgá·‰î³«hñ)¶‘ºÜÁÓ<õ õ¯…$a+ûõÉúÖÿ Ã¯ë¿<_aãÜ”¹±œ:®x‘sÊb?Æ½S–ve8sÆÇèOÄoÙ[á¿õ‹Ÿ‰Z'ƒ|J<Ooñ?ƒ5{‹[©ðmÈgíÆ¾Pño‹|]à5¯ˆt­SOÖ\"”¼ñë\r\n"
+				+ "éq #oÁ'Ô÷¯´~|j³ø‰á]7â/†.6Hèh·sŸÄ‡ñ®?öàøM'Ä½>Óã†—¥ý«SÑgI/­ÔŸô›pÙ`G>ßyøì§ûÄôíÛÎæ5jÎPŒCÍÿ fÚ\r\n"
+				+ "[ñ§õ/‡^Šk›KëO:óI’y$…H]§`,B€3ß8ç\"¾‚ø¯èþ»¹ørºë:#–µ²¸\\IhIÿ TOFpxàŠø\r\n"
+				+ "ö‹øÕ®§ÆKüñæ‹¨K¦yW'K¹1>p|§ÛÄ‹•ÎÖöâ»OÙ‹ãÞ¥qâè$×5G[›‰U.D­.lžF~ê’OÔWF4Ô_Þr¿{¡ú ­Þ›Üã§5çòÛy×M\"\fl×M«êï£Û³ÉI<`æ&È#k!P(ÁZøþ(¯Æ”V»œZØ¤Ð´oÃSâK‚*GsäR*Û‰¯Èñ“¶—*8¥bQ€qOBA$ð* wn§‡-Þ¸½ç¹nË\"t:‘%Ürj”ŽUx,ñÒ±³Ü‹u/ÆêNþ˜$wñòŠ¨²„æ«As!lJÖ-Í´»LåKVýæk2ÝšNwt«ð1TäÔòõ´-y™Ç<lvn&©FçŒš™&9Á¢ÝÉérØç9ïS$¤Ró‘RÅ&îsSËÐ”‹jØZ’'#½UW9æžq¥Ë}‚Å¥`ÀÓ¼Ò ÊZ¬ã–ïNWÊäÊ¨–‹JËÜóRy¤ŒU5õÍIäaš‹iäÓÑ½MV´õ‘»ñG-÷>Rÿ ‚‹ømÏØu•‹+æ[8a_kxBÀu¯Ðÿ Û{Ãëÿ 	..Ñ3,\b]žà?­~wø‚—\fZL÷¯Ò¸^¯´À¥Øú®W¥©Îß8.[_r“»šžïjä“š¬¹`[¥~»†“tbü­§Ñ‰,€ž´ûT¶Z«Hÿ >*kyü³šéó+›±µg¨´\r\n"
+				+ "ÜUûm]Cå›õ®j[†eÊš’Ù¥uûõ§™Ÿ9Ó\\^‹… žÕÉêšD‘]—-òk^ÊÚöVÃ±û/äÿ H ÑhËprm€¶A	ÖfV,ÇÒ·µ%¤«Ëýë(æ•­¹/mJÚ½ØH‰?Ê¹é¯¯bº%T#åãšè5{a$8\"°¤ŒG&òÙ'Þ·„\"ö%É§fX´Ô\bL18ÿ >õ¯g©=Èò€ù{µa…1Ë¹¢'žßçÞµô¹¢Ù±@Ër*Ô-¨½£h×Ó×Õ¹IàzÕk\\'\r\n"
+				+ "Ø©$˜8#5›ZÜÑ=Kˆ£m¬{Õ[û–’l«qEÜŠ\r\n"
+				+ "®îÎØ=i­%¨ù•®Y†ì‚{TÏ8b6ÕHcpqŠÝðw‡®<E®ÛiÆI–e¨­=Õ˜Ýõ>ƒýŽ<*Zÿ m]ÀA›æät¿ZúAÔ¢pk˜ø=áH¼3á˜ H¶þì*ý ýzé¥$63Í~q›âþ³‹”¯¦ßqóõçÏ7#ó=	ÞŽOÔ°?ïrÆ³,5MF:Öí%VcpqùUÛf$\fÿ }uNç­d{‡ì}û@]|!ñ¸Ò5{¶þÄÕG:çå†BFÙ>}÷¡ë–—¶Æ)\r\n"
+				+ "Mku=Õá_”–ûYpkìØ“ö„>%Òá‡Š¯‡Û¬”>Yæš.›}Êð?ztg§+9ñßÄy7ÆOÙòÇ@øå¯_Xi>]•Ó	­pÃä$e°;rkÆïõKï‡ž02LCJÒ„•Xó×ƒíƒ_x~ÑÞ\b7Úcx³K¶/q\r\n"
+				+ "aÔ6 	æ¾øåookª~?1n$}²ÀßÂ¯ÿ ^”SçåOc•NÛŸ ?²7Æk?‰Þ\r\n"
+				+ "M*öàý¿NŒ# <ºc\r\n"
+				+ "/å^»,LW>•ù£û3üu¿ð/Šm5”Ê›Fzƒþ²#Á‡øz×è¿ƒ~!øcÇµÖô­VûLAÕòsßòO–Ô¨ž\"—mÌæÅS•ù‘y²É¦oçæ¢Iã?ÅÚ¡3g¿zü‚½Ò¨á#Í’¶¬»Ö…vSÖ¢óNqš<ÅS“õ5ÏÊÒ'Ôœ¶îZûÔC2£yc«ãøÕÿ \r\n"
+				+ "ø'Æ>2ŸÈð¿†/¯ˆëäÛ1ŸJöÙKÅþ/ð—î| âí\"âÒ2Ø6—pàcÓ ¨ëù×¯•äµ³IÛá{\r\n"
+				+ "2›²<6;˜ÊnÞ>¹¦ÅÓz}\b5÷­ïìûðî÷WoøkÂÚU¾¡(ÌÞe¨1ÉžOËÑO¾+'\\øð‡ÇRÇ^±´¼_õwºT\"	ý´Œ\fþ5ïÃÃÌâµ:m>Æ¿S­kŸYJûÈn*ìA”çu}©aû#|\r\n"
+				+ "ÐìÇÙüá—½žIK~mŠƒRý“~xŠÐý›ÀkkpÞµÔ'‹“cô©ÿ ˆsÄJ7åýà\r\n"
+				+ "ê8ž¨øÑ'}ÛEL“zWÕw³ìóáû1¥ø‡Á÷(íò™fÕe,O´ŠËŸÊ¼ãÇÿ ±·Ž¢Õ…çÂ[$Õ4©†ä:Œi$~Ùlnæâøˆ°°öŽ7”ufRÁ×Š»GÇ)'­H’a°­ÞºMwöøíá¤/ª|)ÕYTüÍ`èä\"Çô®NiM¸6š¤ZMžb¼…¢qÿ p\r\n"
+				+ "|þ+/ÆàÝ±¥æ¬sû6·.	›8ÍH“Ù5§à?‡Þ'ø©7Âöªÿ ßžLùiõ W[©þÉŸ4ÉÊ'…lîâê.-µh‚þ\"BŒ?*TòüehsS¦ÚòM‹‘½lpi.ãiVS“Ç½t÷~*Ø³éúNñÖ5ñ aø4‹UGÁÿ ŒC	ÿ \r\n"
+				+ "ÏT}ßuí£YÐÿ Àãf_Ö­å˜èüT¥÷18Ê×hÇI29=©Ë ãŸÖºë?ÙËãâyø¦z}¦þ\bÏäÍš–OÙ«ãŒ4þ³¿ñ<¶þ­N9^=«ª2û˜½”ÚØãüÏ—ïsOY·k©oÙ÷ãJŒùƒ³[ê–®?I*	þ\r\n"
+				+ "|_µm²|=½b{G,.ñ×5/-Æ­éKÿ cå’ÜóŒ|zÇÃNÊTàÛ±>ÜWåÏm_LÖ.¬	ÃC3¡Ï±¯×ï|ø·wáÛÈdøi¬mkv ÁÏOöI5ù7ûChZ‡‡¾&ëzF¥§ÜZÌ—¬Z\r\n"
+				+ "˜Ln™äeO5õü+Ôœá8Û®Ö=l©?yw~v\fûæ ¹\b_J.YÂífïP‰ãUá«ö,¾\\ØTþGÖÐ»†£XØ ó¡¥U9-PM)ÝòöªwsËoÃzú×d{3F×CrÉÑï:U·¼²µ\f+‰“ÅRDÅ>bztÿ >õRëÄ7Ó”mÍoI»Ø—£Ôî¦ñ`÷jÿ Nj\r\n"
+				+ "ÞÍò¤?\\W¹NZû¨û¼sWlõËK¸°·çî(tä‚/]7:«ÉnvÞ32“ÎEO}¨é3ÇöÈÜ_jåÒc&C8ÇlŽ¿ãL“;ð>‡Š^›š½w7“P²½ÿ GWÇõRm%78ÃdûÖOï¢c,giíZznªÍ¶	Xî8ÏzÒ7‰„’z4UÔU-î„äwïRXªºïLŒtmÒ	›3ž{¯shð1`ÜOJÑI=\fìã©bÆà«s/^•¡Úí¬X¤Œ¬pzçðÍ[†c°“(aëš*Fî÷$ÑvV×sqP…%²§­@e2‚OÍªÝ”\fÒmŠQìÙRe«(ZC–ëÜe¯†ÒkÐÖn\"+ÎØÏo¯é^càï\bÞø“X·Òìã$ÈàvöŸÁ‡Öž\r\n"
+				+ "nÍ÷ZjzdÆ9ýG8=ÇCÜ•î\r\n"
+				+ "?nýKN½‡Áÿ µ6„¶¥ñ>5ÑíO“!ÁÁ¹·^ÐÉ9*y<HÛ²z»s\r\n"
+				+ "¦¡oö;Ût–'+\"ƒ]x|eJNÛ£:¸HT[b]Aa«èpêú]åž£¦ßEæZ^ÙÌ³Aq\f®¼0ï^7ñGá²X¬º¾•BN\r\n"
+				+ "\f‘Óô¯ð‹¾.~ÏÒêut¸Ò§É©xCTÌ¶W'”^±¹Ðƒë»¥{×Âÿ ¿\fÿ hÛÒ4¨äÒ<D‹ºëÂú«1=Ì\r\n"
+				+ "ÿ -ÓÜ\r\n"
+				+ "Ã¨¯j–\"–‡‹_\r\n"
+				+ ":[7©é°Ü7ïFÙ ?61P/ŠµíMþÀ¼‘¦±´P¹ÊÄ}Wû¿…u¼;.ƒ®K–î€öuÅrwR$€«(#ßµlr¦ö(ÞAo|Ÿi³˜Œ‘Yóì‘ÞtÏnj[„–ÊO6ÎO—ºƒÒ]A¨¯mâ©=l+\\Á¹·¸Ñn\r\n"
+				+ "í¬‡fîÇùÕ¹<Cý­oåÌáO¾‹Ì\r\n"
+				+ "Žµ‡5´–2nCQ®¥/2†£i÷>r’yÍMi|e•e…þpi5'ßó9È¬{†‚ùUŸø»šCóg±h’n_v ?ZèmeY;½º×¢_¶IÏ¯½tV³9SÏ½Kwz”¼Šº•é7kž{Öö“9«?uÅs7®^çZÕÓn µiêo2ÄÌ|ØçŠÏÖd\bH~ic»|æ«j²3Œ÷âÓvbZ3KDòDK°õý*õÌqç\r\n"
+				+ "Ö°ô	Ê«€{w­n 'ssÞŸ™lÜÈ±˜Q³íŠ’ÒÙ|£óªkOZ¸“n‡9¥b®hÂ……:pÊ¹Væ¡°¸]§-RÜIº2GZ%pZ™÷Ëç¶\bïŠœØGŒcqÉÏzn‚zëVi\f`0éQ~Ã+]\"¬9\r\n"
+				+ "ÐRY06Ì7T“Ë·$©J©g#)uÇr*lÞÃÝLvHBŒš­¨Dnm\f`÷«L«>IïQÎø„±³KÈçžxûÁº4ÇÐõýÐH™^Dè›úŠùëâ/Ãoü;¸ÿ ‰õšØ¶\"Ôm†øeÿ »ô>¾Õôö©Ý»àÖ£\fÐ£E:îB>dp\b#Ü‰+î\\fâ|¦×`ó#9õ¦©	Ïq^ó¬ü-ø}©ï2xr;vc“%‹yG>¸gð¬¿€~vÝ¥ªÇþÏœ‡?øíO/‘²¨(K†åI¤ŽöQ¸—<ñŠõXþ x-~wÖ5Cœÿ ËXÇòZ¹iðSáÔxÙÝHW©7®7}qT Çí¢y\r\n"
+				+ "\\60I?$Ö† kúôt:I2~ðákÚ,¼àM8iá»|ç;¤]çój×‚HSe½º'l\"€*¹…íQÃø;à}¥¼Ë©x…¼Ù \">vƒô¯D²´†ÆÜAmE0)JýcQ5ðûª+XC”Æs”‡_NV=ªÜ÷ªqÄÒ8ËRœÈÜž>´ø‚ ë[%c;õ4¢(¶ªóYÒ»É&3Þ¦»¸Ë`†0ZMÌ8íU~Ä+’†Cš¢×1¼ß¾n*ÅÜÿ .g\\L³¿“Š–Ã^„›æóbv\r\n"
+				+ "Ô{Ôð«IóS|¨¼‚Ýù©£aç ©W,°óÈÑ¬G9$ {Æ‰j>ü*Å@žxÆXu.Üñ^+ðûM÷Œlìä“ÌÞÊO]£?Ò½Gâçˆ•î-´T|,hû“À¡ùØçåIDRKûõ&¦ñ>»†|04»o¾àƒ·¯=MSÓnsrŒçˆþoÄt®cÇ³^êæ!&á õ4’W¹{‚r¼f­E9r2k Lß{uOÙ^\r\n"
+				+ "×Ër\\ú~klnG2€Ôâã#iæ±!½åêq©m9Þiò¢\\u¸ã­`øÇÃZûÅªÛÍ%®£k –ÎþÙöK\fŠA\frEI>²‘Gæ¬ûŸ»nWn;V´ùéûËC\r\n"
+				+ "œ³Ýg‡ÿ j-CPÑ“áßí\bŸmhÐ.™âØá|l8Ûq·×ý°2;Ž¤rGðÜ+¡å]\b!‡±¯1ñ,ö÷Ö¬Œ£=«'Âž<Õ<söW‘®4ã÷­	ù£÷Œöÿ w¥zÔ±$yðÚû§ªOtÅIQ†ìk.øÌÍ€ysuàü­þý;_Òõë£Ý	˜7\f‡û¬;©ytÏÕØšzœÖ°û]rÓPÿ D¿Ìrô÷4ÍJÎD‹'æˆæ°õ(¤vó{ö£Lñ­Ö—'Øµ8÷ÂÍßœSõ%¦Æjr	P9ƒ§LÓëb9®¾é4R/µØ\\\f·%	éÅaiZ$‡Ä­r\bÛßëI¡«Î<  \r\n"
+				+ "ô®žÆåÌyõÌÚ¤™+ Ód2ÇœsYîì‹Ób\r\n"
+				+ "¶a>æ©§91|§šÌ¼mÒîrÅSƒZÇÌƒAž\\üÔÉå6±úÑ¿ oi“¡VÎ)­I$Ò¦h®1ä¾õ¡æª·GIŠC.ø{u«w	µ÷\r\n"
+				+ "µ&}£½h‚cT-,÷IæÈýªØ˜²y#®=iù“n¨·m–ëV^Póüêž!\r\n"
+				+ "GÇzšyXGµOj›ýÆ¤^jÔ²ycq9¬á+#äõ«s:1¹±š´âÍ2KÝªjH‘Žx'?ãSí&KV~§x`Ãyyçü?Æ“cØ–ø\\¯ÿ ® \fÍÖäS¼ÿ 6»P$Ì8 \f­nÏoÏ®jîö\\2J2=ë°Ôœõ®{YÓUd^½êXï©ÊÞmo“8ª²ÿ =:UûË|p¢¨ÍÖÅ8ïr™,Ü–âœ0Þ¤ÙÆÜÿ õé3»h5¢3’êM\r\n"
+				+ "+ƒÍ<¿–8õ¨YÊ®¤.HËÓ¤þk¹ÈÍ!-ÔÔfão Pò– @='O»š|“¡jõª£po™qõ¦¼žiŠ÷#€Ä“Iö‘aY¿Õd9Í$€+Äw°\r\n"
+				+ "¹ó%R‘j±¤'s±-üªU™—œóL•Ý&¥¨#ræœÓ7JŒ‚ `u¥³º-Îçà„Å­\\jÒ¯ú¨ö©ô'¯éSø·UmKÄS]H \r\n"
+				+ "´c¸*‡‚u¥h2Í¸\r\n"
+				+ "ÌßÊ³$¾’YËHÙ,sSê_K&—ºM>[Ò}qø\r\n"
+				+ "ãu	BÉ%Ôœ’k¶¿4ß	\";a¤p=Ï5ÅjqÇ4>_©§Ðd’Í!s×¥C=ìQ/Í ¬;x°ùÈªwZ¸“†?|úG¿*ŠÇB|Ep¯œqU¤ñT™9“¹YïÀ“rÉQK©±Ž7dcÏ7¹ÒËâ6<3üµVç^ÉÞŠçòi ÞõÅÑ\r\n"
+				+ "´J:zÕ$úîÍ»íDÍ˜¬kæá]·g½9®¤ífíÚ©¹WLÀ µ\\SìZ±Öõ?Þ\r\n"
+				+ "CGº(øù×ødÝ?çŠî<9ã½3ÄËöiA·»÷·Cþé=~•çD‚Û•¹ïP´Ûq lÙVSýkªYGDsN\r\n"
+				+ "Z³Õ®O?5f]Ã€‰‡¹-'âmíœëe®qÝYSï/áüUÑ&«g«[‰tû‘('/­wFI«˜N.;•-ìõYõao ÎÀÿ  ®»FÒ.ì%ÍÕï˜O_—/„,¬4; ¿¹ˆµÌÈ@#¶jè„ÀÌ0OZáxµ,B…7§S±a0Îu½\r\n"
+				+ "+ü[ëcO>bü+$Ù9íW´yaË{âº#.i]sVÑ–&SæpÝëCOˆºŒ‚~ƒ59ù·µièî\bÅt-Lùz	m¬:w§I \fõ!]ƒ'­>DVLšÅ-\r\n"
+				+ "ú|Ëmq°¼zÕû˜wž\r\n"
+				+ "P™Ì«°#²â_Nôú\\^„öªÆ=¦Ÿ2ù?:}i°wÒ¥û,“†Ãr;S°±˜°&CRÈÇnsÉ¨-ášÄ©Š|ìx<ô©`ö y	¸\r\n"
+				+ "Ã¿5zâOJHmPEæJ –¤`Š¥S<sš^…\fbì*­â$Ãl•3MÁ«NàåZL6ØŒJÑ|ªÞÕ^iH%·õê\r\n"
+				+ "™åŠó,ß#qøÒÈÿ 7Ì{÷©ò˜’:Î~oJ§urf<ñÚ¤œ´Ž\r\n"
+				+ "f¢’9¹cWm	}ÌM_Mû;nP0ZÀ»UV\"»+ëU¿¶1£§=ëÕôëûy¶Ü@Ê3ò¶84’6†{^M5ËcƒV<‡nëOMbrÇ¯4ÕÁ¾…Hã–B	«?c’AŠ·ohm5(D\\‚Ý)ÜwfH·–9\fn?tPÙ5rc’qU.dÚ›Q¹ö§C®Åy%mäç=é«38 T„°;œsMi?î×òªQsÉ¨.dËmSúÔ¬åAÜ*>?LÐ@ü½;úÑî|³ýiÒ+‘ëFTr[ëR;s’8 ¦¢gÈ=»Ñ¸mÒ~€Þ·­ô‘n§ƒÍ.•bn¯UÏBpsNÑl%¿µUzÝ³Òc°{uÅ+^%-È<k|±ÛGh³n\r\n"
+				+ "3\\MÖ«$—$Åjø¾û}ÞÐÜç¨éº]¾\r\n"
+				+ "Íä õ#4Öƒo¹ÁÞj‘JjØ9ãÞ©6¥æ6<Îgñ¬Ëëù‹y˜R§®ßá>žôØ.®ÔÃ1=?þµx\\·Õž«jö4ä¼2·Þþy¦-â8Àn+=nŒ’ùØÆœgŠRáNîÂŸ/‘<Ëré˜ÿ  ¯Ò	ßv7¼ªÉ&ì¶î  #õ Mµ¹Sƒß*­©7Ô±%Ã±§9Ç ô§;FÃaCë»üÿ žjœÓº¿Êù=ÏzD¹-òóÏ®9Çò­;u±+ð¿,Ðp* vÎp0?Ò4­¿zŒžØ¨¤‘•²ãëïZ®†oÈ »»¹ŠÚÆßÍšWXà‰G.Ç Í}Kðsö ÕƒbñßŠ ´Õ§]ÓÚÞÙ±ˆ7<,‰– ŽP÷5å?²Ž¿ð?Â^3þÛøµ©\\[Ü–ÂWµ/.2rG9'>Ÿ}Ñá?ø7Ç)sà?XêVÁ Aa8r£§*9•m:>ÒŸ#ü\f½¼éÏ™#çMWö}ø±£ê(·~šîÕ_2ÞiN·Pªú“J÷€®#Ä~ Ó,¼y&wr°8á¿(nHÀ'¿µ}©\fÆ&Þ‚ AÆ8¯Œ>%Ã§x·ÇúÄZõºN¦_/÷N;är=s^t2¯a>jr;ªfo×´ŠÓ±©!+p{qRhÓ·­qèþ,ðž®I§tkù2ñT~ÿ C]_‡®ÚtYvOQé^\r\n"
+				+ "rŒlÏ>nî÷6n¥vš¯h· ô<Õ $Œ–ÊM‚»žÒ:	/£û’jtÃ&àsõ¬D%¤óóéZNÅ>cU±:=mæŽÔù¬2j_µ%Ä[Ñ¿:Ë»›1òzRÙ_íˆDªÖ… µ7,ÕY2®A¹zýzÈ±¸•xSŒÖ”7DŒ¥ÔW×BY$Þß8Í	³F] ¨g”¹[Ö¤³œù$oþ*,ú÷\r\n"
+				+ "ÉWšCò»ëQ[ß}ª1»çŠ­¨Ü‚I’,ŸZ§§^˜¥0“zJ†4hÉûÇ-žžõ^pq“N[¯-Øçó¨§6ÿ žhfëf·Ý=yX^J‘Ÿ¶0jåÕÖ3Þ³.¦ó¾AÇ½Kî=KQÝÆàúÓ&‘ä—r·Ëõª\feŠ^[åëI%ò«d·5[ƒî[ûLeÊƒúÔÊ¶—#eÜa—Ò°ÍñsÍ\\·¿Ü1XWðÅ³IçiQ¶?ˆÕ9~VÀ\"º5¿täšÁñ\r\n"
+				+ "¨—ý\".|Sô'Ì¨× É’«Ét¹%Z¨K;“µš£óÙIíNÅl¬[¸ºÀÁj¦âRþ`n>µ—FRFiŸku\b«ù	ìZ–ä‘°ŠŽ&füö¨D…¾cCNü¢¥Û ½I&˜ÔÔr;úé¾gË¹G,Á¸•Ê%ó\r\n"
+				+ ".\r\n"
+				+ "4Ìˆvâ¢VcÉ4­ÁóÔ‡¨²;· qõ«Uœ—W\r\n"
+				+ "ñšª…çm°©cè£9­¯	L·´£ÇÃ+‚®?‡v3ªÑàHc]Â¦×/¢·´gtTÊb\\«W/ñ\r\n"
+				+ "[¸‡H•V}Ÿ!Ë½(ŠÐlçuÏ\r\n"
+				+ "­Q¢¶ùÜ¶ZÖÒ|?}~‚mFrŸìæ¸¿‡šlð]5Ä—u!rÂFä×¡ZÌdÀ½¼XW¾;Q¸õZGã?	ßø+S6WŒZ6ŠLð}«\r\n"
+				+ "°ÒŽ:×Ð_<kâíš1æ(-ZùóQ±»ÓuI¬ïËd?ÄzûŸZñ¢Ô·ÜõªsB×%.êwíœö4æ™GÝ—’}j”“I¸!8Àõö>¿Jp¹7CZò˜&ËÞsHÜäö£Î‘[õéT$¼\"PªÙôæœ.Ø¡ŽH©éëÒšR¶¨\\Ë¡pÜÿ õ»Tfy>ñïÆ=:UdšX\r\n"
+				+ "Œ“žÔéffæ7äuÍh‘».Ç4lwL~ƒ¥G1„¬9ÏµBnÜv\r\n"
+				+ "øgÿ ­I\f»ÛÌrNÒÙƒvÐ™£fx?×ü“Si7×Ú%òj.©qcpŒn,çhÜc¦\r\n"
+				+ "šÎ7†ÞFQ““ùSÚu Ë»g\"ªö9äÑì^\fý¶þ>ø4‹\r\n"
+				+ "ÏÃ¯Úº1k–áÝâT*üdõ&¬éZäÞ'Õ'×ç‰bk©<ÇUä{W‹Û^Dì§ƒÎ8¯Tð#°Ó#f dŸZÚœžÌ‡Üêî·ElÁsPxG_µ¼º–Ê)öÍ2Bx`=qéïMž`èNk:óÃìÑÝ-ÜÖwqa¼´“l‰ížãÚµ½‹[ØïÉMÁ¿Z’É™Î­p©¯üRð’â\r\n"
+				+ "\r\n"
+				+ "5û%ûv›„ ûQ÷ú[žø“àÏÌ¶º>·ÜžMÉòåÏpýïÃ5piì)AïÐë¡b¼müjÌSƒž*²#¡ÚGçRÂWñÓšd±÷AÙp^ ´Þ|½j[‰p6íQÙ¨õªVz²dkÛLxoÒ®Áp6ÇšÍVØ0*äÀÆj´èNÄ²Ü±N,È\r\n"
+				+ "ÜPò±BÅEB³'-Š^A¾âÞ•\bnõA xäÜ£šº×Q…¨Ü.0zÔ¿\"º•¤»¸#ïüÕ]KåeÛ&w\f‰ûÅ=j m±åŸœÔv#–vlïüê£Ü…óÓ¥O?-ŸZÍÔ¦1#F½ûÒe\r\n"
+				+ "ŸUiÔ<â¢[ŽXUbTÓÒR¯– ¶š–u§Õ‹WùóžÕ@ÈÎÛŠqNŠbZbÝhhÍ;Œj–¡pL[ÿ ®„›p;Úª_^C¸éN\"õ25 <âÇŒ÷ª2Êá©uDO'\r\n"
+				+ "®&Ü»³Þ´Ø”/˜G4ä!ùcQ3ŒñJ†ëRÛ\r\n"
+				+ ":“æšIn3Q]^Gòj—ü$©‘3°}ïÊ€±£# ›sQnAýkŸÓuÍcT¹š	FÕVÂæ<q_®kcN‚çiÄÿ *ŽnƒB¦£;ê\r\n"
+				+ "hmFÅ@|Àýý1MÑì|E>ºï$\r\n"
+				+ "Ö¯€ª&ÉÏ®1Å^†ÙQ÷ºc=}ëCO¸´Óæ[›ËˆãûÌàTÞû\r\n"
+				+ "èmè>·Ó7O#gvOÒ­®—ei6ø\r\n"
+				+ "n<åß5…ñ‹Â–ëö-áõ+ž‹’ïçÜöª+ñ#Å§>|zD¹ùwJGò¦OÚ½Íïx§HÐâ-{{;x_0gò¯%ñÏÅ;}E•fÏ\r\n"
+				+ "œäd×Q«x;Ã~³{ë¹f»œä½ÅÌ›˜ñúWš4‘ø£_UŽ±næ ½OçIšÆÛ×ƒ/õmfÞ&Ó­Þü{yÅw¾ð‘½‘U÷JØüë'Âz]½¼pR4\r\n"
+				+ "æ b½—á¾µð“Â-ö·«O}sŒ‹}>ÔÊß_J5¹6g¨Ê€\r\n"
+				+ "Ç½yÇ?\r\n"
+				+ "F„x‚Æ,ï??Šõ;Ð×üÇ‘Y:•¥¦³a&›}`êG>µãGÝg·RïCæô»UlI’ß^¿ç­*Ã>f?ýz»ãÝxS\\–ÖT>ZœÆHç¬†vwÂÊ:zõõë]–Ù£‚WÙ–7´N65*JCeÉéÇ½gùÞhÏL¾•6Vyy\r\n"
+				+ "ŽsZ­Q7ì[†i%Pž=iÂ\\Žìñþ{ÕIee™¢‡•ë¸w÷¤óR{0aÆyÿ ?…CµÌœû–üÄÁ=?½ŽK{Õ*zóÏj­,»†r)\\ž >µ\r\n"
+				+ "™ÝßBàrÿ :·¹ö¨®¦Ü69ãuFóH¯´@üê7˜ÈpäƒR»±›}‰-Z8.Òa÷C®~õz† ×ô{$½ÐÇÚ­äù¦±•ðÃÔÆO~¿)àæ¼®=èÊÜz€?Ïùæ½{Á·ý·\\`ýkHKPNÎÆ¾—â];ZGŠÚY#ž/õö—1˜åˆÿ ´§ùô«ö7[$÷¬ýGH²½)w, OÜF{g¸ö5%…Ê± ut£M7;mE¸€1<ç×¥7Ä\r\n"
+				+ "|ãDòüO C3q‹…ù%ð%äþ9‡gR˜µ¿ùò=+K)tÚwLä›á÷Ä\r\n"
+				+ "â‡?\r\n"
+				+ "Ì1¯WˆÓÌ_÷Dª7cðßø\\Z×„Ú8~*|7¿ÑóÃjV‡íVŽyèÊ>_¡&»••1éÞ–9\\œoûÝG¯Ö¶{êÑŸáïxcÆVÂïÃ¾!´¼ù’9@u>…Ì?*¿\f\r\n"
+				+ "ç5ÏxàßÃ\\}ºûÃËgvä¿Òdû4È}rœÄÍ0ü`ø [;³ã\r\n"
+				+ ",g÷wcÔ\"F&ïî}©«õ”^Ï_3ÐpÎ¬Û–'“\\>ñãá–ªæÃU×ÿ ±¯T|öZäfÙÔ÷å¾_×ò®¾ÂúÊþ;N¼†á;<3+)ú08«Ò×„–æ“8“ÅU1Ë<¥”ŒŠ¬uG9B¸ö§EzÑ.ìÒº&Ì²\"‘W­;¤\fçŠ‡í$|ùÓ#¼flÿ ×£aYt%º·.ÃiíT§ÓûÈ*´óz ’è¿ì-\r\n"
+				+ "“Û9JòÁd¯áZ3HOSÖ«I¸1ëPÑiœõý©…€Q÷ª¼qÉælzÚ¾„H¥‰úVd°<d°©êÔåªevêeÝÀ)ªWšŠÄ0W¨ï©n[µŒ-ùÖ§~f™Šô¨¯u v#uUó7eœS±;ì&A|±¡å+Àèá–òQ+’jÔ^ÔY¶´_ž*Ÿ–š•#lœæ¥fUo™{V½¿ƒ¦òw¹#ßÍx—_Ñ¼7¸ê·„a¶€‹¸“øTu\r\n"
+				+ "ôD·6qÞ)Žcò·½Ak£Úié¶ßyôÑ·ÌÖ#|C¼ºrºƒïî”p%‘|µ>ã?ýjHî~)j­¾;-?Oþš9þB©Ù\r\n"
+				+ "«$1AneÇÖ¨^x®(eû.‹lnçÎ6Æx_©ªÿ ïoÏÚ|Oâ««£ÿ <býÚWA¤èZ~†ÂÐ \fkÊÑjcÁ¢|P×ÜIq®Ã¥ÆOÝ…DÇ¥tÞø%áf›íúì×šœÇ’onK/©ù~ïé[&–Ïóº÷®ŠÚ!aUi¥©-¾„:v‡£èÖâßNÓ¡… @‘ŠŽöxáŒËÒ®ÎÑíùqþ=ñZfŸ#4» sïWk‚<ÿ ãŒ¯ Î—¦2’ÿ /Br{ÿ Jó++ÍjÞõn-îž7à,ãj÷Š5¦Õ59.$ŽI³×ÞO[ÝFÆì»*ñÛ þDþU\r\n"
+				+ "õ5Žº§ð“@¾×®£«^Í<c…99Å{”Özd+X@ô®KÁu¯†ô(¢ÜãW®5ryG¯6¬å%©ÙN6èXšW\r\n"
+				+ "ƒYÎÐÜSÆkYØ8Ãþu—ª¦	>üVrBkK˜ü ŒôCq	ÙsÍŒdt>ÕóåÝ•Þ™<¶·ÈÈñÈTƒÉ¯¨´‹¯9|–=«Ë¾=|:Þ/Š4ð6âá@êÝ¿Ãñ®Š2³µÎ±ûG–©d\\°À>ù©Ò\\E»pôëÔTr$‘“)#§¯jDh•0ãðÝßüãó­®‘Ç)&<Hàù ýî:Ô	a¤–Î3Ï¯ZŒ|ø#©íK¶'‹Í ç×'zÖ.÷9›¾ ’d˜›†ÆsR£,@.ï›n*0ÓnÇ”y^[çÐyóŽ8?\\ƒÒ•‡ÐRDÍŽøÈÇóýiI8;Ž}j4e\fÎÏËdîÏ§oóÒ‘dÜqŸÖ‚T“,#&ÀNzû\r\n"
+				+ "ô_‡Ò]Û­¹Cò&	=Èà×š’æ`ò:cëŠ×ð–­>›xgùI<çÛÿ ÕOáw§²}¡Z,)ÍfOs.“?Û<¶xHùÂu_z­¦x’Êøý”Ê«0þýïqëW¼ÍÃ¹â»\"ôÐÑy/…uˆgQ5¤Ë\"·Ýu9»K)Ä‘ƒšñØ ¾Ò.ÿ ´¼7*E1}ÒÃ'ú¹½÷OûCñ®«Eø¿¡[Nšw‹á¸Ñ®$ Ë7QæÞ\\u+2åHç¾:ÖÑŽõ¦líÅ9&a Ö}ž¯§ê0¬öð\\FÃ+%¼«\"ŸÅMN³¸ëÏ4ý	Ñš~nåéQ1ËncøS!•¹#4®¹;óT‘.ì5-#D×¢ëú-¥ò‚òÙ%ÛôÜ+•¾ýŸ¾Êæ}L»ÑfÎ|ýQš†â¿¥u«+u4ÿ 8ìçëIÂïSHÎQVLà§øgãýmÞøÛ¬\"»­wcónß…,Wß´V’\r\n"
+				+ "Í7„u„ÛÆó%£þaq]´Ò`àÕy¶`ç<¥©2Oúò±ÈÅñ_âÇˆ>ê2(<É¢ê1\\ã½iÑþÑ^´r<I¤øƒFnë©h®?T$WM#ƒÀ§%Äßß8÷9£ÞèOºþÏâfèÿ þëÁ›ñNË—ù$õþþ+£´¿³Ô¢ó´»Èn•¿ŠÚUÅs\\î±àÿ ëñ2kžÓn·}ó-’?Ž3úÖïÀ?„7s}¦×Âï§Iýí.úh3ø+bEh&wÓ<™*ñG<Š†Y3ÍpàÕ•Î‘ñ3ÆáO\r\n"
+				+ "5³ ƒƒTæð'´ü®•ñã\\Á?*ßZG9Éí“Jö{ *{3Ðgeq‚k>úu†\"IÈ¸I£øÙ§î¿4Û¾3‹Í\fÈïƒYWþ øÖ\\Ãs­xm¿Ý´_óš.‡ÊÖ¨ëu=L9;+êåúæ¹™æø™x\r\n"
+				+ "Iâ\bGý2´ÉŸõ¥µðÖ¥<‚çYñÅÈê6áüRdJ6Ô¹¬ëwö±çOÑå»ôT`?SYÑk?¯TCgàÛ4'îý¢÷‘õÅnDŠÃ=ñ[¾Ò™¥ó¦\\PöÔzt1t-\r\n"
+				+ "ã		puÐãœÛ¼Ä~ÎµÏ‚¾!jç~±ñ)à Ì.Á#ÏýöZºeD@ ©%”¬\\QæC½Ò±Ç_ü0ÓÂ¹¾ñ·ˆn‰vmL¨ÏÑ1U­¼#§XF\r\n"
+				+ "bØû¯!Ü3]5Ñ{‰v–«PYÇ2d¦îúœ£Z•áSô©í´ÛÉV1]LZš¾öJ»\r\n"
+				+ "¬&ÕˆTÊä«]Øä Ðîî%Øc8­Ý?ÃñB ‘kAQR]ÁHá³Ò¡Eî2HãŽß\r\n"
+				+ "£š™îây®[ñ¦ƒ¡Ç¿QÕcCœmêJæï>-\\ê™Â~¸»Çü¼Hv!üúÕZÃµŽÃ[Öb¶·f2`ú“Ò¼CâŸŽÖþñìaŸ~Î¿7½\\ñ–¯âÝB)#×õ˜£¶Öˆ~aŽç¯ÿ ª¼ÞîÍ^ïs.w7}¿•ìZÛA†ëÎGQÉëôë]×Â»Ôµïnag<¨®>ÚÚ8Ë‡Ž¾½?ýUê,bÓ´¸˜'ÌGÏõ¬+»BÌ¸|Zãj*#©éP}¯y8=ë+íe$ž*EºÙÓ­ys–‡¡ÿÙ\r\n"
+				+ "--MIME_boundary--\r\n"
+				+ "\r\n"
+				+ "";
+		
+		System.out.println(getFirstJsonFromString(te));
+		final String text = "POST /65457-5456-5457-987456 HTTP/1.1"; 
+		final String extract = text.substring(text.indexOf("/") + 1, text.indexOf(" HTTP"));
+		
+		System.out.println("extract: " + extract);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
 		String aux = "8591641950";
 		String temp = "";
 
-		System.out.println(" o que é cart�o " + toHEX(aux));
+		System.out.println(" o que Ã© cartão " + toHEX(aux));
 
 		String n5 = "1237";
 		if (n5.matches("^(?=\\d{3}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
@@ -1759,7 +2042,7 @@ public class Utils {
 //			long fclong = Long.parseLong(Cartao);
 //			String hexAbatrack = Long.toHexString(longAbatrack);
 //			String hexWigan = hexAbatrack.substring(hexAbatrack.length()-4);
-////			olhar a posição pegar exatamente o mesmo if
+////			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
 //			String fcWiegand = "";
 //			String temp = "";
 //			fcWiegand = hexAbatrack.substring(0, 4);
@@ -1779,7 +2062,7 @@ public class Utils {
 //	        return fcwiegandtg;
 //	       
 //		}catch (Exception e) {
-//			System.out.println("N�o foi poss�vel converter cart�o " + Cartao + "\n motivo " + e.getMessage());
+//			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
 //			return Cartao;
 //		}
 //	

@@ -79,7 +79,7 @@ public class HibernateUtil {
 
 	public static boolean executando = false;
 	public static boolean executandoPing = false;
-	
+
 	public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	static {
@@ -127,7 +127,7 @@ public class HibernateUtil {
 	}
 
 	public static SessionFactory getSessionFactory() {
-		if(sessionFactory != null && !sessionFactory.isOpen())
+		if (sessionFactory != null && !sessionFactory.isOpen())
 			sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
 		return sessionFactory;
 	}
@@ -265,13 +265,85 @@ public class HibernateUtil {
 
 		return result;
 	}
-	
+
 	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery) {
 		return getResultListCount(entityClass, namedQuery, null);
 	}
 
+	public static synchronized List<LogPedestrianAccessEntity> buscaLogsDeAcessoPaginados(String namedQuery,
+			HashMap<String, Object> args, Integer inicio, Integer quantidade) {
+		List<LogPedestrianAccessEntity> resultList = null;
+
+		if (Main.servidor != null) {
+			if (!Main.servidor.isConnected())
+				return null;
+
+			verificaExecucaoDePing();
+			try {
+
+				TcpMessageTO req = new TcpMessageTO(TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS);
+				req.getParans().put("namedQuery", namedQuery);
+				req.getParans().put("args", args);
+				req.getParans().put("inicio", inicio);
+				req.getParans().put("quantidade", quantidade);
+
+				executando = true;
+				outToServer.writeObject(req);
+				outToServer.flush();
+
+				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+				resultList = (List<LogPedestrianAccessEntity>) resp.getParans().get("list");
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				executando = false;
+			}
+
+		} else {
+			Session session = getSessionFactory().getCurrentSession();
+			if (session.getTransaction() == null || !session.getTransaction().isActive())
+				session.beginTransaction();
+
+			try {
+				Query<LogPedestrianAccessEntity> query = session.createNamedQuery(namedQuery,
+						LogPedestrianAccessEntity.class);
+
+				if (args != null) {
+					for (Map.Entry<String, Object> entry : args.entrySet()) {
+						query.setParameter(entry.getKey(), entry.getValue());
+					}
+				}
+
+				if (inicio != null) {
+					query.setFirstResult(inicio);
+				}
+
+				if (quantidade != null) {
+					query.setMaxResults(quantidade);
+				}
+
+				resultList = query.getResultList();
+				session.getTransaction().commit();
+
+			} catch (Exception e) {
+				resultList = null;
+				session.getTransaction().rollback();
+				e.printStackTrace();
+
+			} finally {
+				session.close();
+			}
+		}
+		return resultList;
+	
+	}
+
 	@SuppressWarnings("unchecked")
-	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery, HashMap<String, Object> args) {
+	public static synchronized Integer getResultListCount(Class entityClass, String namedQuery,
+			HashMap<String, Object> args) {
 		Integer count = 0;
 
 		if (Main.servidor != null && !DeviceEntity.class.equals(entityClass)) {
@@ -310,16 +382,16 @@ public class HibernateUtil {
 
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery);
-				
-				if(args != null && !args.isEmpty()) {
+
+				if (args != null && !args.isEmpty()) {
 					args.forEach(query::setParameter);
 				}
-				
+
 				Long qtd = (Long) query.getSingleResult();
 				if (qtd != null) {
-					count = qtd.intValue();					
+					count = qtd.intValue();
 				}
-				
+
 				session.getTransaction().commit();
 
 			} catch (Exception e) {
@@ -339,7 +411,7 @@ public class HibernateUtil {
 
 		if (Main.servidor != null && !DeviceEntity.class.equals(entityClass)) {
 			if (!Main.servidor.isConnected()) {
-				return null;				
+				return null;
 			}
 
 			verificaExecucaoDePing();
@@ -386,25 +458,25 @@ public class HibernateUtil {
 		}
 		return resultList;
 	}
-	
+
 	public static synchronized <T> List<?> buscaListaDevicesDoServidor(Class<T> entityClass, String namedQuery) {
 		List<?> resultList = null;
 
 		if (Main.servidor != null) {
-			if (!Main.servidor.isConnected()) {				
+			if (!Main.servidor.isConnected()) {
 				return null;
 			}
 
-			verificaExecucaoDePing(); 
+			verificaExecucaoDePing();
 			try {
 				String classe = entityClass.getCanonicalName();
 
 				TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ALL_DEVICES_FROM_SERVER);
 				req.getParans().put("entityClass", classe);
 				req.getParans().put("namedQuery", namedQuery);
-				
+
 				executando = true;
-				
+
 				outToServer.writeObject(req);
 				outToServer.flush();
 				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
@@ -541,19 +613,19 @@ public class HibernateUtil {
 
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery, entityClass);
-				
-				if(args != null) {
+
+				if (args != null) {
 					for (Map.Entry<String, Object> entry : args.entrySet()) {
 						query.setParameter(entry.getKey(), entry.getValue());
-					}					
+					}
 				}
 
 				if (inicio != null) {
-					query.setFirstResult(inicio);					
+					query.setFirstResult(inicio);
 				}
 
 				if (quantidade != null) {
-					query.setMaxResults(quantidade);					
+					query.setMaxResults(quantidade);
 				}
 
 				resultList = (List<?>) query.getResultList();
@@ -664,8 +736,9 @@ public class HibernateUtil {
 		} else {
 			try {
 				List<?> resultList = getResultListWithParams(entityClass, namedQuery, args);
-				if (resultList != null && !resultList.isEmpty())
-					obj = resultList.get(0);
+				if (resultList != null && !resultList.isEmpty()) {
+					obj = resultList.get(0);					
+				}
 
 			} catch (Exception e) {
 				obj = null;
@@ -1151,16 +1224,16 @@ public class HibernateUtil {
 					matchedAthleteAccess = trataPedestreQRCode(codigo);
 				} catch (QrcodeVencidoException e) {
 					if (createNotification)
-						Utils.createNotification("QRCode do usu�rio expirado.", NotificationType.BAD, foto);
+						Utils.createNotification("QRCode do usuário expirado.", NotificationType.BAD, foto);
 					return new Object[] { VerificationResult.NOT_FOUND, userName, matchedAthleteAccess };
 				}
 
 			} else {
-
 				Long codigoUsuario = Long.valueOf(codigo.trim());
 
-				if (Utils.isNullOrZero(codigoUsuario))
-					return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
+				if (Utils.isNullOrZero(codigoUsuario)) {
+					return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };					
+				}
 
 				if (origem != null && origem.equals(Enumeradores.VIA_TECLADO)) {
 					// tenta encontrar pela matricula
@@ -1194,7 +1267,7 @@ public class HibernateUtil {
 			if (matchedAthleteAccess == null) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Usu�rio de C�digo " + codigo + " n�o encontrado.", NotificationType.BAD,
+					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD,
 							foto);
 
 				return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
@@ -1221,7 +1294,7 @@ public class HibernateUtil {
 
 				if (isPedestreNaoPossuiRegras(matchedAthleteAccess)) {
 					if (createNotification) {
-						Utils.createNotification(userName + " n�o possui regras.", NotificationType.BAD, foto);
+						Utils.createNotification(userName + " não possui regras.", NotificationType.BAD, foto);
 					}
 					return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 				}
@@ -1229,32 +1302,33 @@ public class HibernateUtil {
 
 			matchedAthleteAccess.setOrigemCatraca(origem);
 
-			if(matchedAthleteAccess.getStatus().equals("INATIVO")) {
+			if (matchedAthleteAccess.getStatus().equals("INATIVO")) {
 				System.out.println("chegou no pedestre ");
-				
-				Utils.createNotification(" Acesso Negado, usu�rio: " +userName +  "Inativo", NotificationType.BAD, foto);
-				motivo = "Usu�rio inativo.";
+
+				Utils.createNotification(" Acesso Negado, usuário: " + userName + "Inativo", NotificationType.BAD,
+						foto);
+				motivo = "Usuário inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
 
-			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
+			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado())
+					|| Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
 
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedAthleteAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
 
 				return new Object[] { VerificationResult.ALLOWED, userName, matchedAthleteAccess };
 			}
-			
+
 			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == 3) {
 				permitidoSensor = false;
 			}
-			
-			
+
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
-				System.out.println("o que é equipament" +equipament );
-				System.out.println("o que é pessoa equipamento" +matchedAthleteAccess.getEquipamentos() );
+				System.out.println("o que Ã© equipament" + equipament);
+				System.out.println("o que Ã© pessoa equipamento" + matchedAthleteAccess.getEquipamentos());
 				if (createNotification)
-					Utils.createNotification(userName + " n�o permitido nesse equipamento.", NotificationType.BAD,
+					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
 							foto);
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedAthleteAccess };
 			}
@@ -1262,7 +1336,7 @@ public class HibernateUtil {
 			LogPedestrianAccessEntity ultimoAcesso = buscaUltimoAcesso(matchedAthleteAccess.getId(),
 					matchedAthleteAccess.getQtdAcessoAntesSinc());
 
- 			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
+			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
 					&& Boolean.FALSE.equals(matchedAthleteAccess.getHabilitarTeclado())) {
 				permitido = false;
 
@@ -1275,25 +1349,28 @@ public class HibernateUtil {
 				permitidoRetornar = true;
 				System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
 			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
-				if(matchedAthleteAccess.getQrCodeParaAcesso() == null ) {
+				if (matchedAthleteAccess.getQrCodeParaAcesso() == null) {
 					usaUrna = true;
 				}
-				
 
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
-					if (matchedAthleteAccess.getQuantidadeCreditos() != null || isPermitidoPedestreRegra(matchedAthleteAccess)) {
-						permitido =   matchedAthleteAccess.getQuantidadeCreditos() > 0   
+					if (matchedAthleteAccess.getQuantidadeCreditos() != null
+							|| isPermitidoPedestreRegra(matchedAthleteAccess)) {
+						permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
 								&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 										.getValidadeCreditos().getTime() >= new Date().getTime());
-						
-						//fazer um for validando se existe regra livre ou com quantidade veazia, só assim libero
 
-						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l) 
-								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null  && matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
+						// fazer um for validando se existe regra livre ou com quantidade veazia, sÃ³
+						// assim libero
+
+						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l)
+								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null
+										&& matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos()
+												.equals(1L)))
 								&& !Integer.valueOf(18).equals(origem) && usaUrna)
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
-						
-						if(isPermitidoPedestreRegra(matchedAthleteAccess)) {
+
+						if (isPermitidoPedestreRegra(matchedAthleteAccess)) {
 							permitido = true;
 						}
 
@@ -1326,9 +1403,10 @@ public class HibernateUtil {
 					 * verificar creditos
 					 */
 
-					// verifica se tem créditos para passar
-					
-					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0 && !isPermitidoPedestreRegra(matchedAthleteAccess)
+					// verifica se tem crÃ©ditos para passar
+
+					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
+							&& !isPermitidoPedestreRegra(matchedAthleteAccess)
 							&& matchedAthleteAccess.getCardNumber() != null
 							&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
 									.getValidadeCreditos().getTime() >= (data != null ? data : new Date()).getTime());
@@ -1339,7 +1417,6 @@ public class HibernateUtil {
 					/*
 					 * verificar turno/escala
 					 */
-				 
 
 					TipoEscala tipo = TipoEscala.valueOf(matchedAthleteAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
@@ -1364,12 +1441,12 @@ public class HibernateUtil {
 						// pode acessar
 						permitido = true;
 					} else {
-						// n�o pode acessar
+						// não pode acessar
 						permitido = false;
 					}
 
 				} else if (acessoRestrito) {
-					// verifica se há algum log de acesso para este aluno hoje
+					// verifica se hÃ¡ algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedAthleteAccess.getId());
 					List<LogPedestrianAccessEntity> list = (List<LogPedestrianAccessEntity>) HibernateUtil
@@ -1385,7 +1462,7 @@ public class HibernateUtil {
 			}
 
 			if (!permitidoSensor) {
-				// para lógica de urna
+				// para lÃ³gica de urna
 				if (origem != Origens.ORIGEM_LEITOR_2)
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
 				else
@@ -1393,35 +1470,35 @@ public class HibernateUtil {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cart�o na urna.", NotificationType.BAD,
+						Utils.createNotification(userName + " deve depositar cartão na urna.", NotificationType.BAD,
 								foto);
-						motivo = "Deve depositar cart�o na urna.";
+						motivo = "Deve depositar cartão na urna.";
 
 					} else {
-						Utils.createNotification(userName + " n�o deve depositar na urna", NotificationType.BAD, foto);
-						motivo = "N�o deve depositar cart�o na urna.";
+						Utils.createNotification(userName + " não deve depositar na urna", NotificationType.BAD, foto);
+						motivo = "Não deve depositar cartão na urna.";
 					}
 				}
 
 			} else if (!permitido) {
-				// para lógica de créditos finalizados
+				// para lÃ³gica de crÃ©ditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o permitido.", NotificationType.BAD, foto);
-					motivo = "N�o permitido.";
+					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
+					motivo = "Não permitido.";
 				}
 
 			} else if (!permitidoRetornar) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o pode retornar agora.", NotificationType.BAD, foto);
-					motivo = "N�o pode retornar agora.";
+					Utils.createNotification(userName + " não pode retornar agora.", NotificationType.BAD, foto);
+					motivo = "Não pode retornar agora.";
 				}
 
 			} else if (permitidoHoje) {
 
-				// para lógicas do pedestre:
-				// - horário
+				// para lÃ³gicas do pedestre:
+				// - horÃ¡rio
 				// - periodo
 				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -1442,8 +1519,8 @@ public class HibernateUtil {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
 					if (createNotification) {
-						Utils.createNotification(userName + " n�o permitido.", NotificationType.BAD, foto);
-						motivo = "N�o permitido.";
+						Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
+						motivo = "Não permitido.";
 					}
 				}
 
@@ -1463,14 +1540,14 @@ public class HibernateUtil {
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
 				if (createNotification)
-					Utils.createNotification(userName + " j� registrado hoje.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " já registrado hoje.", NotificationType.BAD, foto);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			resultadoVerificacao = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Falha ao processar requisição de acesso. " + e.getMessage(),
+				Utils.createNotification("Falha ao processar requisiÃ§Ã£o de acesso. " + e.getMessage(),
 						NotificationType.BAD, foto);
 		}
 
@@ -1510,23 +1587,21 @@ public class HibernateUtil {
 		HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
 
 	}
-	
+
 	private static boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
-		if(pedestre.getPedestreRegra() == null ) {
+		if (pedestre.getPedestreRegra() == null) {
 			return false;
 		}
-		
-		
-		for(PedestreRegraEntity pedestreRegra :pedestre.getPedestreRegra()) {
-			if	(pedestreRegra.getQtdeDeCreditos() != null 
-					&& pedestreRegra.getQtdeDeCreditos() > 0 
-					&& (pedestreRegra.getRemovidoNoDesktop() == null 
-						|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
+
+		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
+			if (pedestreRegra.getQtdeDeCreditos() != null && pedestreRegra.getQtdeDeCreditos() > 0
+					&& (pedestreRegra.getRemovidoNoDesktop() == null
+							|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
 				return true;
-			} 
-			
+			}
+
 		}
-		
+
 		return false;
 	}
 
@@ -1575,7 +1650,7 @@ public class HibernateUtil {
 
 	private static Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
 
-		// recupera última entrada da pessoa
+		// recupera Ãºltima entrada da pessoa
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("ID_PEDESTRE", matchedAthleteAccess.getId());
 		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
@@ -1623,19 +1698,18 @@ public class HibernateUtil {
 
 	@SuppressWarnings("unchecked")
 	public static List<PedestrianAccessEntity> buscaPedestresAtivosComCartao() {
-		
+
 		PedestrianAccessEntity acesso = null;
 		List<PedestrianAccessEntity> acessos = null;
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 		try {
-			TypedQuery<PedestrianAccessEntity> query = session.createQuery(
-					"select obj from PedestrianAccessEntity obj " 
-							+ "where obj.cardNumber is not null "
-							+ "and obj.cardNumber <> '' "
-							+ "and (obj.removido is null or obj.removido = false) "
-							+ "order by obj.id desc",
+			TypedQuery<PedestrianAccessEntity> query = session
+					.createQuery(
+							"select obj from PedestrianAccessEntity obj " + "where obj.cardNumber is not null "
+									+ "and obj.cardNumber <> '' "
+									+ "and (obj.removido is null or obj.removido = false) " + "order by obj.id desc",
 							PedestrianAccessEntity.class);
 
 			acessos = query.getResultList();
@@ -1651,25 +1725,22 @@ public class HibernateUtil {
 			session.close();
 		}
 
-
 		return null;
 
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
 	public static List<PedestrianAccessEntity> buscaPedestresAtivosComBiometria() {
-		
+
 		List<PedestrianAccessEntity> acessos = null;
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 		try {
 			TypedQuery<PedestrianAccessEntity> query = session.createQuery(
-					"select obj from PedestrianAccessEntity obj " 
-							+ "where obj.removido is null or obj.removido = false " 
-							  + "order by obj.id asc",
-							  PedestrianAccessEntity.class);
+					"select obj from PedestrianAccessEntity obj "
+							+ "where obj.removido is null or obj.removido = false " + "order by obj.id asc",
+					PedestrianAccessEntity.class);
 
 			acessos = query.getResultList();
 			session.getTransaction().commit();
@@ -1684,7 +1755,6 @@ public class HibernateUtil {
 			session.close();
 		}
 
-
 		return null;
 
 	}
@@ -1698,12 +1768,13 @@ public class HibernateUtil {
 
 				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
 			return true;
-			
-		}
-//		Se origem diferentes das que n�o são permitidas como exemplo, biometria.
 
-//			verificar o m�ximo poss�vel para ver o que n�o pode estar contido na mesma informação
-		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null && Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
+		}
+//		Se origem diferentes das que não sÃ£o permitidas como exemplo, biometria.
+
+//			verificar o máximo possível para ver o que não pode estar contido na mesma informaÃ§Ã£o
+		if (origem == Origens.ORIGEM_LEITOR_1 && ultimoAcesso != null
+				&& Tipo.ENTRADA.equals(ultimoAcesso.getDirection())) {
 			return false;
 		}
 		if (origem == Origens.ORIGEM_LEITOR_2
@@ -1730,7 +1801,7 @@ public class HibernateUtil {
 		LogPedestrianAccessEntity lastAccess = (LogPedestrianAccessEntity) HibernateUtil
 				.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
-//		buscar pelo dia de "hoje" e confefir se tem datas, j� dar entrada
+//		buscar pelo dia de "hoje" e confefir se tem datas, já dar entrada
 		if (qtdAcessosAntesSinc != null && qtdAcessosAntesSinc > 0 && lastAccess == null) {
 
 			lastAccess = new LogPedestrianAccessEntity();
@@ -1855,7 +1926,7 @@ public class HibernateUtil {
 		if (equipament == null)
 			return true;
 
-		// n�o tem bloqueo por equipamento
+		// não tem bloqueo por equipamento
 		if (equipamentos == null || equipamentos.isEmpty())
 			return true;
 
@@ -1951,23 +2022,23 @@ public class HibernateUtil {
 
 		VerificationResult resultadoVerificacao;
 
-		// verifica se há um dia liberado para acesso
+		// verifica se hÃ¡ um dia liberado para acesso
 //		if (Utils.isDiaLivre(matchedAthleteAccess.getDiasLivres())) {
 //			resultadoVerificacao = validado;
 //			logAccess.setStatus("ATIVO");
 //			aniversariante = Utils.isBirthday(matchedAthleteAccess);
 //			if (createNotification) {
 //				Utils.createNotification(userName + " permitido" 
-//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância." : "." ), 
+//						+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia." : "." ), 
 //						aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 //			}
 //		}
 //		else {
 
-		// verifica se há um dia permitido
+		// verifica se hÃ¡ um dia permitido
 		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
 
-			// verifica se está num horario permitido
+			// verifica se estÃ¡ num horario permitido
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
@@ -1976,21 +2047,21 @@ public class HibernateUtil {
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem))
 					Utils.createNotification(
 							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância."
+									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerÃ¢ncia."
 											: "."),
 							aniversariante ? NotificationType.BIRTHDAY : NotificationType.GOOD, foto);
 			} else {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification)
-					Utils.createNotification(userName + " fora do horário.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horÃ¡rio.", NotificationType.BAD, foto);
 			}
 
 		} else {
 			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
 			logAccess.setStatus("INATIVO");
 			if (createNotification)
-				Utils.createNotification(userName + " n�o permitido hoje.", NotificationType.BAD, foto);
+				Utils.createNotification(userName + " não permitido hoje.", NotificationType.BAD, foto);
 		}
 		// }
 
@@ -2473,7 +2544,7 @@ public class HibernateUtil {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("usu�rio j� cadastrado: " + " " + confereID.getName() + e.getMessage());
+			Main.mainScreen.addEvento("usuário já cadastrado: " + " " + confereID.getName() + e.getMessage());
 		}
 		return null;
 	}
@@ -2596,7 +2667,7 @@ public class HibernateUtil {
 			query.setParameter("LOGIN_NAME", loginName);
 			query.setParameter("PASSWORD", password);
 
-			List<UserEntity> resultList = query.getResultList(); 
+			List<UserEntity> resultList = query.getResultList();
 			if (resultList != null && !resultList.isEmpty()) {
 				usuario = resultList.get(0);
 			}
@@ -2951,11 +3022,11 @@ public class HibernateUtil {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static synchronized List<DeviceTO> getListDeviceFromServer() {
-		List<DeviceTO>  result = null;
-		if(Main.servidor == null || !Main.servidor.isConnected()) {
+		List<DeviceTO> result = null;
+		if (Main.servidor == null || !Main.servidor.isConnected()) {
 			return null;
 		}
 		verificaExecucaoDePing();
@@ -2975,23 +3046,23 @@ public class HibernateUtil {
 		}
 		return result;
 	}
-	
+
 	public static synchronized void liberarAcessoNoServidor(String indentifier, String sentido) {
-		if(Main.servidor == null || !Main.servidor.isConnected()) {
+		if (Main.servidor == null || !Main.servidor.isConnected()) {
 			return;
 		}
-		
+
 		verificaExecucaoDePing();
-		
+
 		try {
 			TcpMessageTO req = new TcpMessageTO(TcpMessageType.LIBERAR_ACESSO_DEVICE_NO_SERVIDOR);
 			req.getParans().put("indentifier", indentifier);
 			req.getParans().put("sentido", sentido);
-			
+
 			executando = true;
 			outToServer.writeObject(req);
 			outToServer.flush();
-			
+
 			ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
 			reader.readObject();
 
@@ -3000,7 +3071,7 @@ public class HibernateUtil {
 		} finally {
 			executando = false;
 		}
-		
+
 	}
 
 	public static synchronized <T> Object getSingleResultByIdTemp(Class<PedestrianAccessEntity> entityClass, Long id) {
@@ -3077,9 +3148,7 @@ public class HibernateUtil {
 //			antes o count
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
-					+ "	where  p.tipo = 'VISITANTE' "
-					+ " and p.cardNumber != null "
-					+ " and p.cardNumber != '' "
+					+ "	where  p.tipo = 'VISITANTE' " + " and p.cardNumber != null " + " and p.cardNumber != '' "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3120,13 +3189,13 @@ public class HibernateUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeGiro(Date data) {
-//		Parou na apagaDadosDeGIRO O QUE É DATA?
+//		Parou na apagaDadosDeGIRO O QUE Ã‰ DATA?
 
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-		// TODO : voltar a validação da data de cadastro, porém para maior que
+		// TODO : voltar a validaÃ§Ã£o da data de cadastro, porÃ©m para maior que
 		// a data calculada a baixo
 
 		Calendar c = Calendar.getInstance();
@@ -3134,13 +3203,9 @@ public class HibernateUtil {
 		c.add(Calendar.DATE, -1);
 
 		try {
-			Query q = session.createQuery(
-					"update PedestrianAccessEntity p " 
-							+ "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true "
-							+ "where p.qtdAcessoAntesSinc > 0 "
-							+ " and p.cardNumber != null "
-							+ " and p.cardNumber != '' "
-							+ "	and p.dataCriacao >= :DATA ");
+			Query q = session.createQuery("update PedestrianAccessEntity p "
+					+ "set p.qtdAcessoAntesSinc = 0, p.editadoNoDesktop = true " + "where p.qtdAcessoAntesSinc > 0 "
+					+ " and p.cardNumber != null " + " and p.cardNumber != '' " + "	and p.dataCriacao >= :DATA ");
 			q.setParameter("DATA", data);
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3153,7 +3218,7 @@ public class HibernateUtil {
 		}
 
 	}
-	
+
 	public static void apagaQuantidadeAcessosAsinc() {
 		System.out.println("Entrou no apagaQuantidadeAcessosAsinc");
 
@@ -3161,13 +3226,9 @@ public class HibernateUtil {
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();
 
-
 		try {
-			Query q = session.createQuery(
-					"update PedestrianAccessEntity p "
-							+ "set p.qtdAcessoAntesSinc = 0 "
-							+ "where p.qtdAcessoAntesSinc > 0 "
-					);
+			Query q = session.createQuery("update PedestrianAccessEntity p " + "set p.qtdAcessoAntesSinc = 0 "
+					+ "where p.qtdAcessoAntesSinc > 0 ");
 			q.executeUpdate();
 			session.getTransaction().commit();
 		} catch (Exception e) {
@@ -3230,53 +3291,56 @@ public class HibernateUtil {
 		}
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public static synchronized void sendLogs(Integer qtdeTotalLogos, String namedQuery, HashMap<String, Object> args, boolean marcaLogsComoEnviados) {
-		if(qtdeTotalLogos <= 0) {
+	public static synchronized void sendLogs(Integer qtdeTotalLogos, String namedQuery, HashMap<String, Object> args,
+			boolean marcaLogsComoEnviados) {
+		if (qtdeTotalLogos <= 0) {
 			return;
 		}
-		
+
 		int pageSize = 50;
 		int offset = 0;
-		
+
 		do {
 			List<LogPedestrianAccessEntity> logList = (List<LogPedestrianAccessEntity>) getResultListWithParams(
 					LogPedestrianAccessEntity.class, namedQuery, args, (offset * pageSize), pageSize);
-			
-			if(logList == null) {
+
+			if (logList == null) {
 				continue;
 			}
-			
-			System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
+
+			System.out
+					.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + logList.size() + " registros para enviar");
 			JsonArray requestArray = new JsonArray();
-			for (LogPedestrianAccessEntity log : logList){
+			for (LogPedestrianAccessEntity log : logList) {
 				JsonObject requestObj = new JsonObject();
 				requestObj.addProperty("idLoggedUser", log.getIdLoggedUser().toString());
-				requestObj.addProperty("idPedestrian", log.getIdPedestrian() == null 
-																? "" : log.getIdPedestrian().toString());
+				requestObj.addProperty("idPedestrian",
+						log.getIdPedestrian() == null ? "" : log.getIdPedestrian().toString());
 				requestObj.addProperty("accessDate", log.getAccessDate().getTime() + "");
 				requestObj.addProperty("status", log.getStatus());
 				requestObj.addProperty("location", log.getLocation());
 				requestObj.addProperty("reason", log.getReason());
 				requestObj.addProperty("direction", log.getDirection() == null ? Tipo.ENTRADA : log.getDirection());
 				requestObj.addProperty("equipament", log.getEquipament() == null ? "--" : log.getEquipament());
-				requestObj.addProperty("bloquearSaida", log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
-				requestObj.addProperty("cartaoAcessoRecebido", log.getCartaoAcessoRecebido() != null 
-																	? log.getCartaoAcessoRecebido() : "");
+				requestObj.addProperty("bloquearSaida",
+						log.getBloquearSaida() != null ? log.getBloquearSaida() : false);
+				requestObj.addProperty("cartaoAcessoRecebido",
+						log.getCartaoAcessoRecebido() != null ? log.getCartaoAcessoRecebido() : "");
 				requestArray.add(requestObj);
 			}
-			
+
 			try {
 				HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/registerlog");
 				int responseCode = con.sendResponse(requestArray.toString());
 				if (responseCode != 200) {
-					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode 
-							+ "  Error String: " + con.getErrorString());
+					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Response Code: "
+							+ responseCode + "  Error String: " + con.getErrorString());
 					setFailAtSync(logList, true);
 				}
-				
-				if(marcaLogsComoEnviados) {
+
+				if (marcaLogsComoEnviados) {
 					setFailAtSync(logList, false);
 				}
 
@@ -3284,36 +3348,36 @@ public class HibernateUtil {
 				System.out.println(e.getMessage());
 				setFailAtSync(logList, true);
 			}
-			
+
 			offset++;
-			
-		} while(offset * pageSize <= qtdeTotalLogos);
+
+		} while (offset * pageSize <= qtdeTotalLogos);
 	}
-	
+
 	private static synchronized void setFailAtSync(List<LogPedestrianAccessEntity> logList, boolean status) {
-		if(logList == null || logList.isEmpty()) {
+		if (logList == null || logList.isEmpty()) {
 			return;
 		}
-		
+
 		logList.forEach(log -> {
 			log.setFailAtSync(status);
-			
+
 			HibernateUtil.save(LogPedestrianAccessEntity.class, log);
 		});
 	}
-	
+
 	public static synchronized Device getDeviceByIdentifier(String identifier) {
-		if(Main.devicesList == null || Main.devicesList.isEmpty()) {
+		if (Main.devicesList == null || Main.devicesList.isEmpty()) {
 			return null;
 		}
-		
-		for(Device device : Main.devicesList) {
-			if(identifier.equals(device.getIdentifier())) {
+
+		for (Device device : Main.devicesList) {
+			if (identifier.equals(device.getIdentifier())) {
 				return device;
 			}
 		}
 		return null;
-		
+
 	}
 
 }

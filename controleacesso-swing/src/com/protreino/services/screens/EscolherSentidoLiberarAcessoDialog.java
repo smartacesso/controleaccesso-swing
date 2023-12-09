@@ -34,8 +34,9 @@ public class EscolherSentidoLiberarAcessoDialog{
 	public static boolean janelaLiberarAcessoAberta = false;
 
 	public EscolherSentidoLiberarAcessoDialog(Device device, String motivoLiberacao, String idPedestre) {
-		if(device == null)
+		if(device == null) {
 			return;
+		}
 		
 		escolherSentidoDialog = new JDialog();
 		escolherSentidoDialog.setIconImage(Main.favicon);
@@ -117,8 +118,9 @@ public class EscolherSentidoLiberarAcessoDialog{
 		} else {
 			Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
 			HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
-			if (Main.broadcastServer != null)
-				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
+			if (Main.broadcastServer != null) {
+				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));				
+			}
     		device.setVerificationResult(VerificationResult.ALLOWED);
 			device.allowAccess();
 		}

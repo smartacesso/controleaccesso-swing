@@ -16,11 +16,9 @@ import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.to.RegraTO;
-<<<<<<< HEAD
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
-=======
->>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -72,6 +70,7 @@ public class Main {
 
     public static Long lastSync = 0L;
     public static Long lastSyncLog = 0L;
+    public static Long lastSyncHikivision = 0l;
 
     public static Long lastSyncGetUsers = 0L;
     public static Long lastSyncGetEmpresas = 0L;
@@ -83,6 +82,7 @@ public class Main {
 
     public static boolean updatingAthleteAccessList = false;
     public static boolean updatingLogAccessList = false;
+    public static boolean updatingHikivisionAccessList = false;
     public static boolean updatingUsersAccessList = false;
     public static boolean uploadingPhotosPedestres = false;
 
@@ -106,6 +106,7 @@ public class Main {
 
     public static Timer timerSyncUsersAccessList;
     public static Timer timerSyncAthleteAccessList;
+    public static Timer timerSyncHikivision;
     public static Timer timerSyncLogAthleteAccess;
     public static Timer timerOnline;
     public static Timer timerHidePopupMenu;
@@ -129,6 +130,7 @@ public class Main {
     public static ReleaseReasonDialog releaseReasonDialog;
     public static BroadcastServer broadcastServer;
     public static TcpServer tcpServer;
+    public static HikivisionTcpServer hikivisionTcpServer;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
@@ -257,10 +259,13 @@ public class Main {
                     configureTimers();
                     registerNativeHook();
                     recoverLoggedUser();
-                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableBroadcastServer")))
-                        broadcastServer = new BroadcastServer();
-                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer")))
-                        tcpServer = new TcpServer();
+                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableBroadcastServer"))) {
+                    	broadcastServer = new BroadcastServer();                    	
+                    }
+                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer"))) {
+                    	tcpServer = new TcpServer();                    	
+                    }
+                    hikivisionTcpServer = new HikivisionTcpServer();
                     //initializeLuxandSDK();
                     mainScreen = new MainScreen();
                     splash.dispose();
@@ -398,6 +403,8 @@ public class Main {
         if (loggedUser != null) {
             lastSync = loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L;
             lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
+            lastSyncHikivision = loggedUser.getLastSyncHikivision() != null
+					? loggedUser.getLastSyncHikivision().getTime() : 0l;
 
             lastSyncGetUsers = loggedUser.getLastSyncUser() != null
                     ? loggedUser.getLastSyncUser().getTime() : 0L;
@@ -1303,7 +1310,6 @@ public class Main {
         worker.execute();
     }
 
-<<<<<<< HEAD
     public static void syncHikivisionAccessList() {
         if (updatingHikivisionAccessList) {
             return;
@@ -1350,16 +1356,17 @@ public class Main {
                     return;
                 }
 
-                HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
+                HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
 
-                if (!hikiVisionIntegrationService.getSystemInformation()) {
-                    System.out.println(sdf.format(new Date()) + "  SincronizaÃ§Ã£o interrompida - Servidor offline");
+                if (!hikivisionUseCases.getSystemInformation()) {
+                    System.out.println(sdf.format(new Date()) + "  Sincronização interrompida - Servidor offline");
                     return;
                 }
 
-                HikivisionDeviceTO hikivisionDeviceTO = hikiVisionIntegrationService.listarDisposivos();
-                if (hikivisionDeviceTO.getSearchResult().getTotalMatches() <= 0) {
-                    System.out.println(sdf.format(new Date()) + "  SincronizaÃ§Ã£o interrompida - Sem dispositivos disponiveis");
+                List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
+
+                if (Objects.isNull(devices)) {
+                    System.out.println(sdf.format(new Date()) + "  Sincronização interrompida - Sem dispositivos disponiveis");
                     return;
                 }
 
@@ -1371,13 +1378,8 @@ public class Main {
                         .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhotoByLastSync", args);
 
                 for (PedestrianAccessEntity pedestre : pedestres) {
-                    for (HikivisionDeviceTO.MatchList device : hikivisionDeviceTO.getSearchResult().getMatchList()) {
-                        if (pedestre.getRemovido()) {
-                            hikiVisionIntegrationService.apagarUsuario(device.getDevice().getDevIndex(), pedestre.getCardNumber());
-                        } else {
-                            hikiVisionIntegrationService.adicionarUsuario(device.getDevice().getDevIndex(), pedestre.getCardNumber(), pedestre.getName());
-                            hikiVisionIntegrationService.adicionarFotoUsuario(device.getDevice().getDevIndex(), pedestre.getCardNumber(), pedestre.getFoto());
-                        }
+                    for (HikivisionDeviceTO.Device device : devices) {
+                    	hikivisionUseCases.syncronizaUsuario(device.getDevIndex(), pedestre);
                     }
                     
                 }
@@ -1387,19 +1389,14 @@ public class Main {
         worker.execute();
     }
 
-=======
->>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
     public static void syncAthleteAccessList() {
         if (updatingAthleteAccessList) {
             return;
         }
 
         if (Main.servidor != null) {
-<<<<<<< HEAD
             System.out.println(sdf.format(new Date()) + " Sincronização desabilitada: Máquina possui servidor");
-=======
             System.out.println(sdf.format(new Date()) + " Sincronizaï¿½ï¿½o desabilitada: Mï¿½quina possui servidor");
->>>>>>> 6c384405c85d9372bda4202d8e684657d714a982
             return;
         }
 
@@ -1837,7 +1834,7 @@ public class Main {
 
             private void apagarUsuarioHikivision(String cardNumber) {
             	HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
-            	final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDisposivos();
+            	final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDispositivos();
 
                 if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
                     return;

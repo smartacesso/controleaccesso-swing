@@ -271,7 +271,6 @@ public class AccessListPanel extends PaginedListPanel {
 				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
 		
 		executeFilter();
-		
 	}
 
 
@@ -336,7 +335,6 @@ public class AccessListPanel extends PaginedListPanel {
 		populateTable(listaAcesso);
 		
 		paginatorControl();
-		
 	}
 	
 	private void populateTable(List<PedestrianAccessEntity> listaAcesso){
