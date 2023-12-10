@@ -132,8 +132,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 
     private JPanel panelInternoLateral;
 
-    private boolean habilitaBuscaCPF = false;
-    private boolean habilitaBuscaRG = false;
+    private boolean habilitaBuscaCPF = true;
+    private boolean habilitaBuscaRG = true;
     public static boolean abertoPeloAtalho = false;
 
     private boolean habilitaQRCode = false;
@@ -257,8 +257,8 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private void verificaRegrasBusca() {
-        habilitaBuscaCPF = false;
-        habilitaBuscaRG = false;
+        habilitaBuscaCPF = true;
+        habilitaBuscaRG = true;
 
         String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
         if (camposObrigatorios.contains("cpf"))

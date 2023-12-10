@@ -1526,7 +1526,7 @@ public class EasyInner {
 
     public static native int RespostaHabilitarIdentificacaoVerificacao(int Inner);
     
-    public static native int LigarLedVerde(int Inner); 
+    public static native int LigarLedVerde(int Inner);
     
     public static native int DesabilitarRele1(int Inner);
     
