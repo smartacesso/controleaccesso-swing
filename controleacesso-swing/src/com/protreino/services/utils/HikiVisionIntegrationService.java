@@ -87,7 +87,7 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute()) {
 			if (response.isSuccessful()) {
-				final HikivisionUserInfoTO responseBody = gson.fromJson(response.peekBody(2048).string(),
+				final HikivisionUserInfoTO responseBody = gson.fromJson(response.body().string(),
 						HikivisionUserInfoTO.class);
 				final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
 
@@ -126,7 +126,7 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
-				final FaceInfoSearchTO responseBody = gson.fromJson(response.peekBody(2048).string(),
+				final FaceInfoSearchTO responseBody = gson.fromJson(response.body().string(),
 						FaceInfoSearchTO.class);
 				final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 
@@ -166,7 +166,7 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
-				final UserInfoTO responseBody = gson.fromJson(response.peekBody(2048).string(), UserInfoTO.class);
+				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
 
 				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString
 						.equalsIgnoreCase("OK");
@@ -202,7 +202,7 @@ public class HikiVisionIntegrationService {
 				.method("POST", body).build();
 
 		try (Response response = client.newCall(request).execute();) {
-			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.peekBody(2048).string(),
+			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.body().string(),
 					FaceDataRecordResponseTO.class);
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
@@ -261,8 +261,7 @@ public class HikiVisionIntegrationService {
 				.addHeader("Content-Type", "application/json").build();
 
 		try (Response response = client.newCall(request).execute();) {
-			final CardInfoSearchTO responseBody = gson.fromJson(response.peekBody(2048).string(),
-					CardInfoSearchTO.class);
+			final CardInfoSearchTO responseBody = gson.fromJson(response.body().string(), CardInfoSearchTO.class);
 
 			if (response.code() != 200) {
 				return false;
@@ -298,7 +297,7 @@ public class HikiVisionIntegrationService {
 				.build();
 
 		try (Response response = client.newCall(request).execute();) {
-			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.peekBody(2048).string(),
+			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.body().string(),
 					FaceDataRecordResponseTO.class);
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
@@ -342,11 +341,11 @@ public class HikiVisionIntegrationService {
 
 	        try(Response response = client.newCall(request).execute();) {
 	            if (response.isSuccessful()) {
-	                final ResponseStatusTO responseBody = gson.fromJson(response.peekBody(2048).string(), ResponseStatusTO.class);
+	                final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
 	                final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 	                System.out.println(String.format("Listerner adicionado para o device %s com sucesso: %b", deviceId, isCadastradoComSucesso));
 	            } else {
-	            	System.out.println("Erro ao enviar listerner: " + response.peekBody(2048).string());
+	            	System.out.println("Erro ao enviar listerner: " + response.body().string());
 	            }
 
 	        } catch (Exception e) {
@@ -431,8 +430,7 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
-				final HikivisionDeviceTO responseBody = gson.fromJson(response.peekBody(2048).string(),
-						HikivisionDeviceTO.class);
+				final HikivisionDeviceTO responseBody = gson.fromJson(response.body().string(), HikivisionDeviceTO.class);
 
 				return responseBody;
 			}

@@ -138,9 +138,10 @@ public class TopDataDevice extends Device {
 		if(!portaAberta) {
 			EasyInner.DefinirTipoConexao(2);
 	        ret = EasyInner.AbrirPortaComunicacao(port);
+	        EasyInner.LigarLedVerde(1);
 	        if (ret != Enumeradores.RET_COMANDO_OK 
 	        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
-	        	throw new Exception("Erro ao abrir a porta de comunica√ß√£o: " + ret);
+	        	throw new Exception("Erro ao abrir a porta de comunicaÁ„o: " + ret);
 	        }
 	        
 	        portaAberta = true;
@@ -1573,8 +1574,8 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO("Modo de trabalho", "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO("Envia digitais para catraca", "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Hor√°rio_clockwise", FieldType.COMBOBOX, 
-				"Hor√°rio_clockwise;Antihor√°rio_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO("Sentido da catraca", "Hor·rio_clockwise", FieldType.COMBOBOX, 
+				"Hor·rio_clockwise;Antihor√°rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de liberado", "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de mensagem negado", "5", FieldType.NUMERIC_LIST, "1;1;15"));
 		geralConfigurations.add(new ConfigurationTO("Bloquear saÌda", "true", FieldType.CHECKBOX));
@@ -1586,7 +1587,7 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO("Tempo de ping", "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO("Tempo de espera para conectar", "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO("Tipo de leitor", "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"CÛdigo de barras_0;Magn√©tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"CÛdigo de barras_0;MagnÈtico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		//if(Main.loggedUser != null && Main.loggedUser.getQtdePadraoDigitoscart„o() != null) {
 		//	geralConfigurations.add(new ConfigurationTO("Quantidade dÌgitos cart„o", 
@@ -1747,6 +1748,15 @@ public class TopDataDevice extends Device {
 	
 	public void validaAcessoHikivision(final String cardNumber) {
 		try {
+			while (sendingConfiguration) {
+				Utils.sleep(50);
+			}
+			
+			Main.validandoAcesso = true;
+			if(Main.servidor != null) {
+				HibernateUtil.enviaInicioVerificandoAcesso();
+			}
+			
 			validandoAcesso = true;
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO HIKIVISION: ");
 			System.out.print(" Origem: " + Origens.ORIGEM_LEITOR_1);
@@ -1757,6 +1767,8 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
 			processAccessRequest(cardNumber);
+			HibernateUtil.atualizaHorarioDePedestreHV(cardNumber);
+			
 			
 			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);
@@ -1772,9 +1784,14 @@ public class TopDataDevice extends Device {
 		} catch (Exception e) {
 			e.printStackTrace();
 			inner.EstadoAtual = EstadosInner.ESTADO_CONECTAR;
+		} finally {
+			validandoAcesso = false;
+			Main.validandoAcesso = false;
+			if(Main.servidor != null) {
+				HibernateUtil.enviaFimVerificandoAcesso();										
+			}
 		}
 		
-		validandoAcesso = false;
 	}
 	
 	private Long searchTemplate(){

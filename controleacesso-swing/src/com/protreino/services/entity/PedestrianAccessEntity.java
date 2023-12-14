@@ -393,6 +393,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="TIPO_QRCODE", nullable=true, length=100)
 	private String tipoQRCode;
 	
+
+	
 	
 	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
 			 targetEntity=TemplateEntity.class, mappedBy="pedestrianAccess")
@@ -460,6 +462,11 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_CADASTRO_FOTO_HIKIVISION", nullable=true, length=30)
 	private Date dataCadastroFotoNaHikivision;
+	
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="ULTIMO_ACESSO_HIKIVISION", nullable=true, length=30)
+	private Date lastAccessHikiVision;
 
 	@Transient
 	private Integer origemCatraca;
@@ -1660,6 +1667,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setDataCadastroFotoNaHikivision(Date dataCadastroFotoNaHikivision) {
 		this.dataCadastroFotoNaHikivision = dataCadastroFotoNaHikivision;
+	}
+
+	public Date getLastAccessHikiVision() {
+		return lastAccessHikiVision;
+	}
+
+	public void setLastAccessHikiVision(Date lastAccessHikiVision) {
+		this.lastAccessHikiVision = lastAccessHikiVision;
 	}
 	
 }

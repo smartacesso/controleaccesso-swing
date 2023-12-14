@@ -1,25 +1,20 @@
 package com.protreino.services.utils;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -110,30 +105,29 @@ public class HikivisionTcpServer {
 				if (Objects.nonNull(eventListnerTO) && Objects.nonNull(eventListnerTO.getAccessControllerEvent())
 						&& Objects.nonNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
 
-					/*
-					 * final Date thirtySecondsAgo = new
-					 * Date(Calendar.getInstance().getTimeInMillis() - 20000);
-					 * if(eventListnerTO.getDateTime().before(thirtySecondsAgo)) {
-					 * System.out.println("Evento recusado: " +
-					 * eventListnerTO.getAccessControllerEvent().getDeviceName() + " | " +
-					 * eventListnerTO.getAccessControllerEvent().getCardNo() + " | " +
-					 * eventListnerTO.getDateTime()); return; }
-					 */
+					final Date thirtySecondsAgo = new
+
+					Date(Calendar.getInstance().getTimeInMillis() - 20000);
+					if (eventListnerTO.getDateTime().before(thirtySecondsAgo)) {
+						System.out
+								.println("Evento recusado: " + eventListnerTO.getAccessControllerEvent().getDeviceName()
+										+ " | " + eventListnerTO.getAccessControllerEvent().getCardNo() + " | "
+										+ eventListnerTO.getDateTime());
+						return;
+					}
 
 					final Device attachedDevice = getAttachedDevice(hikivisionCameraId);
 
 					if (Objects.isNull(attachedDevice)) {
 						System.out.println("Sem catraca vinculada para a camera: " + hikivisionCameraId);
-						return;
+					} else {
+						liberarAcessoPedestre(attachedDevice, eventListnerTO.getAccessControllerEvent().getCardNo());
 					}
 
-					liberarAcessoPedestre(attachedDevice, eventListnerTO.getAccessControllerEvent().getCardNo());
-
 					responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
 					final String response = "HTTP/1.1 200\n" 
-											+ "Content-Length: 0\n" 
-											+ "Date: " + responseDateFormat.format(new Date()) + "\n";
+							+ "Content-Length: 0\n" 
+							+ "Date: " + responseDateFormat.format(new Date()) + "\n";
 					
 					outputStream.write(response.getBytes());
 					outputStream.flush();

@@ -25,6 +25,7 @@ import it.sauronsoftware.junique.JUnique;
 import it.sauronsoftware.junique.MessageHandler;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -804,6 +805,7 @@ public class Main {
                     verificaOnline();
                 }
             });
+         
 
             timerTasksOfDay = new java.util.Timer();
             uTimerTask = new TimerTask() {
@@ -826,24 +828,45 @@ public class Main {
             Utils.createNotification("Erro ao carregar os timers. Por favor, reinicie o aplicativo.", NotificationType.BAD);
         }
     }
+    
+    @Scheduled(cron = "0 0 */1 * * *")
+    public void apagaPedestresAusentes() {
+    	//agora pegar o que vai ser apagado para gerar a query
+    	
+    }
 
     public static void verificaOnline() {
-        new Thread() {
-            public void run() {
-                try {
-                    HttpConnection con = new HttpConnection(urlApplication + "/restful-services/login/action");
-                    int responseCode = con.getResponseCode();
+		new Thread() {
+			public void run() {
+				try {
+					HttpConnection con = new HttpConnection(urlApplication + "/restful-services/login/action");
+					int responseCode = con.getResponseCode();
+					
+					if(mainScreen != null) {
+						mainScreen.setConnectionStatusLabel(responseCode == 200);
+					}
 
-                    if (mainScreen != null)
-                        mainScreen.setConnectionStatusLabel(responseCode == 200);
+				} catch (Exception e) {
+					mainScreen.setConnectionStatusLabel(false);
+				}
 
-                } catch (Exception e) {
-                    mainScreen.setConnectionStatusLabel(false);
-                }
-            }
+				try {
+					boolean hikivisionServerIsConnected = false;
+					if(Utils.isHikivisionConfigValid()) {
+						HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
+						hikivisionServerIsConnected = hikiVisionIntegrationService.getSystemInformation();
+					}
 
-        }.start();
-    }
+					if(mainScreen != null) {
+						mainScreen.setHikivisionConnectionStatusLabel(hikivisionServerIsConnected);
+					}
+
+				} catch (Exception e) {
+					mainScreen.setHikivisionConnectionStatusLabel(false);
+				}
+			};
+		}.start();
+	}
 
 
     public static void tasksOfDay(boolean timerCall) {

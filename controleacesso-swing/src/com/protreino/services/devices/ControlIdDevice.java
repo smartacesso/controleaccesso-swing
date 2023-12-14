@@ -433,7 +433,7 @@ public class ControlIdDevice extends Device {
 		
 		String direction = "";
 
-		String modoOperacao = getConfigurationValue("Modo de operaÃ§Ã£o");
+		String modoOperacao = getConfigurationValue("Modo de operação");
 		Boolean bloquearSaida = "blocked".equals(modoOperacao) ? true : false;
 		
 		if (GiroCatraca.EVENT_TURN_RIGHT.equals(notificacao.event.name))
@@ -475,7 +475,7 @@ public class ControlIdDevice extends Device {
 		
 		Configuration configuration = new Configuration(serverIp, serverPort, serverId, 
 			getConfigurationValueAsBoolean("Habilita beep"), getConfigurationValue("Tempo de giro"), 
-			getConfigurationValue("Tempo da requisiÃ§Ã£o"));
+			getConfigurationValue("Tempo da requisição"));
 		Object[] retorno = send("http://" + ip + "/set_configuration.fcgi?session=" + session, configuration);
 		String erro = (String) retorno[0];
 		if (erro != null)

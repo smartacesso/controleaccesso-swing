@@ -758,13 +758,11 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     public void ajustaPaineisParaEdicao() {
-
         if (this.fotoVisitante != null) {
             openImageSelectButton.setIcon(new ImageIcon(createMiniImage(fotoVisitante)));
         } else {
             openImageSelectButton.setIcon(escolherImagemIcon);
         }
-
 
     }
 
@@ -825,7 +823,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         cartaoAcessoPanel.add(cartaoAcessoLabel, c);
         cartaoAcessoTextField = Utils.getNewJFormattedTextField(15);
         cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-
+       // cartaoAcessoTextField.setText(preencheCampoMatricula());
+       // cartaoAcessoTextField.setEnabled(isHabilitadoCampoCartaoAcesso());
         cartaoAcessoTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -2694,7 +2693,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private boolean isExibeCampoMatricula() {
-        String permiteCampoAdicionalMatricula = buscaParametroPeloNome("Permitir campo adicional de crachÃ¡/matricula");
+        String permiteCampoAdicionalMatricula = buscaParametroPeloNome("Permitir campo adicional de crachá/matricula");
 
         if (permiteCampoAdicionalMatricula != null
                 && !permiteCampoAdicionalMatricula.isEmpty()) {
@@ -2705,6 +2704,35 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         return false;
     }
+    /*
+    private String preencheCampoMatricula() {
+    	if(Utils.getPreferenceAsBoolean("blockCardAndGenerateRandomNumber")) {
+    		final String randomCardNumber = geraCartaoAcessoAleatorio();
+    		cartaoAcessoTextField.setText(randomCardNumber);
+    	}
+    	
+    	return StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0');
+    }
+    
+    private boolean isHabilitadoCampoCartaoAcesso() {
+    	return !Utils.getPreferenceAsBoolean("blockCardAndGenerateRandomNumber");
+    }
+    
+ 
+    private String geraCartaoAcessoAleatorio() {
+    	String cardNumber = "";
+    	do {
+    		Long randomNumber = Utils.getRandomNumber();
+    		
+    		if(String.valueOf(randomNumber).length() > 6) {
+    			cardNumber = String.valueOf(randomNumber).substring(0, 6);
+    		}
+    		
+    	} while(isCardNumberAlreadyExistents(cardNumber));
+    	
+    	return cardNumber;
+    }
+    */
 
     @Override
     public void dispose() {

@@ -3380,4 +3380,16 @@ public class HibernateUtil {
 
 	}
 
+	public static void atualizaHorarioDePedestreHV(String cardNumber) {
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) getSingleResultByCardNumber(PedestrianAccessEntity.class,Long.valueOf(cardNumber));
+		
+		//fazer algumas validações, se o pedestre não ter o cartao. (vai acabar pq vai ser gerado o aleatório)
+		//Se o pedestre por algum motivo não retornar busca não travar a passagem
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date date = new Date();
+		pedestre.setLastAccessHikiVision(date);
+		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+		
+	}
+
 }
