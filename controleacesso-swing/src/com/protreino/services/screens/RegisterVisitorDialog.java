@@ -822,9 +822,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
         cartaoAcessoPanel.add(cartaoAcessoLabel, c);
         cartaoAcessoTextField = Utils.getNewJFormattedTextField(15);
-        cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-       // cartaoAcessoTextField.setText(preencheCampoMatricula());
-       // cartaoAcessoTextField.setEnabled(isHabilitadoCampoCartaoAcesso());
+        cartaoAcessoTextField.setText(preencheCampoCartaoDeAcesso());
+        cartaoAcessoTextField.setEnabled(isHabilitadoCampoCartaoAcesso());
         cartaoAcessoTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -1249,7 +1248,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         qrCodeDialog.setTitle("QRCode din√¢mico por Tempo");
 
-        JLabel mensagemLabel = new JLabel("<html>O QRCode gerado √© do tipo din√¢mico por tempo, renovando-se autom√°ticamente de tempos em tempos,"
+        JLabel mensagemLabel = new JLabel("<html>O QRCode gerado È do tipo din√¢mico por tempo, renovando-se autom√°ticamente de tempos em tempos,"
                 + "<br/>n„o sendo possÌvel a verificaÁ„o do mesmo fora do App do Pedestre. Voc√™ deseja excluir esse QRCode?</html>");
         mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -1433,7 +1432,6 @@ public class RegisterVisitorDialog extends BaseDialog {
             System.out.println("n„o muda valor do cart„o");
 
         } else {
-
             cartaoAcessoTextField.setText(visitante.getCardNumber() != null ? visitante.getCardNumber()
                     : StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
             if (cartaoAcessoTextField.getText().length() < qtdeDigitosCartao) {
@@ -1736,12 +1734,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         if (cartaoAcessoTextField != null
                 && !cartaoAcessoTextField.getText().isEmpty()
-                && visitante.getTipo().equals("PEDESTRE")
-        ) {
-
+                && visitante.getTipo().equals("PEDESTRE")) {
             if (cartaoAcessoTextField.getText().replace("0", "").matches(
-                    "^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$"
-            )) {
+                    "^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
                 cartaoAcessoLabel.setText(" Senha sequencial ou repetida ");
                 redAndBoldFont(cartaoAcessoLabel);
                 valido = false;
@@ -1773,6 +1768,7 @@ public class RegisterVisitorDialog extends BaseDialog {
                 break;
             }
         }
+        
         args.put("CARD_NUMBER", temp);
         args.put("ID_PEDESTRE", idPedestre);
 //		fazer uma nova query verificando os removidos se acaso for removido
@@ -1844,7 +1840,6 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     public PedestreRegraEntity buscaPedestreRegraPadraoVisitante() {
-
         RegraEntity regra = buscaRegraPeloNome("ACESSO_UNICO_VISITANTE");
 
         if (regra == null)
@@ -2704,10 +2699,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         return false;
     }
-    /*
-    private String preencheCampoMatricula() {
-    	if(Utils.getPreferenceAsBoolean("blockCardAndGenerateRandomNumber")) {
+
+    private String preencheCampoCartaoDeAcesso() {
+    	if(Utils.getPreferenceAsBoolean("blockCardAndGenerateRandomNumber")
+    			&& (visitante.getCardNumber() == null || visitante.getCardNumber().equals(""))) {
     		final String randomCardNumber = geraCartaoAcessoAleatorio();
+    		System.out.println("Cartao gerado: " + randomCardNumber);
     		cartaoAcessoTextField.setText(randomCardNumber);
     	}
     	
@@ -2724,16 +2721,16 @@ public class RegisterVisitorDialog extends BaseDialog {
     	do {
     		Long randomNumber = Utils.getRandomNumber();
     		
-    		if(String.valueOf(randomNumber).length() > 6) {
-    			cardNumber = String.valueOf(randomNumber).substring(0, 6);
+    		if(String.valueOf(randomNumber).length() > 5) {
+    			cardNumber = String.valueOf(randomNumber).substring(0, 5);
     		}
     		
-    	} while(isCardNumberAlreadyExistents(cardNumber));
+    	} while(verificaCartaoAcessoExistente(cardNumber,
+                visitante.getId() != null ? visitante.getId() : 0l));
     	
     	return cardNumber;
     }
-    */
-
+    
     @Override
     public void dispose() {
         abertoPeloAtalho = false;
