@@ -105,4 +105,9 @@ public class HikivisionUseCases {
         
         return null;
 	}
+	
+	public void apagarUsuario(final String cardNumber, final String deviceId ) {
+		
+		hikiVisionIntegrationService.apagarUsuario(cardNumber, deviceId);
+	}
 }

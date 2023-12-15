@@ -832,6 +832,22 @@ public class Main {
     @Scheduled(cron = "0 0 */1 * * *")
     public void apagaPedestresAusentes() {
     	//agora pegar o que vai ser apagado para gerar a query
+    	//fazer algumas validações, se o pedestre não ter o cartao. (vai acabar pq vai ser gerado o aleatório)
+		//Se o pedestre por algum motivo não retornar busca não travar a passagem
+		//o que apagar: chamar na api a função para remover faces, 
+		//apagar os dados:  apagarUsuario
+    	/*
+		
+		HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+		HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+		List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
+	
+		for(HikivisionDeviceTO.Device device : devices) {
+	
+			hiviVisionUseCase.apagarUsuario(cardNumber, device.getDevIndex());
+		}*/
+		
+		
     	
     }
 

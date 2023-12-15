@@ -65,6 +65,8 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.TcpMessageTO;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class HibernateUtil {
@@ -3385,8 +3387,8 @@ public class HibernateUtil {
 		System.out.println("atualizaHorarioDePedestreHV :  cartão HIkivision" + cardNumber);
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) getSingleResultByCardNumber(PedestrianAccessEntity.class,Long.valueOf(cardNumber));
 		System.out.println("atualizaHorarioDePedestreHV : nome de usuario" + pedestre.getName());
-		//fazer algumas validações, se o pedestre não ter o cartao. (vai acabar pq vai ser gerado o aleatório)
-		//Se o pedestre por algum motivo não retornar busca não travar a passagem
+	
+		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
 		pedestre.setLastAccessHikiVision(date);

@@ -102,35 +102,25 @@ public class HikivisionTcpServer {
 				final String hikivisionCameraId = sb.toString().substring(requestBody.indexOf("/") + 1, requestBody.indexOf(" HTTP"));
 				final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
 
+				sendResponse(outputStream);
+
 				if (Objects.nonNull(eventListnerTO) && Objects.nonNull(eventListnerTO.getAccessControllerEvent())
 						&& Objects.nonNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
-
-					final Date thirtySecondsAgo = new
-
-					Date(Calendar.getInstance().getTimeInMillis() - 20000);
+					final Date thirtySecondsAgo = new Date(Calendar.getInstance().getTimeInMillis() - 20000);
 					if (eventListnerTO.getDateTime().before(thirtySecondsAgo)) {
-						System.out
-								.println("Evento recusado: " + eventListnerTO.getAccessControllerEvent().getDeviceName()
+						System.out.println("Evento recusado: " + eventListnerTO.getAccessControllerEvent().getDeviceName()
 										+ " | " + eventListnerTO.getAccessControllerEvent().getCardNo() + " | "
 										+ eventListnerTO.getDateTime());
-						return;
-					}
 
-					final Device attachedDevice = getAttachedDevice(hikivisionCameraId);
-
-					if (Objects.isNull(attachedDevice)) {
-						System.out.println("Sem catraca vinculada para a camera: " + hikivisionCameraId);
 					} else {
-						liberarAcessoPedestre(attachedDevice, eventListnerTO.getAccessControllerEvent().getCardNo());
+						final Device attachedDevice = getAttachedDevice(hikivisionCameraId);
+						
+						if (Objects.isNull(attachedDevice)) {
+							System.out.println("Sem catraca vinculada para a camera: " + hikivisionCameraId);
+						} else {
+							liberarAcessoPedestre(attachedDevice, eventListnerTO.getAccessControllerEvent().getCardNo());
+						}
 					}
-
-					responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-					final String response = "HTTP/1.1 200\n" 
-							+ "Content-Length: 0\n" 
-							+ "Date: " + responseDateFormat.format(new Date()) + "\n";
-					
-					outputStream.write(response.getBytes());
-					outputStream.flush();
 				}
 
 			} catch (EOFException eof) {
@@ -142,6 +132,16 @@ public class HikivisionTcpServer {
 				e.printStackTrace();
 			} finally {
 			}
+		}
+		
+		private void sendResponse(final OutputStream outputStream) throws IOException {
+			responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+			final String response = "HTTP/1.1 200\n" 
+					+ "Content-Length: 0\n" 
+					+ "Date: " + responseDateFormat.format(new Date()) + "\n";
+			
+			outputStream.write(response.getBytes());
+			outputStream.flush();
 		}
 
 		private void liberarAcessoPedestre(Device selectedDevice, String cardNo) {
