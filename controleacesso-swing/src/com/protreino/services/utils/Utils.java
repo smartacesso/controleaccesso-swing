@@ -1122,9 +1122,6 @@ public class Utils {
 		return Utils.getOperationalSystem().equals(OperationalSystem.LINUX)
 				? System.getProperty("user.home") + "/.appData/Local/SmartAcesso"
 				: System.getProperty("user.home") + "/AppData/Local/SmartAcesso";
-//		return Utils.getOperationalSystem().equals(OperationalSystem.LINUX)
-//				? System.getProperty("user.home") + "/.appData/Local/SmartAcesso"
-//				: "c:/SmartAcesso";
 	}
 
 	public static String removerAcentos(String str) {
@@ -1668,27 +1665,6 @@ public class Utils {
 		return empresa;
 	}
 
-	public static String verificaMensagemAvisoVencimento(PedestrianAccessEntity athleteAccess) {
-		try {
-
-			// TODO : verifica mensagens para mostrar para o pedestre
-
-//			Integer diasAviso = getPreferenceAsInteger("warningPaymentDueDate");
-//			if (diasAviso > 0) {
-//				Date hoje = Utils.zerarHora(new Date());
-//				Date dataVencimento = Utils.zerarHora(athleteAccess.getDataPermitido());
-//			    Long diff = TimeUnit.DAYS.convert(dataVencimento.getTime() - hoje.getTime(), TimeUnit.MILLISECONDS);
-//			    if (diff.intValue() <= diasAviso) {
-//			    	if (diff.intValue() == 1)
-//			    		return "VENC EM 1 DIA";
-//			    	return "VENC EM " + diff + " DIAS";
-//			    }
-//			}
-		} catch (Exception e) {
-		}
-		return null;
-	}
-
 	public static Date convertDataJson(JsonElement element) throws ParseException {
 		try {
 			return new Date(element.getAsLong());
@@ -1715,7 +1691,6 @@ public class Utils {
 	}
 
 	public static PedestrianAccessEntity buscaPedestrePorIdOuIdTemp(Long idPedestre) {
-
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
 				.getSingleResultById(PedestrianAccessEntity.class, idPedestre);
 
@@ -1734,9 +1709,7 @@ public class Utils {
 	// colocar conversor de ABATRACK para WIGAN aqui como estÃ¡tico
 
 	public static String toHEX(String Cartao) {
-
 		try {
-
 			long longAbatrack = Long.parseLong(Cartao);
 			long fclong = Long.parseLong(Cartao);
 			String hexAbatrack = Long.toHexString(longAbatrack);
@@ -1796,88 +1769,6 @@ public class Utils {
     }
 
 	public static void main(String[] args) {
-		final String te = "POST /event/notification HTTP/1.1\r\n"
-				+ "Host: 192.168.15.4:8090\r\n"
-				+ "Accept: */*\r\n"
-				+ "Content-Type: multipart/form-data; boundary=MIME_boundary\r\n"
-				+ "Connection: keep-alive\r\n"
-				+ "Content-Length: 64308\r\n"
-				+ "\r\n"
-				+ "--MIME_boundary\r\n"
-				+ "Content-Disposition: form-data; name=\"event_log\"\r\n"
-				+ "Content-Type: application/json\r\n"
-				+ "Content-Length: 956\r\n"
-				+ "\r\n"
-				+ "{\r\n"
-				+ "	\"ipAddress\":	\"192.168.15.133\",\r\n"
-				+ "	\"ipv6Address\":	\"2804:1b2:1001:3e3:be5e:33ff:fe5c:3adb\",\r\n"
-				+ "	\"portNo\":	8090,\r\n"
-				+ "	\"protocol\":	\"HTTP\",\r\n"
-				+ "	\"macAddress\":	\"bc:5e:33:5c:3a:db\",\r\n"
-				+ "	\"channelID\":	1,\r\n"
-				+ "	\"dateTime\":	\"2023-12-01T02:48:43+08:00\",\r\n"
-				+ "	\"activePostCount\":	1,\r\n"
-				+ "	\"eventType\":	\"AccessControllerEvent\",\r\n"
-				+ "	\"eventState\":	\"active\",\r\n"
-				+ "	\"eventDescription\":	\"Access Controller Event\",\r\n"
-				+ "	\"AccessControllerEvent\":	{\r\n"
-				+ "		\"deviceName\":	\"cam 3\",\r\n"
-				+ "		\"majorEventType\":	5,\r\n"
-				+ "		\"subEventType\":	75,\r\n"
-				+ "		\"cardNo\":	\"1768\",\r\n"
-				+ "		\"cardType\":	1,\r\n"
-				+ "		\"name\":	\"Boss\",\r\n"
-				+ "		\"cardReaderKind\":	1,\r\n"
-				+ "		\"cardReaderNo\":	1,\r\n"
-				+ "		\"verifyNo\":	140,\r\n"
-				+ "		\"employeeNoString\":	\"3\",\r\n"
-				+ "		\"serialNo\":	42,\r\n"
-				+ "		\"userType\":	\"normal\",\r\n"
-				+ "		\"currentVerifyMode\":	\"cardOrFace\",\r\n"
-				+ "		\"frontSerialNo\":	0,\r\n"
-				+ "		\"attendanceStatus\":	\"undefined\",\r\n"
-				+ "		\"label\":	\"\",\r\n"
-				+ "		\"statusValue\":	0,\r\n"
-				+ "		\"mask\":	\"no\",\r\n"
-				+ "		\"helmet\":	\"unknown\",\r\n"
-				+ "		\"picturesNumber\":	1,\r\n"
-				+ "		\"purePwdVerifyEnable\":	true,\r\n"
-				+ "		\"FaceRect\":	{\r\n"
-				+ "			\"height\":	0.304,\r\n"
-				+ "			\"width\":	0.496,\r\n"
-				+ "			\"x\":	0.5,\r\n"
-				+ "			\"y\":	0.487\r\n"
-				+ "		}\r\n"
-				+ "	}\r\n"
-				+ "}\r\n"
-				+ "--MIME_boundary\r\n"
-				+ "Content-Disposition: form-data; name=\"Picture\"; filename=\"Picture.jpg\"\r\n"
-				+ "Content-Type: image/jpeg\r\n"
-				+ "Content-Length: 63041\r\n"
-				+ "Content-ID: pictureImage\r\n"
-				+ "\r\n"
-				+ "ÿØÿà>JPEGæ S    INFô                                                                                                                        2023-12-1 2:48:43                  F1x                   `              *\r\n"
-				+ "                           -   -   Z                  áõ áõ                                                                   œNü\bTç,\r\n"
-				+ "öFèÐ !2@±`x§r¼M‡}Ä {ÊHþx5–ú0ŽQ                                            è                   pµ       \r\n"
-				+ "           P'ò 0Q                                                                                      .                                                              ­\r\n"
-				+ "                                                         FR700006       ê(¼\r\n"
-				+ "ÑÏãåVy@8#Þ†,¼Æ›mîV4Þ÷Lÿ sm2ÿ ×IÃÌ(¨¤–Ýÿ ½:Õ$/ÜiÞx=*\r\n"
-				+ "wW,“RÔ£Ê=jºO(| wæ•¥˜¯2 Aš5ØN%…\r\n"
-				+ "yùÓv¯Rß@g›oË'žcPO);tÀÁüi0FÒø¨Ä„ò´ÖÃçüŠdò’<Gï\r\n"
-				+ "ŽHUó‘íG)äožär2tÐŽk8ÊaEWžÉ\r\n"
-				+ "qW’U²S¯ñU\\‰@È“DŠ6wPIs–÷5ÏjÞ’\"Ý>ñ®ÌÄ­ÿ -9ëŠ­=›Is“EÙŒ©itŽOê†T„sƒœóÔ?!Y÷zM›î¹\f$_˜°+¿–ÜcîtíÚ³ït,¤éßëÚ©´ÕÇõ(¬Œ²Jã¾}k˜Ö'†-^F”ÆöÎ+©Û¶Bcã9åxïÿ êýk”ñLhº‹;Žá—åëÁçÛµy´ÝÙèI~ïB\r\n"
-				+ "‰Li•—¶îÞ¿Ê¢2`g°õíQ<ï)&SÆþžÜõé¾wúB¨ëÆ:žýþ¿¥vÇ¡Èì·/A8C¹›vz\f}+cÂ2@÷\r\n"
-				+ "ûÎ£8ÇN+Ÿ™ö‘žO×îûVÏ„â\"ï(ç,9÷ÿ <þu2B	Ö$Þl¢5L\fuÝO»t‘\"I÷zŸóôýiÖšmÌ™§*FáŽŸçÓÞ´&ÒWåRÛy®{¨³Ÿ–¥­b‹,ŒÙ\r\n"
-				+ "£š™îây®[ñ¦ƒ¡Ç¿QÕcCœmêJæï>-\\ê™Â~¸»Çü¼Hv!üúÕZÃµŽÃ[Öb¶·f2`ú“Ò¼CâŸŽÖþñìaŸ~Î¿7½\\ñ–¯âÝB)#×õ˜£¶Öˆ~aŽç¯ÿ ª¼ÞîÍ^ïs.w7}¿•ìZÛA†ëÎGQÉëôë]×Â»Ôµïnag<¨®>ÚÚ8Ë‡Ž¾½?ýUê,bÓ´¸˜'ÌGÏõ¬+»BÌ¸|Zãj*#©éP}¯y8=ë+íe$ž*EºÙÓ­ys–‡¡ÿÙ\r\n"
-				+ "--MIME_boundary--\r\n"
-				+ "\r\n"
-				+ "";
-		
-		System.out.println(getFirstJsonFromString(te));
-		final String text = "POST /65457-5456-5457-987456 HTTP/1.1"; 
-		final String extract = text.substring(text.indexOf("/") + 1, text.indexOf(" HTTP"));
-		
-		System.out.println("extract: " + extract);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
 		String aux = "8591641950";
 		String temp = "";

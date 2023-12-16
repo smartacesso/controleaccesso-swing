@@ -28,7 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
@@ -62,12 +61,13 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianMessagesEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
-import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
+
+import static com.protreino.services.constants.TopDataDeviceConstants.*;
 
 @SuppressWarnings("serial")
 public class PedestrianScreen extends JFrame {
@@ -802,7 +802,7 @@ public class PedestrianScreen extends JFrame {
 //			Object[] retorno = HibernateUtil.processAccessRequest(codigoTextField.getText(), readerDevice.getLocation(), false);
 			Object[] retorno = HibernateUtil.processAccessRequest(codigoTextField.getText(), readerDevice.getName(), 
 																	1, readerDevice.getName(), false, true, 
-																	readerDevice.getConfigurationValueAsBoolean("Ignorar regras de acesso"));
+																	readerDevice.getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			
 			resultadoVerificacao = (VerificationResult) retorno[0];
 			allowedUserName = (String) retorno[1];

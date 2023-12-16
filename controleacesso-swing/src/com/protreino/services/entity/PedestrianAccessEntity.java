@@ -227,7 +227,14 @@ import com.protreino.services.utils.HibernateUtil;
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null " +
-						"order by obj.id asc")
+						"order by obj.id asc"),
+		@NamedQuery(name = "PedestrianAccessEntity.findAllWhitLastAccessHikivision",
+		query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name) " +
+				"from PedestrianAccessEntity obj " +
+				"where lastAccessHikiVision != null " +
+				 "and lastAccessHikiVision < :DATE_HIKIVISION " +
+				"and obj.cardNumber != null " + 
+				"order by obj.id asc"),
 
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
@@ -514,6 +521,12 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	public PedestrianAccessEntity(Long id, String name) {
 		this.id = id;
 		this.name = name;
+	}
+	
+	public PedestrianAccessEntity(Long id, String cardNumber, String name) {
+		this.id = id;
+		this.name = name;
+		this.cardNumber = cardNumber;
 	}
 	
 	public PedestrianAccessEntity(Long id, Date datePhotosExcluded) {

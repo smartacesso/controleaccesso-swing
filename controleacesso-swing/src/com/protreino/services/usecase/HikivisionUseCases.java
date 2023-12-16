@@ -69,6 +69,7 @@ public class HikivisionUseCases {
 	private void apagaCampoDataCadastroDeFotoNaHikivision(Long id) {
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultById(PedestrianAccessEntity.class, id);
 		pedestre.setDataCadastroFotoNaHikivision(null);
+		pedestre.setLastAccessHikiVision(null);
 		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 	}
 
@@ -106,8 +107,8 @@ public class HikivisionUseCases {
         return null;
 	}
 	
-	public void apagarUsuario(final String cardNumber, final String deviceId ) {
-		
-		hikiVisionIntegrationService.apagarUsuario(cardNumber, deviceId);
+	public void apagarUsuario(final PedestrianAccessEntity pedestrianAccessEntity, final String deviceId ) {
+		hikiVisionIntegrationService.apagarUsuario(pedestrianAccessEntity.getCardNumber(), deviceId);
+		apagaCampoDataCadastroDeFotoNaHikivision(pedestrianAccessEntity.getId());
 	}
 }

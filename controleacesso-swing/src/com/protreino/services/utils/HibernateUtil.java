@@ -3151,6 +3151,7 @@ public class HibernateUtil {
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
 					+ "	where  p.tipo = 'VISITANTE' " + " and p.cardNumber != null " + " and p.cardNumber != '' "
+					+ "and p.dataCadastroFotoNaHikivision == null "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();
@@ -3388,8 +3389,6 @@ public class HibernateUtil {
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) getSingleResultByCardNumber(PedestrianAccessEntity.class,Long.valueOf(cardNumber));
 		System.out.println("atualizaHorarioDePedestreHV : nome de usuario" + pedestre.getName());
 	
-		
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
 		pedestre.setLastAccessHikiVision(date);
 		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
