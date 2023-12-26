@@ -62,9 +62,11 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -1767,6 +1769,7 @@ public class Utils {
         
         return "";
     }
+	
 
 	public static void main(String[] args) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
@@ -1781,8 +1784,51 @@ public class Utils {
 		} else {
 			System.out.println("false");
 		}
+		
+		
+		JFrame f = new JFrame("ProgressBar demo");
+		 
+        // create a panel
+        JPanel p = new JPanel();
+ 
+        // create a progressbar
+        JProgressBar b = new JProgressBar();
+ 
+        // set initial value
+        b.setValue(0);
+ 
+        b.setStringPainted(true);
+ 
+        // add progressbar
+        p.add(b);
+ 
+        // add panel
+        f.add(p);
+ 
+        // set the size of the frame
+        f.setSize(500, 500);
+        f.setVisible(true);
+ 
+        fill(b);
 
 	}
+	
+	public static void fill(JProgressBar b)
+    {
+        int i = 0;
+        try {
+            while (i <= 100) {
+                // fill the menu bar
+                b.setValue(i + 10);
+ 
+                // delay the thread
+                Thread.sleep(1000);
+                i += 20;
+            }
+        }
+        catch (Exception e) {
+        }
+    }
 
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {

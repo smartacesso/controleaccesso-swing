@@ -19,6 +19,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.persistence.TypedQuery;
 
@@ -684,12 +685,17 @@ public class HibernateUtil {
 
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery);
-				for (Map.Entry<String, Object> entry : args.entrySet()) {
-					query.setParameter(entry.getKey(), entry.getValue());
+				if(Objects.nonNull(args)) {
+					for (Map.Entry<String, Object> entry : args.entrySet()) {
+						query.setParameter(entry.getKey(), entry.getValue());
+					}
 				}
+
 				Long qtd = (Long) query.getSingleResult();
-				if (qtd != null)
+				if (qtd != null) {
 					count = qtd.intValue();
+				}
+
 				session.getTransaction().commit();
 
 			} catch (Exception e) {
@@ -3151,7 +3157,7 @@ public class HibernateUtil {
 			Query q = session.createQuery("update PedestrianAccessEntity p "
 					+ "set p.cardNumber = null, qtdAcessoAntesSinc = 0, p.quantidadeCreditos = 0, p.editadoNoDesktop = true "
 					+ "	where  p.tipo = 'VISITANTE' " + " and p.cardNumber != null " + " and p.cardNumber != '' "
-					+ "and p.dataCadastroFotoNaHikivision == null "
+					+ "and p.dataCadastroFotoNaHikivision = null "
 					+ " and p.qrCodeParaAcesso is null ");
 			q.executeUpdate();
 			session.getTransaction().commit();

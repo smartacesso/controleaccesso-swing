@@ -1,6 +1,8 @@
 package com.protreino.services.screens;
 
+import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
@@ -53,7 +55,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(920, 718));
 		setMinimumSize(getPreferredSize());
-		
+
 		this.hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
 
 		font = new JLabel().getFont();
@@ -108,7 +110,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		addDevice.addActionListener(e -> {
 			adicionarDevice();
 		});
-		
+
 		syncCameraListners = new JButton("Sincronizar listeners");
 		syncCameraListners.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncCameraListners.setPreferredSize(new Dimension(140, 40));
@@ -193,7 +195,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		JButton confirmarButton = new JButton("Confirmar");
 		confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
 		confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		
+
 		confirmarButton.addActionListener(e -> {
 			restauraFontLabel(addressLabel, portLabel, userLabel, passwordLabel, deviceNameLabel);
 
@@ -228,9 +230,10 @@ public class SincronizacaoManualDialog extends BaseDialog {
 				return;
 			}
 
-			hikivisionUseCases.adicionarDispositivoAndListener(addressTextField.getText(), Integer.parseInt(portTextField.getText()), 
-					userTextField.getText(), passwordTextField.getText(), deviceNameTextField.getText());
-			
+			hikivisionUseCases.adicionarDispositivoAndListener(addressTextField.getText(),
+					Integer.parseInt(portTextField.getText()), userTextField.getText(), passwordTextField.getText(),
+					deviceNameTextField.getText());
+
 			populateTable();
 			adicionarDeviceDialog.dispose();
 		});
@@ -246,45 +249,45 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		mainPanel.add(deviceNamedPanel);
 		mainPanel.add(Box.createVerticalStrut(70));
 		mainPanel.add(confirmarButton);
-		
+
 		adicionarDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
 		adicionarDeviceDialog.pack();
 		adicionarDeviceDialog.setLocationRelativeTo(null);
 		adicionarDeviceDialog.setVisible(true);
 	}
-	
+
 	private void syncCameraListners() {
 		List<String> devicesToSync = getDevicesToSync();
 		if (devicesToSync.isEmpty()) {
 			return;
 		}
-		
+
 		devicesToSync.forEach(deviceId -> {
 			hikivisionUseCases.adicionarListnerParaCamera(deviceId);
 		});
 	}
 
 	private boolean isValidPort(String port) {
-		if(port == null || port.isEmpty()) {
-			return false;			
+		if (port == null || port.isEmpty()) {
+			return false;
 		}
-		
+
 		final String regex = "^([0-9]){1,5}$";
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(port);
-		
+
 		return m.matches();
 	}
 
 	private boolean isValidIpAddress(String ipAddress) {
-		if(ipAddress == null || ipAddress.isEmpty()) {
-			return false;			
+		if (ipAddress == null || ipAddress.isEmpty()) {
+			return false;
 		}
-		
+
 		final String regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(ipAddress);
-		
+
 		return m.matches();
 	}
 
@@ -306,6 +309,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		sincronizacaoPorDataDialog.setLayout(new BorderLayout());
 
 		JPanel mainPanel = new JPanel();
+		
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
@@ -355,35 +359,139 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	}
 
 	private void syncDevices(final Date inicio, final Date fim) {
+		// fazer uma query de connt para contar quantos pedestres vão ser sincronizados.
+		// fazer a busca paginada
 		List<String> devicesToSync = getDevicesToSync();
 		if (devicesToSync.isEmpty()) {
 			return;
 		}
-		List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim);
-		System.out.println("Pedestre encontrados: " + pedestresParaSicronizar.size());
+		
+		final int pageSize = 500;
+		final Integer countPedestresParaSincronizar = countPesdestresParaSincronizar(inicio, fim);
+		if(Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
+			return;
+		}
 
-		devicesToSync.forEach(device -> {
-			pedestresParaSicronizar.forEach(pedestre -> {
-				hikivisionUseCases.syncronizaUsuario(device, pedestre);
-			});
+		final List<String> errors = new ArrayList<>();
+
+		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
+		
+		JDialog progressBarDialog = new JDialog();
+		progressBarDialog.setIconImage(Main.favicon);
+
+		progressBarDialog.setTitle("Sincronizando");
+		progressBarDialog.setResizable(false);
+		progressBarDialog.setLayout(new BorderLayout());
+
+		JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, countPedestresParaSincronizar);
+
+		JTable table = new JTable();
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.getTableHeader().setOpaque(false);
+		table.getTableHeader().setForeground(Main.firstColor);
+		table.getTableHeader().setBackground(Main.secondColor);
+		table.setRowHeight(30);
+		table.setSelectionBackground(Main.firstColor);
+		table.setSelectionForeground(Color.WHITE);
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		table.setDefaultRenderer(String.class, centerRenderer);
+		
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+		scrollPane.setVisible(false);
+		
+		JPanel mainPanel = new JPanel();
+		mainPanel.add(progressBar);
+		mainPanel.add(scrollPane);
+
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+		progressBarDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		progressBarDialog.pack();
+		progressBarDialog.setSize(500, 500);
+		progressBarDialog.setLocationRelativeTo(null);
+		progressBarDialog.setModal(true);
+
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				int offset = 0;
+				do {
+					List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim, offset, pageSize);
+					
+					pedestresParaSicronizar.forEach(pedestre -> {
+						devicesToSync.forEach(device -> {
+							
+							try {
+								hikivisionUseCases.syncronizaUsuario(device, pedestre);
+								progressBar.setValue(progressBar.getValue() + 1);
+								
+							} catch (HikivisionIntegrationException ex) {
+								errors.add(ex.getMessage());
+							}
+						});
+					});
+					
+					offset += pageSize;
+				} while (offset < countPedestresParaSincronizar);
+				
+				if(errors.isEmpty()) {
+					progressBarDialog.dispose();
+					//exibir botão de ok e mensagem que sincronização acabou e fechar o dialogo quando clicar em ok
+				} else {
+					progressBar.setVisible(false);
+					String[] columns = { "Erro"};
+					DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {};
+
+					errors.forEach(erro -> {
+						String[] erros = {erro};
+						dataModel.addRow(erros);
+					});
+					
+					table.setModel(dataModel);
+					scrollPane.setVisible(true);
+					//esconder o progress bar e mostar a tela de erros
+				}
+			}
 		});
+		thread.setDaemon(true);
+		thread.start();
+		progressBarDialog.setVisible(true);
+	}
+	
+	private Integer countPesdestresParaSincronizar(final Date inicio, final Date fim) {
+		if(Objects.isNull(inicio) && Objects.isNull(fim)) {
+			return HibernateUtil.
+	                getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistred", null);
+		}
+		
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("INIT_DATE", inicio);
+        args.put("END_DATE", fim);
+
+        return HibernateUtil.
+                getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate", args);
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<PedestrianAccessEntity> buscaPedestresParaSicronizar(Date inicio, Date fim) {
+	private List<PedestrianAccessEntity> buscaPedestresParaSicronizar(Date inicio, Date fim, Integer offset, Integer pageSize) {
 		if (inicio != null && fim != null) {
 			HashMap<String, Object> args = new HashMap<>();
 			args.put("INIT_DATE", inicio);
 			args.put("END_DATE", fim);
 
 			return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
-					"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate", args);
+					"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate", args, offset, pageSize);
 		}
 
-		return (List<PedestrianAccessEntity>) HibernateUtil.getResultList(PedestrianAccessEntity.class,
-				"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred");
+		return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
+				"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred", null, offset, pageSize);
 	}
-	
+
 	private List<String> getDevicesToSync() {
 		TableModel model = deviceListTable.getModel();
 		List<String> devicesToSync = new ArrayList<>();
@@ -392,7 +500,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 				devicesToSync.add(model.getValueAt(i, 0).toString());
 			}
 		}
-		
+
 		return devicesToSync;
 	}
 
@@ -436,7 +544,6 @@ public class SincronizacaoManualDialog extends BaseDialog {
 				}
 			}
 		};
-		
 		List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
 
 		if (devices == null || devices.isEmpty()) {

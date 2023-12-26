@@ -9,6 +9,7 @@ import com.protreino.services.devices.*;
 import com.protreino.services.entity.*; 
 import com.protreino.services.enumeration.*;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
+import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.screens.*;
 import com.protreino.services.services.LuxandService;
@@ -427,7 +428,40 @@ public class Main {
             updateAccessListMenuItem.setEnabled(true);
 
             inicializaTimers();
+            
+            /*
+    		java.util.Timer timer = new java.util.Timer();
+    		timer.scheduleAtFixedRate(new TimerTask() {
 
+    			@Override
+    			public void run() {
+    		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
+    	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+    	    		
+    	    	  HashMap<String, Object> args = new HashMap<>();
+    	        args.put("DATE_HIKIVISION", date); 
+
+    	        @SuppressWarnings("unchecked")
+    			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList
+    	                (PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision");
+    	        if( pedestres != null && !pedestres.isEmpty()) {
+    	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+    	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+    	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
+    	            
+    	            for(PedestrianAccessEntity pedestre : pedestres) {
+    	            	for(HikivisionDeviceTO.Device device : devices) {            	
+    	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
+    	        		}
+    	            }
+    	        }
+    				
+    			}
+    		
+    		}, 0,  1000);
+    		*/
+    		
+    		//180 * 86400000
 
             //tarefas diï¿½rias
 
@@ -830,35 +864,8 @@ public class Main {
             Utils.createNotification("Erro ao carregar os timers. Por favor, reinicie o aplicativo.", NotificationType.BAD);
         }
     }
-    
-    @Scheduled(cron = "0 0 */6 * * *")
-    public void apagaPedestresAusentes() {
-    	//agora pegar o que vai ser apagado para gerar a query
-    	//fazer algumas validações, se o pedestre não ter o cartao. (vai acabar pq vai ser gerado o aleatório)
-		//Se o pedestre por algum motivo não retornar busca não travar a passagem
-		//o que apagar: chamar na api a função para remover faces, 
-		//apagar os dados:  apagarUsuario
-    		LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-    	  HashMap<String, Object> args = new HashMap<>();
-        args.put("DATE_HIKIVISION", date);
-
-        @SuppressWarnings("unchecked")
-		final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
-                .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
-        if( pedestres != null && !pedestres.isEmpty()) {
-        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
-            for( PedestrianAccessEntity pedestre : pedestres) {
-            	for(HikivisionDeviceTO.Device device : devices) {
-            		
-            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-        		}
-            }
-        }
-    	
-    }
+   
+ 
 
     public static void verificaOnline() {
 		new Thread() {
@@ -899,6 +906,8 @@ public class Main {
         if (timerCall) {
             limpaCartoesVisitantes();
         }
+        
+        
 
         limpaSentidoTodos();
         limpaStatusCartoes();
@@ -906,6 +915,42 @@ public class Main {
         closeLogFile();
         configLogFile();
         //	enviarLogsComFalhaAoEnviar();
+        
+        //verificar task 
+   
+		java.util.Timer timer = new java.util.Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+
+			@Override
+			public void run() {
+		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
+	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+	    	  HashMap<String, Object> args = new HashMap<>();
+	        args.put("DATE_HIKIVISION", date); 
+
+	        @SuppressWarnings("unchecked")
+			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+	                .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
+	        if( pedestres != null && !pedestres.isEmpty()) {
+	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
+	            for( PedestrianAccessEntity pedestre : pedestres) {
+	            	for(HikivisionDeviceTO.Device device : devices) {
+	            		
+	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
+	        		}
+	            }
+	        }
+	    	
+				
+			}
+		
+		}, 0,0);
+		
+	//	 180 * 86400000
+	
+
 
 
     }
@@ -1427,7 +1472,11 @@ public class Main {
 
                 for (PedestrianAccessEntity pedestre : pedestres) {
                     for (HikivisionDeviceTO.Device device : devices) {
-                    	hikivisionUseCases.syncronizaUsuario(device.getDevIndex(), pedestre);
+                    	try {
+                    		hikivisionUseCases.syncronizaUsuario(device.getDevIndex(), pedestre);
+                    	} catch (HikivisionIntegrationException e) {
+							System.out.println(e.getMessage());
+						}
                     }
                     
                 }
@@ -2088,7 +2137,6 @@ public class Main {
             }
 
 
-            @SuppressWarnings("unchecked")
             private void enviaLogsDeAcesso() throws Exception {
                 final Date newLastSyncLog = new Date();
                 final int pageSize = 100;
@@ -2167,7 +2215,6 @@ public class Main {
     }
 
     private static int buscaQuantidadeDeLogsDeAcesso(Long lastSyncLog, Date newLastSyncLog, String namedQuery) {
-
         HashMap<String, Object> args = new HashMap<String, Object>();
         args.put("LAST_SYNC", new Date(lastSyncLog));
         args.put("NEW_LAST_SYNC", newLastSyncLog);

@@ -6,9 +6,7 @@ import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.google.gson.Gson;
-import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.to.hikivision.*;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 
 import okhttp3.*;
 
@@ -168,8 +166,7 @@ public class HikiVisionIntegrationService {
 			if (response.isSuccessful()) {
 				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
 
-				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString
-						.equalsIgnoreCase("OK");
+				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
 
 				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
 						isCadastradoComSucesso));
@@ -185,7 +182,7 @@ public class HikiVisionIntegrationService {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void adicionarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
+	public boolean adicionarFotoUsuario(final String deviceId, final String idUser, final byte[] foto) {
 		OkHttpClient client = getOkHttpClient();
 
 		final String jsonRequestBody = "{\"FaceInfo\": {\"employeeNo\": \"" + idUser + "\" } }";
@@ -209,13 +206,16 @@ public class HikiVisionIntegrationService {
 			System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser,
 					deviceId, isCadastradoComSucesso));
 
+			return isCadastradoComSucesso;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return false;
 
 	}
 
-	public void adicionarCartaoDePedestre(final String deviceId, final String idUser) {
+	public boolean adicionarCartaoDePedestre(final String deviceId, final String idUser) {
 		final String body = "{" 
 				+ "		\"CardInfo\": {" 
 				+ "			\"employeeNo\": \"" + idUser + "\","
@@ -231,12 +231,19 @@ public class HikiVisionIntegrationService {
 				.addHeader("Content-Type", "application/json").build();
 
 		try (Response response = client.newCall(request).execute();) {
-			System.out.println("Cartão cadastrado com sucesso: " + response.code());
+			if (response.isSuccessful()) {
+                final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+                final boolean isCartaoAdicionado = responseBody.statusString.equalsIgnoreCase("OK");
+                System.out.println(String.format("Foto do usuario %s apagada no device %s com sucesso: %b", idUser, deviceId, isCartaoAdicionado));
+                
+                return isCartaoAdicionado;
+            }
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+		return false;
 	}
 
 	public boolean isCartaoJaCadastrado(final String deviceId, final String idUser) {
@@ -380,7 +387,7 @@ public class HikiVisionIntegrationService {
 		}
 	}
 
-	public void apagarFotoUsuario(String deviceId, String idUser) {
+	public boolean apagarFotoUsuario(String deviceId, String idUser) {
 		final String body = "{" 
 				+ "\"FaceInfoDelCond\" : {" 
 					+ "\"EmployeeNoList\" : [{" 
@@ -397,10 +404,18 @@ public class HikiVisionIntegrationService {
 				.addHeader("Content-Type", "application/json").build();
 
 		try (Response response = client.newCall(request).execute();) {
-
+			if (response.isSuccessful()) {
+                final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+                final boolean isApagadoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
+                System.out.println(String.format("Foto do usuario %s apagada no device %s com sucesso: %b", idUser, deviceId, isApagadoComSucesso));
+                
+                return isApagadoComSucesso;
+            }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return false;
 	}
 
 	public HikivisionDeviceTO listarDispositivos() {

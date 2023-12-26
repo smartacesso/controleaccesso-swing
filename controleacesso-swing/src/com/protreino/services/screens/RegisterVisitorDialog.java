@@ -1954,7 +1954,6 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setFoto(null);
 			fotoVisitante = null;
             escolherFotoDialog.dispose();
-
         });
 
         JButton cancelarButton = new JButton("Cancelar");

@@ -215,27 +215,35 @@ import com.protreino.services.utils.HibernateUtil;
 						"where obj.foto != null " +
 						"and obj.dataAlteracao > :LAST_SYNC_HIKIVISION " +
 						"order by obj.id asc"),
+	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistred",
+				query = "select count(obj) from PedestrianAccessEntity obj " +
+						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
 						"order by obj.id asc"),
-		@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
+	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate",
+				query = "select count(obj) " +
+						"from PedestrianAccessEntity obj " +
+						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
+						"and obj.cardNumber != null "),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null " +
 						"order by obj.id asc"),
-		@NamedQuery(name = "PedestrianAccessEntity.findAllWhitLastAccessHikivision",
-		query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name) " +
-				"from PedestrianAccessEntity obj " +
-				"where lastAccessHikiVision != null " +
-				 "and lastAccessHikiVision < :DATE_HIKIVISION " +
-				"and obj.cardNumber != null " + 
-				"order by obj.id asc"),
-
+	@NamedQuery(name = "PedestrianAccessEntity.findAllWhitLastAccessHikivision",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name) " +
+						"from PedestrianAccessEntity obj " +
+						"where lastAccessHikiVision != null " +
+						"and obj.cardNumber != null " + 
+						"order by obj.id asc"),
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
