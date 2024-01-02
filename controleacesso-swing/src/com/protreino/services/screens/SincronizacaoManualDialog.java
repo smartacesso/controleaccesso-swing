@@ -385,34 +385,15 @@ public class SincronizacaoManualDialog extends BaseDialog {
 
 		JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, countPedestresParaSincronizar);
 
-		JTable table = new JTable();
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setOpaque(false);
-		table.getTableHeader().setForeground(Main.firstColor);
-		table.getTableHeader().setBackground(Main.secondColor);
-		table.setRowHeight(30);
-		table.setSelectionBackground(Main.firstColor);
-		table.setSelectionForeground(Color.WHITE);
-		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-		table.setDefaultRenderer(String.class, centerRenderer);
-		
-		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
-		scrollPane.setVisible(false);
-		
 		JPanel mainPanel = new JPanel();
 		mainPanel.add(progressBar);
-		mainPanel.add(scrollPane);
 
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
 		progressBarDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
 		progressBarDialog.pack();
-		progressBarDialog.setSize(500, 500);
+		progressBarDialog.setSize(500, 100);
 		progressBarDialog.setLocationRelativeTo(null);
 		progressBarDialog.setModal(true);
 
@@ -428,12 +409,14 @@ public class SincronizacaoManualDialog extends BaseDialog {
 							
 							try {
 								hikivisionUseCases.syncronizaUsuario(device, pedestre);
-								progressBar.setValue(progressBar.getValue() + 1);
 								
 							} catch (HikivisionIntegrationException ex) {
 								errors.add(ex.getMessage());
 							}
+
 						});
+
+						progressBar.setValue(progressBar.getValue() + 1);
 					});
 					
 					offset += pageSize;
@@ -444,7 +427,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 					//exibir botão de ok e mensagem que sincronização acabou e fechar o dialogo quando clicar em ok
 				} else {
 					progressBar.setVisible(false);
-					String[] columns = { "Erro"};
+					String[] columns = { "Erros"};
 					DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {};
 
 					errors.forEach(erro -> {
@@ -452,9 +435,38 @@ public class SincronizacaoManualDialog extends BaseDialog {
 						dataModel.addRow(erros);
 					});
 					
+					JTable table = new JTable();
+					table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+					table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					table.getTableHeader().setReorderingAllowed(false);
+					table.getTableHeader().setOpaque(false);
+					table.getTableHeader().setForeground(Main.firstColor);
+					table.getTableHeader().setBackground(Main.secondColor);
+					table.setRowHeight(30);
+					table.setSelectionBackground(Main.firstColor);
+					table.setSelectionForeground(Color.WHITE);
+					DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+					centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+					table.setDefaultRenderer(String.class, centerRenderer);
+
+					for (int i = 0; i < table.getColumnCount(); i++) {
+						TableColumn column = table.getColumnModel().getColumn(i);
+						column.setPreferredWidth(240);
+					}
+					
 					table.setModel(dataModel);
-					scrollPane.setVisible(true);
-					//esconder o progress bar e mostar a tela de erros
+					
+					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+					
+					mainPanel.add(scrollPane);
+					
+					progressBarDialog.setSize(650, 500);
+					progressBarDialog.setLocationRelativeTo(null);
+					progressBarDialog.revalidate();
+
+					mainPanel.revalidate();
+					mainPanel.updateUI();
 				}
 			}
 		});
@@ -516,7 +528,6 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	}
 
 	public void populateTable() {
-
 		DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {
 
 			@Override

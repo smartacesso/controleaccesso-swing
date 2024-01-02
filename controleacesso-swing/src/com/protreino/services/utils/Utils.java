@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
@@ -1786,30 +1787,11 @@ public class Utils {
 		}
 		
 		
-		JFrame f = new JFrame("ProgressBar demo");
-		 
-        // create a panel
-        JPanel p = new JPanel();
- 
-        // create a progressbar
-        JProgressBar b = new JProgressBar();
- 
-        // set initial value
-        b.setValue(0);
- 
-        b.setStringPainted(true);
- 
-        // add progressbar
-        p.add(b);
- 
-        // add panel
-        f.add(p);
- 
-        // set the size of the frame
-        f.setSize(500, 500);
-        f.setVisible(true);
- 
-        fill(b);
+		final String a = "TESTE";
+		final String b = "TESTE";
+		
+		System.out.println(Objects.equals(a, b));
+		System.out.println(a.equals(b));
 
 	}
 	

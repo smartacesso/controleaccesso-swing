@@ -62,6 +62,24 @@ public class HikiVisionIntegrationService {
 
 		return false;
 	}
+	
+	public boolean capturePicture() {
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder().url(url + "/ISAPI/Streaming/channels/102/picture?format=json&devIndex=3355E756-032C-4853-BBF6-8254A72CFF39").get()
+				.addHeader("Content-Type", "application/json").build();
+
+		try (Response response = client.newCall(request).execute();) {
+			final boolean isSuccessFul = response.isSuccessful();
+
+			return isSuccessFul;
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		return false;
+	}
 
 	public boolean isUsuarioJaCadastrado(final String deviceId, final String idUser) {
 		final String uuid = UUID.randomUUID().toString();

@@ -10,6 +10,7 @@ import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import org.apache.commons.lang.StringUtils;
 
@@ -149,8 +150,8 @@ public class RegisterVisitorDialog extends BaseDialog {
     private JTextField loginTextField;
     private JFormattedTextField senhaTextField;
     private JComboBox<SelectItem> tipoAcessoJComboBox;
-    private HikiVisionIntegrationService hikiVisionIntegrationService;
 	private boolean isFotoModificada = false;
+	private HikivisionUseCases hikivisionUseCases;
 
     public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
         loadImages();
@@ -234,7 +235,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         mainContentPane.add(barraLateralPanel, BorderLayout.WEST);
 
         if (Utils.isHikivisionConfigValid()) {
-            hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
+            hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
         }
 
         addWindowListener(new WindowAdapter() {
@@ -245,7 +246,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             
             @Override
             public void windowClosed(WindowEvent e) {
-                if(isFotoModificada && hikiVisionIntegrationService != null) {
+                if(isFotoModificada && hikivisionUseCases != null) {
                 	salvarFotoVisitanteHikivision();
                 }
             }
@@ -1953,6 +1954,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             openImageSelectButton.setIcon(escolherImagemIcon);
             visitante.setFoto(null);
 			fotoVisitante = null;
+			hikivisionUseCases.apagarFotosUsuario(visitante.getCardNumber());
             escolherFotoDialog.dispose();
         });
 
@@ -1978,7 +1980,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         escolherFotoDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                if (fotoVisitante != null && hikiVisionIntegrationService != null) {
+                if (fotoVisitante != null && hikivisionUseCases != null) {
                 	isFotoModificada = true;
                 }
             }
@@ -1986,7 +1988,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private void salvarFotoVisitanteHikivision() {
-        final boolean isHikivisionServerOnline = hikiVisionIntegrationService.getSystemInformation();
+        final boolean isHikivisionServerOnline = hikivisionUseCases.getSystemInformation();
 
         if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
         	visitante.setDataCadastroFotoNaHikivision(new Date());
@@ -1996,14 +1998,22 @@ public class RegisterVisitorDialog extends BaseDialog {
             return;
         }
 
-        final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDispositivos();
+        List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
 
-        if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
+        if (Objects.isNull(devices) || devices.isEmpty()) {
             return;
         }
 
-        for (MatchList matchList : devices.getSearchResult().getMatchList()) {
-            final String deviceId = matchList.getDevice().getDevIndex();
+        for (HikivisionDeviceTO.Device device : devices) {
+        	final String deviceId = device.getDevIndex();
+        	try {
+        		hikivisionUseCases.syncronizaUsuario(deviceId, visitante);
+        		
+        	} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+        	
+        	/*
             final boolean usuarioJaEstaCadastrado = hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, visitante.getCardNumber());
 
             if (Boolean.FALSE.equals(usuarioJaEstaCadastrado)) {
@@ -2026,9 +2036,13 @@ public class RegisterVisitorDialog extends BaseDialog {
             if(!isCartaoJaCadastrado) {
             	hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId, visitante.getCardNumber());
             }
+            */
         }
 
-        visitante.setDataCadastroFotoNaHikivision(new Date());
+        if(Objects.equals("ATIVO", visitante.getStatus())) {
+        	visitante.setDataCadastroFotoNaHikivision(new Date());
+        }
+        
         visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
@@ -2136,6 +2150,8 @@ public class RegisterVisitorDialog extends BaseDialog {
             if (imageCaptured != null) {
                 setBufferedImage(imageCaptured);
                 salvarImagemCapturada();
+                hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+               // hikivisionUseCases.capturaFoto();
                 habilitaLabelImagemVisitante();
 
                 webCamCaptureViewer.dispose();

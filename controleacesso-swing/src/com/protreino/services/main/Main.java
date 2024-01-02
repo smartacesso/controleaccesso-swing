@@ -429,7 +429,7 @@ public class Main {
 
             inicializaTimers();
             
-            /*
+              /*
     		java.util.Timer timer = new java.util.Timer();
     		timer.scheduleAtFixedRate(new TimerTask() {
 
@@ -457,11 +457,11 @@ public class Main {
     	        }
     				
     			}
+    		//	trocar os parametros
     		
-    		}, 0,  1000);
+    		}, 0,  70*86400000);
     		*/
-    		
-    		//180 * 86400000
+       
 
             //tarefas di�rias
 
@@ -1860,14 +1860,17 @@ public class Main {
 //							System.out.println("Estou deletando automaticamente, face: " + idFacial);
 //							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
 //						}
-                        
-                        if(athleteAccessTO.getRemovido() && athleteAccessTO.getDataCadastroFotoNaHikivision() != null 
-                        		&& Utils.isHikivisionConfigValid() ) {
-                        	apagarUsuarioHikivision(existentAthleteAccess.getCardNumber());
-                        	existentAthleteAccess.setDataCadastroFotoNaHikivision(null);
-                        }
 
                         existentAthleteAccess.update(athleteAccessTO);
+
+                        if((existentAthleteAccess.getRemovido() || Objects.equals("INATIVO", existentAthleteAccess.getStatus())) 
+                        		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
+                        		&& Utils.isHikivisionConfigValid() ) {
+                        	
+                        	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+                        	hikivisionUseCases.syncronizarUsuarioAllDevices(existentAthleteAccess);
+                        }
+
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
                         }
@@ -1928,20 +1931,6 @@ public class Main {
                     Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REFRESH_TEMPLATES));
                 }
             }
-
-            private void apagarUsuarioHikivision(String cardNumber) {
-            	HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
-            	final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDispositivos();
-
-                if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
-                    return;
-                }
-                
-                for (MatchList matchList : devices.getSearchResult().getMatchList()) {
-                    final String deviceId = matchList.getDevice().getDevIndex();
-                    hikiVisionIntegrationService.apagarUsuario(deviceId, cardNumber);
-                }
-			}
 
 			@SuppressWarnings("unchecked")
             private void enviaBiometriasColetadasLocalmente() throws IOException {
