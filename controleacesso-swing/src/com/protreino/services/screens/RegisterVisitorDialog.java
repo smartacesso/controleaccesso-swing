@@ -1422,7 +1422,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         responsavelTextField.setText(visitante.getResponsavel() != null ? visitante.getResponsavel() : "");
         obsTextArea.setText(visitante.getObservacoes() != null ? visitante.getObservacoes() : "");
 
-        statusJComboBox.setSelectedItem(visitante.getStatus() != null ? visitante.getStatus() : null);
+        statusJComboBox.setSelectedItem(visitante.getStatus() != null ? new SelectItem(visitante.getStatus(), visitante.getStatus()) : null);
         matriculaTextField.setText(visitante.getMatricula() != null ? visitante.getMatricula() : "");
 
         if ("VISITANTE".equals(visitante.getTipo())

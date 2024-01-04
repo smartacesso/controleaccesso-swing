@@ -44,13 +44,20 @@ public class HikivisionUseCases {
 	public void syncronizarUsuarioAllDevices(final PedestrianAccessEntity pedestre) {
 		final List<Device> devices = listarDispositivos();
 		
-		devices.forEach(device -> syncronizaUsuario(device.getDevIndex(), pedestre));
+		devices.forEach(device -> {
+			try {
+				syncronizaUsuario(device.getDevIndex(), pedestre);
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		});
 	}
 	
 	public void syncronizaUsuario(final String deviceId, final PedestrianAccessEntity pedestre) {
 		if (pedestre.getRemovido() || pedestre.getFoto() == null || "INATIVO".equals(pedestre.getStatus())) {
 			hikiVisionIntegrationService.apagarUsuario(deviceId, pedestre.getCardNumber());
-			apagaCampoDataCadastroDeFotoNaHikivision(pedestre);
+			apagaCampoDataCadastroDeFotoNaHikivision(pedestre.getId());
 		
 		} else {
 			boolean isUsuarioCadastrado = true;
@@ -94,11 +101,11 @@ public class HikivisionUseCases {
 		throw new HikivisionIntegrationException(message);
 	}
 	
-	private void apagaCampoDataCadastroDeFotoNaHikivision(PedestrianAccessEntity pedestre) {
-		pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultById(PedestrianAccessEntity.class, pedestre.getId());
+	private void apagaCampoDataCadastroDeFotoNaHikivision(final Long idPedestre) {
+		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultById(PedestrianAccessEntity.class, idPedestre);
 		pedestre.setDataCadastroFotoNaHikivision(null);
 		pedestre.setLastAccessHikiVision(null);
-		pedestre = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, pedestre)[0];
+		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 	}
 
 	public void adicionarDispositivoAndListener(final String ipAddress, final Integer port, final String userName, final String password,
@@ -137,7 +144,7 @@ public class HikivisionUseCases {
 	
 	public void apagarUsuario(final PedestrianAccessEntity pedestrianAccessEntity, final String deviceId ) {
 		hikiVisionIntegrationService.apagarUsuario(pedestrianAccessEntity.getCardNumber(), deviceId);
-		apagaCampoDataCadastroDeFotoNaHikivision(pedestrianAccessEntity);
+		apagaCampoDataCadastroDeFotoNaHikivision(pedestrianAccessEntity.getId());
 	}
 	
 	public void apagarFotosUsuario(final String cardNumber) {

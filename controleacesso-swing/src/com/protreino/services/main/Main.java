@@ -136,6 +136,7 @@ public class Main {
     public static TcpServer tcpServer;
     public static HikivisionTcpServer hikivisionTcpServer;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
+    public static SimpleDateFormat sdfWithoutTIme = new SimpleDateFormat("dd/MM/yyyy");
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
@@ -301,7 +302,7 @@ public class Main {
     private void decideSeMostraTelaPrincipal() {
         if (loggedUser == null)
             mainScreen.showScreen();
-        else {
+        else { 
             boolean nenhumDispositivoConectado = true;
             for (Device device : Main.devicesList) {
                 if (DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
@@ -428,39 +429,53 @@ public class Main {
             updateAccessListMenuItem.setEnabled(true);
 
             inicializaTimers();
+         
+            String  dataDeRemocao = Utils.getPreference("enableRemoveHVFacesForDate");
+            try {
+				Date date = sdfWithoutTIme.parse(dataDeRemocao);
+				
+				java.util.Timer timer = new java.util.Timer();
+	    		
+	    		timer.schedule(new TimerTask() {
+
+	    			@Override
+	    			public void run() {
+	    		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
+	    	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+	    	    		
+	    	    	  HashMap<String, Object> args = new HashMap<>();
+	    	        args.put("DATE_HIKIVISION", date); 
+
+	    	        @SuppressWarnings("unchecked")
+	    			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList
+	    	                (PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision");
+	    	        if( pedestres != null && !pedestres.isEmpty()) {
+	    	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+	    	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+	    	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
+	    	            
+	    	            for(PedestrianAccessEntity pedestre : pedestres) {
+	    	            	for(HikivisionDeviceTO.Device device : devices) {            	
+	    	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
+	    	        		}
+	    	            }
+	    	        }
+	    				
+	    			}
+	    		//	trocar os parametros
+	    		
+	    		},date);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
             
-              /*
-    		java.util.Timer timer = new java.util.Timer();
-    		timer.scheduleAtFixedRate(new TimerTask() {
-
-    			@Override
-    			public void run() {
-    		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-    	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-    	    		
-    	    	  HashMap<String, Object> args = new HashMap<>();
-    	        args.put("DATE_HIKIVISION", date); 
-
-    	        @SuppressWarnings("unchecked")
-    			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList
-    	                (PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision");
-    	        if( pedestres != null && !pedestres.isEmpty()) {
-    	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-    	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-    	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
-    	            
-    	            for(PedestrianAccessEntity pedestre : pedestres) {
-    	            	for(HikivisionDeviceTO.Device device : devices) {            	
-    	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-    	        		}
-    	            }
-    	        }
-    				
-    			}
-    		//	trocar os parametros
+            
+            
+             
+    	
     		
-    		}, 0,  70*86400000);
-    		*/
        
 
             //tarefas di�rias
@@ -1860,10 +1875,13 @@ public class Main {
 //							System.out.println("Estou deletando automaticamente, face: " + idFacial);
 //							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
 //						}
+                        
+                        final String oldStatus = existentAthleteAccess.getStatus();
 
                         existentAthleteAccess.update(athleteAccessTO);
+                        HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
-                        if((existentAthleteAccess.getRemovido() || Objects.equals("INATIVO", existentAthleteAccess.getStatus())) 
+                        if((existentAthleteAccess.getRemovido() || !Objects.equals(oldStatus, existentAthleteAccess.getStatus())) 
                         		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                         		&& Utils.isHikivisionConfigValid() ) {
                         	
@@ -1875,7 +1893,6 @@ public class Main {
                             atualizaDigitais = true;
                         }
                         
-                        HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                     } else {
                         PedestrianAccessEntity newAthleteAccess = new PedestrianAccessEntity(athleteAccessTO);
