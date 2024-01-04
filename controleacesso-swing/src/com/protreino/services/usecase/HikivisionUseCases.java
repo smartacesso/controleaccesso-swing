@@ -55,7 +55,7 @@ public class HikivisionUseCases {
 	}
 	
 	public void syncronizaUsuario(final String deviceId, final PedestrianAccessEntity pedestre) {
-		if (pedestre.getRemovido() || pedestre.getFoto() == null || "INATIVO".equals(pedestre.getStatus())) {
+		if (Boolean.TRUE.equals(pedestre.getRemovido()) || pedestre.getFoto() == null || "INATIVO".equals(pedestre.getStatus())) {
 			hikiVisionIntegrationService.apagarUsuario(deviceId, pedestre.getCardNumber());
 			apagaCampoDataCadastroDeFotoNaHikivision(pedestre.getId());
 		

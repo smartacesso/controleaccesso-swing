@@ -1299,6 +1299,21 @@ public class TopDataDevice extends Device {
 		}
 	}
 	
+	public void processAccessRequest(Object obj, final Boolean usaUrna) {
+		try {
+			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, getFullIdentifier(), 
+					inner.BilheteInner.Origem, location, usaUrna, true, 
+					getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
+			verificationResult = (VerificationResult) retorno[0];
+			allowedUserName = (String) retorno[1];
+			matchedAthleteAccess = (PedestrianAccessEntity) retorno[2];
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			verificationResult = VerificationResult.ERROR;
+		}
+	}
+	
 	public void processAccessRequest(Object obj, Date data) {
 		try {
 			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, getFullIdentifier(), 
@@ -1763,7 +1778,7 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-			processAccessRequest(cardNumber);
+			processAccessRequest(cardNumber, false);
 			HibernateUtil.atualizaHorarioDePedestreHV(cardNumber);
 			
 			

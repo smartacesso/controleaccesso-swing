@@ -1274,9 +1274,9 @@ public class HibernateUtil {
 
 			if (matchedAthleteAccess == null) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
-				if (createNotification)
-					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD,
-							foto);
+				if (createNotification) {
+					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD, foto);					
+				}
 
 				return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
 			}
@@ -1331,7 +1331,7 @@ public class HibernateUtil {
 			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == 3) {
 				permitidoSensor = false;
 			}
-
+			
 			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
 				System.out.println("o que Ã© equipament" + equipament);
 				System.out.println("o que Ã© pessoa equipamento" + matchedAthleteAccess.getEquipamentos());
@@ -1357,9 +1357,6 @@ public class HibernateUtil {
 				permitidoRetornar = true;
 				System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
 			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
-				if (matchedAthleteAccess.getQrCodeParaAcesso() == null) {
-					usaUrna = true;
-				}
 
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
 					if (matchedAthleteAccess.getQuantidadeCreditos() != null
@@ -1390,13 +1387,15 @@ public class HibernateUtil {
 								&& matchedAthleteAccess.getCardNumber() == null)
 							permitido = false;
 
-						else if (usaUrna)
+						else if (usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
+						}
 					}
 
 				} else {
-					if (usaUrna)
+					if (usaUrna) {
 						permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
+					}
 				}
 
 			} else {
@@ -1512,8 +1511,9 @@ public class HibernateUtil {
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
 						matchedAthleteAccess.getId(), matchedAthleteAccess.getStatus(), location, motivo, direction,
 						equipament);
-				if (data != null)
+				if (data != null) {
 					logAccess.setAccessDate(data);
+				}
 
 				if ("ATIVO".equals(matchedAthleteAccess.getStatus())) {
 					resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedAthleteAccess,

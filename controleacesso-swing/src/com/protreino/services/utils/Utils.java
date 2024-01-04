@@ -373,7 +373,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableBroadcastServer",
 				"Habilitar servidor broadcast", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRemoveHVFacesForDate",
-				"Data para Remoção de faces Hikivison", FieldType.TEXT, "2024/01/03", false, 25));
+				"Data para Remoção de faces Hikivison", FieldType.TEXT, "01/06/2024", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "broadcastServerSocketPort",
 				"Porta do servidor de broadcast", FieldType.TEXT, "2019", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "warningPaymentDueDate",

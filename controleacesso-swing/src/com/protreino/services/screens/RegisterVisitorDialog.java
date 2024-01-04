@@ -2537,11 +2537,12 @@ public class RegisterVisitorDialog extends BaseDialog {
     private boolean isBotaoAddCreditoVisivel() {
         if (visitante != null && visitante.getId() != null
                 && "VISITANTE".equals(visitante.getTipo())) {
-            if (visitante.getQuantidadeCreditos() == null)
-                return true;
-            else if (visitante.getQuantidadeCreditos() != null
-                    && visitante.getQuantidadeCreditos() == 0l)
-                return true;
+            if (visitante.getQuantidadeCreditos() == null) {
+            	return true;
+            } else if (visitante.getQuantidadeCreditos() != null
+                    && visitante.getQuantidadeCreditos() == 0l) {
+            	return true;
+            }
         }
         return false;
     }

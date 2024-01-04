@@ -429,48 +429,11 @@ public class Main {
             updateAccessListMenuItem.setEnabled(true);
 
             inicializaTimers();
-         
-            String  dataDeRemocao = Utils.getPreference("enableRemoveHVFacesForDate");
-            try {
-				Date date = sdfWithoutTIme.parse(dataDeRemocao);
-				
-				java.util.Timer timer = new java.util.Timer();
-	    		
-	    		timer.schedule(new TimerTask() {
-
-	    			@Override
-	    			public void run() {
-	    		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-	    	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-	    	    		
-	    	    	  HashMap<String, Object> args = new HashMap<>();
-	    	        args.put("DATE_HIKIVISION", date); 
-
-	    	        @SuppressWarnings("unchecked")
-	    			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList
-	    	                (PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision");
-	    	        if( pedestres != null && !pedestres.isEmpty()) {
-	    	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-	    	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-	    	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
-	    	            
-	    	            for(PedestrianAccessEntity pedestre : pedestres) {
-	    	            	for(HikivisionDeviceTO.Device device : devices) {            	
-	    	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-	    	        		}
-	    	            }
-	    	        }
-	    				
-	    			}
-	    		//	trocar os parametros
-	    		
-	    		},date);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
             
+            
+         verificaRemocaoDefacesHV();
+          
+		
             
             
              
@@ -520,7 +483,52 @@ public class Main {
         }
     }
 
-    private void inicializaTimers() {
+    private void verificaRemocaoDefacesHV() {
+    	  String  dataDeRemocao = Utils.getPreference("enableRemoveHVFacesForDate");
+          try {
+				Date date = sdfWithoutTIme.parse(dataDeRemocao);
+
+				java.util.Timer timer = new java.util.Timer();
+	    		
+	    		timer.schedule(new TimerTask() {
+
+	    			@Override
+	    			public void run() {
+	    		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
+	    	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+	    	    		
+	    	    	  HashMap<String, Object> args = new HashMap<>();
+	    	        args.put("DATE_HIKIVISION", date); 
+
+	    	        @SuppressWarnings("unchecked")
+	    			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList
+	    	                (PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision");
+	    	        if( pedestres != null && !pedestres.isEmpty()) {
+	    	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+	    	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+	    	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
+	    	            
+	    	            for(PedestrianAccessEntity pedestre : pedestres) {
+	    	            	for(HikivisionDeviceTO.Device device : devices) {            	
+	    	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
+	    	        		}
+	    	            }
+	    	        }
+	    				
+	    			}
+	    		//	trocar os parametros
+	    		
+	    		},date);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+		
+				// TODO Auto-generated catch block
+			
+			}
+		
+	}
+
+	private void inicializaTimers() {
         timerSyncUsersAccessList.start();
         timerSyncAthleteAccessList.start();
         timerSyncLogAthleteAccess.start();
