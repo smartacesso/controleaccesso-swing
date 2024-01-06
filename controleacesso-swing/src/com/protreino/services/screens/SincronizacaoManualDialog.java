@@ -1,29 +1,53 @@
 package com.protreino.services.screens;
 
-import com.protreino.services.entity.LogPedestrianAccessEntity;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.MaskFormatter;
+
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HikiVisionIntegrationService;
 import com.protreino.services.utils.Utils;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.*;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.MaskFormatter;
-import java.awt.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.*;
 
 @SuppressWarnings("serial")
 public class SincronizacaoManualDialog extends BaseDialog {
