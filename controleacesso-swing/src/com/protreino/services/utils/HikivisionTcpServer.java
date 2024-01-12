@@ -11,6 +11,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
@@ -106,8 +112,10 @@ public class HikivisionTcpServer {
 
 				if (Objects.nonNull(eventListnerTO) && Objects.nonNull(eventListnerTO.getAccessControllerEvent())
 						&& Objects.nonNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
-					final Date thirtySecondsAgo = new Date(Calendar.getInstance().getTimeInMillis() - 20000);
-					if (eventListnerTO.getDateTime().before(thirtySecondsAgo)) {
+					final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
+					final OffsetDateTime secondsAgo = OffsetDateTime.from(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).minusSeconds(20));
+					
+					if (offsetDateTime.isBefore(secondsAgo)) {
 						System.out.println("Evento recusado: " + eventListnerTO.getAccessControllerEvent().getDeviceName()
 										+ " | " + eventListnerTO.getAccessControllerEvent().getCardNo() + " | "
 										+ eventListnerTO.getDateTime());
@@ -169,6 +177,12 @@ public class HikivisionTcpServer {
 
 			return null;
 		}
+		
+		private OffsetDateTime getOffsetDateTime(final String dataOriginal) {
+	        final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+	        final OffsetDateTime dataComFusoDesejado = dataComFusoOriginal.withOffsetSameInstant(java.time.ZoneOffset.ofHours(-3));
+	        return dataComFusoDesejado;
+	    }
 
 	}
 }

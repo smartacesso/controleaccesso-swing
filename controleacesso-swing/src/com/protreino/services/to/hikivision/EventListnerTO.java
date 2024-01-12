@@ -1,7 +1,5 @@
 package com.protreino.services.to.hikivision;
 
-import java.util.Date;
-
 public class EventListnerTO {
 
 	private String ipAddress;
@@ -11,7 +9,7 @@ public class EventListnerTO {
 	private String macAddress;
 	private Integer channelID;
 	private Integer activePostCount;
-	private Date dateTime;
+	private String dateTime;
 	private String eventType;
 	private String eventState;
 	private String eventDescription;
@@ -256,11 +254,11 @@ public class EventListnerTO {
 		this.AccessControllerEvent = AccessControllerEvent;
 	}
 
-	public Date getDateTime() {
+	public String getDateTime() {
 		return dateTime;
 	}
 
-	public void setDateTime(Date dateTime) {
+	public void setDateTime(String dateTime) {
 		this.dateTime = dateTime;
 	}
 }

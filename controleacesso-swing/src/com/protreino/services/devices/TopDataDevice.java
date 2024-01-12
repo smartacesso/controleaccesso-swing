@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.SwingWorker;
@@ -762,10 +763,11 @@ public class TopDataDevice extends Device {
 		
 		boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 		
-		if(sentido == 1) 
-			direction = "anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
-		else if(sentido == 0)
+		if(sentido == 1) {
+			direction = "anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;			
+		} else if(sentido == 0) {
 			direction = !"anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA ;
+		}
 		
 		System.out.println("Sentido escolhido: " + direction + " / Sentido recebido: " + sentido);
 		
@@ -797,25 +799,30 @@ public class TopDataDevice extends Device {
 			return;
 		}
 		
+		if(Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
+			pedestre.setLastAccessHikiVision(new Date());
+		}
+		
 		boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
 		if(!ignoraRegras) {
 			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty()) {
-				Utils.decrementaMensagens(pedestre.getMensagens());				
+				Utils.decrementaMensagens(pedestre.getMensagens());
 			}
 			
 			if(Tipo.SAIDA.equals(direction) || !bloquearSaida) {
-				Utils.decrementaCreditos(pedestre);				
+				Utils.decrementaCreditos(pedestre);
 			}
 			
 			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
 				Utils.decrementaQRCodeUso(pedestre);
 			}
+
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
-			
 		}
 
-		if(Tipo.ENTRADA.equals(direction))
+		if(Tipo.ENTRADA.equals(direction)) {
 			Utils.enviaSmsDeRegistro(pedestre);
+		}
 		
 		System.out.println("Registrou giro no equipamento: " + inner.Numero);
 		inner.BilheteInner.Cartao = new StringBuilder();
@@ -1779,8 +1786,6 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
 			processAccessRequest(cardNumber, false);
-			HibernateUtil.atualizaHorarioDePedestreHV(cardNumber);
-			
 			
 			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);

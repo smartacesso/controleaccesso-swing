@@ -45,6 +45,8 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1555,23 +1557,32 @@ public class Utils {
 		}
 
 		if ("VISITANTE".equals(pedestre.getTipo())) {
-			if (pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) {
+			if (Objects.nonNull(pedestre.getQuantidadeCreditos()) && pedestre.getQuantidadeCreditos() > 0) {
 				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
-				if (pedestre.getQuantidadeCreditos() <= 0)
-					pedestre.setCardNumber(null);
+				if (pedestre.getQuantidadeCreditos() <= 0) {
+					apagaCartaoVisitante(pedestre);
+				}
 			} else {
 				decrementaCreditosPedestreRegra(pedestre);
 				pedestre.setQuantidadeCreditos(null);
-				pedestre.setCardNumber(null);
+				apagaCartaoVisitante(pedestre);
 			}
 
 		} else {
-			if (pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0)
+			if (pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) {
 				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
-
+			}
 		}
 	}
 
+	private static void apagaCartaoVisitante(final PedestrianAccessEntity visitante) {
+		if(Objects.nonNull(visitante.getDataCadastroFotoNaHikivision())) {
+			return;
+		}
+		
+		visitante.setCardNumber(null);
+	}
+	
 	private static void decrementaCreditosPedestreRegra(PedestrianAccessEntity pedestre) {
 		if (pedestre.getPedestreRegra() == null) {
 			return;
@@ -1794,7 +1805,7 @@ public class Utils {
 		
 		System.out.println(Objects.equals(a, b));
 		System.out.println(a.equals(b));
-
+		getOffsetDateTime();
 	}
 	
 	public static void fill(JProgressBar b)
@@ -1812,6 +1823,25 @@ public class Utils {
         }
         catch (Exception e) {
         }
+    }
+	
+	private static OffsetDateTime getOffsetDateTime() {
+        // Data original no fuso +08:00
+        String dataOriginal = "2023-12-01T13:54:57-05:00";
+
+        // Criar um objeto OffsetDateTime a partir da String
+        final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        // Definir o fuso horário desejado (-03:00)
+        final OffsetDateTime dataComFusoDesejado = dataComFusoOriginal.withOffsetSameInstant(java.time.ZoneOffset.ofHours(-3));
+
+        // Formatar a nova data no fuso horário desejado
+        String dataFormatada = dataComFusoDesejado.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        System.out.println("Data original: " + dataOriginal);
+        System.out.println("Data convertida para -03:00: " + dataFormatada);
+        
+        return dataComFusoDesejado;
     }
 
 //	public static String conversorHexaDeciimal(String Cartao) {

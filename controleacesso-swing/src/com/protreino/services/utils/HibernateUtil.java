@@ -1320,7 +1320,7 @@ public class HibernateUtil {
 			}
 
 			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado())
-					|| Boolean.TRUE.equals(ignoraRegras)) && origem != 3) {
+					|| Boolean.TRUE.equals(ignoraRegras)) && origem != Origens.ORIGEM_LEITOR_2) {
 
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedAthleteAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
@@ -1328,7 +1328,7 @@ public class HibernateUtil {
 				return new Object[] { VerificationResult.ALLOWED, userName, matchedAthleteAccess };
 			}
 
-			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == 3) {
+			if (matchedAthleteAccess.getTipo().equals("PEDESTRE") && origem == Origens.ORIGEM_LEITOR_2) {
 				permitidoSensor = false;
 			}
 			
@@ -1355,9 +1355,8 @@ public class HibernateUtil {
 			} else if (ultimoAcesso != null && Tipo.SAIDA.equals(ultimoAcesso.getDirection())
 					&& !isPedestrePermitidoRetornar(matchedAthleteAccess)) {
 				permitidoRetornar = true;
-				System.out.println("quantidade de creditos" + matchedAthleteAccess.getQuantidadeCreditos());
-			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
 
+			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
 					if (matchedAthleteAccess.getQuantidadeCreditos() != null
 							|| isPermitidoPedestreRegra(matchedAthleteAccess)) {
@@ -1372,7 +1371,7 @@ public class HibernateUtil {
 								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null
 										&& matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos()
 												.equals(1L)))
-								&& !Integer.valueOf(18).equals(origem) && usaUrna)
+								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) && usaUrna)
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 
 						if (isPermitidoPedestreRegra(matchedAthleteAccess)) {
@@ -1384,10 +1383,10 @@ public class HibernateUtil {
 
 					} else {
 						if (Integer.valueOf(FacialDevice.ORIGEM_FACIAL).equals(origem)
-								&& matchedAthleteAccess.getCardNumber() == null)
+								&& matchedAthleteAccess.getCardNumber() == null) {
 							permitido = false;
-
-						else if (usaUrna) {
+						
+						} else if (usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 						}
 					}
@@ -1462,8 +1461,9 @@ public class HibernateUtil {
 
 					Integer limiteAcessos = Integer.valueOf(Utils.getPreference("restrictAccessDays"));
 
-					if (list != null && list.size() >= limiteAcessos)
+					if (list != null && list.size() >= limiteAcessos) {
 						permitidoHoje = false;
+					}
 				}
 
 			}
@@ -2108,17 +2108,21 @@ public class HibernateUtil {
 
 		} else {
 			Session session = getSessionFactory().getCurrentSession();
-			if (session.getTransaction() == null || !session.getTransaction().isActive())
+			if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 				session.beginTransaction();
+			}
+
 			try {
 				Query<?> query = session.createNamedQuery(entityClass.getSimpleName() + ".findByCardNumber",
 						entityClass);
 				query.setParameter("CARD_NUMBER", cardNumber);
 				List<?> resultList = (List<?>) query.getResultList();
-				if (resultList.isEmpty())
+				if (resultList.isEmpty()) {
 					result = null;
-				else
+				} else {
 					result = resultList.get(0);
+				}
+
 				session.getTransaction().commit();
 			} catch (Exception e) {
 				result = null;
@@ -3385,20 +3389,8 @@ public class HibernateUtil {
 				return device;
 			}
 		}
+
 		return null;
-
-	}
-
-	public static void atualizaHorarioDePedestreHV(String cardNumber) {
-		
-		System.out.println("atualizaHorarioDePedestreHV :  cartão HIkivision" + cardNumber);
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) getSingleResultByCardNumber(PedestrianAccessEntity.class,Long.valueOf(cardNumber));
-		System.out.println("atualizaHorarioDePedestreHV : nome de usuario" + pedestre.getName());
-	
-		Date date = new Date();
-		pedestre.setLastAccessHikiVision(date);
-		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
-		
 	}
 
 }
