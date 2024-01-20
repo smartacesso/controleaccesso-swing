@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
@@ -1555,16 +1556,25 @@ public class Utils {
 		if (pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
 			return;
 		}
+		
+		final Optional<PedestreRegraEntity> regraAtiva = buscaRegraAtiva(pedestre);
 
 		if ("VISITANTE".equals(pedestre.getTipo())) {
 			if (Objects.nonNull(pedestre.getQuantidadeCreditos()) && pedestre.getQuantidadeCreditos() > 0) {
 				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
+				if(regraAtiva.isPresent()) {
+					regraAtiva.get().setQtdeDeCreditos(regraAtiva.get().getQtdeDeCreditos() - 1);
+				}
 				if (pedestre.getQuantidadeCreditos() <= 0) {
 					apagaCartaoVisitante(pedestre);
 				}
 			} else {
 				decrementaCreditosPedestreRegra(pedestre);
 				pedestre.setQuantidadeCreditos(null);
+				if(regraAtiva.isPresent()) {
+					regraAtiva.get().setQtdeDeCreditos(null);
+				}
+				
 				apagaCartaoVisitante(pedestre);
 			}
 
@@ -1573,6 +1583,23 @@ public class Utils {
 				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
 			}
 		}
+	}
+	
+	public static Optional<PedestreRegraEntity> buscaRegraAtiva(PedestrianAccessEntity pedestre) {
+		if (pedestre.getPedestreRegra() == null) {
+			return Optional.empty();
+		}
+
+		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
+			if (pedestreRegra.getQtdeDeCreditos() != null && pedestreRegra.getQtdeDeCreditos() > 0
+					&& (pedestreRegra.getRemovidoNoDesktop() == null
+							|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
+				return Optional.of(pedestreRegra);
+			}
+
+		}
+
+		return Optional.empty();
 	}
 
 	private static void apagaCartaoVisitante(final PedestrianAccessEntity visitante) {

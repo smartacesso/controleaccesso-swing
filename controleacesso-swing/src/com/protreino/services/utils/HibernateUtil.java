@@ -1318,6 +1318,7 @@ public class HibernateUtil {
 				motivo = "Usuário inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
+			
 
 			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado())
 					|| Boolean.TRUE.equals(ignoraRegras)) && origem != Origens.ORIGEM_LEITOR_2) {
@@ -1369,10 +1370,10 @@ public class HibernateUtil {
 
 						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l)
 								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null
-										&& matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos()
-												.equals(1L)))
-								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) && usaUrna)
+										&& matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
+								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) && usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
+						}
 
 						if (isPermitidoPedestreRegra(matchedAthleteAccess)) {
 							permitido = true;
@@ -1593,7 +1594,6 @@ public class HibernateUtil {
 		}
 
 		HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
-
 	}
 
 	private static boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {

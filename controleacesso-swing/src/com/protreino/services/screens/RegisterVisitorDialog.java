@@ -1843,8 +1843,9 @@ public class RegisterVisitorDialog extends BaseDialog {
     public PedestreRegraEntity buscaPedestreRegraPadraoVisitante() {
         RegraEntity regra = buscaRegraPeloNome("ACESSO_UNICO_VISITANTE");
 
-        if (regra == null)
-            regra = cadastraNovaRegra("ACESSO_UNICO_VISITANTE");
+        if (regra == null) {
+        	regra = cadastraNovaRegra("ACESSO_UNICO_VISITANTE");
+        }
 
         PedestreRegraEntity pedestreRegra = new PedestreRegraEntity();
         pedestreRegra.setId(new Date().getTime());
@@ -2144,6 +2145,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
     private void criarDialogoTirarFoto() {
         WebCamCaptureViewer webCamCaptureViewer = new WebCamCaptureViewer();
+        //criar tela de camera nao cadastrada
         webCamCaptureViewer.getTirarFotoButton().addActionListener(e -> {
             BufferedImage imageCaptured = webCamCaptureViewer.getWebcam().getImage();
 

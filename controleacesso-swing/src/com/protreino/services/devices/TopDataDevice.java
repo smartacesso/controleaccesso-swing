@@ -1725,13 +1725,14 @@ public class TopDataDevice extends Device {
 				
 				if (ret == Enumeradores.RET_COMANDO_OK) {
 					try {
-						
 						Long idUsuario = searchTemplate();
 						System.out.println(sdf.format(new Date()) + "  VALIDAR ACESSO: Usuario identificado: " + idUsuario);
-						if (idUsuario != null)
+						if (idUsuario != null) {
 							processAccessRequest(idUsuario.toString());
-						else
+
+						} else {
 							verificationResult = VerificationResult.NOT_FOUND;
+						}
 
 					} catch (Exception e) {
 					} finally {
@@ -1740,8 +1741,9 @@ public class TopDataDevice extends Device {
 				}
 			}
 			
-			if (athleteScreen != null)
+			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);
+			}
 			
 			if (VerificationResult.ALLOWED.equals(getVerificationResult())
 					|| VerificationResult.TOLERANCE_PERIOD.equals(getVerificationResult())) {

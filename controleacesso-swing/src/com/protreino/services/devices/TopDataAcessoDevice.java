@@ -86,6 +86,8 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.DesabilitarRele1(inner.Numero);
 		EasyInner.DesabilitarRele2(inner.Numero);
 		
+		Boolean AcionaRele2 = getConfigurationValueAsBoolean(ACIONA_RELE_2);
+		
 		Boolean usaTorniquete = getConfigurationValueAsBoolean(USA_TORNIQUETE);
 		if(Boolean.TRUE.equals(usaTorniquete))
 			return;
