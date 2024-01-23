@@ -82,7 +82,6 @@ public class HikiVisionIntegrationService {
 		return false;
 	}
 	
-	
 	public void captureFaceLocally() {
 		OkHttpClient client = getOkHttpClient();
 		
@@ -105,6 +104,8 @@ public class HikiVisionIntegrationService {
 		
 		
 	}
+	
+
 
 	public boolean isUsuarioJaCadastrado(final String deviceId, final String idUser) {
 		final String uuid = UUID.randomUUID().toString();
