@@ -10,6 +10,7 @@ import com.protreino.services.to.hikivision.*;
 
 import okhttp3.*;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +35,7 @@ public class HikiVisionIntegrationService {
 			password = Utils.getPreference("hikivisionPasswordServerConnection");
 
 			if (Utils.isNullOrEmpty(url) || Utils.isNullOrEmpty(user)) {
-				throw new IllegalArgumentException("Url connection n√£o pode ser nula");
+				throw new IllegalArgumentException("Url connection n„o pode ser nula");
 			}
 
 			gson = new Gson();
@@ -79,6 +80,30 @@ public class HikiVisionIntegrationService {
 		}
 
 		return false;
+	}
+	
+	
+	public void captureFaceLocally() {
+		OkHttpClient client = getOkHttpClient();
+		
+		final String body =  "<CaptureFaceDataCond version=\"2.0\" xmlns=\"http://www.isapi.org/ver20/XMLSchema\"><captureInfrared>false</captureInfrared><dataType>binary</dataType></CaptureFaceDataCond>";
+			
+		
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/xml"));
+
+		Request request = new Request.Builder().url("http://192.168.15.56:80" + "/ISAPI/AccessControl/CaptureFaceData").post(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+
+		
+			try {
+				Response response = client.newCall(request).execute();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		
+		
 	}
 
 	public boolean isUsuarioJaCadastrado(final String deviceId, final String idUser) {

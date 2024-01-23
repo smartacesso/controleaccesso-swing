@@ -1813,6 +1813,9 @@ public class Utils {
 	
 
 	public static void main(String[] args) {
+		
+		
+		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
 		String aux = "8591641950";
 		String temp = "";
