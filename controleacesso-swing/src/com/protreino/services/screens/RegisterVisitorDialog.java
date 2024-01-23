@@ -1937,7 +1937,6 @@ public class RegisterVisitorDialog extends BaseDialog {
         escolhertirarFotoButton.setBorder(new EmptyBorder(10, 20, 10, 20));
         escolhertirarFotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         escolhertirarFotoButton.addActionListener(e -> {
-        	//HikiVisionIntegrationService.getInstace().captureFaceLocally();
             criarDialogoTirarFoto();
         });
 
