@@ -158,10 +158,6 @@ public class HikivisionUseCases {
 			}
 		});
 	}
-	
-	public void capturaFoto() {
-		hikiVisionIntegrationService.capturePicture();
-	}
-	
+
 
 }

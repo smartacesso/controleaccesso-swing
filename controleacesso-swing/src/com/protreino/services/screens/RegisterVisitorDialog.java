@@ -2153,7 +2153,6 @@ public class RegisterVisitorDialog extends BaseDialog {
                 setBufferedImage(imageCaptured);
                 salvarImagemCapturada();
                 hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
-               // hikivisionUseCases.capturaFoto();
                 habilitaLabelImagemVisitante();
 
                 webCamCaptureViewer.dispose();
