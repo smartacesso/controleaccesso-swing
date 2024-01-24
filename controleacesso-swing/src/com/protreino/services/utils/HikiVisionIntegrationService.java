@@ -495,13 +495,34 @@ public class HikiVisionIntegrationService {
 		}
 	}
 	
+	public void captureFaceLocally() {
+		OkHttpClient client = getOkHttpClient();
+		
+		final String body =  "<CaptureFaceDataCond version=\"2.0\" xmlns=\"http://www.isapi.org/ver20/XMLSchema\">"
+				+ "<captureInfrared>false</captureInfrared><dataType>binary</dataType></CaptureFaceDataCond>";
+			
+		
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/xml"));
+
+		Request request = new Request.Builder().url("http://192.168.15.56:80" + "/ISAPI/AccessControl/CaptureFaceData").post(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+
+		try {
+			Response response = client.newCall(request).execute();
+			System.out.println(response.body().bytes());
+			System.out.println("rsdada");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private OkHttpClient getOkHttpClient() {
 		final DigestAuthenticator authenticator = new DigestAuthenticator(new Credentials(user, password));
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
 
 		return new OkHttpClient.Builder().authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
-				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(1000, TimeUnit.MILLISECONDS)
-				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(10000, TimeUnit.MILLISECONDS)
+				.writeTimeout(10000, TimeUnit.MILLISECONDS).build();
 	}
 
 }
