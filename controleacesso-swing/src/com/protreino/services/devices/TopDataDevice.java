@@ -1130,12 +1130,11 @@ public class TopDataDevice extends Device {
 				EasyInner.AcionarBipLongo(inner.Numero);
 				EasyInner.LigarLedVermelho(inner.Numero);
 				
-				
 				Long tempoAguardo = getConfigurationValueAsLong(TEMPO_DE_MENSAGEM_NEGADO);
 				if(tempoAguardo != null && tempoAguardo > 0) {
-					Utils.sleep(tempoAguardo*1000);					
+					Utils.sleep(tempoAguardo * 1000);					
 				} else {
-					Utils.sleep(5000);					
+					Utils.sleep(5000);
 				}
 				
 				EasyInner.DesligarLedVermelho(inner.Numero);
@@ -1597,7 +1596,7 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Hor·rio_clockwise", FieldType.COMBOBOX, 
 				"Hor·rio_clockwise;Antihor√°rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
-		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_MENSAGEM_NEGADO, "5", FieldType.NUMERIC_LIST, "1;1;15"));
+		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_MENSAGEM_NEGADO, "1", FieldType.NUMERIC_LIST, "1;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(HABILITAR_TECLADO, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ECOAR_ASTERISCOS, "false", FieldType.CHECKBOX));

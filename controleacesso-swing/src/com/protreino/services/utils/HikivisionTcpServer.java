@@ -130,7 +130,7 @@ public class HikivisionTcpServer {
 						}
 					}
 				}
-
+				
 			} catch (EOFException eof) {
 				eof.printStackTrace();
 			} catch (SocketException se) {
@@ -138,7 +138,6 @@ public class HikivisionTcpServer {
 			} catch (Exception e) {
 				System.out.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
 				e.printStackTrace();
-			} finally {
 			}
 		}
 		
