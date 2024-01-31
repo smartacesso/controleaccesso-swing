@@ -794,18 +794,18 @@ public class Main {
 
         Boolean sessaoLimpa = HibernateUtil.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sessï¿½o de usuï¿½rio encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sessão de usuário encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
         } else
-            Utils.createNotification("Ocorreu um erro ao finalizar a sessï¿½o.", NotificationType.BAD);
+            Utils.createNotification("Ocorreu um erro ao finalizar a sessão.", NotificationType.BAD);
 
     }
 
     public static void exit(boolean exibirConfirmacao) {
         if (exibirConfirmacao) {
-            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serï¿½o desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
+            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serão  desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (dialogResult != JOptionPane.YES_OPTION)
                 return;
