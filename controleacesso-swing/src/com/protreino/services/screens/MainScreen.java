@@ -760,7 +760,7 @@ public class MainScreen extends JFrame {
 			for (DeviceTO deviceTO : devicesFromServer) {
 				Device device = null;
 				if(Manufacturer.TOP_DATA.equals(deviceTO.getManufacturer())) {
-					 // device = new TopDataDevice();
+					  device = new TopDataDevice(deviceTO.getIdentifier());
 				}
 				addDeviceCard(device);
 				device.getDeviceCard()
