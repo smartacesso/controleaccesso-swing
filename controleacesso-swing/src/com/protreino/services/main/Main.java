@@ -440,8 +440,8 @@ public class Main {
             System.out.println(" hora para reset " + hora);
 
 
-            inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-            inicio.set(Calendar.MINUTE, 0);
+            inicio.set(Calendar.HOUR_OF_DAY, 13);
+            inicio.set(Calendar.MINUTE,30);
             inicio.set(Calendar.SECOND, 0);
             if (new Date().getTime() > inicio.getTimeInMillis()) {
                 //registra pra iniciar smanh�
@@ -2142,7 +2142,7 @@ public class Main {
 
             private void enviaLogsDeAcesso() throws Exception {
                 final Date newLastSyncLog = new Date();
-                final int pageSize = 100;
+                final int pageSize = Utils.getPreferenceAsInteger("syncLogPageSize");
                 final int qtdeLogsOnline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByAccessDateCount");
                 final int qtdeLogsOffline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByCreateDateCount");
                 int offsetLogsOnline = 0;

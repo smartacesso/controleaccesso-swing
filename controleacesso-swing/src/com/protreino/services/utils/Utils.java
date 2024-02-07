@@ -487,6 +487,8 @@ public class Utils {
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
+				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));
 		
 		// Preferencias do nova Integração HIKIVISION
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
