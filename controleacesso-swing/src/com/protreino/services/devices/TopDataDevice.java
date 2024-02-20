@@ -961,12 +961,16 @@ public class TopDataDevice extends Device {
 	@Override
 	public void disconnect(String... args) throws Exception {
 		super.disconnect();
-		if (easyInner != null)
+
+		if (easyInner != null) {
 			encerrarConexao(args != null && args.length > 0 && "SAIR".equals(args[0]));
+		}
+
 		if (indexSearchEngine != null)  {
 			indexSearchEngine.dispose();
 			indexSearchEngine = null;
         }
+
 		enviaCartaoCatracaOffline();
 
 		setStatus(DeviceStatus.DISCONNECTED);
@@ -2195,8 +2199,11 @@ public class TopDataDevice extends Device {
 			EasyInner.DefinirMensagemSaidaOffLine(0, mensagemSaidaOffLine);
 			EasyInner.DefinirMensagemPadraoOffLine(1, mensagemPadraoOffLine);
 			EasyInner.EnviarMensagensOffLine(inner.Numero);
-			if(fechaPorta)
-				EasyInner.FecharPortaComunicacao();
+
+			if(fechaPorta) {
+				EasyInner.FecharPortaComunicacao();				
+			}
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

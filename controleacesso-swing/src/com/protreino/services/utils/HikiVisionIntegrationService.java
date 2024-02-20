@@ -509,7 +509,7 @@ public class HikiVisionIntegrationService {
 
 		try {
 			Response response = client.newCall(request).execute();
-			System.out.println(response.body().string());
+			System.out.println(response.body());
 			System.out.println("rsdada");
 		} catch (IOException e) {
 			e.printStackTrace();
