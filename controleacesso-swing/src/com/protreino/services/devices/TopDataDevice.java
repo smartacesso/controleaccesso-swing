@@ -152,6 +152,11 @@ public class TopDataDevice extends Device {
         ret = Enumeradores.Limpar;
         Long inicio = System.currentTimeMillis();
         Long tempoDeEspera = getConfigurationValueAsLong(TEMPO_ESPERA_PARA_CONECTAR) * 1000;
+        
+        if(Objects.nonNull(args) && "NOT_WAIT_TIME".equals(args[0])) {
+        	tempoDeEspera = 500l;
+        }
+        
         while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis() - inicio) < tempoDeEspera) {
         	ret = testarConexaoInner(inner.Numero);
         	Utils.sleep(50);
@@ -1073,7 +1078,7 @@ public class TopDataDevice extends Device {
 			}
 
 			LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(matchedAthleteAccess.getId(), matchedAthleteAccess.getQtdAcessoAntesSinc());
-			System.out.println(" ultimo acesso " + lastAccess);
+			System.out.println("ultimo acesso " + lastAccess.getDirection());
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
 				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 				EasyInner.AcionarBipCurto(inner.Numero);

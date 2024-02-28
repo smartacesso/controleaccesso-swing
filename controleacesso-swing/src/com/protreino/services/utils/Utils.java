@@ -55,6 +55,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TimerTask;
@@ -487,6 +488,8 @@ public class Utils {
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
+				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));
 		
 		// Preferencias do nova Integração HIKIVISION
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
@@ -625,14 +628,19 @@ public class Utils {
 					deviceEntity.setAttachedDevices(attachedDevicesArray.toString());
 				}
 
+				if(deviceAlreadyExists(deviceEntity.getIdentifier())) {
+					continue;
+				}
+				
 				HibernateUtil.save(DeviceEntity.class, deviceEntity);
 			}
 
 			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class,
 					"DeviceEntity.findAll");
 			if (lista != null && !lista.isEmpty()) {
-				for (DeviceEntity deviceEntity : lista)
+				for (DeviceEntity deviceEntity : lista) {
 					Main.devicesList.add(deviceEntity.recoverDevice());
+				}
 			}
 			boolean haveDefaultDevice = false;
 			for (Device device : Main.devicesList) {
@@ -641,19 +649,34 @@ public class Utils {
 					break;
 				}
 			}
-			if (!haveDefaultDevice && !Main.devicesList.isEmpty())
+
+			if (!haveDefaultDevice && !Main.devicesList.isEmpty()) {
 				Main.devicesList.get(0).setDefaultDevice(true);
+			}
 		}
+	}
+
+	private static boolean deviceAlreadyExists(String identifier) {
+		HashMap<String, Object> args = new HashMap<>();
+		args.put("IDENTIFIER", identifier);
+		
+		DeviceEntity device = (DeviceEntity) HibernateUtil.getUniqueResultWithParams(DeviceEntity.class,
+				"DeviceEntity.findByIdentifier", args);
+		
+		return Objects.nonNull(device);
 	}
 
 	@SuppressWarnings("unchecked")
 	public static String exportDevices() {
 		if (getPreferenceAsBoolean("importExportDevices")) {
 			JsonArray deviceArray = new JsonArray();
-			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class,
-					"DeviceEntity.findAll");
-			if (!isNullOrEmpty(lista)) {
-				for (DeviceEntity deviceEntity : lista) {
+
+			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+			
+			List<DeviceEntity> listWithDistinctIdentifiers = getDistinctsIdentifier(lista);
+			
+			if (!isNullOrEmpty(listWithDistinctIdentifiers)) {
+				for (DeviceEntity deviceEntity : listWithDistinctIdentifiers) {
 					JsonObject deviceObj = new JsonObject();
 					deviceObj.addProperty("manufacturer", deviceEntity.getManufacturer().toString());
 					deviceObj.addProperty("identifier", deviceEntity.getIdentifier());
@@ -711,7 +734,6 @@ public class Utils {
 						}
 					}
 					deviceObj.add("attachedDevices", attachedDevicesArray);
-					deviceArray.add(deviceObj);
 					
 					JsonArray hikivisionAttachedCamerasArray = new JsonArray();
 					if (deviceEntity.getAttachedHikivisionCameras() != null && !deviceEntity.getAttachedHikivisionCameras().isEmpty()) {
@@ -731,11 +753,31 @@ public class Utils {
 					deviceArray.add(deviceObj);
 				}
 			}
+
 			Main.loggedUser.setBackupDevices(deviceArray.toString());
 			sendBackupToServer();
 			return deviceArray.toString();
 		}
 		return "";
+	}
+
+	private static List<DeviceEntity> getDistinctsIdentifier(List<DeviceEntity> lista) {
+		final List<DeviceEntity> distinctDevices = new ArrayList<>();
+		
+		for(DeviceEntity device : lista) {
+			boolean contains = false;
+			for(DeviceEntity d : distinctDevices) {
+				if(d.getIdentifier().equals(device.getIdentifier())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				distinctDevices.add(device);
+			}
+		}
+		
+		return distinctDevices;
 	}
 
 	/**

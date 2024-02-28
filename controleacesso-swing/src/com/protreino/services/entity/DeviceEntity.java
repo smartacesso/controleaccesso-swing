@@ -35,7 +35,10 @@ import com.protreino.services.utils.HibernateUtil;
 @Table(name="TB_DEVICE")
 @NamedQueries({
 	@NamedQuery(name = "DeviceEntity.findAll", query = "select obj from DeviceEntity obj order by id asc"),
-	@NamedQuery(name = "DeviceEntity.findById", query = "select obj from DeviceEntity obj where obj.id = :ID")
+	@NamedQuery(name = "DeviceEntity.findById", query = "select obj from DeviceEntity obj where obj.id = :ID"),
+	@NamedQuery(name = "DeviceEntity.findByIdentifier", 
+			   query = "select obj from DeviceEntity obj "
+			   		 + "where obj.identifier = :IDENTIFIER")
 })
 public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializable {
 	

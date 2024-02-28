@@ -418,8 +418,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	}
 
 	public Date getDateNewAccess() {
-		if(dateNewAccess == null)
-			return getDataCriacao();
+		if(dateNewAccess == null) {
+			return getDataCriacao();			
+		}
+
 		return dateNewAccess;
 	}
 
