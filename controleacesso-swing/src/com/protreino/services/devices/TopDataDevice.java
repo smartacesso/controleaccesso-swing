@@ -153,7 +153,7 @@ public class TopDataDevice extends Device {
         Long inicio = System.currentTimeMillis();
         Long tempoDeEspera = getConfigurationValueAsLong(TEMPO_ESPERA_PARA_CONECTAR) * 1000;
         
-        if(Objects.nonNull(args) && "NOT_WAIT_TIME".equals(args[0])) {
+        if(Objects.nonNull(args) && args.length > 0 && "NOT_WAIT_TIME".equals(args[0])) {
         	tempoDeEspera = 500l;
         }
         
