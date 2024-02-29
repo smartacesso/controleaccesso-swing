@@ -333,7 +333,6 @@ public class MainScreen extends JFrame {
 	 */
 
 	private void addDeviceCard(Device device) {
-		
 		DeviceCard deviceCard = new DeviceCard(device);
 		device.setDeviceCard(deviceCard);
 		devicesPane.add(deviceCard);
@@ -759,9 +758,11 @@ public class MainScreen extends JFrame {
 		if(devicesFromServer != null && !devicesFromServer.isEmpty()) {
 			for (DeviceTO deviceTO : devicesFromServer) {
 				Device device = null;
+
 				if(Manufacturer.TOP_DATA.equals(deviceTO.getManufacturer())) {
-					  device = new TopDataDevice(deviceTO.getIdentifier());
+					 device = new TopDataDevice(deviceTO.getIdentifier());
 				}
+
 				addDeviceCard(device);
 				device.getDeviceCard()
 						.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);

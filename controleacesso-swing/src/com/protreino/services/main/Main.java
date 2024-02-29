@@ -794,18 +794,18 @@ public class Main {
 
         Boolean sessaoLimpa = HibernateUtil.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sessï¿½o de usuï¿½rio encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sessão de usuário encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
         } else
-            Utils.createNotification("Ocorreu um erro ao finalizar a sessï¿½o.", NotificationType.BAD);
+            Utils.createNotification("Ocorreu um erro ao finalizar a sessão.", NotificationType.BAD);
 
     }
 
     public static void exit(boolean exibirConfirmacao) {
         if (exibirConfirmacao) {
-            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serï¿½o desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
+            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serão  desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (dialogResult != JOptionPane.YES_OPTION)
                 return;
@@ -919,8 +919,6 @@ public class Main {
             limpaCartoesVisitantes();
         }
         
-        
-
         limpaSentidoTodos();
         limpaStatusCartoes();
         limpaTelas();
@@ -935,30 +933,29 @@ public class Main {
 
 			@Override
 			public void run() {
-		     	LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-	    		Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-	    	  HashMap<String, Object> args = new HashMap<>();
-	        args.put("DATE_HIKIVISION", date); 
+				LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
+				Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
+				HashMap<String, Object> args = new HashMap<>();
+				args.put("DATE_HIKIVISION", date);
 
-	        @SuppressWarnings("unchecked")
-			final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
-	                .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
-	        if( pedestres != null && !pedestres.isEmpty()) {
-	        	HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-	        	HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-	            List<HikivisionDeviceTO.Device> devices  = hiviVisionUseCase.listarDispositivos();
-	            for( PedestrianAccessEntity pedestre : pedestres) {
-	            	for(HikivisionDeviceTO.Device device : devices) {
-	            		
-	            		hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-	        		}
-	            }
-	        }
-	    	
-				
+				@SuppressWarnings("unchecked")
+				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+						.getResultListWithParams(PedestrianAccessEntity.class,
+								"PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
+				if (pedestres != null && !pedestres.isEmpty()) {
+					HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
+					HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+					List<HikivisionDeviceTO.Device> devices = hiviVisionUseCase.listarDispositivos();
+					for (PedestrianAccessEntity pedestre : pedestres) {
+						for (HikivisionDeviceTO.Device device : devices) {
+							hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
+						}
+					}
+				}
+
 			}
-		
-		}, 0,0);
+
+		}, 0, 0);
 		
 	//	 180 * 86400000
 	
@@ -1018,13 +1015,14 @@ public class Main {
     }
 
     private static void limpaSentidoTodos() {
-
         //verifica se estï¿½ ativado
-        if (Main.servidor != null)
-            return;
+        if (Main.servidor != null) {
+        	return;
+        }
 
-        if (!Utils.getPreferenceAsBoolean("enableDirectionClear"))
-            return;
+        if (!Utils.getPreferenceAsBoolean("enableDirectionClear")) {
+        	return;
+        }
 
         //adiciona data para que os calculos de quantidade
         //de giros sejam refeitos
