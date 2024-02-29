@@ -270,6 +270,23 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 		this.status = "ATIVO";
 	}
 	
+	
+	public LogPedestrianAccessEntity(Long idLoggedUser, Long idPedestrian, Boolean offline, String location, String reason, 
+			String direction, String equipament, String cartaoAcessoRecebido, Date accessDate) {
+		super();
+		this.idLoggedUser = idLoggedUser;
+		this.idPedestrian = idPedestrian;
+		this.offline = offline;
+		this.location = location;
+		this.reason = reason;
+		this.direction = direction;
+		this.equipament = equipament;
+		this.status = "ATIVO";
+		this.cartaoAcessoRecebido = cartaoAcessoRecebido;
+		this.accessDate = accessDate;
+		this.dataCriacao = new Date();
+	}
+	
 	public Long getId() {
 		return id;
 	}
