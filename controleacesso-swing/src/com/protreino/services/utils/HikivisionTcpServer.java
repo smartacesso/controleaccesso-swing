@@ -76,6 +76,7 @@ public class HikivisionTcpServer {
 				hikivisionEventsUseCase.execute(sb);
 				sendResponse(outputStream);
 
+
 			} catch (EOFException eof) {
 				eof.printStackTrace();
 			} catch (SocketException se) {
@@ -83,7 +84,7 @@ public class HikivisionTcpServer {
 			} catch (Exception e) {
 				System.out.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
 				e.printStackTrace();
-			} finally {}
+			}
 		}
 		
 		private void sendResponse(final OutputStream outputStream) throws IOException {
