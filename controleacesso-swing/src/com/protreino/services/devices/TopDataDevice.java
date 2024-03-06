@@ -1018,7 +1018,6 @@ public class TopDataDevice extends Device {
 	public void allowAccess() {
 		try {
 			definiMensagemExibidaNoDisplay();
-			System.out.println("chegou topdatadevice - allowAccess");
 			String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
 			boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 			int ret = 0;
@@ -1059,10 +1058,12 @@ public class TopDataDevice extends Device {
 		String espacoEntrar = "";
 		String espacoSair = "";
 		
-		if(entrar.length() < 14)
+		if(entrar.length() < 14) {
 			espacoEntrar = " ";
-		if(sair.length() < 14)
+		}
+		if(sair.length() < 14) {
 			espacoSair = " ";
+		}
 		
 		if(bloquearSaida && matchedAthleteAccess != null) {
 			if(inner.BilheteInner.Origem == Enumeradores.ORIGEM_URNA || inner.BilheteInner.Origem == Origens.ORIGEM_LEITOR_2) {
@@ -1078,7 +1079,6 @@ public class TopDataDevice extends Device {
 			}
 
 			LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(matchedAthleteAccess.getId(), matchedAthleteAccess.getQtdAcessoAntesSinc());
-			System.out.println("ultimo acesso " + lastAccess.getDirection());
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
 				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 				EasyInner.AcionarBipCurto(inner.Numero);

@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -62,6 +63,7 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.utils.HibernateUtil;
@@ -474,8 +476,11 @@ public class MainScreen extends JFrame {
 						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
 								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
-						if (retornoAuthentication == null)
+						if (retornoAuthentication == null) {
 							return;
+						}
+						
+						
 						if (retornoAuthentication) {
 							new PreferencesDialog();
 							int index = tabbedPane.getSelectedIndex();
@@ -490,6 +495,8 @@ public class MainScreen extends JFrame {
 						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
 					}
 				}
+
+				
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
 

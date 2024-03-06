@@ -39,6 +39,7 @@ import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HttpConnection;
@@ -151,6 +152,8 @@ public class LoginDialog extends JDialog {
 										String chaveIntegracaoComtele = null;
 										Boolean expedidora = false;
 										Boolean habilitaPedestre = true;
+										PerfilAcesso perfilAcesso = PerfilAcesso.OPERADOR;
+
 										try {
 											qtdDigitos = (jsonObject.get("qtdePadraoDigitosCartao") != JsonNull.INSTANCE ? jsonObject.get("qtdePadraoDigitosCartao").getAsInt() : null);
 											chaveIntegracaoComtele = (jsonObject.get("chaveIntegracaoComtele") != JsonNull.INSTANCE ? jsonObject.get("chaveIntegracaoComtele").getAsString() : null);
@@ -161,6 +164,10 @@ public class LoginDialog extends JDialog {
 										try {
 											habilitaPedestre = (jsonObject.get("habilitaPedestre") != JsonNull.INSTANCE ? jsonObject.get("habilitaPedestre").getAsBoolean() : true);
 										}catch (Exception e) {}
+										try {
+											perfilAcesso = PerfilAcesso.get(jsonObject.get("perfil").getAsString());
+										} catch (Exception e) {}
+
 										Main.loggedUser = new UserEntity(
 												jsonObject.get("id") != JsonNull.INSTANCE ? jsonObject.get("id").getAsLong() : null,
 												jsonObject.get("login") != JsonNull.INSTANCE ? jsonObject.get("login").getAsString() : null,
@@ -170,7 +177,7 @@ public class LoginDialog extends JDialog {
 												jsonAcademy.get("id") != JsonNull.INSTANCE ? jsonAcademy.get("id").getAsString() : null,
 												jsonAcademy.get("nome") != JsonNull.INSTANCE ? jsonAcademy.get("nome").getAsString() : null,
 												null,qtdDigitos, unidadeTextField.getText(),
-												chaveIntegracaoComtele, expedidora, habilitaPedestre);
+												chaveIntegracaoComtele, expedidora, habilitaPedestre, perfilAcesso);
 										Main.loggedUser.setUseBiometry(true);
 										Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
 										Main.lastSync = 0l;

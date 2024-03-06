@@ -5,6 +5,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
@@ -15,6 +17,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
+
+import com.protreino.services.enumeration.PerfilAcesso;
 
 @SuppressWarnings("serial")
 @Entity
@@ -141,6 +145,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Column(name="HABILITA_PEDESTRE", nullable=true)
 	private Boolean habilitaPedestre;
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name="PERFIL_ACESSO", nullable=true, length=100)
+	private PerfilAcesso perfilAcesso;
+	
 	public UserEntity() {}
 
 	public UserEntity(Long id, String loginName, String status, Date creationDate, String idClient, String name,
@@ -185,7 +193,8 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	}
 	
 	public UserEntity(Long id, String loginName, String password, String status, Date creationDate, String idClient, String name,
-			Date lastSync, Integer qtdePadraoDigitosCartao, String unidade, String chaveIntegracaoComtele, Boolean expedidora, Boolean habilitaPedestre) {
+			Date lastSync, Integer qtdePadraoDigitosCartao, String unidade, String chaveIntegracaoComtele, Boolean expedidora, Boolean habilitaPedestre,
+			PerfilAcesso perfilAcesso) {
 		this.id = id;
 		this.loginName = loginName;
 		this.password = password;
@@ -199,6 +208,7 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.chaveIntegracaoComtele = chaveIntegracaoComtele;
 		this.expedidora = expedidora;
 		this.habilitaPedestre = habilitaPedestre;
+		this.perfilAcesso = perfilAcesso;
 	}
 	
 	public void update(UserEntity user) {
@@ -461,5 +471,13 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 
 	public void setLastSyncHikivision(Date lastSyncHikivision) {
 		this.lastSyncHikivision = lastSyncHikivision;
+	}
+
+	public PerfilAcesso getPerfilAcesso() {
+		return perfilAcesso;
+	}
+
+	public void setPerfilAcesso(PerfilAcesso perfilAcesso) {
+		this.perfilAcesso = perfilAcesso;
 	}
 }

@@ -494,7 +494,6 @@ public class HikiVisionIntegrationService {
 			e.printStackTrace();
 		}
 	}
-	
 	public void captureFaceLocally() {
 		OkHttpClient client = getOkHttpClient();
 		
@@ -504,7 +503,7 @@ public class HikiVisionIntegrationService {
 		
 		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/xml"));
 
-		Request request = new Request.Builder().url("http://192.168.15.56:80" + "/ISAPI/AccessControl/CaptureFaceData").post(requestBody)
+		Request request = new Request.Builder().url(url + "/ISAPI/AccessControl/CaptureFaceData").post(requestBody)
 				.addHeader("Content-Type", "application/json").build();
 
 		try {
