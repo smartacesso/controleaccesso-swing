@@ -64,8 +64,10 @@ import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.PerfilAcesso;
+import com.protreino.services.enumeration.Permissions;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DeviceTO;
+import com.protreino.services.usecase.PermissionsUseCase;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
@@ -126,10 +128,12 @@ public class MainScreen extends JFrame {
 	public RegisterVisitorDialog cadastroVisitante;
 	public RegisterVisitorDialog cadastroPedestre;
 	public CartaoComandaDialog cadastroCartao;
+	
+	private final PermissionsUseCase permissionsUseCase;
 
 	public MainScreen() {
 		instance = this;
-
+		this.permissionsUseCase = new PermissionsUseCase();
 		loadImages();
 
 		font = getDefaultFont();
@@ -414,9 +418,10 @@ public class MainScreen extends JFrame {
 				listaCartoesPanel.updateUI();
 			}
 			
+			updatePermissions();
+			
 			listaAcessoPanel.cleanFilter();
 			listaAcessoPanel.updateUI();
-			
 		}
 	}
 	
@@ -434,8 +439,16 @@ public class MainScreen extends JFrame {
 			listaCartoesPanel.cleanFilter();
 			listaCartoesPanel.updateUI();
 		}
+		
+		updatePermissions();
+		
 		listaAcessoPanel.cleanFilter();
 		listaAcessoPanel.updateUI();
+	}
+	
+	private void updatePermissions() {
+		preferenciasMenuItem.setVisible(permissionsUseCase.hasAccessPreferencesButton(Main.internoLoggedUser));
+		hikivisionManualSyncMenuItem.setVisible(Utils.isHikivisionConfigValid() && permissionsUseCase.hasAccessHikivisionSyncDevicesButton(Main.internoLoggedUser));
 	}
 
 	private JMenuBar montarMenuBar() {
@@ -499,6 +512,7 @@ public class MainScreen extends JFrame {
 				
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
+			preferenciasMenuItem.setVisible(permissionsUseCase.hasAccessPreferencesButton(Main.internoLoggedUser));
 
 			hikivisionManualSyncMenuItem = new JMenuItem("Sincronismo manual de dispositivos");
 			hikivisionManualSyncMenuItem.addActionListener(
@@ -526,9 +540,8 @@ public class MainScreen extends JFrame {
 				}
 			);
 
-			if(Utils.isHikivisionConfigValid()) {
-				menuConfiguracoes.add(hikivisionManualSyncMenuItem);
-			}
+			menuConfiguracoes.add(hikivisionManualSyncMenuItem);
+			hikivisionManualSyncMenuItem.setVisible(Utils.isHikivisionConfigValid() && permissionsUseCase.hasAccessHikivisionSyncDevicesButton(Main.internoLoggedUser));
 			
 			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
 			syncUsersMenuItem.addActionListener(new ActionListener() {

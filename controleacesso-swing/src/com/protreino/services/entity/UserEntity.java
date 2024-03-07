@@ -2,6 +2,7 @@ package com.protreino.services.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -148,6 +149,8 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Enumerated(EnumType.STRING)
 	@Column(name="PERFIL_ACESSO", nullable=true, length=100)
 	private PerfilAcesso perfilAcesso;
+	
+	private List<String> permissoes;
 	
 	public UserEntity() {}
 
