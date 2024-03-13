@@ -1947,6 +1947,10 @@ public class HibernateUtil {
 		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
 			return false;
 		}
+		
+		if(equipamentos.get(0).getPedestrianAccess().hasOnlyRestrictedEquipaments()) {
+			return false;
+		}
 
 		return naoPossuiEquipamentoVinculado(equipament, equipamentos);
 	}
