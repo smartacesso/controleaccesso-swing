@@ -584,6 +584,7 @@ public class Utils {
 						: deviceObj.get("mirrorDevice").getAsBoolean());
 				deviceEntity.setAthleteScreenConfig(deviceObj.get("athleteScreenConfig").isJsonNull() ? null
 						: deviceObj.get("athleteScreenConfig").getAsString());
+
 				List<ConfigurationGroupEntity> configurationGroupList = new ArrayList<ConfigurationGroupEntity>();
 				JsonArray configGroupArray = deviceObj.get("configurationGroups").getAsJsonArray();
 
@@ -1766,7 +1767,7 @@ public class Utils {
 				} catch (Exception exe) {
 					String data = null;
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-					if(element.getAsString().contains(".000+0000")) {
+					if(element.getAsString().contains("+0000")) {
 						data = element.getAsString().replace(".000+0000", "");
 					}
 					return sdf.parse(data);
@@ -1788,6 +1789,35 @@ public class Utils {
 		if (pedestre != null && pedestre.getId() != null)
 			return pedestre;
 
+		return null;
+	}
+	
+	public static synchronized Device getDeviceByName(final String deviceName) {
+		if(Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(deviceName)) {
+			return null;
+		}
+		
+		for(Device device : Main.devicesList) {
+			if(deviceName.equals(device.getName())) {
+				return device;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static synchronized Device getDeviceByFullIdentifier(final String identifier) {
+		if(Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(identifier)) {
+			return null;
+		}
+		
+		for(Device device : Main.devicesList) {
+			System.out.println("device Name: " + device.getName());
+			if(device.getName().endsWith(identifier)) {
+				return device;
+			}
+		}
+		
 		return null;
 	}
 

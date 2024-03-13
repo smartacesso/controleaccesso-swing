@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -27,12 +28,15 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 
+import com.protreino.services.devices.Device;
+import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 @Entity
@@ -407,9 +411,6 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	@Column(name="TIPO_QRCODE", nullable=true, length=100)
 	private String tipoQRCode;
-	
-
-	
 	
 	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
 			 targetEntity=TemplateEntity.class, mappedBy="pedestrianAccess")
@@ -1091,6 +1092,22 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 		
 		setDataAlteracao(new Date());
+	}
+	
+	public boolean hasOnlyRestrictedEquipaments() {
+		if(Objects.isNull(equipamentos) || equipamentos.isEmpty() || Objects.isNull(Main.devicesList)) {
+			return false;
+		}
+		
+		for(PedestrianEquipamentEntity equipamento : equipamentos) {
+			Device device = Utils.getDeviceByName(equipamento.getNomeEquipamento());
+			
+			if(Objects.nonNull(device) && device instanceof TopDataDevice && !((TopDataDevice) device).isDeviceRestrito()) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	public Long getId() {

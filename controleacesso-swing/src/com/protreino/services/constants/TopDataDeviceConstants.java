@@ -28,6 +28,7 @@ public class TopDataDeviceConstants {
 	public static final String LOGICA_DE_CATRACA_COM_URNA = "Lógica da catraca com urna";
 	public static final String COLETA_CARTOES_OFFLINE = "Coleta cartões offline";
 	public static final String IGNORAR_REGRAS_DE_ACESSO = "Ignorar regras de acesso";
+	public static final String IS_DEVICE_RESTRITO = "Device restrito";
 	public static final String MENSAGEM_ONLINE= "Mensagem online";
 	public static final String SAIDA = "saída";
 	public static final String ENTRADA = "entrada";
