@@ -119,7 +119,12 @@ public class HikivisionEventsUseCase {
 				e.printStackTrace();
 			}
 			
-			salvaLogDePedestreOffline(cardNo, selectedDevice.getFullIdentifier(), dataAcesso);
+			if(selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
+				selectedDevice.validaAcessoHikivision(cardNo);
+			} else {
+				salvaLogDePedestreOffline(cardNo, selectedDevice.getFullIdentifier(), dataAcesso);
+			}
+			
 
 		} else {
 			selectedDevice.validaAcessoHikivision(cardNo);
