@@ -122,14 +122,19 @@ public class TopDataDevice extends Device {
 		String partes[] = identifier.split(";");
 		this.innerNumber = Integer.valueOf(partes[0]);
 		this.port = Integer.valueOf(partes[1]);
-		if(partes.length > 2)
+		if(partes.length > 2) {
 			this.tipo = partes[2];
+		}
+
 		this.name = "TopData Catraca Inner " + innerNumber;
-		if (configurationGroups != null)
+		if (configurationGroups != null) {
 			this.configurationGroups = configurationGroups;
-		else
+		} else {
 			createDefaultConfiguration();
+		}
+		
 		createConfigurationMap();
+
 		this.inner = new Inner();
 		configureInner();
 	}
@@ -154,7 +159,7 @@ public class TopDataDevice extends Device {
         Long tempoDeEspera = getConfigurationValueAsLong(TEMPO_ESPERA_PARA_CONECTAR) * 1000;
         
         if(Objects.nonNull(args) && args.length > 0 && "NOT_WAIT_TIME".equals(args[0])) {
-        	tempoDeEspera = 500l;
+        	tempoDeEspera = 1000l;
         }
         
         while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis() - inicio) < tempoDeEspera) {
@@ -416,6 +421,9 @@ public class TopDataDevice extends Device {
 		}
 	}
 	
+	public boolean isDeviceRestrito() {
+		return getConfigurationValueAsBoolean(IS_DEVICE_RESTRITO);
+	}
 
 	@SuppressWarnings("unchecked")
 	private void enviarDigitaisLFD(boolean online, boolean todas, Date data) {
@@ -1632,6 +1640,7 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(COLETA_CARTOES_OFFLINE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(IS_DEVICE_RESTRITO, "false", FieldType.CHECKBOX));
 		
 		String nomeAcademia = "SmartPonto;Controle Acesso";
     	if (Main.loggedUser != null) {

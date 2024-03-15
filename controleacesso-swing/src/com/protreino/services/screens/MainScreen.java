@@ -323,8 +323,9 @@ public class MainScreen extends JFrame {
 			DeviceEntity deviceEntity = new DeviceEntity(newDevice);
 			deviceEntity = (DeviceEntity) HibernateUtil.save(DeviceEntity.class, deviceEntity)[0];
 			newDevice.setDeviceEntity(deviceEntity);
-			if (Main.devicesList.size() == 1)
+			if (Main.devicesList.size() == 1) {
 				newDevice.setDefaultDevice(true);
+			}
 			Utils.exportDevices();
 			
 			refreshAll();

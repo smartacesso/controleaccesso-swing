@@ -53,7 +53,6 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.entity.PreferenceEntity;
 import com.protreino.services.entity.TemplateEntity;
-//import com.protreino.services.entity.URLEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.NotificationType;
@@ -66,8 +65,6 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.TcpMessageTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.usecase.HikivisionUseCases;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class HibernateUtil {
@@ -1313,12 +1310,18 @@ public class HibernateUtil {
 			if (matchedAthleteAccess.getStatus().equals("INATIVO")) {
 				System.out.println("chegou no pedestre ");
 
-				Utils.createNotification(" Acesso Negado, usuário: " + userName + "Inativo", NotificationType.BAD,
-						foto);
+				Utils.createNotification(" Acesso Negado, usuário: " + userName + "Inativo", NotificationType.BAD, foto);
 				motivo = "Usuário inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedAthleteAccess };
 			}
 			
+			if(isNaoPermitidoEquipamentoRestrito(equipament, matchedAthleteAccess.getEquipamentos())) {
+				if (createNotification) {
+					Utils.createNotification(userName + " não permitido nesse equipamento restrito.", NotificationType.BAD, foto);
+				}
+
+				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedAthleteAccess };
+			}
 
 			if (origem == null || (Boolean.TRUE.equals(matchedAthleteAccess.getSempreLiberado())
 					|| Boolean.TRUE.equals(ignoraRegras)) && origem != Origens.ORIGEM_LEITOR_2) {
@@ -1333,12 +1336,11 @@ public class HibernateUtil {
 				permitidoSensor = false;
 			}
 			
-			if (!validaAcessoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
-				System.out.println("o que Ã© equipament" + equipament);
-				System.out.println("o que Ã© pessoa equipamento" + matchedAthleteAccess.getEquipamentos());
-				if (createNotification)
-					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD,
-							foto);
+			if (isNaoPermitidoNoEquipamento(equipament, matchedAthleteAccess.getEquipamentos())) {
+				if (createNotification) {
+					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD, foto);
+				}
+
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedAthleteAccess };
 			}
 
@@ -1478,8 +1480,7 @@ public class HibernateUtil {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cartão na urna.", NotificationType.BAD,
-								foto);
+						Utils.createNotification(userName + " deve depositar cartão na urna.", NotificationType.BAD, foto);
 						motivo = "Deve depositar cartão na urna.";
 
 					} else {
@@ -1489,7 +1490,6 @@ public class HibernateUtil {
 				}
 
 			} else if (!permitido) {
-				// para lÃ³gica de crÃ©ditos finalizados
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
 					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
@@ -1930,24 +1930,76 @@ public class HibernateUtil {
 		return permitido;
 	}
 
-	private static boolean validaAcessoEquipamento(String equipament, List<PedestrianEquipamentEntity> equipamentos) {
-		if (equipament == null)
-			return true;
+	private static boolean isNaoPermitidoNoEquipamento(String equipament, List<PedestrianEquipamentEntity> equipamentos) {
+		/*
+		final Device device = getDeviceByIdentifier(equipament);
+		
+		if(Objects.isNull(device)) {
+			return false;
+		}
+		
+		if(device instanceof TopDataDevice && ((TopDataDevice) device).isDeviceRestrito()) {
+			return naoPossuiEquipamentoVinculado(equipament, equipamentos);
+		}
+		*/
 
 		// não tem bloqueo por equipamento
-		if (equipamentos == null || equipamentos.isEmpty())
-			return true;
+		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
+			return false;
+		}
+		
+		if(equipamentos.get(0).getPedestrianAccess().hasOnlyRestrictedEquipaments()) {
+			return false;
+		}
 
-		boolean pode = false;
+		return naoPossuiEquipamentoVinculado(equipament, equipamentos);
+	}
+	
+	private static boolean isNaoPermitidoEquipamentoRestrito(String equipament, List<PedestrianEquipamentEntity> equipamentosPedestre) {
+		System.out.println("equipament: " + equipament);
+		
+		final Device device = Utils.getDeviceByFullIdentifier(equipament);
+		
+		if(Objects.isNull(device)) {
+			System.out.println("Device is null");
+			return false;
+		}
+		
+		if(device instanceof TopDataDevice && ((TopDataDevice) device).isDeviceRestrito()) {
+			boolean naoTemAcessoEquipamentoRestrito = true;
+
+			if(Objects.isNull(equipamentosPedestre) || equipamentosPedestre.isEmpty()) {
+				return naoTemAcessoEquipamentoRestrito;
+			}
+			
+			for(PedestrianEquipamentEntity equipamentoPedestre : equipamentosPedestre) {
+				if(equipamentoPedestre.getNomeEquipamento().equals(device.getName())) {
+					naoTemAcessoEquipamentoRestrito = false;
+					break;
+				}
+			}
+			
+			return naoTemAcessoEquipamentoRestrito;
+		}
+		
+		return false;
+	}
+	
+	private static boolean naoPossuiEquipamentoVinculado(final String identifier, final List<PedestrianEquipamentEntity> equipamentos) {
+		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
+			return true;
+		}
+		
+		boolean naoPossuiEquipamentoVinculado = true;
 		for (PedestrianEquipamentEntity e : equipamentos) {
-			String idEquipament = equipament.replace("Inner ", "").replace("Inner Acesso ", "").replace("Control ", "");
+			String idEquipament = identifier.replace("Inner ", "").replace("Inner Acesso ", "").replace("Control ", "");
 
 			if (e.getIdEquipamento().equals(idEquipament) || idEquipament.contains(e.getIdEquipamento())) {
-				pode = true;
+				naoPossuiEquipamentoVinculado = false;
 				break;
 			}
 		}
-		return pode;
+		return naoPossuiEquipamentoVinculado;
 	}
 
 	private static boolean verificaUltimaPassagemEmCatracaVinculada(String equipamento, Long idPedestre) {
@@ -3380,7 +3432,7 @@ public class HibernateUtil {
 	}
 
 	public static synchronized Device getDeviceByIdentifier(String identifier) {
-		if (Main.devicesList == null || Main.devicesList.isEmpty()) {
+		if (Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(identifier)) {
 			return null;
 		}
 
@@ -3392,5 +3444,5 @@ public class HibernateUtil {
 
 		return null;
 	}
-
+	
 }

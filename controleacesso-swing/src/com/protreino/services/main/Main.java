@@ -814,9 +814,10 @@ public class Main {
         systemTray.remove(trayIcon);
         HibernateUtil.shutdown();
         finalizeDevices();
-        if (!desenvolvimento)
-            //closeLogFile();
-            System.exit(0);
+        if (!desenvolvimento) {
+        	//closeLogFile();
+        	System.exit(0);
+        }
     }
 
     private void configureTimers() {
@@ -1108,8 +1109,9 @@ public class Main {
                     System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Exception: " + e.getMessage());
 
                 } finally {
-                    if (loggedUser != null)
-                        timerSyncUsersAccessList.start();
+                    if (loggedUser != null) {
+                    	timerSyncUsersAccessList.start();
+                    }
                     updatingUsersAccessList = false;
                     trayIcon.setImage(trayIconImage);
                     //if (mainScreen != null && mainScreen.isVisible()) {
