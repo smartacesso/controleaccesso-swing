@@ -3,12 +3,17 @@ package com.protreino.services.entity;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -150,6 +155,9 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	@Column(name="PERFIL_ACESSO", nullable=true, length=100)
 	private PerfilAcesso perfilAcesso;
 	
+	@ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+	@CollectionTable(name = "TB_PERMISSIONS", joinColumns = @JoinColumn(name = "ID_USER"))
+	@Column(name = "PERMISSION", nullable = true)
 	private List<String> permissoes;
 	
 	public UserEntity() {}
@@ -225,6 +233,12 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.setDataRemovido(user.getDataRemovido());
 		this.setDataAlteracao(new Date());
 		this.setHabilitaPedestre(user.getHabilitaPedestre());;
+		this.setPerfilAcesso(user.getPerfilAcesso());
+	}
+	
+	public boolean hasPermission(final String permission) {
+		return Objects.nonNull(permissoes)
+				&& permissoes.contains(permission);
 	}
 
 	public Long getId() {
@@ -482,5 +496,13 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 
 	public void setPerfilAcesso(PerfilAcesso perfilAcesso) {
 		this.perfilAcesso = perfilAcesso;
+	}
+
+	public List<String> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<String> permissoes) {
+		this.permissoes = permissoes;
 	}
 }

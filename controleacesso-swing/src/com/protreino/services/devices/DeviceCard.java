@@ -65,6 +65,7 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.FieldTO.ComboBoxListener;
+import com.protreino.services.usecase.PermissionsUseCase;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.SelectItem;
@@ -98,12 +99,14 @@ public class DeviceCard extends JPanel {
 	private ImageIcon linkIcon;
 	private JLabel linkIconLabel;
 	private JLabel link;
+	private final PermissionsUseCase permissionsUseCase;
 	
 	private LogPedestrianAccessEntity logAccess;
 	
 	public DeviceCard(Device device){
 		this.instance = this;
 		this.device = device;
+		this.permissionsUseCase = new PermissionsUseCase();
 		
 		serialId = System.currentTimeMillis();
 		Utils.sleep(1);
@@ -448,7 +451,6 @@ public class DeviceCard extends JPanel {
 			
 		}
 			
-			
 		jPopup.add(configMenuItem);
 		jPopup.addSeparator();
 		jPopup.add(removeMenuItem);
@@ -476,14 +478,13 @@ public class DeviceCard extends JPanel {
 		athleteScreenMenuItem.addActionListener( (e) -> openAthleteScreen() );
 		mirrorMenuItem.addActionListener( (e) -> device.setMirrorDevice(mirrorMenuItem.isSelected()) );
 		syncUsersMenuItem.addActionListener( (e) -> { 
-			device.setSyncUsers(syncUsersMenuItem.isSelected()); 
+			device.setSyncUsers(syncUsersMenuItem.isSelected());
 			syncUsersNowMenuItem.setEnabled(syncUsersMenuItem.isSelected());
 		});
 		syncUsersNowMenuItem.addActionListener( (e) -> ((TopDataDevice) device).atualizaDigitaisLFD(device.isConnected(), true, null) );
 		configMenuItem.addActionListener( (e) -> showConfigurationDialog() );
 		removeMenuItem.addActionListener( (e) -> showConfirmRemove() );
 		setComponentPopupMenu(jPopup);
-		
 	}
 	
 	private void liberarCatraca() {
@@ -872,10 +873,15 @@ public class DeviceCard extends JPanel {
 		}
 	}
 	
-	private void showConfirmRemove(){
+	private void showConfirmRemove() {
+		if(!permissionsUseCase.hasRemoverDecvice(Main.internoLoggedUser)) {
+			PermissionsUseCase.exibeDialogoSemPermissao();
+			return;
+		}
+		
 		Object[] options = { DeviceStatus.CONNECTED.equals(device.getStatus()) ? "Desconectar e remover" : "Remover", "Cancelar"};
 		int result = JOptionPane.showOptionDialog(null, "Deseja realmente remover este dispositivo?",
-				"ConfirmaÃ§Ã£o", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
+				"Confirmação", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
 		if (result == JOptionPane.OK_OPTION) {
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override

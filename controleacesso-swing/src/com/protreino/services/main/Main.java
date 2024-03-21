@@ -19,6 +19,7 @@ import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.PermissionsUseCase;
 import com.protreino.services.utils.*;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -2425,23 +2426,35 @@ public class Main {
         }
 
         public void nativeKeyReleased(NativeKeyEvent e) {
-
+        	PermissionsUseCase permissionsUseCase = new PermissionsUseCase();
+        	
             if (e.getKeyCode() == NativeKeyEvent.VC_F8) {
-                if (Main.internoLoggedUser != null) {
+                if (permissionsUseCase.hasCadastrarVisitante(internoLoggedUser)) {
                     mainScreen.abreCadastroVisitante(null);
+                } else {
+                	PermissionsUseCase.exibeDialogoSemPermissao();
                 }
+                
                 return;
             }
 
             if (e.getKeyCode() == NativeKeyEvent.VC_F7) {
-                if (Main.internoLoggedUser != null) {
+                if (permissionsUseCase.hasCadastrarPedestre(internoLoggedUser)) {
                     mainScreen.abreCadastroPedestre(null);
+                
+                } else {
+                	PermissionsUseCase.exibeDialogoSemPermissao();
                 }
+
                 return;
             }
-
-
+            
             if (e.getKeyCode() == NativeKeyEvent.VC_F9) {
+            	if(!permissionsUseCase.hasLiberarAcesso(internoLoggedUser)) {
+            		PermissionsUseCase.exibeDialogoSemPermissao();
+            		return;
+            	}
+            	
                 if (!apertouF9) {
                     apertouF9 = true;
                     apertouF10 = false;
@@ -2450,6 +2463,11 @@ public class Main {
             }
 
             if (e.getKeyCode() == NativeKeyEvent.VC_F10) {
+            	if(!permissionsUseCase.hasLiberarAcesso(internoLoggedUser)) {
+            		PermissionsUseCase.exibeDialogoSemPermissao();
+            		return;
+            	}
+            	
                 if (!apertouF10) {
                     apertouF10 = true;
                     apertouF9 = false;

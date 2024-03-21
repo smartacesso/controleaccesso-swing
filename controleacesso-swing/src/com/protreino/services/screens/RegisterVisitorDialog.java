@@ -5,11 +5,11 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import org.apache.commons.lang.StringUtils;
@@ -190,6 +190,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setForeground(Main.firstColor);
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(1, label);
+       
 
         JPanel regrasPanel = montaPainelAdicionarRegra();
         tabbedPane.add("Regras de acesso", regrasPanel);
@@ -198,7 +199,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setForeground(Main.firstColor);
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(2, label);
-
+       
         JPanel equipamentosPanel = montaPainelEquipamentos();
         tabbedPane.add("Equipamentos", equipamentosPanel);
         label = new JLabel("Equipamentos");
@@ -222,6 +223,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setForeground(Main.firstColor);
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(5, label);
+        
 
         actionsPanel = montarPainelAcoes();
         barraLateralPanel = montarPainelLateral();
@@ -837,7 +839,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         JPanel matriculaPanel = new JPanel(new GridBagLayout());
         matriculaPanel.setVisible(isExibeCampoMatricula());
-        matriculaLabel = new JLabel("MatrÃ­cula");
+        matriculaLabel = new JLabel("Matrícula");
         c = getNewGridBag(0, 0, 0, 0);
         matriculaPanel.add(matriculaLabel, c);
         matriculaTextField = getNewTextField(15);
@@ -2207,6 +2209,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         JTextField textField = new JTextField();
         textField.setColumns(columns);
         textField.setMaximumSize(textField.getPreferredSize());
+        textField.setEnabled(Objects.nonNull(Main.internoLoggedUser) && Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 
         return textField;
     }

@@ -63,8 +63,6 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
-import com.protreino.services.enumeration.PerfilAcesso;
-import com.protreino.services.enumeration.Permissions;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.usecase.PermissionsUseCase;
@@ -130,6 +128,7 @@ public class MainScreen extends JFrame {
 	public CartaoComandaDialog cadastroCartao;
 	
 	private final PermissionsUseCase permissionsUseCase;
+	private JButton addDeviceButton;
 
 	public MainScreen() {
 		instance = this;
@@ -175,7 +174,6 @@ public class MainScreen extends JFrame {
 	}
 	
 	private Font getDefaultFont() {
-		
 		Font font = new JLabel().getFont();
 		//if(System.getProperty("os.name").toLowerCase().contains("linux"))
 		//	font = new Font(font.getName(), font.getStyle(), font.getSize() - 1);
@@ -288,14 +286,17 @@ public class MainScreen extends JFrame {
 		revalidate();
 		pack();
 
-		if (actualState != null)
+		if (actualState != null) {
 			setExtendedState(actualState);
-		if (actualDimension != null)
+		}
+		if (actualDimension != null) {
 			setPreferredSize(actualDimension);
-		if (actualPosition != null)
+		}
+		if (actualPosition != null) {
 			setLocation(actualPosition);
-		else
+		} else {
 			setLocationRelativeTo(null);
+		}
 
 	}
 
@@ -310,14 +311,17 @@ public class MainScreen extends JFrame {
 		if ("OK".equals(option)) {
 			newDevice = newDeviceDialog.getNewDevice();
 
-			if(newDevice instanceof ServerDevice)
+			if(newDevice instanceof ServerDevice) {
 				Main.servidor = (ServerDevice) newDevice;
+			}
 			
-			if(newDevice instanceof LcDevice)
+			if(newDevice instanceof LcDevice) {
 				Main.possuiLeitorLcAdd = true;
+			}
 			
-			if(Main.devicesList == null)
+			if(Main.devicesList == null) {
 				Main.devicesList = new ArrayList<Device>();
+			}
 			Main.devicesList.add(newDevice);
 			addDeviceCard(newDevice);
 			DeviceEntity deviceEntity = new DeviceEntity(newDevice);
@@ -352,13 +356,15 @@ public class MainScreen extends JFrame {
 		devicesPane.revalidate();
 		devicesPane.repaint();
 
-		if(deviceCard.getDevice() instanceof LcDevice)
+		if(deviceCard.getDevice() instanceof LcDevice) {
 			Main.possuiLeitorLcAdd = false;
+		}
 		
 		HibernateUtil.remove(deviceCard.getDevice().getDeviceEntity());
 		if (deviceCard.getDevice().isDefaultDevice()) {
-			if (!Main.devicesList.isEmpty())
+			if (!Main.devicesList.isEmpty()) {
 				Main.devicesList.get(0).setDefaultDevice(true);
+			}
 		}
 		
 		Utils.exportDevices();
@@ -379,8 +385,9 @@ public class MainScreen extends JFrame {
 			AutenticationDialog autenticationDialog = new AutenticationDialog(null,
 					"Digite a senha do usuario logado \npara confirmar a saida", "Aguarde, realizando logout...");
 			Boolean retornoAuthentication = autenticationDialog.authenticate();
-			if (retornoAuthentication == null)
+			if (retornoAuthentication == null) {
 				return;
+			}
 
 			if (retornoAuthentication) {
 				dialog.dispose();
@@ -406,10 +413,13 @@ public class MainScreen extends JFrame {
 		if ("OK".equals(option)) {
 			Main.internoLoggedUser = autenticationDialog.getUsuario();
 			
+//			if(Objects.nonNull(Main.internoLoggedUser) &&
+//					(Objects.isNull(Main.internoLoggedUser.getPermissoes()) || Main.internoLoggedUser.getPermissoes().isEmpty())) {
+				Main.internoLoggedUser.setPermissoes(PermissionsUseCase.getDefaultPermissions(Main.internoLoggedUser.getPerfilAcesso()));
+//			}
+			
 			loginInternoMenuItem.setVisible(false);
 			logoutInternoMenuItem.setVisible(true);
-			
-			menuCadastros.setVisible(true);
 			
 			if(Main.loggedUser != null 
 					&& Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
@@ -431,8 +441,6 @@ public class MainScreen extends JFrame {
 		loginInternoMenuItem.setVisible(true);
 		logoutInternoMenuItem.setVisible(false);
 		
-		menuCadastros.setVisible(false);
-		
 		if(Main.loggedUser != null 
 				&& Boolean.TRUE.equals(Main.loggedUser.getExpedidora())) {
 			listaCartoesPanel.addButton.setVisible(false);
@@ -450,6 +458,11 @@ public class MainScreen extends JFrame {
 	private void updatePermissions() {
 		preferenciasMenuItem.setVisible(permissionsUseCase.hasAccessPreferencesButton(Main.internoLoggedUser));
 		hikivisionManualSyncMenuItem.setVisible(Utils.isHikivisionConfigValid() && permissionsUseCase.hasAccessHikivisionSyncDevicesButton(Main.internoLoggedUser));
+		menuCadastros.setVisible(permissionsUseCase.hasCadastrarPedestre(Main.internoLoggedUser) || permissionsUseCase.hasCadastrarVisitante(Main.internoLoggedUser));
+		cadastrarPedestreMenuItem.setVisible(permissionsUseCase.hasCadastrarPedestre(Main.internoLoggedUser));
+		cadastrarVisitanteMenuItem.setVisible(permissionsUseCase.hasCadastrarVisitante(Main.internoLoggedUser));
+		addDeviceButton.setVisible(permissionsUseCase.hasAdicionarDecvice(Main.internoLoggedUser));
+		liberarAcessoButton.setVisible(permissionsUseCase.hasLiberarAcesso(Main.internoLoggedUser));
 	}
 
 	private JMenuBar montarMenuBar() {
@@ -509,7 +522,6 @@ public class MainScreen extends JFrame {
 						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
 					}
 				}
-
 				
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
@@ -553,8 +565,9 @@ public class MainScreen extends JFrame {
 								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
 						
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
-						if (retornoAuthentication == null)
+						if (retornoAuthentication == null) {
 							return;
+						}
 						if (retornoAuthentication) {
 							syncUsers();
 						} else {
@@ -619,12 +632,14 @@ public class MainScreen extends JFrame {
 			cadastrarPedestreMenuItem.addActionListener(e -> {
 				abreCadastroPedestre(null);
 			});
+			cadastrarPedestreMenuItem.setVisible(permissionsUseCase.hasCadastrarPedestre(Main.internoLoggedUser));
 			menuCadastros.add(cadastrarPedestreMenuItem);
 			
 			cadastrarVisitanteMenuItem = new JMenuItem("Cadastrar visitante (F8)");
 			cadastrarVisitanteMenuItem.addActionListener(e -> {
 				abreCadastroVisitante(null);
 			});
+			cadastrarVisitanteMenuItem.setVisible(permissionsUseCase.hasCadastrarVisitante(Main.internoLoggedUser));
 			menuCadastros.add(cadastrarVisitanteMenuItem);
 		}
 
@@ -711,7 +726,7 @@ public class MainScreen extends JFrame {
 		Dimension buttonSize = System.getProperty("os.name").toLowerCase().contains("linux") 
 				? new Dimension(150, 80) : new Dimension(160, 80);
 
-		JButton addDeviceButton = makeButton("Adicionar dispositivo", adicionarIcon, "Adicionar dispositivo",
+		addDeviceButton = makeButton("Adicionar dispositivo", adicionarIcon, "Adicionar dispositivo",
 				buttonSize);
 		addDeviceButton.addActionListener(new ActionListener() {
 			@Override
@@ -719,6 +734,8 @@ public class MainScreen extends JFrame {
 				addNewDevice();
 			}
 		});
+		addDeviceButton.setVisible(permissionsUseCase.hasAdicionarDecvice(Main.internoLoggedUser));
+
 		toolBar.add(addDeviceButton);
 		toolBar.addSeparator(new Dimension(5, 0));
 
@@ -729,6 +746,8 @@ public class MainScreen extends JFrame {
 				Main.releaseAccess();
 			}
 		});
+		liberarAcessoButton.setVisible(permissionsUseCase.hasLiberarAcesso(Main.internoLoggedUser));
+		
 		toolBar.add(liberarAcessoButton);
 		toolBar.addSeparator(new Dimension(5, 0));
 
@@ -746,7 +765,6 @@ public class MainScreen extends JFrame {
 		JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		logoPanel.add(new JLabel(logoIcon));
 		toolBar.add(logoPanel);
-		
 
 		return toolBar;
 	}
@@ -815,16 +833,18 @@ public class MainScreen extends JFrame {
 		}
 		for (Device device : Main.devicesList) {
 			if (device.isCatraca()) {
-				if (identificadoresCatracasVinculadas.containsKey(device.getIdentifier()))
+				if (identificadoresCatracasVinculadas.containsKey(device.getIdentifier())) {
 					device.getDeviceCard().setCatracaVinculada(true,
 							identificadoresCatracasVinculadas.get(device.getIdentifier()));
-				else
+				
+				} else {
 					device.getDeviceCard().setCatracaVinculada(false, null);
+				}
 			}
 		}
 	}
 	
-	private void syncUsers(){
+	private void syncUsers() {
 		try {
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			if (!Main.updatingUsersAccessList) {
@@ -832,11 +852,9 @@ public class MainScreen extends JFrame {
 				while (Main.updatingUsersAccessList)
 					Thread.sleep(100);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
@@ -844,14 +862,15 @@ public class MainScreen extends JFrame {
 	public void setConnectionStatusLabel(Boolean online) {
 		String servidor = Main.urlApplication.replace("sistema", "");
 		
-		if(connectionStatusLabel == null)
+		if(connectionStatusLabel == null) {
 			connectionStatusLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 5, 0);
+		}
 		
 		if(online == null) {
 			connectionStatusLabel.setLabelColor(Color.GRAY);
 			connectionStatusLabel.setText("Verificando...");
 			connectionStatusLabel.setToolTipText(servidor);
-		}else if(online) {
+		} else if(online) {
 			connectionStatusLabel.setLabelColor(new Color(90, 196, 126));
 			connectionStatusLabel.setText("Online");
 			connectionStatusLabel.setToolTipText("Conectado ao servidor: " + servidor);
@@ -939,8 +958,11 @@ public class MainScreen extends JFrame {
 					toggleEventosButton.setIcon(setaDownIcon);
 					listaEventosPanel = new JPanel();
 					listaEventosPanel.setLayout(new BoxLayout(listaEventosPanel, BoxLayout.Y_AXIS));
-					for (String evento : eventos)
+					
+					for (String evento : eventos) {
 						listaEventosPanel.add(new JLabel(evento));
+					}
+
 					listaEventosScrollPane = new JScrollPane(listaEventosPanel,
 							ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 							ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -968,8 +990,11 @@ public class MainScreen extends JFrame {
 
 	public void refresh() {
 		int index = tabbedPane.getSelectedIndex();
-		if (index == 1 && listaAcessoPanel != null && listaAcessoPanel.isFiltering())
+		
+		if (index == 1 && listaAcessoPanel != null && listaAcessoPanel.isFiltering()) {
 			return;
+		}
+
 		buildUI();
 		tabbedPane.setSelectedIndex(index);
 	}

@@ -104,6 +104,7 @@ import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.OperationalSystem;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.services.LuxandService;
@@ -1543,6 +1544,7 @@ public class Utils {
 		JFormattedTextField formattedTextField = new JFormattedTextField();
 		formattedTextField.setColumns(columns);
 		formattedTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
+		formattedTextField.setEnabled(Objects.nonNull(Main.internoLoggedUser) && Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 
 		return formattedTextField;
 	}
