@@ -32,6 +32,7 @@ import javax.swing.text.MaskFormatter;
 
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.RegraEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
@@ -84,6 +85,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		JPanel regrasPanel = new JPanel();
 		regrasPanel.setLayout(new BoxLayout(regrasPanel, BoxLayout.Y_AXIS));
 		JLabel regrasLabel = new JLabel("Regra");
+		regrasLabel.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		regrasLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		regrasPanel.add(regrasLabel);
 		regrasPanel.add(Box.createVerticalStrut(2));
@@ -236,6 +238,7 @@ public class AdicionarRegrasPanel extends JPanel {
 	
 	private JButton getRemovePedestreRegraButton() {
 		JButton removeDocumentButton = new JButton("Remover");
+		removeDocumentButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		removeDocumentButton.setPreferredSize(new Dimension(100, 40));
 		
@@ -310,6 +313,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		JButton addDocumentButton = new JButton("Adicionar");
 		addDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		addDocumentButton.setPreferredSize(new Dimension(100, 40));
+		addDocumentButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		addDocumentButton.addActionListener(e -> {
 			SelectItem itemSelecionado = (SelectItem) regrasJComboBox.getSelectedItem();

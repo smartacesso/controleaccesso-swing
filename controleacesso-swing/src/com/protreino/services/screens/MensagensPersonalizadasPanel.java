@@ -28,6 +28,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
 import com.protreino.services.entity.PedestrianMessagesEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.enumeration.Status;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.SelectItem;
@@ -78,6 +79,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		nomeTextField = new JTextField();
 		nomeTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		nomeTextField.setPreferredSize(new Dimension(150, 25));
+		nomeTextField.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		nomeMensagemPanel.add(nomeTextField);
 		nomeMensagemPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -91,6 +93,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		statusMensagensPersonalizadasJComboBox = new JComboBox<SelectItem>(getStatusComboBox());
 		statusMensagensPersonalizadasJComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		statusMensagensPersonalizadasJComboBox.setPreferredSize(new Dimension(100, 25));
+		statusMensagensPersonalizadasJComboBox.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		statusMensagemPanel.add(statusMensagensPersonalizadasJComboBox);
 		statusMensagemPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -104,6 +107,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		mensagemTextField = new JTextField();
 		mensagemTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		mensagemTextField.setPreferredSize(new Dimension(250, 25));
+		mensagemTextField.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		textoMensagemPanel.add(mensagemTextField);
 		textoMensagemPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -117,6 +121,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		quantidadeMensagemTextField = new JTextField();
 		quantidadeMensagemTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		quantidadeMensagemTextField.setPreferredSize(new Dimension(50, 25));
+		quantidadeMensagemTextField.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		quantidadeMensagemPanel.add(quantidadeMensagemTextField);
 		quantidadeMensagemPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -212,6 +217,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		addMensageButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		addMensageButton.setPreferredSize(new Dimension(150, 40));
 		
+		
 		addMensageButton.addActionListener(e -> {
 			SelectItem statusSelecionado = (SelectItem) statusMensagensPersonalizadasJComboBox.getSelectedItem();
 			
@@ -219,6 +225,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 			
 			limparCampos();
 		});
+		addMensageButton.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		return addMensageButton;
 	}
@@ -227,6 +234,7 @@ public class MensagensPersonalizadasPanel extends JPanel {
 		JButton removeMessageButton = new JButton("Remover");
 		removeMessageButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		removeMessageButton.setPreferredSize(new Dimension(150, 40));
+		removeMessageButton.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		removeMessageButton.addActionListener(e -> {
 			if(mensagensListTable.getSelectedRow() < 0)

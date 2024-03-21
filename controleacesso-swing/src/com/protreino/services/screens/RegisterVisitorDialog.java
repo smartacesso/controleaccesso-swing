@@ -451,6 +451,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         obsTextArea = new JTextArea();
         obsTextArea.setColumns(40);
         obsTextArea.setRows(4);
+        obsTextArea.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
         obsTextArea.setLineWrap(true);
         obsTextArea.getInputMap().put(KeyStroke.getKeyStroke("control V"), "none");
         obsTextArea.addKeyListener(new KeyAdapter() {
@@ -843,12 +844,13 @@ public class RegisterVisitorDialog extends BaseDialog {
         c = getNewGridBag(0, 0, 0, 0);
         matriculaPanel.add(matriculaLabel, c);
         matriculaTextField = getNewTextField(15);
-        matriculaTextField.setEnabled(isHabilitaCampoMatricula());
+        matriculaTextField.setEnabled(isHabilitaCampoMatricula() &&  Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
         c = getNewGridBag(0, 1, 0, 0);
         matriculaPanel.add(matriculaTextField, c);
         panelInternoLateral.add(matriculaPanel, getNewGridBag(0, 3, 30, 5));
 
         habilitarTecladoCheckBox = new JCheckBox("Habilitar teclado");
+        habilitarTecladoCheckBox.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 //		habilitarTecladoCheckBox.addItemListener(e -> {
 //			visitante.setHabilitarTeclado(e.getStateChange() == ItemEvent.SELECTED);
 //		});
@@ -864,6 +866,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         sempreLiberado = new JCheckBox("Sempre liberado");
         sempreLiberado.setVisible(exibeBotaoSempreLiberado());
+        sempreLiberado.setEnabled(Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 //		sempreLiberado.addItemListener(e -> {
 //			visitante.setSempreLiberado(e.getStateChange() == ItemEvent.SELECTED);
 //		});

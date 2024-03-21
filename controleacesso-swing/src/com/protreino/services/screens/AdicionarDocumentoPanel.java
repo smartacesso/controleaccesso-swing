@@ -33,6 +33,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
 import com.protreino.services.entity.DocumentoEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.utils.Utils;
 
@@ -75,12 +76,14 @@ public class AdicionarDocumentoPanel extends JPanel {
 		JPanel escolherTirarFotoPanel = new JPanel();
 		escolherTirarFotoPanel.setLayout(new BoxLayout(escolherTirarFotoPanel, BoxLayout.Y_AXIS));
 		JLabel escolherTirarFotoLabel = new JLabel("Tirar foto com a câmera");
+		escolherTirarFotoLabel.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		escolherTirarFotoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		escolherTirarFotoPanel.add(escolherTirarFotoLabel);
 		escolherTirarFotoPanel.add(Box.createVerticalStrut(2));
 		
 		JButton escolhertirarFotoButton = new JButton("Tirar foto");
 		escolhertirarFotoButton.setBorder(new EmptyBorder(5, 10, 5, 10));
+		escolhertirarFotoButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		escolhertirarFotoButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		escolhertirarFotoButton.addActionListener(e -> {
 			criarDialogoTirarFoto();
@@ -97,12 +100,14 @@ public class AdicionarDocumentoPanel extends JPanel {
 		escolherDoArquivoPanel.setLayout(new BoxLayout(escolherDoArquivoPanel, BoxLayout.Y_AXIS));
 		JLabel escolherDoArquivoLabel = new JLabel("Escolher do arquivo");
 		escolherDoArquivoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		escolherDoArquivoLabel.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		escolherDoArquivoPanel.add(escolherDoArquivoLabel);
 		escolherDoArquivoPanel.add(Box.createVerticalStrut(2));
 		
 		JButton escolherArquivoButton = new JButton("Abrir arquivo");
 		escolherArquivoButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		escolherArquivoButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+		escolherArquivoButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		escolherArquivoButton.addActionListener(e -> {
 			criarFileDialogEscolherDocumento();
 		});
@@ -115,11 +120,13 @@ public class AdicionarDocumentoPanel extends JPanel {
 		JLabel nomeLabel = new JLabel("Nome");
 		nomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		nomeArquivoPanel.add(nomeLabel);
+		
 		nomeArquivoPanel.add(Box.createVerticalStrut(2));
 		
 		nomeArquivoTextField = new JTextField();
 		nomeArquivoTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		nomeArquivoTextField.setPreferredSize(new Dimension(150, 25));
+		nomeArquivoTextField.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		nomeArquivoPanel.add(nomeArquivoTextField);
 		nomeArquivoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -177,6 +184,7 @@ public class AdicionarDocumentoPanel extends JPanel {
 		JButton removeDocumentButton = new JButton("Remover");
 		removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		removeDocumentButton.setPreferredSize(new Dimension(100, 40));
+		removeDocumentButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		removeDocumentButton.addActionListener(e -> {
 			if(documentosListTable.getSelectedRow() < 0)
@@ -233,6 +241,7 @@ public class AdicionarDocumentoPanel extends JPanel {
 		JButton addDocumentButton = new JButton("Adicionar");
 		addDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		addDocumentButton.setPreferredSize(new Dimension(100, 40));
+		addDocumentButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		addDocumentButton.addActionListener(e -> {
 			

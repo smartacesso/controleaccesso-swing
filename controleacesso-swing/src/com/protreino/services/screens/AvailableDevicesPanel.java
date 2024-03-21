@@ -27,6 +27,7 @@ import javax.swing.text.MaskFormatter;
 
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.utils.HibernateUtil;
@@ -176,6 +177,7 @@ public class AvailableDevicesPanel extends JPanel {
 		JButton removeDeviceButton = new JButton("Remover");
 		removeDeviceButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		removeDeviceButton.setPreferredSize(new Dimension(150, 40));
+		removeDeviceButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		removeDeviceButton.addActionListener(e -> {
 			if(equipamentosListTable.getSelectedRow() < 0)
@@ -233,6 +235,7 @@ public class AvailableDevicesPanel extends JPanel {
 		JButton addDeviceButton = new JButton("Adicionar");
 		addDeviceButton.setBorder(new EmptyBorder(5, 10, 5, 10));
 		addDeviceButton.setPreferredSize(new Dimension(150, 40));
+		addDeviceButton.setEnabled( Main.internoLoggedUser.getPerfilAcesso() != PerfilAcesso.OPERADOR);
 		
 		addDeviceButton.addActionListener(e -> {
 			SelectItem itemSelecionado = (SelectItem) equipamentosDisponiveisJComboBox.getSelectedItem();
