@@ -1773,8 +1773,8 @@ public class HibernateUtil {
 		System.out.println(pedestre.getCardNumber());
 
 		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")
-
-				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
+				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)
+				) {
 			return true;
 
 		}

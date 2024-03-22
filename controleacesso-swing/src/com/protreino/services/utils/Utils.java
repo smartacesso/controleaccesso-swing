@@ -33,7 +33,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -55,7 +54,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TimerTask;
@@ -67,7 +65,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -108,7 +105,7 @@ import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.AttachedTO;
-import com.protreino.services.to.PreferenceTO; 
+import com.protreino.services.to.PreferenceTO;
 
 import javazoom.jl.player.Player;
 
@@ -489,7 +486,13 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
-				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));
+				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaCpf",
+				"Habilita busca por CPF", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg",
+				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
+				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
 		
 		// Preferencias do nova Integração HIKIVISION
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
@@ -1595,96 +1598,42 @@ public class Utils {
 		table.getColumnModel().getColumn(columnNumero).setWidth(0);
 	}
 
+	// Levar esse método para o pedestre
 	public static void decrementaCreditos(PedestrianAccessEntity pedestre) {
-		if (pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)) {
+		if (pedestre.temRegraDeAcessoPorPeriodoValido()) {
 			return;
 		}
 		
-		final Optional<PedestreRegraEntity> regraAtiva = buscaRegraAtiva(pedestre);
+		final Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
-		if ("VISITANTE".equals(pedestre.getTipo())) {
-			if (Objects.nonNull(pedestre.getQuantidadeCreditos()) && pedestre.getQuantidadeCreditos() > 0) {
-				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
+		if (pedestre.isVisitante()) {
+			if (pedestre.temCreditos()) {
+				pedestre.decrementaCreditos();
 				if(regraAtiva.isPresent()) {
-					regraAtiva.get().setQtdeDeCreditos(regraAtiva.get().getQtdeDeCreditos() - 1);
+					regraAtiva.get().decrementaCreditos();
 				}
-				if (pedestre.getQuantidadeCreditos() <= 0) {
-					apagaCartaoVisitante(pedestre);
+
+				// Remover esse bloco daqui pra separar responsabilidade
+				if (!pedestre.temCreditos()) {
+					pedestre.apagarCartao();
 				}
+				
 			} else {
-				decrementaCreditosPedestreRegra(pedestre);
+				pedestre.decrementaCreditosPedestreRegra();
 				pedestre.setQuantidadeCreditos(null);
 				if(regraAtiva.isPresent()) {
 					regraAtiva.get().setQtdeDeCreditos(null);
 				}
 				
-				apagaCartaoVisitante(pedestre);
+				pedestre.apagarCartao();
 			}
 
 		} else {
-			if (pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) {
-				pedestre.setQuantidadeCreditos(pedestre.getQuantidadeCreditos() - 1);
-			}
+			pedestre.decrementaCreditos();
 		}
 	}
 	
-	public static Optional<PedestreRegraEntity> buscaRegraAtiva(PedestrianAccessEntity pedestre) {
-		if (pedestre.getPedestreRegra() == null) {
-			return Optional.empty();
-		}
-
-		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
-			if (pedestreRegra.getQtdeDeCreditos() != null && pedestreRegra.getQtdeDeCreditos() > 0
-					&& (pedestreRegra.getRemovidoNoDesktop() == null
-							|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
-				return Optional.of(pedestreRegra);
-			}
-
-		}
-
-		return Optional.empty();
-	}
-
-	private static void apagaCartaoVisitante(final PedestrianAccessEntity visitante) {
-		if(Objects.nonNull(visitante.getDataCadastroFotoNaHikivision())) {
-			return;
-		}
-		
-		visitante.setCardNumber(null);
-	}
-	
-	private static void decrementaCreditosPedestreRegra(PedestrianAccessEntity pedestre) {
-		if (pedestre.getPedestreRegra() == null) {
-			return;
-		}
-		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
-			if (pedestreRegra.getQtdeDeCreditos() != null) {
-				pedestreRegra.setQtdeDeCreditos(pedestreRegra.getQtdeDeCreditos() - 1);
-			}
-		}
-
-	}
-
-	public static boolean pedestreTemRegraDeAcessoPorPeriodoValido(PedestrianAccessEntity pedestre) {
-		if (pedestre.getPedestreRegra() == null || pedestre.getPedestreRegra().isEmpty()) {
-			return false;
-		}
-
-		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
-			if (pedestreRegra.getRemovidoNoDesktop()) {
-				continue;
-			}
-
-			if (isRegraDeAcessoValida(pedestreRegra.getDataInicioPeriodo(), pedestreRegra.getDataFimPeriodo(),
-					pedestreRegra.getValidade())) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private static boolean isRegraDeAcessoValida(Date dataInicioPeriodo, Date dataFimPeriodo, Date validade) {
+	public static boolean isRegraDeAcessoValida(Date dataInicioPeriodo, Date dataFimPeriodo, Date validade) {
 		if (dataInicioPeriodo == null || dataFimPeriodo == null) {
 			return false;
 		}
@@ -1885,12 +1834,7 @@ public class Utils {
 	
 
 	public static void main(String[] args) {
-		
-		
-		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'Z'");
 		String aux = "8591641950";
-		String temp = "";
 
 		System.out.println(" o que Ã© cartão " + toHEX(aux));
 

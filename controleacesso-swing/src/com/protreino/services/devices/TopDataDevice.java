@@ -46,7 +46,9 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.utils.HikiVisionIntegrationService;
 import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
@@ -94,6 +96,7 @@ public class TopDataDevice extends Device {
 	private Integer nivelSeguranca;
 	
 	protected String tipo = Tipo.ENTRADA;
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
 	
 	public TopDataDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -826,6 +829,11 @@ public class TopDataDevice extends Device {
 				Utils.decrementaCreditos(pedestre);
 			}
 			
+			if(!pedestre.temCreditos()) {
+				hikivisionUseCases.apagarFotosUsuario(pedestre.getCardNumber());
+				pedestre.setDataCadastroFotoNaHikivision(null);
+			}
+			
 			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
 				Utils.decrementaQRCodeUso(pedestre);
 			}
@@ -1059,7 +1067,7 @@ public class TopDataDevice extends Device {
 
 	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida) {
 		int ret = 0;
-		
+		Boolean doisSentidosLiberado = Utils.getPreferenceAsBoolean("doisSentidos");
 		String entrar = Utils.getPreference("messageEntryAllowed");
 		String sair = Utils.getPreference("messageExitAllowed");
 
@@ -1075,8 +1083,18 @@ public class TopDataDevice extends Device {
 		
 		if(bloquearSaida && matchedAthleteAccess != null) {
 			if(inner.BilheteInner.Origem == Enumeradores.ORIGEM_URNA || inner.BilheteInner.Origem == Origens.ORIGEM_LEITOR_2) {
-				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-				EasyInner.AcionarBipCurto(inner.Numero);
+				
+				if(doisSentidosLiberado){
+					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);
+				}else{
+					ret = !"anticlockwise".equals(sentidoCatraca) 
+					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				}
+
+				
+				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
 											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
@@ -1088,16 +1106,30 @@ public class TopDataDevice extends Device {
 
 			LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(matchedAthleteAccess.getId(), matchedAthleteAccess.getQtdAcessoAntesSinc());
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
-				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-				EasyInner.AcionarBipCurto(inner.Numero);
+				
+				if(doisSentidosLiberado){
+					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);
+				}else{
+					ret = !"anticlockwise".equals(sentidoCatraca) 
+					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				}
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = defineMensagemPermitido(sentidoCatraca, espacoEntrar, entrar);					
 				}
 
 			} else {
-				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-				EasyInner.AcionarBipCurto(inner.Numero);
+				
+				if(doisSentidosLiberado){
+					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);
+				}else{
+					ret = !"anticlockwise".equals(sentidoCatraca) 
+					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				}
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
@@ -1111,8 +1143,15 @@ public class TopDataDevice extends Device {
 				mensagemPermitido = !"anticlockwise".equals(sentidoCatraca) 
 						? formatMessage("<-" + espacoEntrar + sair + ";" + "") 
 						: formatMessage(sair + espacoEntrar + "->" + ";" + "");
-				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-				EasyInner.AcionarBipCurto(inner.Numero);
+				
+				if(doisSentidosLiberado){
+					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);
+				}else{
+					ret = !"anticlockwise".equals(sentidoCatraca) 
+					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+				}
 				
 			}
 
@@ -1122,8 +1161,14 @@ public class TopDataDevice extends Device {
 										: formatMessage(entrar + espacoEntrar + "->" + ";" + "");
 			}
 
-			EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-			EasyInner.AcionarBipCurto(inner.Numero);
+			if(doisSentidosLiberado){
+				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+				EasyInner.AcionarBipCurto(inner.Numero);
+			}else{
+				ret = !"anticlockwise".equals(sentidoCatraca) 
+				? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+						: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+			}
 		}
 		
 		return ret;

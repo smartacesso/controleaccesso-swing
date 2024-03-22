@@ -258,8 +258,8 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private void verificaRegrasBusca() {
-        habilitaBuscaCPF = true;
-        habilitaBuscaRG = true;
+        habilitaBuscaCPF =  Utils.getPreferenceAsBoolean("habilitaBuscaCpf");
+        habilitaBuscaRG =  Utils.getPreferenceAsBoolean("habilitaBuscaRg");;
 
         String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
         if (camposObrigatorios.contains("cpf"))

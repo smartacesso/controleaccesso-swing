@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -1108,6 +1109,76 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 		
 		return true;
+	}
+	
+	public boolean temCreditos() {
+		return Objects.nonNull(quantidadeCreditos) && quantidadeCreditos > 0;
+	}
+	
+	public boolean temRegraDeAcessoPorPeriodoValido() {
+		if (Objects.isNull(pedestreRegra) || pedestreRegra.isEmpty()) {
+			return false;
+		}
+
+		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
+			if (pedestreRegra.getRemovidoNoDesktop()) {
+				continue;
+			}
+
+			if (Utils.isRegraDeAcessoValida(pedestreRegra.getDataInicioPeriodo(), pedestreRegra.getDataFimPeriodo(),
+					pedestreRegra.getValidade())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	public Optional<PedestreRegraEntity> getRegraAtiva() {
+		if (Objects.isNull(pedestreRegra)) {
+			return Optional.empty();
+		}
+
+		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
+			if (pedestreRegra.temCreditos()
+					&& pedestreRegra.isNaoRemovidoNoDesktop()) {
+				return Optional.of(pedestreRegra);
+			}
+		}
+
+		return Optional.empty();
+	}
+	
+	public void apagarCartao() {
+		if(Objects.nonNull(dataCadastroFotoNaHikivision)) {
+			return;
+		}
+		
+		setCardNumber(null); 
+	}
+	
+	public void decrementaCreditosPedestreRegra() {
+		if (Objects.isNull(pedestreRegra)) {
+			return;
+		}
+
+		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
+			pedestreRegra.decrementaCreditos();
+		}
+	}
+	
+	public void decrementaCreditos() {
+		if(temCreditos()) {
+			setQuantidadeCreditos(getQuantidadeCreditos() - 1);
+		}
+	}
+	
+	public boolean isVisitante() {
+		return "VISITANTE".equals(tipo);
+	}
+	
+	public boolean isPedestre() {
+		return "PEDESTRE".equals(tipo);
 	}
 	
 	public Long getId() {

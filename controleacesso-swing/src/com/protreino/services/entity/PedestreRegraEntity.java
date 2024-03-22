@@ -1,6 +1,7 @@
 package com.protreino.services.entity;
 
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -85,6 +86,23 @@ public class PedestreRegraEntity extends BaseEntity {
 		this.diasValidadeCredito = pr.getDiasValidadeCredito();
 		this.dataInicioPeriodo = pr.getDataInicioPeriodo();
 		this.dataFimPeriodo = pr.getDataFimPeriodo();
+	}
+	
+	public boolean temCreditos() {
+		return Objects.nonNull(qtdeDeCreditos) && qtdeDeCreditos > 0;
+	}
+	
+	public boolean isNaoRemovidoNoDesktop() {
+		return Objects.isNull(removidoNoDesktop)
+				|| Boolean.FALSE.equals(removidoNoDesktop);
+	}
+	
+	public void decrementaCreditos() {
+		if(Objects.isNull(qtdeDeCreditos)) {
+			return;
+		}
+		
+		setQtdeDeCreditos(getQtdeDeCreditos() - 1);
 	}
 	
 	public Long getId() {
