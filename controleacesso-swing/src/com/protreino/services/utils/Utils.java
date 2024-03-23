@@ -55,7 +55,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
@@ -91,9 +90,7 @@ import com.protreino.services.entity.ConfigurationEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.EmpresaEntity;
-import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
-import com.protreino.services.entity.PedestrianMessagesEntity;
 import com.protreino.services.entity.PreferenceEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.DeviceStatus;
@@ -341,7 +338,6 @@ public class Utils {
 	}
 
 	public static void defineDefaultPreferences() {
-
 		defaultPreferencesList = new ArrayList<PreferenceTO>();
 		defaultPreferencesList.add(
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
@@ -834,7 +830,6 @@ public class Utils {
 	}
 
 	public static void createNotification(String message, NotificationType type, byte[] photo, int duration) {
-
 		List<String> mensagens = new ArrayList<String>();
 		String[] palavras = message.split(" ");
 		String frase = new String();
@@ -978,8 +973,9 @@ public class Utils {
 							(int) dialog.getLocation().getY() + dialog.getHeight() + 10);
 				}
 				this.cancel();
-			} else
+			} else {
 				this.cancel();
+			}
 		}
 	}
 
@@ -1598,94 +1594,26 @@ public class Utils {
 		table.getColumnModel().getColumn(columnNumero).setWidth(0);
 	}
 
-	// Levar esse método para o pedestre
-	public static void decrementaCreditos(PedestrianAccessEntity pedestre) {
-		if (pedestre.temRegraDeAcessoPorPeriodoValido()) {
-			return;
-		}
-		
-		final Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
-
-		if (pedestre.isVisitante()) {
-			if (pedestre.temCreditos()) {
-				pedestre.decrementaCreditos();
-				if(regraAtiva.isPresent()) {
-					regraAtiva.get().decrementaCreditos();
-				}
-
-				// Remover esse bloco daqui pra separar responsabilidade
-				if (!pedestre.temCreditos()) {
-					pedestre.apagarCartao();
-				}
-				
-			} else {
-				pedestre.decrementaCreditosPedestreRegra();
-				pedestre.setQuantidadeCreditos(null);
-				if(regraAtiva.isPresent()) {
-					regraAtiva.get().setQtdeDeCreditos(null);
-				}
-				
-				pedestre.apagarCartao();
-			}
-
-		} else {
-			pedestre.decrementaCreditos();
-		}
-	}
-	
-	public static boolean isRegraDeAcessoValida(Date dataInicioPeriodo, Date dataFimPeriodo, Date validade) {
-		if (dataInicioPeriodo == null || dataFimPeriodo == null) {
-			return false;
-		}
-
-		Date dataAtual = new Date();
-		return dataInicioPeriodo.compareTo(dataAtual) >= 0 && dataFimPeriodo.compareTo(dataAtual) <= 0
-				&& validade != null ? validade.compareTo(dataAtual) >= 0 : true;
-	}
-
-	public static void decrementaMensagens(List<PedestrianMessagesEntity> messages) {
-		for (PedestrianMessagesEntity message : messages) {
-			if (message.getQuantidade() > 0) {
-				message.setQuantidade(message.getQuantidade() - 1);
-			}
-		}
-	}
-
-	public static void decrementaQRCodeUso(PedestrianAccessEntity pedestre) {
-
-		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().startsWith("U_")) {
-			String[] parts = pedestre.getQrCodeParaAcesso().split("_");
-			Long usos = Long.valueOf(parts[parts.length - 1]);
-			usos++;
-
-			pedestre.setQrCodeParaAcesso("U_" + EncryptionUtils.getRandomString(4) + "_" + usos);
-			pedestre.setEditadoNoDesktop(true);
-			pedestre.setDataAlteracao(new Date());
-
-		}
-
-	}
-
 	public static void enviaSmsDeRegistro(PedestrianAccessEntity pedestre) {
-
-		if (Main.loggedUser.getChaveIntegracaoComtele() == null
-				|| Main.loggedUser.getChaveIntegracaoComtele().isEmpty())
+		if (!Main.loggedUser.temChaveIntegracaoComtele()) {
 			return;
+		}
 
-		if (!pedestre.getEnviaSmsAoPassarNaCatraca() || pedestre.getIdEmpresa() == null)
+		if (!pedestre.getEnviaSmsAoPassarNaCatraca() || pedestre.getIdEmpresa() == null) {
 			return;
+		}
 
 		EmpresaEntity empresa = buscaEmpresaDoPedestre(pedestre.getIdEmpresa());
 
-		if (empresa == null || empresa.getTelefone() == null || empresa.getTelefone().isEmpty())
+		if (empresa == null || empresa.getTelefone() == null || empresa.getTelefone().isEmpty()) {
 			return;
+		}
 
 		try {
 			SMSUtils sms = new SMSUtils(Main.loggedUser.getChaveIntegracaoComtele());
 			String message = pedestre.getName() + " " + getPreference("messageSMSAfterPassInDevice");
 
-			String numeroTelefone = empresa.getCelular().replace(" ", "").replace("-", "").replace("(", "").replace(")",
-					"");
+			String numeroTelefone = empresa.getCelular().replace(" ", "").replace("-", "").replace("(", "").replace(")", "");
 
 			sms.enviaSMS(numeroTelefone, message);
 
@@ -1729,14 +1657,16 @@ public class Utils {
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
 				.getSingleResultById(PedestrianAccessEntity.class, idPedestre);
 
-		if (pedestre != null && pedestre.getId() != null)
+		if (pedestre != null && pedestre.getId() != null) {
 			return pedestre;
+		}
 
 		pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class,
 				idPedestre);
 
-		if (pedestre != null && pedestre.getId() != null)
+		if (pedestre != null && pedestre.getId() != null) {
 			return pedestre;
+		}
 
 		return null;
 	}
@@ -1769,8 +1699,6 @@ public class Utils {
 		
 		return null;
 	}
-
-	// colocar conversor de ABATRACK para WIGAN aqui como estÃ¡tico
 
 	public static String toHEX(String Cartao) {
 		try {

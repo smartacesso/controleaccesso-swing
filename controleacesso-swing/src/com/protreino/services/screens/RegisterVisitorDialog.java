@@ -9,7 +9,6 @@ import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import org.apache.commons.lang.StringUtils;
@@ -246,7 +245,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             
             @Override
             public void windowClosed(WindowEvent e) {
-                if(isFotoModificada && hikivisionUseCases != null) {
+                if(isFotoModificada && Objects.nonNull(hikivisionUseCases)) {
                 	salvarFotoVisitanteHikivision();
                 }
             }
@@ -920,10 +919,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         cadastrarFaceButton.setBorder(new EmptyBorder(20, 20, 20, 20));
         cadastrarFaceButton.setPreferredSize(new Dimension(150, 40));
         cadastrarFaceButton.addActionListener(e -> {
-            if (Boolean.TRUE.equals(this.visitante.getCadastradoNoDesktop()))
-                criarDialogoUsuarioNaoPermitidoCadastrarFace();
-            else
-                criarDialogoEscolherCameraParaCadastroFace();
+            if (Boolean.TRUE.equals(this.visitante.getCadastradoNoDesktop())) {
+            	criarDialogoUsuarioNaoPermitidoCadastrarFace();
+            } else {
+            	criarDialogoEscolherCameraParaCadastroFace();
+            }
         });
 
         addVisitorButton = new JButton("Salvar");
@@ -2014,31 +2014,6 @@ public class RegisterVisitorDialog extends BaseDialog {
         	} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
-        	
-        	/*
-            final boolean usuarioJaEstaCadastrado = hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, visitante.getCardNumber());
-
-            if (Boolean.FALSE.equals(usuarioJaEstaCadastrado)) {
-                boolean isAdicionado = hikiVisionIntegrationService.adicionarUsuario(deviceId, visitante.getCardNumber(), visitante.getName());
-
-                if (!isAdicionado) {
-                    continue;
-                }
-            }
-
-            final boolean isFotoUsuarioJaCadastrada = hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(deviceId, visitante.getCardNumber());
-            if (isFotoUsuarioJaCadastrada) {
-                hikiVisionIntegrationService.atualizarFotoUsuario(deviceId, visitante.getCardNumber(), fotoVisitante);
-            } else {
-                hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, visitante.getCardNumber(), fotoVisitante);
-            }
-            
-            final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId, visitante.getCardNumber());
-            
-            if(!isCartaoJaCadastrado) {
-            	hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId, visitante.getCardNumber());
-            }
-            */
         }
 
         if(Objects.equals("ATIVO", visitante.getStatus())) {
@@ -2457,7 +2432,6 @@ public class RegisterVisitorDialog extends BaseDialog {
         simButton.setBorder(new EmptyBorder(10, 20, 10, 20));
         simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         simButton.addActionListener(e -> {
-
             try {
 
                 if (visitante.getPedestreRegra() != null) {
@@ -2491,6 +2465,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 
             if (valido) {
                 adicionarVisitante();
+                // salvar foto na hikivision
+                
+                if(Objects.nonNull(hikivisionUseCases)) {
+                	salvarFotoVisitanteHikivision();
+                }
+                
                 limparTodosOsCampos();
                 confirmarAdicaoCreditoDialog.dispose();
                 this.dispose();
@@ -2499,10 +2479,11 @@ public class RegisterVisitorDialog extends BaseDialog {
                     new Thread() {
                         public void run() {
                             Utils.sleep(500);
-                            if ("VISITANTE".equals(visitante.getTipo()))
-                                Main.mainScreen.abreCadastroVisitante(null);
-                            else
-                                Main.mainScreen.abreCadastroPedestre(null);
+                            if (visitante.isVisitante()) {
+                            	Main.mainScreen.abreCadastroVisitante(null);
+                            } else {
+                            	Main.mainScreen.abreCadastroPedestre(null);
+                            }
                         }
                     }.start();
                 } else {

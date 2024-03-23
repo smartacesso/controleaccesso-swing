@@ -99,18 +99,20 @@ public class TopDataAcessoDevice extends TopDataDevice {
 							.getUniqueResultWithParams(LogPedestrianAccessEntity.class,
 									"LogPedestrianAccessEntity.findByEquipamentDesc", args);
 		
-		if(ultimo == null)
+		if(ultimo == null) {
 			return;
+		}
 		
 		Integer sentido = (inner.BilheteInner.Complemento == 1 
 								|| inner.BilheteInner.Complemento == 38) 
 										? getConfigurationValueAsInteger(LEITOR_2) 
 										: getConfigurationValueAsInteger(LEITOR_1);
 		
-		if(sentido == 1)
+		if(sentido == 1) {
 			ultimo.setDirection(Tipo.ENTRADA);
-		else if(sentido == 2)
+		} else if(sentido == 2) {
 			ultimo.setDirection(Tipo.SAIDA);
+		}
 		
 		ultimo.setStatus("ATIVO");
 		ultimo.setDataCriacao(new Date());
@@ -121,24 +123,26 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
 				.getSingleResultById(PedestrianAccessEntity.class, ultimo.getIdPedestrian());
 
-		if(pedestre == null)
+		if(pedestre == null) {
 			return;
+		}
 		
 		boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
 		if(!ignoraRegras) {
-			
-			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
-				Utils.decrementaMensagens(pedestre.getMensagens());
+			if(pedestre.temMensagens()) {
+				pedestre.decrementaMensagens();
+			}
 			
 			if(getConfigurationValueAsBoolean(BLOQUEAR_SAIDA) 
-					&& Tipo.SAIDA.equals(ultimo.getDirection()))
-				Utils.decrementaCreditos(pedestre);
+					&& Tipo.SAIDA.equals(ultimo.getDirection())) {
+				pedestre.decrementaCreditos();
+			}
 			
-			if("DINAMICO_USO".equals(pedestre.getTipoQRCode()))
-				Utils.decrementaQRCodeUso(pedestre);
+			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
+				pedestre.decrementaQRCodeUso();
+			}
 			
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
-			
 		}
 		
 		try {
@@ -160,8 +164,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 												.getUniqueResultWithParams(LogPedestrianAccessEntity.class,
 													"LogPedestrianAccessEntity.findByEquipamentDesc", args);
 		
-		if(ultimoAcesso == null)
+		if(ultimoAcesso == null) {
 			return;
+		}
 		
 		sentido = inner.BilheteInner.Complemento == 1 || inner.BilheteInner.Complemento == 38 
 					? getConfigurationValueAsInteger(LEITOR_2) 
@@ -187,14 +192,17 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
 		if(!ignoraRegras) {
 			
-			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
-				Utils.decrementaMensagens(pedestre.getMensagens());
+			if(pedestre.temMensagens()) {
+				pedestre.decrementaMensagens();
+			}
 			
-			if(Tipo.SAIDA.equals(ultimoAcesso.getDirection()))
-				Utils.decrementaCreditos(pedestre);
+			if(Tipo.SAIDA.equals(ultimoAcesso.getDirection())) {
+				pedestre.decrementaCreditos();
+			}
 			
-			if("DINAMICO_USO".equals(pedestre.getTipoQRCode()))
-				Utils.decrementaQRCodeUso(pedestre);
+			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
+				pedestre.decrementaQRCodeUso();
+			}
 		
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 		}

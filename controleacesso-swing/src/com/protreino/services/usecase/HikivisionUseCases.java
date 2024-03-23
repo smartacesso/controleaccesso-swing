@@ -60,9 +60,8 @@ public class HikivisionUseCases {
 			apagaCampoDataCadastroDeFotoNaHikivision(pedestre.getId());
 		
 		} else {
-			boolean isUsuarioCadastrado = true;
 			if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, pedestre.getCardNumber())) {
-				isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId, pedestre.getCardNumber(), pedestre.getName());
+				final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId, pedestre.getCardNumber(), pedestre.getName());
 
 				if(Boolean.FALSE.equals(isUsuarioCadastrado)) {
 					final String message = String.format("Erro ao cadastrar pedestre %s no device %s", pedestre.getCardNumber(), deviceId);

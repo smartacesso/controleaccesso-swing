@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.TypedQuery;
 
@@ -1351,29 +1352,30 @@ public class HibernateUtil {
 					&& Boolean.FALSE.equals(matchedAthleteAccess.getHabilitarTeclado())) {
 				permitido = false;
 
-			} else if (origem != null && equipament != null
+			} else if (Objects.nonNull(origem) 
+					&& Objects.nonNull(equipament)
 					&& !verificaUltimaPassagemEmCatracaVinculada(equipament, matchedAthleteAccess.getId())) {
 				permitido = false;
 
-			} else if (ultimoAcesso != null && Tipo.SAIDA.equals(ultimoAcesso.getDirection())
+			} else if (Objects.nonNull(ultimoAcesso) 
+					&& ultimoAcesso.isSaida()
 					&& !isPedestrePermitidoRetornar(matchedAthleteAccess)) {
 				permitidoRetornar = true;
 
 			} else if ("VISITANTE".equals(matchedAthleteAccess.getTipo())) {
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
-					if (matchedAthleteAccess.getQuantidadeCreditos() != null
+					if (matchedAthleteAccess.temCreditos()
 							|| isPermitidoPedestreRegra(matchedAthleteAccess)) {
-						permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
-								&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
-										.getValidadeCreditos().getTime() >= new Date().getTime());
+						permitido = matchedAthleteAccess.temCreditosValidos();
 
 						// fazer um for validando se existe regra livre ou com quantidade veazia, sÃ³
 						// assim libero
 
-						if ((matchedAthleteAccess.getQuantidadeCreditos().equals(1l)
-								|| (matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos() != null
-										&& matchedAthleteAccess.getPedestreRegra().get(0).getQtdeTotalDeCreditos().equals(1L)))
-								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) && usaUrna) {
+						if ((matchedAthleteAccess.isUltimoCredito()
+								|| (matchedAthleteAccess.getRegraAtiva().isPresent() 
+										&& matchedAthleteAccess.getRegraAtiva().get().isUltimoCredito()))
+								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) 
+								&& usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 						}
 
@@ -1381,14 +1383,12 @@ public class HibernateUtil {
 							permitido = true;
 						}
 
-					} else if (Utils.pedestreTemRegraDeAcessoPorPeriodoValido(matchedAthleteAccess)) {
+					} else if (matchedAthleteAccess.temRegraDeAcessoPorPeriodoValido()) {
 						permitido = true;
-
 					} else {
 						if (Integer.valueOf(FacialDevice.ORIGEM_FACIAL).equals(origem)
 								&& matchedAthleteAccess.getCardNumber() == null) {
 							permitido = false;
-						
 						} else if (usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedAthleteAccess);
 						}
@@ -1406,7 +1406,7 @@ public class HibernateUtil {
 				 * regras de pedestres
 				 */
 
-				if (matchedAthleteAccess.getQuantidadeCreditos() != null) {
+				if (matchedAthleteAccess.temCreditos()) {
 
 					/*
 					 * verificar creditos
@@ -1414,15 +1414,11 @@ public class HibernateUtil {
 
 					// verifica se tem crÃ©ditos para passar
 
-					permitido = matchedAthleteAccess.getQuantidadeCreditos() > 0
+					permitido = matchedAthleteAccess.temCreditosValidos(data)
 							&& !isPermitidoPedestreRegra(matchedAthleteAccess)
-							&& matchedAthleteAccess.getCardNumber() != null
-							&& (matchedAthleteAccess.getValidadeCreditos() == null || matchedAthleteAccess
-									.getValidadeCreditos().getTime() >= (data != null ? data : new Date()).getTime());
+							&& Objects.nonNull(matchedAthleteAccess.getCardNumber());
 
-				} else if (matchedAthleteAccess.getTipoTurno() != null
-						&& !"".equals(matchedAthleteAccess.getTipoTurno())) {
-
+				} else if (matchedAthleteAccess.temTipoTurno()) {
 					/*
 					 * verificar turno/escala
 					 */
@@ -1436,8 +1432,7 @@ public class HibernateUtil {
 
 					// data de partida
 					Date dataInicial = calculaDataInicialEscala(matchedAthleteAccess, escala, tipoAdicao);
-					System.out
-							.println("Data calculada: " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(dataInicial));
+					System.out.println("Data calculada: " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(dataInicial));
 
 					Calendar periodoPermitidoIni = Calendar.getInstance();
 					periodoPermitidoIni.setTime(dataInicial);
@@ -1446,13 +1441,7 @@ public class HibernateUtil {
 					periodoPermitidoFim.setTime(dataInicial);
 					periodoPermitidoFim.add(tipoAdicao, Integer.parseInt(escala[0]));
 
-					if (dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim)) {
-						// pode acessar
-						permitido = true;
-					} else {
-						// não pode acessar
-						permitido = false;
-					}
+					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
 
 				} else if (acessoRestrito) {
 					// verifica se hÃ¡ algum log de acesso para este aluno hoje
@@ -1473,10 +1462,11 @@ public class HibernateUtil {
 
 			if (!permitidoSensor) {
 				// para lÃ³gica de urna
-				if (origem != Origens.ORIGEM_LEITOR_2)
+				if (origem != Origens.ORIGEM_LEITOR_2) {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_SENSOR;
-				else
+				} else {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED_BOX;
+				}
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
@@ -1535,29 +1525,34 @@ public class HibernateUtil {
 
 				logAccess.setReason(motivo);
 
-				if (deveGravarCartaoRecebidoNoLog(origem))
+				if (deveGravarCartaoRecebidoNoLog(origem)) {
 					logAccess.setCartaoAcessoRecebido(codigo);
+				}
 
-				if (Main.broadcastServer != null)
+				if (Main.broadcastServer != null) {
 					Main.broadcastServer
-							.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
+						.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
+				}
 
 				if ((origem != null && !origem.equals(Origens.ORIGEM_LIBERADO_SISTEMA))
-						|| !VerificationResult.ALLOWED.equals(resultadoVerificacao))
+						|| !VerificationResult.ALLOWED.equals(resultadoVerificacao)) {
 					HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+				}
 
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
-				if (createNotification)
+				if (createNotification) {
 					Utils.createNotification(userName + " já registrado hoje.", NotificationType.BAD, foto);
+				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			resultadoVerificacao = VerificationResult.ERROR;
-			if (createNotification)
+			if (createNotification) {
 				Utils.createNotification("Falha ao processar requisiÃ§Ã£o de acesso. " + e.getMessage(),
 						NotificationType.BAD, foto);
+			}
 		}
 
 		return new Object[] { resultadoVerificacao, userName, matchedAthleteAccess };
@@ -1597,20 +1592,9 @@ public class HibernateUtil {
 	}
 
 	private static boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
-		if (pedestre.getPedestreRegra() == null) {
-			return false;
-		}
-
-		for (PedestreRegraEntity pedestreRegra : pedestre.getPedestreRegra()) {
-			if (pedestreRegra.getQtdeDeCreditos() != null && pedestreRegra.getQtdeDeCreditos() > 0
-					&& (pedestreRegra.getRemovidoNoDesktop() == null
-							|| Boolean.FALSE.equals(pedestreRegra.getRemovidoNoDesktop()))) {
-				return true;
-			}
-
-		}
-
-		return false;
+		final Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
+		
+		return regraAtiva.isPresent() && regraAtiva.get().temCreditos();
 	}
 
 	private static boolean isPedestreNaoPossuiRegras(PedestrianAccessEntity pedestre) {
@@ -1773,10 +1757,8 @@ public class HibernateUtil {
 		System.out.println(pedestre.getCardNumber());
 
 		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")
-				&& Utils.pedestreTemRegraDeAcessoPorPeriodoValido(pedestre)
-				) {
+				&& pedestre.temRegraDeAcessoPorPeriodoValido()) {
 			return true;
-
 		}
 //		Se origem diferentes das que não sÃ£o permitidas como exemplo, biometria.
 

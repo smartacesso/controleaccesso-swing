@@ -2,6 +2,7 @@ package com.protreino.services.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -222,6 +223,11 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.setDataRemovido(user.getDataRemovido());
 		this.setDataAlteracao(new Date());
 		this.setHabilitaPedestre(user.getHabilitaPedestre());;
+	}
+	
+	public boolean temChaveIntegracaoComtele() {
+		return Objects.nonNull(chaveIntegracaoComtele) 
+				&& !chaveIntegracaoComtele.isEmpty();
 	}
 
 	public Long getId() {

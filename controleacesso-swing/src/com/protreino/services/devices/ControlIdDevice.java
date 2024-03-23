@@ -455,16 +455,19 @@ public class ControlIdDevice extends Device {
 
 		boolean ignoraRegras = getConfigurationValueAsBoolean("Ignorar regras de acesso");
 		if(!ignoraRegras) {
-			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty())
-				Utils.decrementaMensagens(pedestre.getMensagens());
+			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty()) {
+				pedestre.decrementaMensagens();
+			}
 			
-			if(Tipo.SAIDA.equals(direction) || !bloquearSaida)
-				Utils.decrementaCreditos(pedestre);
+			if(Tipo.SAIDA.equals(direction) || !bloquearSaida) {
+				pedestre.decrementaCreditos();
+			}
 			
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 	
-			if(Tipo.ENTRADA.equals(direction))
+			if(Tipo.ENTRADA.equals(direction)) {
 				Utils.enviaSmsDeRegistro(pedestre);
+			}
 		}
 	}
 	

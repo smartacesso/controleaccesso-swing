@@ -105,6 +105,20 @@ public class PedestreRegraEntity extends BaseEntity {
 		setQtdeDeCreditos(getQtdeDeCreditos() - 1);
 	}
 	
+	public boolean isUltimoCredito() {
+		return Long.valueOf(1).equals(qtdeDeCreditos);
+	}
+	
+	public boolean isPeriodoValido() {
+		if (Objects.isNull(dataInicioPeriodo) || Objects.isNull(dataFimPeriodo)) {
+			return false;
+		}
+
+		Date dataAtual = new Date();
+		return dataInicioPeriodo.compareTo(dataAtual) >= 0 && dataFimPeriodo.compareTo(dataAtual) <= 0
+				&& Objects.nonNull(validade) ? validade.compareTo(dataAtual) >= 0 : true;
+	}
+	
 	public Long getId() {
 		return id;
 	}

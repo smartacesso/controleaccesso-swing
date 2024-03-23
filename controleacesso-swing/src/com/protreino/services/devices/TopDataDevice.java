@@ -821,27 +821,28 @@ public class TopDataDevice extends Device {
 		
 		boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
 		if(!ignoraRegras) {
-			if(pedestre.getMensagens() != null && !pedestre.getMensagens().isEmpty()) {
-				Utils.decrementaMensagens(pedestre.getMensagens());
+			if(pedestre.temMensagens()) {
+				pedestre.decrementaMensagens();
 			}
 			
-			if(Tipo.SAIDA.equals(direction) || !bloquearSaida) {
-				Utils.decrementaCreditos(pedestre);
+			if(ultimo.isSaida() || !bloquearSaida) {
+				 pedestre.decrementaCreditos();
 			}
 			
 			if(!pedestre.temCreditos()) {
+				pedestre.apagarCartao();
 				hikivisionUseCases.apagarFotosUsuario(pedestre.getCardNumber());
 				pedestre.setDataCadastroFotoNaHikivision(null);
 			}
 			
 			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
-				Utils.decrementaQRCodeUso(pedestre);
+				pedestre.decrementaQRCodeUso();
 			}
 
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 		}
 
-		if(Tipo.ENTRADA.equals(direction)) {
+		if(ultimo.isSaida()) {
 			Utils.enviaSmsDeRegistro(pedestre);
 		}
 		

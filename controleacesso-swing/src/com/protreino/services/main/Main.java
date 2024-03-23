@@ -554,7 +554,7 @@ public class Main {
                                 HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
                                 Thread.sleep(1000);
 
-                                Utils.decrementaCreditos(matchedPedestre);
+                                matchedPedestre.decrementaCreditos();
                                 HibernateUtil.save(PedestrianAccessEntity.class, matchedPedestre);
                             }
 

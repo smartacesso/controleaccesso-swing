@@ -1115,18 +1115,31 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return Objects.nonNull(quantidadeCreditos) && quantidadeCreditos > 0;
 	}
 	
+	public boolean temCreditosValidos() {
+		return temCreditosValidos(null);
+	}
+	
+	public boolean temCreditosValidos(Date data) {
+		if(Objects.isNull(data)) {
+			data = new Date();
+		}
+		
+		return Objects.nonNull(quantidadeCreditos) 
+				&& quantidadeCreditos > 0
+				&& (Objects.isNull(validadeCreditos) || getValidadeCreditos().getTime() >= new Date().getTime());
+	}
+	
 	public boolean temRegraDeAcessoPorPeriodoValido() {
 		if (Objects.isNull(pedestreRegra) || pedestreRegra.isEmpty()) {
 			return false;
 		}
-
+		
 		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
 			if (pedestreRegra.getRemovidoNoDesktop()) {
 				continue;
 			}
 
-			if (Utils.isRegraDeAcessoValida(pedestreRegra.getDataInicioPeriodo(), pedestreRegra.getDataFimPeriodo(),
-					pedestreRegra.getValidade())) {
+			if (pedestreRegra.isPeriodoValido()) {
 				return true;
 			}
 		}
@@ -1157,20 +1170,24 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		setCardNumber(null); 
 	}
 	
-	public void decrementaCreditosPedestreRegra() {
-		if (Objects.isNull(pedestreRegra)) {
+	public void decrementaCreditos() {
+		if (temRegraDeAcessoPorPeriodoValido()) {
 			return;
 		}
-
-		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
-			pedestreRegra.decrementaCreditos();
-		}
-	}
-	
-	public void decrementaCreditos() {
+		
 		if(temCreditos()) {
 			setQuantidadeCreditos(getQuantidadeCreditos() - 1);
 		}
+		
+		Optional<PedestreRegraEntity> regraAtiva = getRegraAtiva();
+		
+		if(regraAtiva.isPresent() && regraAtiva.get().temCreditos()) {
+			regraAtiva.get().decrementaCreditos();
+		}
+	}
+	
+	public boolean isUltimoCredito() {
+		return Long.valueOf(1).equals(quantidadeCreditos);
 	}
 	
 	public boolean isVisitante() {
@@ -1179,6 +1196,37 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	public boolean isPedestre() {
 		return "PEDESTRE".equals(tipo);
+	}
+	
+	public void decrementaQRCodeUso() {
+		if (Objects.isNull(qrCodeParaAcesso) || !qrCodeParaAcesso.startsWith("U_")) {
+			return;
+		}
+		
+		String[] parts = qrCodeParaAcesso.split("_");
+		Long usos = Long.valueOf(parts[parts.length - 1]);
+		usos++;
+
+		setQrCodeParaAcesso("U_" + EncryptionUtils.getRandomString(4) + "_" + usos);
+		setEditadoNoDesktop(true);
+		setDataAlteracao(new Date());
+	}
+	
+	public boolean temMensagens() {
+		return Objects.nonNull(mensagens) && mensagens.isEmpty();
+	}
+	
+	public void decrementaMensagens() {
+		for (PedestrianMessagesEntity message : mensagens) {
+			if (Objects.nonNull(message.getQuantidade()) 
+					&& message.getQuantidade() > 0) {
+				message.setQuantidade(message.getQuantidade() - 1);
+			}
+		}
+	}
+	
+	public boolean temTipoTurno() {
+		return Objects.nonNull(tipoTurno) && !tipoTurno.isEmpty();
 	}
 	
 	public Long getId() {

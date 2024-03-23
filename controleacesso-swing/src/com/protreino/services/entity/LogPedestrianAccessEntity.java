@@ -18,6 +18,8 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Type;
 
+import com.protreino.services.constants.Tipo;
+
 @Entity
 @Table(name="TB_LOG_PEDESTRIAN_ACCESS")
 @NamedQueries({
@@ -285,6 +287,14 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 		this.cartaoAcessoRecebido = cartaoAcessoRecebido;
 		this.accessDate = accessDate;
 		this.dataCriacao = new Date();
+	}
+	
+	public boolean isEntrada() {
+		return Tipo.ENTRADA.equalsIgnoreCase(direction);
+	}
+	
+	public boolean isSaida() {
+		return Tipo.SAIDA.equalsIgnoreCase(direction);
 	}
 	
 	public Long getId() {
