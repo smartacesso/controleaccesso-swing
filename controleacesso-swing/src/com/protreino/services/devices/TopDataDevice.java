@@ -831,11 +831,10 @@ public class TopDataDevice extends Device {
 			
 			if(!pedestre.temCreditos()) {
 				pedestre.apagarCartao();
-				hikivisionUseCases.apagarFotosUsuario(pedestre.getCardNumber());
-				pedestre.setDataCadastroFotoNaHikivision(null);
+				hikivisionUseCases.apagarFotosUsuario(pedestre);
 			}
 			
-			if("DINAMICO_USO".equals(pedestre.getTipoQRCode())) {
+			if(pedestre.isQrCodeUsoDinamico()) {
 				pedestre.decrementaQRCodeUso();
 			}
 
@@ -1088,14 +1087,12 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado){
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				}else{
+				} else{
 					ret = !"anticlockwise".equals(sentidoCatraca) 
-					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				}
 
-				
-				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
 											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
@@ -1111,7 +1108,7 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado){
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				}else{
+				} else{
 					ret = !"anticlockwise".equals(sentidoCatraca) 
 					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
 							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
@@ -1126,7 +1123,7 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado){
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				}else{
+				} else{
 					ret = !"anticlockwise".equals(sentidoCatraca) 
 					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
 							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
@@ -1250,7 +1247,8 @@ public class TopDataDevice extends Device {
 			System.out.println("qual usu·rio est· sendo enviado a biometria  " + biometria.getName());
 			EasyInner.InserirUsuarioListaAcesso(biometria.getId()+"", 101);
 		}	
-		int ret = EasyInner.EnviarListaAcesso(inner.Numero);
+		
+		EasyInner.EnviarListaAcesso(inner.Numero);
 	}
 
 	private void processSampleForEnrollmentLC(Object obj) {
@@ -1425,6 +1423,7 @@ public class TopDataDevice extends Device {
 		return retorno;
 	}
 	
+	/*
 	private String receberUsuarioDaCatraca(Long idUsuario) {
 		// TODO 
 		int ret = EasyInner.SolicitarUsuarioCadastradoBio(inner.Numero, "0000000028");
@@ -1446,6 +1445,7 @@ public class TopDataDevice extends Device {
 		
 		return "";
 	}
+	*/
 	
 	/**
 	 * M√©todo usado somente quando as digitais sao armazenadas no servidor. 
@@ -1657,7 +1657,7 @@ public class TopDataDevice extends Device {
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Hor·rio_clockwise", FieldType.COMBOBOX, 
-				"Hor·rio_clockwise;Antihor√°rio_anticlockwise"));
+				"Hor·rio_clockwise;Antihor·rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_MENSAGEM_NEGADO, "1", FieldType.NUMERIC_LIST, "1;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));

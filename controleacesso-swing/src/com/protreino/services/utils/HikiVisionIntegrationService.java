@@ -362,7 +362,7 @@ public class HikiVisionIntegrationService {
 
 	}
 
-	public void apagarUsuario(final String deviceId, final String idUser) {
+	public boolean apagarUsuario(final String deviceId, final String idUser) {
 		final String body = "{" 
 				+ "\"UserInfoDetail\" : {" 
 					+ "\"mode\": \"byEmployeeNo\"," 
@@ -380,12 +380,17 @@ public class HikiVisionIntegrationService {
 				.put(requestBody).addHeader("Content-Type", "application/json").build();
 
 		try (Response response = client.newCall(request).execute();) {
-			System.out.println(String.format("Apagando usuario [%s], na camera [%s]", idUser, deviceId));
-			System.out.println(String.format("Response: %s", response.code()));
+			final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+            final boolean isApagadoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
+            System.out.println(String.format("Usuario %s apagado no device %s com sucesso: %b", idUser, deviceId, isApagadoComSucesso));
+            
+            return isApagadoComSucesso;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return false;
 	}
 
 	public boolean apagarFotoUsuario(String deviceId, String idUser) {

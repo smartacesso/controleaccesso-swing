@@ -86,11 +86,12 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		EasyInner.DesabilitarRele1(inner.Numero);
 		EasyInner.DesabilitarRele2(inner.Numero);
 		
-		Boolean AcionaRele2 = getConfigurationValueAsBoolean(ACIONA_RELE_2);
+		//Boolean acionaRele2 = getConfigurationValueAsBoolean(ACIONA_RELE_2);
 		
 		Boolean usaTorniquete = getConfigurationValueAsBoolean(USA_TORNIQUETE);
-		if(Boolean.TRUE.equals(usaTorniquete))
+		if(Boolean.TRUE.equals(usaTorniquete)) {
 			return;
+		}
 		
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", "Inner Acesso " + inner.Numero);

@@ -578,8 +578,9 @@ public class HibernateUtil {
 		List<?> resultList = null;
 
 		if (Main.servidor != null && !entityClass.equals(PreferenceEntity.class)) {
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return null;
+			}
 
 			verificaExecucaoDePing();
 			try {
@@ -1018,8 +1019,9 @@ public class HibernateUtil {
 		Object result = null;
 
 		if (Main.servidor != null) {
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return null;
+			}
 
 			verificaExecucaoDePing();
 			try {
@@ -1051,10 +1053,12 @@ public class HibernateUtil {
 			try {
 				Query<?> query = session.createNamedQuery(namedQuery, entityClass);
 				List<?> resultList = (List<?>) query.getResultList();
-				if (resultList.isEmpty())
+				if (resultList.isEmpty()) {
 					result = null;
-				else
+				} else {
 					result = resultList.get(0);
+				}
+
 				session.getTransaction().commit();
 
 			} catch (Exception e) {

@@ -10,6 +10,9 @@ import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.*;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
+import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
+import com.protreino.services.repository.LogPedestrianAccessRepository;
+import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.screens.*;
 import com.protreino.services.services.LuxandService;
@@ -138,6 +141,8 @@ public class Main {
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
+    
+    private static final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 
     public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integra��o Comtele";
 
@@ -472,55 +477,11 @@ public class Main {
         }
     }
 
-	private void verificaRemocaoDefacesHV() {
-		String dataDeRemocao = Utils.getPreference("enableRemoveHVFacesForDate");
-		try {
-			Date date = sdfWithoutTIme.parse(dataDeRemocao);
-
-			java.util.Timer timer = new java.util.Timer();
-
-			timer.schedule(new TimerTask() {
- 
-				@Override
-				public void run() {
-					
-					LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-					Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-
-					HashMap<String, Object> args = new HashMap<>();
-					args.put("DATE_HIKIVISION", date);
-
-					@SuppressWarnings("unchecked")
-					final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
-							.getResultList(PedestrianAccessEntity.class,
-									"PedestrianAccessEntity.findAllWhitLastAccessHikivision");
-					if (pedestres != null && !pedestres.isEmpty()) {
-						HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-						HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-						List<HikivisionDeviceTO.Device> devices = hiviVisionUseCase.listarDispositivos();
-
-						for (PedestrianAccessEntity pedestre : pedestres) {
-							for (HikivisionDeviceTO.Device device : devices) {
-								hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-							}
-						}
-					}
-					
-
-				}
-				// trocar os parametros
-
-			}, date);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-
-	}
-
 	private void inicializaTimers() {
         timerSyncUsersAccessList.start();
         timerSyncAthleteAccessList.start();
         timerSyncLogAthleteAccess.start();
+        timerSyncHikivision.start();
     }
 
     /**
@@ -765,12 +726,18 @@ public class Main {
         servidor = null;
         devicesList = new ArrayList<Device>();
 
-        if (timerSyncAthleteAccessList.isRunning())
-            timerSyncAthleteAccessList.stop();
-        if (timerSyncLogAthleteAccess.isRunning())
-            timerSyncLogAthleteAccess.stop();
-        if (timerSyncUsersAccessList.isRunning())
-            timerSyncUsersAccessList.stop();
+        if (timerSyncAthleteAccessList.isRunning()) {
+        	timerSyncAthleteAccessList.stop();
+        }
+        if (timerSyncLogAthleteAccess.isRunning()) {
+        	timerSyncLogAthleteAccess.stop();
+        }
+        if (timerSyncUsersAccessList.isRunning()) {
+        	timerSyncUsersAccessList.stop();
+        }
+        if(timerSyncHikivision.isRunning()) {
+        	timerSyncHikivision.stop();
+        }
 
         lastSyncGetUsers = 0L;
         lastSyncGetEmpresas = 0L;
@@ -848,7 +815,12 @@ public class Main {
                     syncLogAthleteAccess();
                 }
             });
-
+            timerSyncHikivision = new Timer(10 * 60000, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    syncHikivisionAccessList();
+                }
+            });
+            
             timerOnline = new Timer(10000, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     verificaOnline();
@@ -867,6 +839,8 @@ public class Main {
             timerSyncUsersAccessList.stop();
             timerSyncAthleteAccessList.stop();
             timerSyncLogAthleteAccess.stop();
+            timerSyncHikivision.stop();
+            
             //inicia antes de todos
             if (!timerOnline.isRunning()) {
                 verificaOnline();
@@ -946,11 +920,10 @@ public class Main {
 				if (pedestres != null && !pedestres.isEmpty()) {
 					HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
 					HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
-					List<HikivisionDeviceTO.Device> devices = hiviVisionUseCase.listarDispositivos();
+					
 					for (PedestrianAccessEntity pedestre : pedestres) {
-						for (HikivisionDeviceTO.Device device : devices) {
-							hiviVisionUseCase.apagarUsuario(pedestre, device.getDevIndex());
-						}
+						hiviVisionUseCase.removerUsuarioFromDevices(pedestre);
+						HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 					}
 				}
 
@@ -959,12 +932,9 @@ public class Main {
 		}, 0, 0);
 		
 	//	 180 * 86400000
-	
-
-
-
     }
-	/*
+	
+    /*
 
 	private static void enviarLogsComFalhaAoEnviar() {
 		try {
@@ -1064,10 +1034,11 @@ public class Main {
     }
 
     public static void syncUsersAccessList() {
-        if (updatingUsersAccessList)
-            return;
+        if (updatingUsersAccessList) {
+        	return;
+        }
 
-        if (Main.servidor != null) {
+        if (Objects.nonNull(Main.servidor)) {
             System.out.println(sdf.format(new Date()) + " Sincroniza��o desabilitada: M�quina possui servidor");
             return;
         }
@@ -1424,6 +1395,10 @@ public class Main {
             System.out.println(sdf.format(new Date()) + " Sincronização Hikivision desabilitada: Máquina possui servidor");
             return;
         }
+        
+        final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
+        final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+        final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 
         updatingHikivisionAccessList = true;
 
@@ -1431,6 +1406,7 @@ public class Main {
             @Override
             public Void doInBackground() {
                 try {
+                	executeSyncFromHikivisionIntegrationError();
                     executeHikivisionAccessListSync();
 
                     if (loggedUser != null) {
@@ -1454,6 +1430,35 @@ public class Main {
                 }
 
                 return null;
+            }
+            
+            private void executeSyncFromHikivisionIntegrationError() {
+            	while(true) {
+            		List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(200);
+            		
+            		if(Objects.isNull(errors) || errors.isEmpty()) {
+            			break;
+            		}
+            		
+            		errors.forEach(integrationError -> {
+            			final Optional<PedestrianAccessEntity> pedestre = pedestrianAccessRepository.findByCardNumber(integrationError.getCardNumber());
+            			if(pedestre.isPresent()) {
+            				boolean executadoComSucesso = true;
+
+                			if(HikivisionAction.CREATE == integrationError.getHikivisionAction()) {
+                				executadoComSucesso = hikivisionUseCases.reprocessarCadastroInDevice(pedestre.get(), integrationError.getDeviceId());
+
+                			} else if(HikivisionAction.REMOVE == integrationError.getHikivisionAction()) {
+                				executadoComSucesso = hikivisionUseCases.reprocessarRemocaoInDevice(pedestre.get(), integrationError.getDeviceId());
+                			}
+                			
+                			if(executadoComSucesso) {
+                				hikivisionIntegrationErrorRepository.remove(integrationError);
+                			}
+            			}
+            			
+            		});
+            	}
             }
 
             private void executeHikivisionAccessListSync() {
@@ -1483,14 +1488,13 @@ public class Main {
                         .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhotoByLastSync", args);
 
                 for (PedestrianAccessEntity pedestre : pedestres) {
-                    for (HikivisionDeviceTO.Device device : devices) {
-                    	try {
-                    		hikivisionUseCases.syncronizaUsuario(device.getDevIndex(), pedestre);
-                    	} catch (HikivisionIntegrationException e) {
-							System.out.println(e.getMessage());
-						}
-                    }
-                    
+                	try {
+                		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre);
+                		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+                	
+                	} catch (HikivisionIntegrationException e) {
+						System.out.println(e.getMessage());
+					}
                 }
 
             }
@@ -1878,12 +1882,13 @@ public class Main {
                         existentAthleteAccess.update(athleteAccessTO);
                         HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
-                        if((existentAthleteAccess.getRemovido() || !Objects.equals(oldStatus, existentAthleteAccess.getStatus())) 
+                        if((existentAthleteAccess.isRemovido() 
+                        			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
                         		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                         		&& Utils.isHikivisionConfigValid() ) {
                         	
                         	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
-                        	hikivisionUseCases.syncronizarUsuarioAllDevices(existentAthleteAccess);
+                        	hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
                         }
 
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
@@ -2143,8 +2148,8 @@ public class Main {
             private void enviaLogsDeAcesso() throws Exception {
                 final Date newLastSyncLog = new Date();
                 final int pageSize = Utils.getPreferenceAsInteger("syncLogPageSize");
-                final int qtdeLogsOnline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByAccessDateCount");
-                final int qtdeLogsOffline = buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByCreateDateCount");
+                final int qtdeLogsOnline = logPedestrianAccessRepository.buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByAccessDateCount");
+                final int qtdeLogsOffline = logPedestrianAccessRepository.buscaQuantidadeDeLogsDeAcesso(lastSyncLog, newLastSyncLog, "findByCreateDateCount");
                 int offsetLogsOnline = 0;
                 int offsetLogsOffline = 0;
 
@@ -2153,12 +2158,12 @@ public class Main {
                     List<LogPedestrianAccessEntity> logsOffline = null;
 
                     if (offsetLogsOnline < qtdeLogsOnline) {
-                        logsOnline = buscaLogsAcesso(offsetLogsOnline, pageSize, lastSyncLog, newLastSyncLog, "findByAccessDate");
+                        logsOnline = logPedestrianAccessRepository.buscaLogsAcesso(offsetLogsOnline, pageSize, lastSyncLog, newLastSyncLog, "findByAccessDate");
                         offsetLogsOnline += pageSize;
                     }
 
                     if (offsetLogsOffline < qtdeLogsOffline) {
-                        logsOffline = buscaLogsAcesso(offsetLogsOffline, pageSize, lastSyncLog, newLastSyncLog, "findByCreateDate");
+                        logsOffline = logPedestrianAccessRepository.buscaLogsAcesso(offsetLogsOffline, pageSize, lastSyncLog, newLastSyncLog, "findByCreateDate");
                         offsetLogsOffline += pageSize;
                     }
 
@@ -2215,24 +2220,6 @@ public class Main {
             throw new ErrorOnSendLogsToWebException(" ERRO AO ENVIAR LOG DE ACESSO: Response Code: " + responseCode);
         }
 
-    }
-
-    private static int buscaQuantidadeDeLogsDeAcesso(Long lastSyncLog, Date newLastSyncLog, String namedQuery) {
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("LAST_SYNC", new Date(lastSyncLog));
-        args.put("NEW_LAST_SYNC", newLastSyncLog);
-
-        return HibernateUtil.
-                getResultListWithParamsCount(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity." + namedQuery, args);
-    }
-
-    private static List<LogPedestrianAccessEntity> buscaLogsAcesso(int offset, int pageSize, Long lastSyncLog, Date newLastSyncLog, String namedQuery) {
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("LAST_SYNC", new Date(lastSyncLog));
-        args.put("NEW_LAST_SYNC", newLastSyncLog);
-
-        return (List<LogPedestrianAccessEntity>) HibernateUtil.
-                buscaLogsDeAcessoPaginados("LogPedestrianAccessEntity." + namedQuery, args, offset, pageSize);
     }
 
     @SuppressWarnings("unchecked")
@@ -2379,8 +2366,10 @@ public class Main {
             mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
             if (!Main.updatingAthleteAccessList) {
                 Main.syncAthleteAccessList();
-                while (Main.updatingAthleteAccessList)
-                    Thread.sleep(100);
+                while (Main.updatingAthleteAccessList) {
+                	Thread.sleep(100);
+                }
+
                 mainScreen.getListaAcessoPanel().cleanFilter();
             }
         } catch (Exception e) {

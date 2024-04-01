@@ -8,7 +8,6 @@ import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import org.apache.commons.lang.StringUtils;
@@ -507,10 +506,11 @@ public class RegisterVisitorDialog extends BaseDialog {
             new Thread() {
                 public void run() {
                     Utils.sleep(500);
-                    if ("VISITANTE".equals(visitante.getTipo()))
-                        Main.mainScreen.abreCadastroVisitante(visitante);
-                    else
-                        Main.mainScreen.abreCadastroPedestre(visitante);
+                    if ("VISITANTE".equals(visitante.getTipo())) {
+                    	Main.mainScreen.abreCadastroVisitante(visitante);
+                    } else {
+                    	Main.mainScreen.abreCadastroPedestre(visitante);
+                    }
                 }
             }.start();
         });
@@ -1956,7 +1956,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             openImageSelectButton.setIcon(escolherImagemIcon);
             visitante.setFoto(null);
 			fotoVisitante = null;
-			hikivisionUseCases.apagarFotosUsuario(visitante.getCardNumber());
+			hikivisionUseCases.apagarFotosUsuario(visitante);
             escolherFotoDialog.dispose();
         });
 
@@ -2000,21 +2000,12 @@ public class RegisterVisitorDialog extends BaseDialog {
             return;
         }
 
-        List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
-
-        if (Objects.isNull(devices) || devices.isEmpty()) {
-            return;
-        }
-
-        for (HikivisionDeviceTO.Device device : devices) {
-        	final String deviceId = device.getDevIndex();
-        	try {
-        		hikivisionUseCases.syncronizaUsuario(deviceId, visitante);
-        		
-        	} catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
-        }
+    	try {
+    		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+    		
+    	} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 
         if(Objects.equals("ATIVO", visitante.getStatus())) {
         	visitante.setDataCadastroFotoNaHikivision(new Date());

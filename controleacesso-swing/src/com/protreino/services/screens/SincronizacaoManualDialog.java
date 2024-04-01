@@ -40,13 +40,14 @@ import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
 
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
-import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HikiVisionIntegrationService;
+import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -56,6 +57,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private Font tabHeaderFont;
 	private Container mainContentPane;
 	private final HikivisionUseCases hikivisionUseCases;
+	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
 	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" };
 	private Integer[] columnWidths = { 280, 200, 150, 80 };
 	private JTable deviceListTable;
@@ -138,6 +140,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		syncCameraListners = new JButton("Sincronizar listeners");
 		syncCameraListners.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncCameraListners.setPreferredSize(new Dimension(140, 40));
+		syncCameraListners.setVisible(Objects.isNull(Main.servidor));
 		syncCameraListners.addActionListener(e -> {
 			syncCameraListners();
 		});
@@ -429,22 +432,17 @@ public class SincronizacaoManualDialog extends BaseDialog {
 					List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim, offset, pageSize);
 					
 					pedestresParaSicronizar.forEach(pedestre -> {
-						devicesToSync.forEach(device -> {
-							
-							try {
-								hikivisionUseCases.syncronizaUsuario(device, pedestre);
-								
-							} catch (HikivisionIntegrationException ex) {
-								errors.add(ex.getMessage());
-							}
-
-						});
-
+						hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, devicesToSync);
 						progressBar.setValue(progressBar.getValue() + 1);
 					});
 					
 					offset += pageSize;
 				} while (offset < countPedestresParaSincronizar);
+				
+				List<HikivisionIntegrationErrorEntity> hikivisionIntegrationErrors = hikivisionIntegrationErrorRepository.findLatest(30);
+				if(Objects.nonNull(hikivisionIntegrationErrors) && !hikivisionIntegrationErrors.isEmpty()) {
+					hikivisionIntegrationErrors.forEach(error -> errors.add(error.getMessage()));
+				}
 				
 				if(errors.isEmpty()) {
 					progressBarDialog.dispose();

@@ -51,6 +51,7 @@
 		<mapping class="com.protreino.services.entity.PedestreRegraEntity" />
 		<mapping class="com.protreino.services.entity.CartaoComandaEntity" />
 		<mapping class="com.protreino.services.entity.LogCartaoComandaEntity" />
+		<mapping class="com.protreino.services.entity.HikivisionIntegrationErrorEntity" />
 		
 	</session-factory>
 </hibernate-configuration>

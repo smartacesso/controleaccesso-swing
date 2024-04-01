@@ -1229,6 +1229,18 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return Objects.nonNull(tipoTurno) && !tipoTurno.isEmpty();
 	}
 	
+	public boolean isInativo() {
+		return "INATIVO".equals(status);
+	}
+	
+	public boolean isRemovido() {
+		return Boolean.TRUE.equals(removido);
+	}
+	
+	public boolean isQrCodeUsoDinamico() {
+		return "DINAMICO_USO".equals(tipoQRCode);
+	}
+	
 	public Long getId() {
 		return id;
 	}
