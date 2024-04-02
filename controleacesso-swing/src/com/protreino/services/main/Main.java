@@ -815,11 +815,15 @@ public class Main {
                     syncLogAthleteAccess();
                 }
             });
-            timerSyncHikivision = new Timer(10 * 60000, new ActionListener() {
+            
+            final ActionListener reproccessHikivisionErrorsListner = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     syncHikivisionAccessList();
                 }
-            });
+            };
+            final Integer reproccessHikivisionErrorsMinutes = Integer.valueOf(Utils.getPreference("reproccessHikivisionErrors"));
+            timerSyncHikivision = new Timer(reproccessHikivisionErrorsMinutes * 60000, !reproccessHikivisionErrorsMinutes.equals(0) 
+            		? reproccessHikivisionErrorsListner : null);
             
             timerOnline = new Timer(10000, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1392,7 +1396,7 @@ public class Main {
         }
 
         if (Main.servidor != null) {
-            System.out.println(sdf.format(new Date()) + " SincronizaÃ§Ã£o Hikivision desabilitada: MÃ¡quina possui servidor");
+            System.out.println(sdf.format(new Date()) + " Sincronizaço Hikivision desabilitada: Máquina possui servidor");
             return;
         }
         
@@ -1406,8 +1410,9 @@ public class Main {
             @Override
             public Void doInBackground() {
                 try {
+                	System.out.println(sdf.format(new Date()) + " Iniciando reprocessamento de erros na integração com a Hikivision");
                 	executeSyncFromHikivisionIntegrationError();
-                    executeHikivisionAccessListSync();
+                    //executeHikivisionAccessListSync();
 
                     if (loggedUser != null) {
                         lastSyncHikivision = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
@@ -1433,32 +1438,30 @@ public class Main {
             }
             
             private void executeSyncFromHikivisionIntegrationError() {
-            	while(true) {
-            		List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(200);
-            		
-            		if(Objects.isNull(errors) || errors.isEmpty()) {
-            			break;
-            		}
-            		
-            		errors.forEach(integrationError -> {
-            			final Optional<PedestrianAccessEntity> pedestre = pedestrianAccessRepository.findByCardNumber(integrationError.getCardNumber());
-            			if(pedestre.isPresent()) {
-            				boolean executadoComSucesso = true;
+        		List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(500);
+        		
+        		if(Objects.isNull(errors) || errors.isEmpty()) {
+        			return;
+        		}
+        		
+        		errors.forEach(integrationError -> {
+        			final Optional<PedestrianAccessEntity> pedestre = pedestrianAccessRepository.findByCardNumber(integrationError.getCardNumber());
+        			if(pedestre.isPresent()) {
+        				boolean executadoComSucesso = true;
 
-                			if(HikivisionAction.CREATE == integrationError.getHikivisionAction()) {
-                				executadoComSucesso = hikivisionUseCases.reprocessarCadastroInDevice(pedestre.get(), integrationError.getDeviceId());
+            			if(HikivisionAction.CREATE == integrationError.getHikivisionAction()) {
+            				executadoComSucesso = hikivisionUseCases.reprocessarCadastroInDevice(pedestre.get(), integrationError.getDeviceId());
 
-                			} else if(HikivisionAction.REMOVE == integrationError.getHikivisionAction()) {
-                				executadoComSucesso = hikivisionUseCases.reprocessarRemocaoInDevice(pedestre.get(), integrationError.getDeviceId());
-                			}
-                			
-                			if(executadoComSucesso) {
-                				hikivisionIntegrationErrorRepository.remove(integrationError);
-                			}
+            			} else if(HikivisionAction.REMOVE == integrationError.getHikivisionAction()) {
+            				executadoComSucesso = hikivisionUseCases.reprocessarRemocaoInDevice(pedestre.get(), integrationError.getDeviceId());
             			}
             			
-            		});
-            	}
+            			if(executadoComSucesso) {
+            				hikivisionIntegrationErrorRepository.remove(integrationError);
+            			}
+        			}
+        			
+        		});
             }
 
             private void executeHikivisionAccessListSync() {

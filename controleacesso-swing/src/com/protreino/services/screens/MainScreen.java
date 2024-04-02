@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.DeviceCard;
+import com.protreino.services.devices.HikivisionDeviceCard;
 import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.devices.TopDataDevice;
@@ -63,13 +64,13 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
-import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
 import com.protreino.services.utils.WrapLayout;
+import com.protreino.services.usecase.HikivisionUseCases;
 
 @SuppressWarnings("serial")
 public class MainScreen extends JFrame {
@@ -103,6 +104,7 @@ public class MainScreen extends JFrame {
 	private Container mainContentPane;
 	private JTabbedPane tabbedPane;
 	private JPanel devicesPane;
+	private JPanel hikivisionDevicesPane;
    // private LoginPanel loginPanel;
 	private AccessListPanel listaAcessoPanel;
 	private AccessHistoryPanel historicoAcessoPanel;
@@ -126,6 +128,8 @@ public class MainScreen extends JFrame {
 	public RegisterVisitorDialog cadastroVisitante;
 	public RegisterVisitorDialog cadastroPedestre;
 	public CartaoComandaDialog cadastroCartao;
+	
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 
 	public MainScreen() {
 		instance = this;
@@ -236,6 +240,16 @@ public class MainScreen extends JFrame {
 		tabbedPane.setTabComponentAt(position, label);
 		position++;
 		
+		if(hikivisionUseCases.getSystemInformation()) {
+			JPanel panelDevicesHkivision = montarPanelCamerasHikivision();
+			tabbedPane.addTab("Devices Hikivision", panelDevicesHkivision);
+			label = new JLabel("Devices Hikivision");
+			label.setPreferredSize(new Dimension(150, 25));
+			label.setForeground(Main.firstColor);
+			tabbedPane.setTabComponentAt(position, label);
+			position++;
+		}
+		
 		if(Main.servidor != null) {
 			devicefromServerPanel = new DevicefromServerPanel();
 			tabbedPane.addTab("Devices do servidor", devicefromServerPanel);
@@ -284,15 +298,17 @@ public class MainScreen extends JFrame {
 		revalidate();
 		pack();
 
-		if (actualState != null)
+		if (actualState != null) {
 			setExtendedState(actualState);
-		if (actualDimension != null)
+		}
+		if (actualDimension != null) {
 			setPreferredSize(actualDimension);
-		if (actualPosition != null)
+		}
+		if (actualPosition != null) {
 			setLocation(actualPosition);
-		else
+		} else {
 			setLocationRelativeTo(null);
-
+		}
 	}
 
 	/**
@@ -328,13 +344,19 @@ public class MainScreen extends JFrame {
 		}
 	}
 
+	private void addHikivisionDeviceCard(com.protreino.services.to.hikivision.HikivisionDeviceTO.Device device) {
+		HikivisionDeviceCard hikivisionDeviceCard = new HikivisionDeviceCard(device);
+		hikivisionDeviceCard.setStatus(device.getDevStatus());
+		hikivisionDevicesPane.add(hikivisionDeviceCard);
+		hikivisionDevicesPane.revalidate();
+	}
+	
 	/**
 	 * Cria o deviceCard. Chamado quando um novo dispositivo é adicionado ou quando
 	 * a tela exibida e há dispositivos salvos na lista
 	 * 
 	 * @param device
 	 */
-
 	private void addDeviceCard(Device device) {
 		DeviceCard deviceCard = new DeviceCard(device);
 		device.setDeviceCard(deviceCard);
@@ -786,6 +808,40 @@ public class MainScreen extends JFrame {
 		panel.add(scrollPane, BorderLayout.CENTER);
 		return panel;
 	}
+	
+	private JPanel montarPanelCamerasHikivision() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+
+		//JToolBar toolBar = montarToolBarCatracas();
+		//panel.add(toolBar, BorderLayout.PAGE_START);
+		// TODO: Montar toolbar para add device hikivision
+		// TODO: Menu de contexto pra remover device
+
+		hikivisionDevicesPane = new JPanel();
+		hikivisionDevicesPane.setLayout(new WrapLayout(FlowLayout.LEFT, 30, 30));
+		hikivisionDevicesPane.setBackground(Color.WHITE);
+
+		JMenuItem refreshMenuItem = new JMenuItem("Atualizar");
+		refreshMenuItem.addActionListener((e) -> refresh());
+
+		JPopupMenu jPopup = new JPopupMenu();
+		jPopup.add(refreshMenuItem);
+		hikivisionDevicesPane.setComponentPopupMenu(jPopup);
+		
+		List<com.protreino.services.to.hikivision.HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
+		if(Objects.nonNull(devices) && !devices.isEmpty()) {
+			devices.forEach(device -> {
+				addHikivisionDeviceCard(device);
+			});
+		}
+		
+		JScrollPane scrollPane = new JScrollPane(hikivisionDevicesPane, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+		panel.add(scrollPane, BorderLayout.CENTER);
+		return panel;
+	}
 
 	public void verificaCatracasVinculadas() {
 		Map<String, String> identificadoresCatracasVinculadas = new HashMap<String, String>();
@@ -955,8 +1011,9 @@ public class MainScreen extends JFrame {
 
 	public void refresh() {
 		int index = tabbedPane.getSelectedIndex();
-		if (index == 1 && listaAcessoPanel != null && listaAcessoPanel.isFiltering())
+		if (index == 1 && listaAcessoPanel != null && listaAcessoPanel.isFiltering()) {
 			return;
+		}
 		buildUI();
 		tabbedPane.setSelectedIndex(index);
 	}

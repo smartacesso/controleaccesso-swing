@@ -112,22 +112,29 @@ public class HikivisionEventsUseCase {
 		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED) {
 			System.out.println("Evento online, catraca desconectada: " + cardNo + " | " + dataAcesso);
 			
-			try {
-				selectedDevice.connect("NOT_WAIT_TIME");
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			tryReconectDevice(selectedDevice);
 			
 			if(selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);
 			} else {
 				salvaLogDePedestreOffline(cardNo, selectedDevice.getFullIdentifier(), dataAcesso);
 			}
-			
 
 		} else {
 			selectedDevice.validaAcessoHikivision(cardNo);
+		}
+	}
+	
+	private void tryReconectDevice(final TopDataDevice selectedDevice) {
+		final Boolean reconectDeviceOnReceiveCurrentEvent = Utils.getPreferenceAsBoolean("reconectDeviceOnReceiveCurrentEvent");
+		
+		if(Boolean.TRUE.equals(reconectDeviceOnReceiveCurrentEvent)) {
+			try {
+				selectedDevice.connect("NOT_WAIT_TIME");
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

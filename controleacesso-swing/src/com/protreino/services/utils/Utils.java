@@ -501,6 +501,10 @@ public class Utils {
 				"Porta do servidor TCP Hikivision para receber os eventos", FieldType.TEXT, "2025", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
 				"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
+				"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)", FieldType.NUMERIC_LIST, "10", "0;5;60"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reconectDeviceOnReceiveCurrentEvent",
+				"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {

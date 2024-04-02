@@ -22,6 +22,10 @@ public class HikivisionUseCases {
 	
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
 	
+	public HikivisionUseCases() {
+		this.hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
+	}
+	
 	public HikivisionUseCases(final HikiVisionIntegrationService hikiVisionIntegrationService) {
 		this.hikiVisionIntegrationService = hikiVisionIntegrationService;
 	}
