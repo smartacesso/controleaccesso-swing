@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import com.protreino.services.constants.Configurations;
-import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;

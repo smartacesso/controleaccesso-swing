@@ -242,8 +242,8 @@ public class MainScreen extends JFrame {
 		
 		if(hikivisionUseCases.getSystemInformation()) {
 			JPanel panelDevicesHkivision = montarPanelCamerasHikivision();
-			tabbedPane.addTab("Devices Hikivision", panelDevicesHkivision);
-			label = new JLabel("Devices Hikivision");
+			tabbedPane.addTab("Leitores faciais", panelDevicesHkivision);
+			label = new JLabel("Leitores faciais");
 			label.setPreferredSize(new Dimension(150, 25));
 			label.setForeground(Main.firstColor);
 			tabbedPane.setTabComponentAt(position, label);
