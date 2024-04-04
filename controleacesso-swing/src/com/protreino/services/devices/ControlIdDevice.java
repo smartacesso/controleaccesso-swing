@@ -51,12 +51,15 @@ import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
+import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HttpRequestParser;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class ControlIdDevice extends Device {
+	
+	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	
 	protected String serverIp;
 	protected String serverPort;
@@ -466,7 +469,7 @@ public class ControlIdDevice extends Device {
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 	
 			if(Tipo.ENTRADA.equals(direction)) {
-				Utils.enviaSmsDeRegistro(pedestre);
+				enviaSmsDeRegistroUseCase.execute(pedestre);
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package com.protreino.services.entity;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +33,11 @@ import com.protreino.services.enumeration.HikivisionAction;
 	@NamedQuery(name = "HikivisionIntegrationErrorEntity.findByCardNumberAndDeviceId",
 				query = "select obj from HikivisionIntegrationErrorEntity obj "
 						+ "where obj.cardNumber = :CARD_NUMBER "
-						+ "and obj.deviceId = :DEVICE_ID ")
+						+ "and obj.deviceId = :DEVICE_ID "),
+	@NamedQuery(name = "HikivisionIntegrationErrorEntity.findAllWhereRetriesAreLessThan", 
+				query = "select obj from HikivisionIntegrationErrorEntity obj "
+						+ "where obj.retries < :MAX_RETRIES "
+						+ "order by obj.id asc"),
 })
 public class HikivisionIntegrationErrorEntity extends BaseEntity implements ObjectWithId, Serializable {
 
@@ -49,6 +54,9 @@ public class HikivisionIntegrationErrorEntity extends BaseEntity implements Obje
 
 	@Column(name="DEVICE_ID", nullable=false, length=100)
 	private String deviceId;
+	
+	@Column(name="RETRIES", nullable=false)
+	private Long retries = 0L;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name="HIKIVISION_ACTION", nullable=true, length=100)
@@ -67,6 +75,10 @@ public class HikivisionIntegrationErrorEntity extends BaseEntity implements Obje
 	
 	public HikivisionIntegrationErrorEntity(String message) {
 		this.message = message;
+	}
+	
+	public void incrementRetry() {
+		retries = retries + 1;
 	}
 
 	public Long getId() {
@@ -107,6 +119,16 @@ public class HikivisionIntegrationErrorEntity extends BaseEntity implements Obje
 
 	public void setHikivisionAction(HikivisionAction hikivisionAction) {
 		this.hikivisionAction = hikivisionAction;
+	}
+
+
+	public Long getRetries() {
+		return retries;
+	}
+
+
+	public void setRetries(Long retries) {
+		this.retries = retries;
 	}
 
 }

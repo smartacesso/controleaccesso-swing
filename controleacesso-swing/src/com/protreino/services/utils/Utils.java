@@ -67,7 +67,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -89,7 +88,6 @@ import com.protreino.services.entity.AllowedTimeEntity;
 import com.protreino.services.entity.ConfigurationEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
-import com.protreino.services.entity.EmpresaEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PreferenceEntity;
 import com.protreino.services.entity.UserEntity;
@@ -100,6 +98,7 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.OperationalSystem;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.PreferenceTO;
@@ -118,6 +117,8 @@ public class Utils {
 	private static List<JDialog> notifications = new ArrayList<JDialog>();
 	private static List<PreferenceTO> defaultPreferencesList;
 
+	private static final DeviceRepository deviceRepository = new DeviceRepository();
+	
 	public static boolean isHikivisionConfigValid() {
 		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
 
@@ -502,7 +503,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
 				"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
-				"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)", FieldType.NUMERIC_LIST, "10", "0;5;60"));
+				"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)", FieldType.NUMERIC_LIST, "10", "0;10;60"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reconectDeviceOnReceiveCurrentEvent",
 				"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
 
@@ -547,8 +548,9 @@ public class Utils {
 	public static String exportPreferences() {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
-			if (FieldType.IMAGE.equals(preferenceTO.getFieldType()))
+			if (FieldType.IMAGE.equals(preferenceTO.getFieldType())) {
 				continue;
+			}
 			stringBuilder.append(preferenceTO.getKey() + "_" + getPreference(preferenceTO.getKey()));
 			stringBuilder.append("$");
 		}
@@ -559,115 +561,119 @@ public class Utils {
 
 	@SuppressWarnings("unchecked")
 	public static void importDevices() {
-		if (getPreferenceAsBoolean("importExportDevices")) {
-			String json = Main.loggedUser.getBackupDevices();
-			if (isNullOrEmpty(json)) {
-				return;
+		if (!getPreferenceAsBoolean("importExportDevices")) {
+			return;
+		}
+		
+		String json = Main.loggedUser.getBackupDevices();
+		if (isNullOrEmpty(json)) {
+			return;
+		}
+
+		JsonParser parser = new JsonParser();
+		JsonArray deviceArray = (JsonArray) parser.parse(json);
+		for (JsonElement elementDevice : deviceArray) {
+			JsonObject deviceObj = (JsonObject) elementDevice;
+			
+			DeviceEntity deviceEntity = convertToDeviceEntity(deviceObj);
+			
+			List<ConfigurationGroupEntity> configurationGroupList = new ArrayList<ConfigurationGroupEntity>();
+			JsonArray configGroupArray = deviceObj.get("configurationGroups").getAsJsonArray();
+
+			for (JsonElement elementConfigGroup : configGroupArray) {
+				JsonObject configGroupObj = (JsonObject) elementConfigGroup;
+				ConfigurationGroupEntity configGroupEntity = new ConfigurationGroupEntity();
+				configGroupEntity.setDeviceEntity(deviceEntity);
+				configGroupEntity.setName(configGroupObj.get("name").getAsString());
+				List<ConfigurationEntity> configurationList = new ArrayList<ConfigurationEntity>();
+				JsonArray configArray = configGroupObj.get("configurations") != null
+						? configGroupObj.get("configurations").getAsJsonArray()
+						: new JsonArray();
+
+				for (JsonElement elementConfig : configArray) {
+					JsonObject configObj = (JsonObject) elementConfig;
+					ConfigurationEntity configEntity = convertToConfigurationEntity(configObj, configGroupEntity);
+					configurationList.add(configEntity);
+				}
+				configGroupEntity.setConfigurations(configurationList);
+				configurationGroupList.add(configGroupEntity);
 			}
 
-			JsonParser parser = new JsonParser();
-			JsonArray deviceArray = (JsonArray) parser.parse(json);
-			for (JsonElement elementDevice : deviceArray) {
-				JsonObject deviceObj = (JsonObject) elementDevice;
-				DeviceEntity deviceEntity = new DeviceEntity();
-				deviceEntity.setManufacturer(Manufacturer.valueFromImport(deviceObj.get("manufacturer").getAsString()));
-				deviceEntity.setIdentifier(deviceObj.get("identifier").getAsString());
-				deviceEntity.setName(deviceObj.get("name").isJsonNull() ? null : deviceObj.get("name").getAsString());
-				deviceEntity
-						.setLogin(deviceObj.get("login").isJsonNull() ? null : deviceObj.get("login").getAsString());
-				deviceEntity.setPassword(
-						deviceObj.get("password").isJsonNull() ? null : deviceObj.get("password").getAsString());
-				deviceEntity.setLocation(
-						deviceObj.get("location").isJsonNull() ? null : deviceObj.get("location").getAsString());
-				deviceEntity
-						.setDesiredStatus(DeviceStatus.valueFromImport(deviceObj.get("desiredStatus").getAsString()));
-				deviceEntity.setDefaultDevice(deviceObj.get("defaultDevice").isJsonNull() ? false
-						: deviceObj.get("defaultDevice").getAsBoolean());
-				deviceEntity.setMirrorDevice(deviceObj.get("mirrorDevice").isJsonNull() ? false
-						: deviceObj.get("mirrorDevice").getAsBoolean());
-				deviceEntity.setAthleteScreenConfig(deviceObj.get("athleteScreenConfig").isJsonNull() ? null
-						: deviceObj.get("athleteScreenConfig").getAsString());
+			deviceEntity.setConfigurationGroups(configurationGroupList);
+			JsonArray attachedDevicesArray = deviceObj.get("attachedDevices").getAsJsonArray();
 
-				List<ConfigurationGroupEntity> configurationGroupList = new ArrayList<ConfigurationGroupEntity>();
-				JsonArray configGroupArray = deviceObj.get("configurationGroups").getAsJsonArray();
-
-				for (JsonElement elementConfigGroup : configGroupArray) {
-					JsonObject configGroupObj = (JsonObject) elementConfigGroup;
-					ConfigurationGroupEntity configGroupEntity = new ConfigurationGroupEntity();
-					configGroupEntity.setDeviceEntity(deviceEntity);
-					configGroupEntity.setName(configGroupObj.get("name").getAsString());
-					List<ConfigurationEntity> configurationList = new ArrayList<ConfigurationEntity>();
-					JsonArray configArray = configGroupObj.get("configurations") != null
-							? configGroupObj.get("configurations").getAsJsonArray()
-							: new JsonArray();
-
-					for (JsonElement elementConfig : configArray) {
-						JsonObject configObj = (JsonObject) elementConfig;
-						ConfigurationEntity configEntity = new ConfigurationEntity();
-						configEntity.setGroup(configGroupEntity);
-						configEntity.setName(configObj.get("name").getAsString());
-						configEntity.setValue(
-								configObj.get("value").isJsonNull() ? null : configObj.get("value").getAsString());
-						configEntity.setType(FieldType.valueOf(configObj.get("type").getAsString()));
-						configEntity.setComboboxValues(configObj.get("comboboxValues").isJsonNull() ? null
-								: configObj.get("comboboxValues").getAsString());
-						configEntity.setMaxCharacteres(configObj.get("maxCharacteres").isJsonNull() ? null
-								: configObj.get("maxCharacteres").getAsInt());
-						configEntity.setMinCharacteres(configObj.get("minCharacteres").isJsonNull() ? null
-								: configObj.get("minCharacteres").getAsInt());
-						configEntity.setNumeric(
-								configObj.get("numeric").isJsonNull() ? null : configObj.get("numeric").getAsBoolean());
-						configEntity.setRequired(configObj.get("required").isJsonNull() ? null
-								: configObj.get("required").getAsBoolean());
-						configurationList.add(configEntity);
-					}
-					configGroupEntity.setConfigurations(configurationList);
-					configurationGroupList.add(configGroupEntity);
-				}
-
-				deviceEntity.setConfigurationGroups(configurationGroupList);
-				JsonArray attachedDevicesArray = deviceObj.get("attachedDevices").getAsJsonArray();
-
-				if (attachedDevicesArray != null && attachedDevicesArray.size() > 0) {
-					deviceEntity.setAttachedDevices(attachedDevicesArray.toString());
-				}
-
-				if(deviceAlreadyExists(deviceEntity.getIdentifier())) {
-					continue;
-				}
-				
-				HibernateUtil.save(DeviceEntity.class, deviceEntity);
+			if (attachedDevicesArray != null && attachedDevicesArray.size() > 0) {
+				deviceEntity.setAttachedDevices(attachedDevicesArray.toString());
 			}
 
-			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class,
-					"DeviceEntity.findAll");
-			if (lista != null && !lista.isEmpty()) {
-				for (DeviceEntity deviceEntity : lista) {
-					Main.devicesList.add(deviceEntity.recoverDevice());
-				}
+			if(deviceRepository.isDeviceAlreadyExists(deviceEntity.getIdentifier())) {
+				continue;
 			}
-			boolean haveDefaultDevice = false;
-			for (Device device : Main.devicesList) {
-				if (device.isDefaultDevice()) {
-					haveDefaultDevice = true;
-					break;
-				}
-			}
+			
+			HibernateUtil.save(DeviceEntity.class, deviceEntity);
+		}
 
-			if (!haveDefaultDevice && !Main.devicesList.isEmpty()) {
-				Main.devicesList.get(0).setDefaultDevice(true);
+		List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+		if (lista != null && !lista.isEmpty()) {
+			for (DeviceEntity deviceEntity : lista) {
+				Main.devicesList.add(deviceEntity.recoverDevice());
 			}
 		}
-	}
+		boolean haveDefaultDevice = false;
+		for (Device device : Main.devicesList) {
+			if (device.isDefaultDevice()) {
+				haveDefaultDevice = true;
+				break;
+			}
+		}
 
-	private static boolean deviceAlreadyExists(String identifier) {
-		HashMap<String, Object> args = new HashMap<>();
-		args.put("IDENTIFIER", identifier);
+		if (!haveDefaultDevice && !Main.devicesList.isEmpty()) {
+			Main.devicesList.get(0).setDefaultDevice(true);
+		}
+	}
+	
+	private static ConfigurationEntity convertToConfigurationEntity(final JsonObject configObj, ConfigurationGroupEntity configGroupEntity) {
+		ConfigurationEntity configEntity = new ConfigurationEntity();
+		configEntity.setGroup(configGroupEntity);
+		configEntity.setName(configObj.get("name").getAsString());
+		configEntity.setValue(
+				configObj.get("value").isJsonNull() ? null : configObj.get("value").getAsString());
+		configEntity.setType(FieldType.valueOf(configObj.get("type").getAsString()));
+		configEntity.setComboboxValues(configObj.get("comboboxValues").isJsonNull() ? null
+				: configObj.get("comboboxValues").getAsString());
+		configEntity.setMaxCharacteres(configObj.get("maxCharacteres").isJsonNull() ? null
+				: configObj.get("maxCharacteres").getAsInt());
+		configEntity.setMinCharacteres(configObj.get("minCharacteres").isJsonNull() ? null
+				: configObj.get("minCharacteres").getAsInt());
+		configEntity.setNumeric(
+				configObj.get("numeric").isJsonNull() ? null : configObj.get("numeric").getAsBoolean());
+		configEntity.setRequired(configObj.get("required").isJsonNull() ? null
+				: configObj.get("required").getAsBoolean());
 		
-		DeviceEntity device = (DeviceEntity) HibernateUtil.getUniqueResultWithParams(DeviceEntity.class,
-				"DeviceEntity.findByIdentifier", args);
+		return configEntity;
+	}
+	
+	private static DeviceEntity convertToDeviceEntity(final JsonObject deviceObj) {
+		DeviceEntity deviceEntity = new DeviceEntity();
+		deviceEntity.setManufacturer(Manufacturer.valueFromImport(deviceObj.get("manufacturer").getAsString()));
+		deviceEntity.setIdentifier(deviceObj.get("identifier").getAsString());
+		deviceEntity.setName(deviceObj.get("name").isJsonNull() ? null : deviceObj.get("name").getAsString());
+		deviceEntity
+				.setLogin(deviceObj.get("login").isJsonNull() ? null : deviceObj.get("login").getAsString());
+		deviceEntity.setPassword(
+				deviceObj.get("password").isJsonNull() ? null : deviceObj.get("password").getAsString());
+		deviceEntity.setLocation(
+				deviceObj.get("location").isJsonNull() ? null : deviceObj.get("location").getAsString());
+		deviceEntity
+				.setDesiredStatus(DeviceStatus.valueFromImport(deviceObj.get("desiredStatus").getAsString()));
+		deviceEntity.setDefaultDevice(deviceObj.get("defaultDevice").isJsonNull() ? false
+				: deviceObj.get("defaultDevice").getAsBoolean());
+		deviceEntity.setMirrorDevice(deviceObj.get("mirrorDevice").isJsonNull() ? false
+				: deviceObj.get("mirrorDevice").getAsBoolean());
+		deviceEntity.setAthleteScreenConfig(deviceObj.get("athleteScreenConfig").isJsonNull() ? null
+				: deviceObj.get("athleteScreenConfig").getAsString());
 		
-		return Objects.nonNull(device);
+		return deviceEntity;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1363,10 +1369,10 @@ public class Utils {
 	 * @return True se a hora atual esta dentro dos limites enviados
 	 */
 	public static boolean isDentroDoHorario(String inicio, String fim, Date data) {
-
 		Calendar agora = Calendar.getInstance();
-		if (data != null)
+		if (data != null) {
 			agora.setTime(data);
+		}
 		agora.set(Calendar.SECOND, 0);
 
 		if (inicio != null) {
@@ -1378,11 +1384,13 @@ public class Utils {
 
 			// verifica se esta dentro da tolerancia
 			Long tolerancia = getPreferenceAsLong("toleranceAccess");
-			if (tolerancia != null && tolerancia != 0)
+			if (tolerancia != null && tolerancia != 0) {
 				horaInicio.add(Calendar.MINUTE, tolerancia.intValue() * -1);
+			}
 
-			if (agora.before(horaInicio))
+			if (agora.before(horaInicio)) {
 				return false;
+			}
 		}
 
 		if (fim != null) {
@@ -1393,11 +1401,13 @@ public class Utils {
 			horaFim.set(Calendar.SECOND, 0);
 
 			Long tolerancia = getPreferenceAsLong("toleranceAccess");
-			if (tolerancia != null && tolerancia != 0)
+			if (tolerancia != null && tolerancia != 0) {
 				horaFim.add(Calendar.MINUTE, tolerancia.intValue());
+			}
 
-			if (agora.after(horaFim))
+			if (agora.after(horaFim)) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -1455,8 +1465,9 @@ public class Utils {
 	}
 
 	public static boolean isNullOrEmpty(List<?> list) {
-		if (list == null || list.isEmpty())
+		if (list == null || list.isEmpty()) {
 			return true;
+		}
 		return false;
 	}
 
@@ -1468,22 +1479,14 @@ public class Utils {
 	}
 
 	public static boolean isNullOrZero(Number number) {
-		if (number == null || number.doubleValue() == 0d)
+		if (number == null || number.doubleValue() == 0d) {
 			return true;
+		}
 		return false;
 	}
 
 	public static List<PreferenceTO> getDefaultPreferencesList() {
 		return defaultPreferencesList;
-	}
-
-	public static boolean isBirthday(PedestrianAccessEntity athleteAccess, Date data) {
-		if (athleteAccess.getDataNascimento() != null) {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
-			if (sdf.format(data != null ? data : new Date()).equals(sdf.format(athleteAccess.getDataNascimento())))
-				return true;
-		}
-		return false;
 	}
 
 	private static byte[] createRoundImageWithIcon(byte[] original, NotificationType type) {
@@ -1598,40 +1601,6 @@ public class Utils {
 		table.getColumnModel().getColumn(columnNumero).setWidth(0);
 	}
 
-	public static void enviaSmsDeRegistro(PedestrianAccessEntity pedestre) {
-		if (!Main.loggedUser.temChaveIntegracaoComtele()) {
-			return;
-		}
-
-		if (!pedestre.getEnviaSmsAoPassarNaCatraca() || pedestre.getIdEmpresa() == null) {
-			return;
-		}
-
-		EmpresaEntity empresa = buscaEmpresaDoPedestre(pedestre.getIdEmpresa());
-
-		if (empresa == null || empresa.getTelefone() == null || empresa.getTelefone().isEmpty()) {
-			return;
-		}
-
-		try {
-			SMSUtils sms = new SMSUtils(Main.loggedUser.getChaveIntegracaoComtele());
-			String message = pedestre.getName() + " " + getPreference("messageSMSAfterPassInDevice");
-
-			String numeroTelefone = empresa.getCelular().replace(" ", "").replace("-", "").replace("(", "").replace(")", "");
-
-			sms.enviaSMS(numeroTelefone, message);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static EmpresaEntity buscaEmpresaDoPedestre(Long idEmpresa) {
-		EmpresaEntity empresa = null;
-		empresa = (EmpresaEntity) HibernateUtil.getSingleResultById(EmpresaEntity.class, idEmpresa);
-		return empresa;
-	}
-
 	public static Date convertDataJson(JsonElement element) throws ParseException {
 		try {
 			return new Date(element.getAsLong());
@@ -1655,53 +1624,6 @@ public class Utils {
 				}
 			}
 		}
-	}
-
-	public static PedestrianAccessEntity buscaPedestrePorIdOuIdTemp(Long idPedestre) {
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
-				.getSingleResultById(PedestrianAccessEntity.class, idPedestre);
-
-		if (pedestre != null && pedestre.getId() != null) {
-			return pedestre;
-		}
-
-		pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class,
-				idPedestre);
-
-		if (pedestre != null && pedestre.getId() != null) {
-			return pedestre;
-		}
-
-		return null;
-	}
-	
-	public static synchronized Device getDeviceByName(final String deviceName) {
-		if(Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(deviceName)) {
-			return null;
-		}
-		
-		for(Device device : Main.devicesList) {
-			if(deviceName.equals(device.getName())) {
-				return device;
-			}
-		}
-		
-		return null;
-	}
-	
-	public static synchronized Device getDeviceByFullIdentifier(final String identifier) {
-		if(Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(identifier)) {
-			return null;
-		}
-		
-		for(Device device : Main.devicesList) {
-			System.out.println("device Name: " + device.getName());
-			if(device.getName().endsWith(identifier)) {
-				return device;
-			}
-		}
-		
-		return null;
 	}
 
 	public static String toHEX(String Cartao) {
@@ -1785,23 +1707,6 @@ public class Utils {
 		System.out.println(a.equals(b));
 		getOffsetDateTime();
 	}
-	
-	public static void fill(JProgressBar b)
-    {
-        int i = 0;
-        try {
-            while (i <= 100) {
-                // fill the menu bar
-                b.setValue(i + 10);
- 
-                // delay the thread
-                Thread.sleep(1000);
-                i += 20;
-            }
-        }
-        catch (Exception e) {
-        }
-    }
 	
 	private static OffsetDateTime getOffsetDateTime() {
         // Data original no fuso +08:00

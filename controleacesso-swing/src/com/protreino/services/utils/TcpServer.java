@@ -40,6 +40,7 @@ import com.protreino.services.enumeration.StatusCard;
 import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.InternalLoginResponse;
@@ -51,6 +52,7 @@ public class TcpServer {
 
 	private int porta;
 	private int portaPdv;
+	private final DeviceRepository deviceRepository = new DeviceRepository();
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
@@ -328,7 +330,7 @@ public class TcpServer {
 		private void liberarDevice(TcpMessageTO receivedTcpMessage) {
 			String indentifier = (String) receivedTcpMessage.getParans().get("indentifier");
 			String sentido = (String) receivedTcpMessage.getParans().get("sentido");
-			Device device = HibernateUtil.getDeviceByIdentifier(indentifier);
+			Device device = deviceRepository.getDeviceByIdentifier(indentifier);
 			
 			if (Tipo.ENTRADA.equals(sentido)) {
 				allowAccess(device, sentido);

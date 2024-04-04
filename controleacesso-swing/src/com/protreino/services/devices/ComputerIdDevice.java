@@ -48,6 +48,7 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
@@ -61,6 +62,7 @@ public class ComputerIdDevice extends Device {
 	private String serialNumber;
 	private Boolean createNotification;
 	private Map<Long, List<DPFPTemplate>> templateDatabase;
+	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 	
 	public ComputerIdDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -353,7 +355,7 @@ public class ComputerIdDevice extends Device {
 		    }
 			
 			if (idEncontrado != null) {
-				PedestrianAccessEntity pedestre = Utils.buscaPedestrePorIdOuIdTemp(idEncontrado);
+				PedestrianAccessEntity pedestre = pedestrianAccessRepository.buscaPedestrePorIdOuIdTemp(idEncontrado);
 				
 				if(pedestre != null)
 					idEncontrado = pedestre.getId();

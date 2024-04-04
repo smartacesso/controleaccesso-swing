@@ -62,6 +62,7 @@ import com.protreino.services.enumeration.TipoEscala;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.exceptions.QrcodeVencidoException;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
@@ -113,14 +114,18 @@ public class HibernateUtil {
 	public static void closeConnetion() {
 		try {
 			System.out.println("Fechando conexao");
-			if (outToServer != null)
+			if (outToServer != null) {
 				outToServer.close();
-			if (clientSocket != null)
+			}
+			if (clientSocket != null) {
 				clientSocket.close();
-			if (clientSocketFaceRecognizer != null)
+			}
+			if (clientSocketFaceRecognizer != null) {
 				clientSocketFaceRecognizer.close();
-			if (outToServerFaceRecogizer != null)
+			}
+			if (outToServerFaceRecogizer != null) {
 				outToServerFaceRecogizer.close();
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -128,17 +133,20 @@ public class HibernateUtil {
 	}
 
 	public static SessionFactory getSessionFactory() {
-		if (sessionFactory != null && !sessionFactory.isOpen())
+		if (sessionFactory != null && !sessionFactory.isOpen()) {
 			sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
+		}
 		return sessionFactory;
 	}
 
 	public static void shutdown() {
 		if (getSessionFactory().isOpen()) {
-			if (getSessionFactory().getCurrentSession().getTransaction().isActive())
+			if (getSessionFactory().getCurrentSession().getTransaction().isActive()) {
 				getSessionFactory().getCurrentSession().getTransaction().rollback();
-			if (getSessionFactory().getCurrentSession().isOpen())
+			}
+			if (getSessionFactory().getCurrentSession().isOpen()) {
 				getSessionFactory().getCurrentSession().close();
+			}
 			getSessionFactory().close();
 		}
 	}
@@ -181,8 +189,9 @@ public class HibernateUtil {
 
 		} else {
 			Session session = getSessionFactory().getCurrentSession();
-			if (session.getTransaction() == null || !session.getTransaction().isActive())
+			if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 				session.beginTransaction();
+			}
 
 			try {
 
@@ -191,10 +200,11 @@ public class HibernateUtil {
 						entityClass);
 				query.setParameter("ID", id);
 				List<?> resultList = (List<?>) query.getResultList();
-				if (resultList.isEmpty())
+				if (resultList.isEmpty()) {
 					result = null;
-				else
+				} else {
 					result = resultList.get(0);
+				}
 				session.getTransaction().commit();
 
 			} catch (Exception e) {
@@ -214,8 +224,9 @@ public class HibernateUtil {
 		Object result = null;
 
 		if (Main.servidor != null) {
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return null;
+			}
 
 			verificaExecucaoDePing();
 			try {
@@ -239,8 +250,9 @@ public class HibernateUtil {
 
 		} else {
 			Session session = getSessionFactory().getCurrentSession();
-			if (session.getTransaction() == null || !session.getTransaction().isActive())
+			if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 				session.beginTransaction();
+			}
 
 			try {
 
@@ -248,10 +260,11 @@ public class HibernateUtil {
 						PedestrianAccessEntity.class);
 				query.setParameter("ID", id);
 				List<?> resultList = (List<?>) query.getResultList();
-				if (resultList.isEmpty())
+				if (resultList.isEmpty()) {
 					result = null;
-				else
+				} else {
 					result = resultList.get(0);
+				}
 				session.getTransaction().commit();
 
 			} catch (Exception e) {
@@ -276,8 +289,9 @@ public class HibernateUtil {
 		List<LogPedestrianAccessEntity> resultList = null;
 
 		if (Main.servidor != null) {
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return null;
+			}
 
 			verificaExecucaoDePing();
 			try {
@@ -305,8 +319,9 @@ public class HibernateUtil {
 
 		} else {
 			Session session = getSessionFactory().getCurrentSession();
-			if (session.getTransaction() == null || !session.getTransaction().isActive())
+			if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 				session.beginTransaction();
+			}
 
 			try {
 				Query<LogPedestrianAccessEntity> query = session.createNamedQuery(namedQuery,
@@ -338,8 +353,8 @@ public class HibernateUtil {
 				session.close();
 			}
 		}
+
 		return resultList;
-	
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1944,10 +1959,9 @@ public class HibernateUtil {
 	private static boolean isNaoPermitidoEquipamentoRestrito(String equipament, List<PedestrianEquipamentEntity> equipamentosPedestre) {
 		System.out.println("equipament: " + equipament);
 		
-		final Device device = Utils.getDeviceByFullIdentifier(equipament);
+		final Device device = DeviceRepository.getDeviceByFullIdentifier(equipament);
 		
 		if(Objects.isNull(device)) {
-			System.out.println("Device is null");
 			return false;
 		}
 		
@@ -2088,7 +2102,7 @@ public class HibernateUtil {
 			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
 				resultadoVerificacao = validado;
 				logAccess.setStatus("ATIVO");
-				aniversariante = Utils.isBirthday(matchedAthleteAccess, data);
+				aniversariante = matchedAthleteAccess.isBirthday(data);
 
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem))
 					Utils.createNotification(
@@ -2617,8 +2631,9 @@ public class HibernateUtil {
 
 	public static synchronized boolean isAniversariante() {
 		if (Main.servidor != null) {
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return false;
+			}
 
 			Boolean retorno = false;
 
@@ -2938,8 +2953,9 @@ public class HibernateUtil {
 				}
 			}
 		}
-		if (Files.exists(path))
+		if (Files.exists(path)) {
 			Files.delete(path);
+		}
 	}
 
 	public static synchronized void registraNovasFotosPedestre(Long idUsuario) {
@@ -3034,9 +3050,9 @@ public class HibernateUtil {
 
 	public static synchronized void enviaInicioVerificandoAcesso() {
 		if (Main.servidor != null) {
-//			consertar o if
-			if (!Main.servidor.isConnected())
+			if (!Main.servidor.isConnected()) {
 				return;
+			}
 
 			try {
 				TcpMessageTO req = new TcpMessageTO(TcpMessageType.ACCESS_VALIDATING_INI);
@@ -3183,7 +3199,7 @@ public class HibernateUtil {
 	}
 
 	private static Boolean deveGravarCartaoRecebidoNoLog(Integer origem) {
-		return origem != null && origem != Origens.ORIGEM_LIBERADO_SISTEMA && origem != 18;
+		return Objects.nonNull(origem) && origem != Origens.ORIGEM_LIBERADO_SISTEMA && origem != 18;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -3417,18 +3433,4 @@ public class HibernateUtil {
 		});
 	}
 
-	public static synchronized Device getDeviceByIdentifier(String identifier) {
-		if (Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(identifier)) {
-			return null;
-		}
-
-		for (Device device : Main.devicesList) {
-			if (identifier.equals(device.getIdentifier())) {
-				return device;
-			}
-		}
-
-		return null;
-	}
-	
 }

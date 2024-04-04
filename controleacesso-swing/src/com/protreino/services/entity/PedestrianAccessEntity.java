@@ -3,6 +3,7 @@ package com.protreino.services.entity;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +33,7 @@ import org.hibernate.annotations.Type;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
@@ -1101,7 +1103,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 		
 		for(PedestrianEquipamentEntity equipamento : equipamentos) {
-			Device device = Utils.getDeviceByName(equipamento.getNomeEquipamento());
+			Device device = DeviceRepository.getDeviceByName(equipamento.getNomeEquipamento());
 			
 			if(Objects.nonNull(device) && device instanceof TopDataDevice && !((TopDataDevice) device).isDeviceRestrito()) {
 				return false;
@@ -1239,6 +1241,16 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	public boolean isQrCodeUsoDinamico() {
 		return "DINAMICO_USO".equals(tipoQRCode);
+	}
+	
+	public boolean isBirthday(Date data) {
+		if (Objects.nonNull(dataNascimento)) {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
+			if (sdf.format(Objects.nonNull(data) ? data : new Date()).equals(sdf.format(dataNascimento))) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public Long getId() {

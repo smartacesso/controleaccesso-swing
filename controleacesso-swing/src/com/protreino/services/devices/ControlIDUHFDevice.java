@@ -12,11 +12,13 @@ import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
+import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.utils.HibernateUtil;
-import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class ControlIDUHFDevice extends ControlIdDevice {
+	
+	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	
 	public ControlIDUHFDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -177,7 +179,7 @@ public class ControlIDUHFDevice extends ControlIdDevice {
 			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
 	
 			if(Tipo.ENTRADA.equals(direction)) {
-				Utils.enviaSmsDeRegistro(pedestre);
+				enviaSmsDeRegistroUseCase.execute(pedestre);
 			}
 		}
 	}

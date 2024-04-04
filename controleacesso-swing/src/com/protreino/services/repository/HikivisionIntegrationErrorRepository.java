@@ -29,6 +29,10 @@ public class HikivisionIntegrationErrorRepository {
 		
 		HibernateUtil.save(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
 	}
+	
+	public void update(final HikivisionIntegrationErrorEntity hikivisonIntegrationError) {
+		HibernateUtil.update(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<HikivisionIntegrationErrorEntity> findLatest(Integer limit) {
@@ -40,6 +44,16 @@ public class HikivisionIntegrationErrorRepository {
 	public List<HikivisionIntegrationErrorEntity> findFirts(final Integer limit) {
 		return (List<HikivisionIntegrationErrorEntity>) HibernateUtil.getResultListWithParams(HikivisionIntegrationErrorEntity.class,
 				"HikivisionIntegrationErrorEntity.findAll", null, 0, limit);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<HikivisionIntegrationErrorEntity> findFirtsWhereMaxRetriesAreLessThan(final int limit, final long maxRetries) {
+		final HashMap<String, Object> args = new HashMap<>();
+		args.put("MAX_RETRIES", maxRetries);
+		
+		return (List<HikivisionIntegrationErrorEntity>) HibernateUtil
+				.getResultListWithParams(HikivisionIntegrationErrorEntity.class, 
+						"HikivisionIntegrationErrorEntity.findAllWhereRetriesAreLessThan", args, 0, limit);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -57,4 +71,5 @@ public class HikivisionIntegrationErrorRepository {
 	public void remove(final HikivisionIntegrationErrorEntity hikivisonIntegrationError) {
 		HibernateUtil.remove(hikivisonIntegrationError);
 	}
+
 }

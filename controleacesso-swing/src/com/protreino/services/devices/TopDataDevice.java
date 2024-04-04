@@ -1,5 +1,34 @@
 package com.protreino.services.devices;
 
+import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
+import static com.protreino.services.constants.TopDataDeviceConstants.COLETA_CARTOES_OFFLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.DOIS_LEITORES;
+import static com.protreino.services.constants.TopDataDeviceConstants.ECOAR_ASTERISCOS;
+import static com.protreino.services.constants.TopDataDeviceConstants.ENVIA_DIGITAIS_PARA_CATRACA;
+import static com.protreino.services.constants.TopDataDeviceConstants.HABILITAR_TECLADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.IDENTIFICACAO_BIOMETRICA;
+import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
+import static com.protreino.services.constants.TopDataDeviceConstants.IS_DEVICE_RESTRITO;
+import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_1;
+import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_2;
+import static com.protreino.services.constants.TopDataDeviceConstants.LOGICA_DE_CATRACA_COM_URNA;
+import static com.protreino.services.constants.TopDataDeviceConstants.MENSAGEM_ONLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.MODELO_BIOMETRICO;
+import static com.protreino.services.constants.TopDataDeviceConstants.MODO_DE_TRABALHO;
+import static com.protreino.services.constants.TopDataDeviceConstants.NIVEL_RECONHECIMENTO;
+import static com.protreino.services.constants.TopDataDeviceConstants.PADRAO_DE_CARTAO;
+import static com.protreino.services.constants.TopDataDeviceConstants.QUANTIDADE_DIGITOS_CARTAO;
+import static com.protreino.services.constants.TopDataDeviceConstants.SENTIDO_DA_CATRACA;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_LIBERADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_MENSAGEM_NEGADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_PING;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_ESPERA_PARA_CONECTAR;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_MUDANCA_ONLINE_OFFLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_TECLADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOMETRICO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
+import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,10 +71,12 @@ import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
+import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.HikiVisionIntegrationService;
@@ -54,8 +85,6 @@ import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 import com.topdata.easyInner.enumeradores.Enumeradores.EstadosInner;
-
-import static com.protreino.services.constants.TopDataDeviceConstants.*;
 
 @SuppressWarnings("serial")
 public class TopDataDevice extends Device {
@@ -97,6 +126,8 @@ public class TopDataDevice extends Device {
 	
 	protected String tipo = Tipo.ENTRADA;
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
+	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	
 	public TopDataDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -842,7 +873,7 @@ public class TopDataDevice extends Device {
 		}
 
 		if(ultimo.isSaida()) {
-			Utils.enviaSmsDeRegistro(pedestre);
+			enviaSmsDeRegistroUseCase.execute(pedestre);
 		}
 		
 		System.out.println("Registrou giro no equipamento: " + inner.Numero);
@@ -1905,9 +1936,9 @@ public class TopDataDevice extends Device {
 				
 				if(template != null) {
 					Long idPedestrian = template.getIdPedestreianAccess();
-					PedestrianAccessEntity pedestre = Utils.buscaPedestrePorIdOuIdTemp(idPedestrian);
+					PedestrianAccessEntity pedestre = pedestrianAccessRepository.buscaPedestrePorIdOuIdTemp(idPedestrian);
 					
-					if(pedestre != null) {
+					if(Objects.nonNull(pedestre)) {
 						return pedestre.getId();
 					}
 				}

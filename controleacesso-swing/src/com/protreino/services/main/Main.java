@@ -10,6 +10,7 @@ import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.*;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
+import com.protreino.services.repository.BiometricRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
@@ -1438,30 +1439,41 @@ public class Main {
             }
             
             private void executeSyncFromHikivisionIntegrationError() {
-        		List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(500);
+            	final long maxRetries = 20; //TODO Mudar para configurações
+        		final List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(500);
         		
         		if(Objects.isNull(errors) || errors.isEmpty()) {
         			return;
         		}
         		
-        		errors.forEach(integrationError -> {
-        			final Optional<PedestrianAccessEntity> pedestre = pedestrianAccessRepository.findByCardNumber(integrationError.getCardNumber());
-        			if(pedestre.isPresent()) {
-        				boolean executadoComSucesso = true;
-
-            			if(HikivisionAction.CREATE == integrationError.getHikivisionAction()) {
-            				executadoComSucesso = hikivisionUseCases.reprocessarCadastroInDevice(pedestre.get(), integrationError.getDeviceId());
-
-            			} else if(HikivisionAction.REMOVE == integrationError.getHikivisionAction()) {
-            				executadoComSucesso = hikivisionUseCases.reprocessarRemocaoInDevice(pedestre.get(), integrationError.getDeviceId());
-            			}
-            			
-            			if(executadoComSucesso) {
-            				hikivisionIntegrationErrorRepository.remove(integrationError);
-            			}
+        		for(HikivisionIntegrationErrorEntity integrationError : errors) {
+        			final Optional<PedestrianAccessEntity> pedestreOpt = pedestrianAccessRepository.findByCardNumber(integrationError.getCardNumber());
+        			if(!pedestreOpt.isPresent()) {
+        				continue;
         			}
         			
-        		});
+        			final PedestrianAccessEntity pedestre = pedestreOpt.get();
+        			boolean executadoComSucesso = true;
+
+        			if(HikivisionAction.CREATE == integrationError.getHikivisionAction()) {
+        				executadoComSucesso = hikivisionUseCases.reprocessarCadastroInDevice(pedestre, integrationError.getDeviceId());
+
+        			} else if(HikivisionAction.REMOVE == integrationError.getHikivisionAction()) {
+        				executadoComSucesso = hikivisionUseCases.reprocessarRemocaoInDevice(pedestre, integrationError.getDeviceId());
+        			}
+        			
+        			if(executadoComSucesso) {
+        				hikivisionIntegrationErrorRepository.remove(integrationError);
+        				pedestrianAccessRepository.save(pedestre);
+
+        			} else if(integrationError.getRetries() > maxRetries) {
+        				hikivisionIntegrationErrorRepository.remove(integrationError);
+
+        			} else {
+        				integrationError.incrementRetry();
+        				hikivisionIntegrationErrorRepository.update(integrationError);
+        			}
+        		}
             }
 
             private void executeHikivisionAccessListSync() {
@@ -1628,7 +1640,7 @@ public class Main {
             @SuppressWarnings("unchecked")
             private List<PedestrianAccessEntity> enviaPedestresCadastradosOuEditadosDesktop() throws IOException {
                 Main.verificaValidandoAcesso();
-
+                final BiometricRepository biometricRepository = new BiometricRepository();
                 List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateUtil
                         .getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100L);
 
@@ -1661,7 +1673,7 @@ public class Main {
                             }
                         }
 
-                        visitante.setListaBiometriasTransient(buscaBiometriasVisitante(visitante.getId()));
+                        visitante.setListaBiometriasTransient(biometricRepository.buscaBiometriasVisitante(visitante.getId()));
                     }
 
                     JsonObject responseObj = getNewVisitanteResponseObj(visitante);
@@ -1736,75 +1748,85 @@ public class Main {
                 //antes de alterar dados, verifica se existe validaï¿½ï¿½o de acesso em andamento
                 Main.verificaValidandoAcesso();
 
+                final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
-                    if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
+                    if (!Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
+                    	continue;
+                    }
+                    
+                    if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
+                    	for (PedestrianMessagesEntity m : visitante.getMensagens()) {
+                    		HibernateUtil.remove(m);
+                    	}
+                    }
 
-                        if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty())
-                            for (PedestrianMessagesEntity m : visitante.getMensagens())
-                                HibernateUtil.remove(m);
+                    if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
+                    	for (DocumentoEntity d : visitante.getDocumentos()) {
+                    		HibernateUtil.remove(d);
+                    	}
+                    }
 
-                        if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty())
-                            for (DocumentoEntity d : visitante.getDocumentos())
-                                HibernateUtil.remove(d);
+                    if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
+                    	for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
+                    		HibernateUtil.remove(pr);
+                    	}
+                    }
 
-                        if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty())
-                            for (PedestreRegraEntity pr : visitante.getPedestreRegra())
-                                HibernateUtil.remove(pr);
+                    if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
+                    	for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
+                    		HibernateUtil.remove(pe);
+                    	}
+                    }
 
-                        if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty())
-                            for (PedestrianEquipamentEntity pe : visitante.getEquipamentos())
-                                HibernateUtil.remove(pe);
+                    if (visitante.getListaAcessosTransient() != null
+                            && !visitante.getListaAcessosTransient().isEmpty()) {
+                    	for (LogPedestrianAccessEntity acesso : visitante.getListaAcessosTransient()) {
+                    		HibernateUtil.remove(acesso);
+                    	}
+                    }
 
-                        if (visitante.getListaAcessosTransient() != null
-                                && !visitante.getListaAcessosTransient().isEmpty())
-                            for (LogPedestrianAccessEntity acesso : visitante.getListaAcessosTransient())
-                                HibernateUtil.remove(acesso);
+                    List<LogPedestrianAccessEntity> novosLogs = buscaAcessosVisitante(visitante.getId());
 
-                        List<LogPedestrianAccessEntity> novosLogs = buscaAcessosVisitante(visitante.getId());
+                    if (novosLogs != null && !novosLogs.isEmpty()) {
+                        PedestrianAccessEntity novoPedestre = pedestrianAccessRepository.buscaPedestrePorIdTemp(visitante.getId());
+                        System.out.println("id do pedestre antigo" + visitante.getId());
+                        for (LogPedestrianAccessEntity log : novosLogs) {
+                            log.setIdPedestrian(novoPedestre.getId());
+                            log.setPedestre(novoPedestre);
 
-                        if (novosLogs != null && !novosLogs.isEmpty()) {
-                            PedestrianAccessEntity novoPedestre = buscaPedestrePorIdTemp(visitante.getId());
-                            System.out.println("id do pedestre antigo" + visitante.getId());
-                            for (LogPedestrianAccessEntity log : novosLogs) {
-                                log.setIdPedestrian(novoPedestre.getId());
-                                log.setPedestre(novoPedestre);
-
-                                HibernateUtil.save(LogPedestrianAccessEntity.class, log);
-                            }
-                            System.out.println("id do pedestre novo" + novoPedestre.getId());
-                            visitante.setVersao(visitante.getVersao() + 1);
+                            HibernateUtil.save(LogPedestrianAccessEntity.class, log);
                         }
+                        System.out.println("id do pedestre novo" + novoPedestre.getId());
+                        visitante.setVersao(visitante.getVersao() + 1);
+                    }
 
-                        if (visitante.getListaBiometriasTransient() != null
-                                && !visitante.getListaBiometriasTransient().isEmpty()) {
-                            for (BiometricEntity biometria : visitante.getListaBiometriasTransient()) {
-                                biometria = (BiometricEntity) HibernateUtil
-                                        .getSingleResultById(BiometricEntity.class, biometria.getId());
+                    if (visitante.getListaBiometriasTransient() != null
+                            && !visitante.getListaBiometriasTransient().isEmpty()) {
+                        for (BiometricEntity biometria : visitante.getListaBiometriasTransient()) {
+                            biometria = (BiometricEntity) HibernateUtil
+                                    .getSingleResultById(BiometricEntity.class, biometria.getId());
 
-                                if (biometria != null) {
-                                    try {
-                                        HibernateUtil.remove(biometria);
-                                    } catch (Exception e) {
-                                        System.out.println("Sem digital pra remover");
-                                    }
+                            if (biometria != null) {
+                                try {
+                                    HibernateUtil.remove(biometria);
+                                } catch (Exception e) {
+                                    System.out.println("Sem digital pra remover");
                                 }
                             }
                         }
-
-                        try {
-                            HibernateUtil.remove(visitante);
-
-                        } catch (Exception e) {
-                            //visitante serï¿½o excluï¿½do na prï¿½xima sincronizaï¿½ï¿½o
-                            //marca para nï¿½o aparecer nas listagens
-
-                            visitante = (PedestrianAccessEntity) HibernateUtil
-                                    .getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
-                            visitante.setInvisivel(true);
-
-                            HibernateUtil.update(PedestrianAccessEntity.class, visitante);
-                        }
                     }
+
+                    try {
+                        HibernateUtil.remove(visitante);
+
+                    } catch (Exception e) {
+                        visitante = (PedestrianAccessEntity) HibernateUtil
+                                .getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
+                        visitante.setInvisivel(true);
+
+                        HibernateUtil.update(PedestrianAccessEntity.class, visitante);
+                    }
+                
                 }
             }
 
@@ -2274,7 +2296,6 @@ public class Main {
     }
 
     private void setSystemTrayIcon() {
-
         if (!SystemTray.isSupported()) {
             Object[] options = {"OK"};
             JOptionPane.showOptionDialog(null, "Nï¿½o ï¿½ possï¿½vel adicionar ï¿½cones na bandeja do sistema.", "Bandeja do sistema nï¿½o suportada.",
@@ -2282,7 +2303,6 @@ public class Main {
             HibernateUtil.shutdown();
             System.exit(0);
         }
-
 
         loadImages();
         trayIcon = new TrayIcon(trayIconImage, nomeAplicacao + " Controle de acesso");
@@ -2856,33 +2876,6 @@ public class Main {
         return acessosVisitantesLocais;
     }
 
-    @SuppressWarnings("unchecked")
-    private static PedestrianAccessEntity buscaPedestrePorIdTemp(Long idPedestreTemp) {
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("ID_TEMP", idPedestreTemp);
-
-        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>)
-                HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
-                        "PedestrianAccessEntity.findByIdTemp", args);
-
-        if (pedestres != null && !pedestres.isEmpty())
-            return pedestres.get(0);
-
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<BiometricEntity> buscaBiometriasVisitante(Long idVisitante) {
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("ID_USER", idVisitante);
-
-        List<BiometricEntity> biometriasVisitantesLocais = (List<BiometricEntity>)
-                HibernateUtil.getResultListWithParams(BiometricEntity.class,
-                        "BiometricEntity.findByIdUser", args);
-
-        return biometriasVisitantesLocais;
-    }
-
     public static void apagarArquivo(String path) {
         File arquivo = new File(path);
         arquivo.delete();
@@ -2973,16 +2966,6 @@ public class Main {
 
             apagarArquivo(saveZipPath);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static List<PedestrianAccessEntity> buscaTodosOsPedestresAtivos() {
-        List<PedestrianAccessEntity> pedestres = null;
-
-        pedestres = (List<PedestrianAccessEntity>) HibernateUtil.getResultList(PedestrianAccessEntity.class,
-                "PedestrianAccessEntity.findAllActivesOnlyIdAndLastPhotosTaken");
-
-        return pedestres;
     }
 
     public static boolean verificaSePossuiCamerasAdicionadas() {

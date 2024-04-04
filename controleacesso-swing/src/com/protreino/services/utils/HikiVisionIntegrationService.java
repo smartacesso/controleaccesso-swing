@@ -204,6 +204,7 @@ public class HikiVisionIntegrationService {
 					FaceDataRecordResponseTO.class);
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
+			System.out.println(responseBody.statusString + " | " + response.code());
 			System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser,
 					deviceId, isCadastradoComSucesso));
 

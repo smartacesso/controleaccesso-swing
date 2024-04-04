@@ -1,6 +1,7 @@
 package com.protreino.services.usecase;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -107,6 +108,11 @@ public class HikivisionUseCases {
 	
 	public boolean reprocessarRemocaoInDevice(final PedestrianAccessEntity pedestre, String deviceId) {
 		final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId, pedestre.getCardNumber());
+		
+		if(isApagadoComSucesso) {
+			pedestre.setDataCadastroFotoNaHikivision(null);
+		}
+
 		return isApagadoComSucesso;
 	}
 	
@@ -171,6 +177,8 @@ public class HikivisionUseCases {
 			}
 		});
 		
+		pedestre.setDataCadastroFotoNaHikivision(new Date());
+		
 		if(!integrationErrors.isEmpty()) {
 			hikivisionIntegrationErrorRepository.saveAll(integrationErrors);
 		}
@@ -205,6 +213,7 @@ public class HikivisionUseCases {
 			}
         }
         
+        pedestre.setDataCadastroFotoNaHikivision(new Date());
         return true;
 	}
 	
@@ -261,6 +270,5 @@ public class HikivisionUseCases {
 		pedestre.setDataCadastroFotoNaHikivision(null);
 		pedestre.setLastAccessHikiVision(null);
 	}
-
 
 }

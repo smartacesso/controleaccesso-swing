@@ -2007,10 +2007,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 			System.out.println(e.getMessage());
 		}
 
-        if(Objects.equals("ATIVO", visitante.getStatus())) {
-        	visitante.setDataCadastroFotoNaHikivision(new Date());
-        }
-        
         visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
