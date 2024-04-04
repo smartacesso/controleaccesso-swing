@@ -10,6 +10,7 @@ import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
+import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
@@ -172,6 +173,9 @@ public class HikivisionUseCases {
 			} catch(HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(), ex.getDeviceId(), ex.getHikivisionAction()));
 				
+			} catch (InvalidPhotoException ife) {
+				throw ife;
+			
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
@@ -200,8 +204,14 @@ public class HikivisionUseCases {
 			}
 		}
 
-		boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, pedestre.getCardNumber(), pedestre.getFoto());
-		if(Boolean.FALSE.equals(isFotoAdicionada)) {
+		try {
+			boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, pedestre.getCardNumber(), pedestre.getFoto());
+			if(Boolean.FALSE.equals(isFotoAdicionada)) {
+				return false;
+			}
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			return false;
 		}
 		

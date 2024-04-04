@@ -7,6 +7,7 @@ import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
+import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
@@ -1994,6 +1995,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
         	visitante.setDataCadastroFotoNaHikivision(new Date());
+        	System.out.println("Visitante atualizado por server invalido");
             visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
 
             criarDialogoServidorHikivisionNaoConectado();
@@ -2003,7 +2005,10 @@ public class RegisterVisitorDialog extends BaseDialog {
     	try {
     		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
     		
-    	} catch (Exception e) {
+    	} catch (InvalidPhotoException ife) {
+			criarDialogoFotoInvalida();
+    		
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 
@@ -2023,6 +2028,43 @@ public class RegisterVisitorDialog extends BaseDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JLabel mensagemLabel = new JLabel("Servidor para cadastro facial indisponível, não é possível cadastrar fotos para os pedestres");
+        mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton okButton = new JButton("Ok");
+        okButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+        okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        okButton.addActionListener(e -> {
+            hivisionServerNaoConectadoDialog.dispose();
+        });
+
+        JPanel confirmarPanel = new JPanel();
+        confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.X_AXIS));
+        confirmarPanel.add(okButton);
+
+        mainPanel.add(mensagemLabel);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(confirmarPanel);
+
+        hivisionServerNaoConectadoDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+        hivisionServerNaoConectadoDialog.pack();
+        hivisionServerNaoConectadoDialog.setLocationRelativeTo(null);
+        hivisionServerNaoConectadoDialog.setVisible(true);
+    }
+    
+    private void criarDialogoFotoInvalida() {
+    	JDialog hivisionServerNaoConectadoDialog = new JDialog();
+        hivisionServerNaoConectadoDialog.setIconImage(Main.favicon);
+        hivisionServerNaoConectadoDialog.setModal(true);
+        hivisionServerNaoConectadoDialog.setTitle("Foto invalida");
+        hivisionServerNaoConectadoDialog.setResizable(false);
+        hivisionServerNaoConectadoDialog.setLayout(new BorderLayout());
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        JLabel mensagemLabel = new JLabel("Essa foto não atende os criterios necessarios.");
         mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton okButton = new JButton("Ok");

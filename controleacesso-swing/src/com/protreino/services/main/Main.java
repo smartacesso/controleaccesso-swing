@@ -1913,7 +1913,12 @@ public class Main {
                         		&& Utils.isHikivisionConfigValid() ) {
                         	
                         	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
-                        	hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
+                        	try {
+                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
+
+                        	} catch (Exception e) {
+                        		System.out.println(e.getMessage());
+							}
                         }
 
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {

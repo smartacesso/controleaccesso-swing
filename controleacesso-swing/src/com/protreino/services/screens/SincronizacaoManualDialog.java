@@ -432,7 +432,13 @@ public class SincronizacaoManualDialog extends BaseDialog {
 					List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(inicio, fim, offset, pageSize);
 					
 					pedestresParaSicronizar.forEach(pedestre -> {
-						hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, devicesToSync);
+						try {
+							hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, devicesToSync);
+							
+						} catch(Exception ex) {
+							System.out.println(ex.getMessage());
+						}
+						
 						progressBar.setValue(progressBar.getValue() + 1);
 					});
 					

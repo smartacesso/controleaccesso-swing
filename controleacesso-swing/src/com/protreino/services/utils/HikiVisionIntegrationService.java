@@ -6,6 +6,7 @@ import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.google.gson.Gson;
+import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.to.hikivision.*;
 
 import okhttp3.*;
@@ -129,7 +130,7 @@ public class HikiVisionIntegrationService {
 						FaceInfoSearchTO.class);
 				final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Foto do wsuario %s já cadastrado no device %s: %b", idUser, deviceId,
+				System.out.println(String.format("Foto do usuario %s já cadastrado no device %s: %b", idUser, deviceId,
 						isUsuarioCadastrado));
 
 				return isUsuarioCadastrado;
@@ -202,19 +203,26 @@ public class HikiVisionIntegrationService {
 		try (Response response = client.newCall(request).execute();) {
 			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.body().string(),
 					FaceDataRecordResponseTO.class);
+
+			if("Invalid Content".equalsIgnoreCase(responseBody.statusString)) {
+				System.out.println(String.format("Foto do usuario %s não foi aceita no device %s", idUser, deviceId));
+				throw new InvalidPhotoException(responseBody.statusString);
+			}
+			
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
-			System.out.println(responseBody.statusString + " | " + response.code());
 			System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser,
 					deviceId, isCadastradoComSucesso));
 
 			return isCadastradoComSucesso;
+		} catch (InvalidPhotoException ife) {
+			throw ife;
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return false;
-
 	}
 
 	public boolean adicionarCartaoDePedestre(final String deviceId, final String idUser) {
@@ -526,8 +534,8 @@ public class HikiVisionIntegrationService {
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
 
 		return new OkHttpClient.Builder().authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
-				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(10000, TimeUnit.MILLISECONDS)
-				.writeTimeout(10000, TimeUnit.MILLISECONDS).build();
+				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(5000, TimeUnit.MILLISECONDS)
+				.writeTimeout(5000, TimeUnit.MILLISECONDS).build();
 	}
 
 }
