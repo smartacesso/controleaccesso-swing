@@ -296,6 +296,8 @@ public class TcpServer {
 								.equals(receivedTcpMessage.getType())) {
 							List<LogPedestrianAccessEntity> list = buscaLogsPaginados(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
+						} else if (TcpMessageType.GET_RESULT_FROM_HIKIVISION_CAPTURE.equals(receivedTcpMessage.getType())) {
+							getResultFromHikivisionCapture(responseTcpMessage);
 						}
 						else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
@@ -624,6 +626,12 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 
 			return HibernateUtil.buscaListaDevicesDoServidor(entityClass, namedQuery);
+		}
+		private void getResultFromHikivisionCapture(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
+			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) receivedTcpMessage.getParans().get("entity");
+			
+		 HibernateUtil.getResultFromHikivisionCapture(pedestre);
+		 return;
 		}
 
 		private Integer getResultListCount(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {

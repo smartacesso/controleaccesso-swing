@@ -47,6 +47,7 @@ import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.BiometricEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestreRegraEntity;
@@ -60,6 +61,8 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.enumeration.TipoEscala;
 import com.protreino.services.enumeration.VerificationResult;
+import com.protreino.services.exceptions.HikivisionIntegrationException;
+import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.exceptions.QrcodeVencidoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
@@ -68,6 +71,7 @@ import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.TcpMessageTO;
 import com.topdata.easyInner.enumeradores.Enumeradores;
+import com.protreino.services.usecase.*;
 
 public class HibernateUtil {
 
@@ -78,6 +82,7 @@ public class HibernateUtil {
 	public static ObjectOutputStream outToServer;
 	public static Socket clientSocketFaceRecognizer;
 	public static ObjectOutputStream outToServerFaceRecogizer;
+	private final static HikivisionUseCases hikivisionUseCase = new HikivisionUseCases();
 
 	public static boolean executando = false;
 	public static boolean executandoPing = false;
@@ -526,6 +531,39 @@ public class HibernateUtil {
 			}
 		}
 		return resultList;
+	}
+	
+	public static synchronized <T> void getResultFromHikivisionCapture(PedestrianAccessEntity pedestre)  {
+		if(Objects.isNull(Main.servidor)) {
+			try {
+				hikivisionUseCase.cadastrarUsuarioInDevices(pedestre);
+			} catch(InvalidPhotoException ex) {
+				throw new InvalidPhotoException("foto inválida");
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			}
+		} else {
+			try {
+
+				TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_RESULT_FROM_HIKIVISION_CAPTURE);
+				req.getParans().put("entity", pedestre);
+
+				executando = true;
+
+				outToServer.writeObject(req);
+				outToServer.flush();
+				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				executando = false;
+			
+		}
+			return;
+		}
 	}
 
 	public static synchronized <T> List<?> getResultListLimited(Class<T> entityClass, String namedQuery,
@@ -1918,7 +1956,7 @@ public class HibernateUtil {
 
 	private static boolean isPedestrePermitidoRetornar(PedestrianAccessEntity matchedAthleteAccess) {
 		boolean permitido;
-
+//TODO: falta essa para para enviar ao pedestre
 		Date ultimoAcesso = buscaUltimoAcessoAtivoPedestre(matchedAthleteAccess.getId());
 
 		if (ultimoAcesso == null) {

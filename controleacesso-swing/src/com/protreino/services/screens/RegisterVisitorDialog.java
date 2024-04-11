@@ -2003,6 +2003,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         }
 
     	try {
+    		//HibernateUtil.getResultFromHikivisionCapture(visitante);
     		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
     		
     	} catch (InvalidPhotoException ife) {
@@ -2056,7 +2057,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     	JDialog hivisionServerNaoConectadoDialog = new JDialog();
         hivisionServerNaoConectadoDialog.setIconImage(Main.favicon);
         hivisionServerNaoConectadoDialog.setModal(true);
-        hivisionServerNaoConectadoDialog.setTitle("Foto invalida");
+        hivisionServerNaoConectadoDialog.setTitle("Foto inválida");
         hivisionServerNaoConectadoDialog.setResizable(false);
         hivisionServerNaoConectadoDialog.setLayout(new BorderLayout());
 
@@ -2064,7 +2065,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        JLabel mensagemLabel = new JLabel("Essa foto não atende os criterios necessarios.");
+        JLabel mensagemLabel = new JLabel("Foto inválida, Tente novamente!");
         mensagemLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton okButton = new JButton("Ok");

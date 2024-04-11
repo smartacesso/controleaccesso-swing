@@ -860,9 +860,13 @@ public class TopDataDevice extends Device {
 				 pedestre.decrementaCreditos();
 			}
 			
-			if(!pedestre.temCreditos()) {
-				pedestre.apagarCartao();
-				hikivisionUseCases.apagarFotosUsuario(pedestre);
+			if(!pedestre.temCreditos() && pedestre.isVisitante()) {
+				if(Objects.nonNull(pedestre.getFoto()) && Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
+					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+				}else {
+					pedestre.apagarCartao();				
+				}
+				
 			}
 			
 			if(pedestre.isQrCodeUsoDinamico()) {
@@ -1114,15 +1118,17 @@ public class TopDataDevice extends Device {
 		
 		if(bloquearSaida && matchedAthleteAccess != null) {
 			if(inner.BilheteInner.Origem == Enumeradores.ORIGEM_URNA || inner.BilheteInner.Origem == Origens.ORIGEM_LEITOR_2) {
-				
-				if(doisSentidosLiberado){
+							
+				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				} else{
+				}else {
 					ret = !"anticlockwise".equals(sentidoCatraca) 
-						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);			
+					
 				}
+		
 
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
@@ -1136,14 +1142,15 @@ public class TopDataDevice extends Device {
 			LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(matchedAthleteAccess.getId(), matchedAthleteAccess.getQtdAcessoAntesSinc());
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
 				
-				if(doisSentidosLiberado){
+				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-					EasyInner.AcionarBipCurto(inner.Numero);
-				} else{
-					ret = !"anticlockwise".equals(sentidoCatraca) 
-					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);	
+				}else {
+					ret = "anticlockwise".equals(sentidoCatraca) 
+							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);	
 				}
+		
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = defineMensagemPermitido(sentidoCatraca, espacoEntrar, entrar);					
@@ -1151,14 +1158,16 @@ public class TopDataDevice extends Device {
 
 			} else {
 				
-				if(doisSentidosLiberado){
+				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				} else{
+				} else {	
+
 					ret = !"anticlockwise".equals(sentidoCatraca) 
-					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				}
+		
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
@@ -1173,15 +1182,16 @@ public class TopDataDevice extends Device {
 						? formatMessage("<-" + espacoEntrar + sair + ";" + "") 
 						: formatMessage(sair + espacoEntrar + "->" + ";" + "");
 				
-				if(doisSentidosLiberado){
-					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+
+				if(doisSentidosLiberado) {	
 					EasyInner.AcionarBipCurto(inner.Numero);
-				}else{
-					ret = !"anticlockwise".equals(sentidoCatraca) 
-					? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+					return EasyInner.LiberarCatracaDoisSentidos(inner.Numero);		
+				}else {
+					return !"anticlockwise".equals(sentidoCatraca) 
+							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				}
-				
+		
 			}
 
 			if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
@@ -1190,14 +1200,15 @@ public class TopDataDevice extends Device {
 										: formatMessage(entrar + espacoEntrar + "->" + ";" + "");
 			}
 
-			if(doisSentidosLiberado){
+			if(doisSentidosLiberado) {	
 				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 				EasyInner.AcionarBipCurto(inner.Numero);
-			}else{
-				ret = !"anticlockwise".equals(sentidoCatraca) 
-				? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-						: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+			}else {
+				ret = "anticlockwise".equals(sentidoCatraca) 
+						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
+								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 			}
+	
 		}
 		
 		return ret;
