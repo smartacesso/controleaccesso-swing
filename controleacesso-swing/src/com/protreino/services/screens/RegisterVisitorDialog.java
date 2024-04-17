@@ -7,6 +7,7 @@ import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
+import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.usecase.HikivisionUseCases;
@@ -139,6 +140,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     private boolean habilitaQRCode = false;
     private boolean habilitaAppPedestre = false;
     private boolean habilitaQRCodeDinamico = false;
+    private boolean novoCadastroDeFoto = false;
     private String tempoQRCode = "5";
     private String tipoQRCodePadrao = null;
 
@@ -151,6 +153,8 @@ public class RegisterVisitorDialog extends BaseDialog {
     private JComboBox<SelectItem> tipoAcessoJComboBox;
 	private boolean isFotoModificada = false;
 	private HikivisionUseCases hikivisionUseCases;
+
+	private JButton syncInHikivisionButton;
 
     public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
         loadImages();
@@ -225,9 +229,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         actionsPanel = montarPainelAcoes();
         barraLateralPanel = montarPainelLateral();
 
-        if (this.visitante != null && this.visitante.getId() != null) {
+        if (Objects.nonNull(this.visitante) && Objects.nonNull(this.visitante.getId())) {
             preencheDadosVisitanteEditando();
         }
+        
+        novoCadastroDeFoto = Objects.isNull(visitante.getDataCadastroFotoNaHikivision()) && Objects.nonNull(visitante.getFoto());
 
         mainContentPane.add(tabbedPane, BorderLayout.CENTER);
         mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
@@ -236,6 +242,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         if (Utils.isHikivisionConfigValid()) {
             hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
         }
+        
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -245,7 +252,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             
             @Override
             public void windowClosed(WindowEvent e) {
-                if(isFotoModificada && Objects.nonNull(hikivisionUseCases)) {
+                if((isFotoModificada || novoCadastroDeFoto)  && Objects.nonNull(hikivisionUseCases)) {
                 	salvarFotoVisitanteHikivision();
                 }
             }
@@ -351,8 +358,8 @@ public class RegisterVisitorDialog extends BaseDialog {
                             mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
                             mainContentPane.revalidate();
                             mainContentPane.repaint();
+                           
                         }
-
 
                     }
                 }
@@ -837,7 +844,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         JPanel matriculaPanel = new JPanel(new GridBagLayout());
         matriculaPanel.setVisible(isExibeCampoMatricula());
-        matriculaLabel = new JLabel("MatrÃ­cula");
+        matriculaLabel = new JLabel("Matrícula");
         c = getNewGridBag(0, 0, 0, 0);
         matriculaPanel.add(matriculaLabel, c);
         matriculaTextField = getNewTextField(15);
@@ -887,14 +894,20 @@ public class RegisterVisitorDialog extends BaseDialog {
                         && !cartaoAcessoTextField.getText().isEmpty()
                         && !cartaoAcessoTextField.getText().replace("0", "").equals(""))) {
         	return false;
-        }else {
+        } else {
         	return true;
         }
                  
     }
     
     private JPanel montarPainelAcoes() {
-
+    	syncInHikivisionButton = new JButton("Sincronizar nas camêras");
+    	syncInHikivisionButton.setBorder(new EmptyBorder(20, 20, 20, 20));
+    	syncInHikivisionButton.setPreferredSize(new Dimension(150, 40));
+    	syncInHikivisionButton.addActionListener(e -> {
+    		syncronizarUsuarioInDevicesHkivision();
+        });
+        
         geraQRCodeButton = new JButton("QRCode");
         geraQRCodeButton.setBorder(new EmptyBorder(20, 20, 20, 20));
         geraQRCodeButton.setPreferredSize(new Dimension(150, 40));
@@ -941,10 +954,12 @@ public class RegisterVisitorDialog extends BaseDialog {
                     new Thread() {
                         public void run() {
                             Utils.sleep(500);
-                            if ("VISITANTE".equals(visitante.getTipo()))
-                                Main.mainScreen.abreCadastroVisitante(null);
-                            else
-                                Main.mainScreen.abreCadastroPedestre(null);
+                            if ("VISITANTE".equals(visitante.getTipo())) {
+                            	 Main.mainScreen.abreCadastroVisitante(null);
+                            } else {
+                            	Main.mainScreen.abreCadastroPedestre(null);
+                            }
+                                
                         }
                     }.start();
                 } else {
@@ -964,6 +979,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         panelInterno.setLayout(new BoxLayout(panelInterno, BoxLayout.X_AXIS));
 
         int padrao = -120;
+        if(Objects.nonNull(visitante.getCardNumber()) && Utils.isHikivisionConfigValid()) {
+        	panelInterno.add(syncInHikivisionButton);
+        	panelInterno.add(Box.createHorizontalStrut(10));
+        }
+        
         if (isBotaoQRCodeVisivel() && isEditandoVisitante()) {
             panelInterno.add(geraQRCodeButton);
             panelInterno.add(Box.createHorizontalStrut(10));
@@ -973,10 +993,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         if (isBotaoAddCreditoVisivel() && isEditandoVisitante()) {
             panelInterno.add(addCreditoButton);
             panelInterno.add(Box.createHorizontalStrut(10));
-            if (isBotaoQRCodeVisivel())
-                padrao = padrao + 10;
-            else
-                padrao = padrao - 30;
+            if (isBotaoQRCodeVisivel()) {
+            	padrao = padrao + 10;
+            } else {
+            	padrao = padrao - 30;
+            }
         }
 
         if (possuiCatracaDisponivel() && isEditandoVisitante()) {
@@ -1004,7 +1025,28 @@ public class RegisterVisitorDialog extends BaseDialog {
         return panel;
     }
 
-    private void inverteTipoUsuario(PedestrianAccessEntity usuarioExistente) {
+    private void syncronizarUsuarioInDevicesHkivision() {
+    	if(!hikivisionUseCases.getSystemInformation()) {
+    		// Exibe dialogo de hikivision off
+    		return;
+    	}
+    	
+    	try {
+    		hikivisionUseCases.syncronizarUsuarioInDevices(visitante);
+    		
+    		// salvar o visitante e pegar a nova referencia
+    		// exibe dialogo de sucesso ao atulizar pedestre
+
+    	} catch (InvalidPhotoException ife) {
+			// exibe dialogo de foto ruim
+
+    	} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+    	
+	}
+
+	private void inverteTipoUsuario(PedestrianAccessEntity usuarioExistente) {
         usuarioExistente.setValidadeCreditos(null);
         usuarioExistente.setQuantidadeCreditos(null);
         usuarioExistente.setDataInicioPeriodo(null);
@@ -1403,6 +1445,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setPedestreRegra(Arrays.asList(pedestreRegra));
             visitante.setQuantidadeCreditos(visitante.getPedestreRegra().get(0).getQtdeDeCreditos());
             visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
+             
         }
 
         visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
@@ -1665,7 +1708,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 
     private boolean validaCamposDuplicados() {
         boolean valido = true;
-
+       // boolean bloquearCartaoZerado =  Utils.getPreferenceAsBoolean("bloquearCartaoZero");
+        
         if (cpfTextField != null
                 && !cpfTextField.getText().replace(".", "").replace("-", "").replace(" ", "").isEmpty()) {
 
@@ -1733,17 +1777,30 @@ public class RegisterVisitorDialog extends BaseDialog {
                 }
             }
         }
-
-        if (cartaoAcessoTextField != null
-                && !cartaoAcessoTextField.getText().isEmpty()
-                && visitante.getTipo().equals("PEDESTRE")) {
-            if (cartaoAcessoTextField.getText().replace("0", "").matches(
-                    "^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
-                cartaoAcessoLabel.setText(" Senha sequencial ou repetida ");
-                redAndBoldFont(cartaoAcessoLabel);
-                valido = false;
-            }
+        
+      /*  if(bloquearCartaoZerado) {  	
+        	if (cartaoAcessoTextField != null
+        			&& !cartaoAcessoTextField.getText().isEmpty()) {
+        		if (cartaoAcessoTextField.getText().matches(
+        				"^0+$")) {
+        			cartaoAcessoLabel.setText(" Cartão zerado");
+        			redAndBoldFont(cartaoAcessoLabel);
+        			valido = false;
+        		}
+        	}	
         }
+        */
+              
+//        if (cartaoAcessoTextField != null
+//                && !cartaoAcessoTextField.getText().isEmpty()
+//                && visitante.getTipo().equals("PEDESTRE")) {
+//            if (cartaoAcessoTextField.getText().replace("0", "").matches(
+//                    "^(?=\\d{4}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?|9?8?7?6?5?4?3?2?1?0?)$")) {
+//                cartaoAcessoLabel.setText(" Senha sequencial ou repetida ");
+//                redAndBoldFont(cartaoAcessoLabel);
+//                valido = false;
+//            }
+//        }	
 
         return valido;
     }
@@ -2003,11 +2060,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         }
 
     	try {
-    		//HibernateUtil.getResultFromHikivisionCapture(visitante);
     		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
     		
     	} catch (InvalidPhotoException ife) {
 			criarDialogoFotoInvalida();
+			throw ife;
     		
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -2463,7 +2520,6 @@ public class RegisterVisitorDialog extends BaseDialog {
         simButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         simButton.addActionListener(e -> {
             try {
-
                 if (visitante.getPedestreRegra() != null) {
                     for (PedestreRegraEntity pedestreRegra : visitante.getPedestreRegra()) {
                         RegraEntity regra = pedestreRegra.getRegra();
@@ -2495,7 +2551,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 
             if (valido) {
                 adicionarVisitante();
-                // salvar foto na hikivision
                 
                 if(Objects.nonNull(hikivisionUseCases)) {
                 	salvarFotoVisitanteHikivision();

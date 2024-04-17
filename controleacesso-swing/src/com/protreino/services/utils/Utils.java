@@ -484,6 +484,8 @@ public class Utils {
 				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
 				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "bloquearCartaoZero",
+				"Bloquear cartao zerado", FieldType.CHECKBOX, "true"));	
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaCpf",
 				"Habilita busca por CPF", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg",

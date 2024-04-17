@@ -82,7 +82,7 @@ public class HibernateUtil {
 	public static ObjectOutputStream outToServer;
 	public static Socket clientSocketFaceRecognizer;
 	public static ObjectOutputStream outToServerFaceRecogizer;
-	private final static HikivisionUseCases hikivisionUseCase = new HikivisionUseCases();
+
 
 	public static boolean executando = false;
 	public static boolean executandoPing = false;
@@ -533,38 +533,6 @@ public class HibernateUtil {
 		return resultList;
 	}
 	
-	public static synchronized <T> void getResultFromHikivisionCapture(PedestrianAccessEntity pedestre)  {
-		if(Objects.isNull(Main.servidor)) {
-			try {
-				hikivisionUseCase.cadastrarUsuarioInDevices(pedestre);
-			} catch(InvalidPhotoException ex) {
-				throw new InvalidPhotoException("foto inválida");
-			} catch (Exception e) {
-				
-				e.printStackTrace();
-			}
-		} else {
-			try {
-
-				TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_RESULT_FROM_HIKIVISION_CAPTURE);
-				req.getParans().put("entity", pedestre);
-
-				executando = true;
-
-				outToServer.writeObject(req);
-				outToServer.flush();
-				ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
-				TcpMessageTO resp = (TcpMessageTO) reader.readObject();
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				executando = false;
-			
-		}
-			return;
-		}
-	}
 
 	public static synchronized <T> List<?> getResultListLimited(Class<T> entityClass, String namedQuery,
 			Long quantidade) {
