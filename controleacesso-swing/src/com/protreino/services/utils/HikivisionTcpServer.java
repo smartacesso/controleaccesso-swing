@@ -25,8 +25,13 @@ public class HikivisionTcpServer {
 	private final HikivisionEventsUseCase hikivisionEventsUseCase;
 
 	public HikivisionTcpServer() {
-		this.porta = Integer.valueOf(Utils.getPreference("tcpServerHikivisionSocketPort"));
 		this.hikivisionEventsUseCase = new HikivisionEventsUseCase();
+
+		if(!Utils.isHikivisionConfigValid()) {
+			return;
+		}
+		
+		this.porta = Integer.valueOf(Utils.getPreference("tcpServerHikivisionSocketPort"));
 
 		Thread serverThread = new Thread(new Runnable() {
 			@Override

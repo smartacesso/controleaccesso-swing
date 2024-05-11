@@ -446,8 +446,8 @@ public class Main {
             System.out.println(" hora para reset " + hora);
 
 
-            inicio.set(Calendar.HOUR_OF_DAY, 13);
-            inicio.set(Calendar.MINUTE,30);
+            inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
+            inicio.set(Calendar.MINUTE, 0);
             inicio.set(Calendar.SECOND, 0);
             if (new Date().getTime() > inicio.getTimeInMillis()) {
                 //registra pra iniciar smanhï¿½
@@ -877,16 +877,18 @@ public class Main {
 				try {
 					boolean hikivisionServerIsConnected = false;
 					if(Utils.isHikivisionConfigValid()) {
-						HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
-						hikivisionServerIsConnected = hikiVisionIntegrationService.getSystemInformation();
+						HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+						hikivisionServerIsConnected = hikivisionUseCases.getSystemInformation();
 					}
 
-					if(mainScreen != null) {
+					if(mainScreen != null && Utils.isHikivisionConfigValid()) {
 						mainScreen.setHikivisionConnectionStatusLabel(hikivisionServerIsConnected);
 					}
 
 				} catch (Exception e) {
-					mainScreen.setHikivisionConnectionStatusLabel(false);
+					if(Utils.isHikivisionConfigValid()) {
+						mainScreen.setHikivisionConnectionStatusLabel(false);
+					}
 				}
 			};
 		}.start();
@@ -923,8 +925,7 @@ public class Main {
 						.getResultListWithParams(PedestrianAccessEntity.class,
 								"PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
 				if (pedestres != null && !pedestres.isEmpty()) {
-					HikiVisionIntegrationService hikivision = HikiVisionIntegrationService.getInstace();
-					HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases(hikivision);
+					HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases();
 					
 					for (PedestrianAccessEntity pedestre : pedestres) {
 						hiviVisionUseCase.removerUsuarioFromDevices(pedestre);
@@ -1402,7 +1403,7 @@ public class Main {
         }
         
         final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
-        final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+        final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
         final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 
         updatingHikivisionAccessList = true;
@@ -1481,7 +1482,7 @@ public class Main {
                     return;
                 }
 
-                HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+                HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 
                 if (!hikivisionUseCases.getSystemInformation()) {
                     System.out.println(sdf.format(new Date()) + "  Sincronização interrompida - Servidor offline");
@@ -1912,7 +1913,7 @@ public class Main {
                         		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                         		&& Utils.isHikivisionConfigValid() ) {
                         	
-                        	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+                        	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
                         	try {
                         		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
 
@@ -2126,8 +2127,9 @@ public class Main {
                     System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOG DE ACESSO: Exception: " + e.getMessage());
 
                 } finally {
-                    if (loggedUser != null)
-                        timerSyncLogAthleteAccess.start();
+                    if (loggedUser != null) {
+                    	timerSyncLogAthleteAccess.start();
+                    }
                     updatingLogAccessList = false;
                     trayIcon.setImage(trayIconImage);
 
@@ -2184,6 +2186,7 @@ public class Main {
                 int offsetLogsOffline = 0;
 
                 while ((offsetLogsOnline < qtdeLogsOnline) || (offsetLogsOffline < qtdeLogsOffline)) {
+                	System.out.println("Enviando logs de acesso | offsetLogsOnline: " + offsetLogsOnline + " | offsetLogsOffline: " + offsetLogsOffline);
                     List<LogPedestrianAccessEntity> logsOnline = null;
                     List<LogPedestrianAccessEntity> logsOffline = null;
 
@@ -2207,9 +2210,10 @@ public class Main {
                         System.out.println("Sem logs para enviar");
                         break;
                     }
-                    enviaLogsParaWeb(logsOnline);
 
+                    enviaLogsParaWeb(logsOnline);
                 }
+                
                 if (loggedUser != null) {
                     lastSyncLog = newLastSyncLog.getTime();
                     loggedUser.setLastSyncLog(new Date(lastSyncLog));

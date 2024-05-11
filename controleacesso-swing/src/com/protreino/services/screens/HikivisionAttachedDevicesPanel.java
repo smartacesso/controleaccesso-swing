@@ -6,7 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -26,8 +26,7 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
-import com.protreino.services.utils.HikiVisionIntegrationService;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -48,12 +47,12 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 	
 	private DefaultTableModel dataModel;
 	
-	private static final HikiVisionIntegrationService hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
-	private final HikivisionDeviceTO hikivisionDevices;
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	private final List<HikivisionDeviceTO.Device> hikivisionDevices;
 	
 	public HikivisionAttachedDevicesPanel(Device deviceAtual) {
 		this.deviceAtual = deviceAtual;
-		hikivisionDevices = hikiVisionIntegrationService.listarDispositivos();
+		hikivisionDevices = hikivisionUseCases.listarDispositivos();
 
 		JPanel hikivisionCamerasListTablePanel = new JPanel();
 		hikivisionCamerasListTablePanel.setLayout(new BoxLayout(hikivisionCamerasListTablePanel, BoxLayout.Y_AXIS));
@@ -119,21 +118,21 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 	}
 	
 	private void populateTable(SelectItem item) {
-		if (hikivisionDevices == null || hikivisionDevices.getSearchResult().getTotalMatches() == 0) {
+		if (Utils.isNullOrEmpty(hikivisionDevices)) {
             return;
         }
 		
 		fora:
-		for (MatchList matchList : hikivisionDevices.getSearchResult().getMatchList()) {
-			if(matchList.getDevice().getDevIndex().equalsIgnoreCase(item.getValue().toString())) {
+		for (HikivisionDeviceTO.Device device : hikivisionDevices) {
+			if(device.getDevIndex().equalsIgnoreCase(item.getValue().toString())) {
 				AttachedTO attachedTO = new AttachedTO();
-				attachedTO.setNomeDevice(matchList.getDevice().getDevName());
-				attachedTO.setIdDevice(matchList.getDevice().getDevIndex());
+				attachedTO.setNomeDevice(device.getDevName());
+				attachedTO.setIdDevice(device.getDevIndex());
 				
-				String device = "["+attachedTO.getNomeDevice()+", "+attachedTO.getIdDevice()+"]";
+				String deviceNameAndId = "["+attachedTO.getNomeDevice()+", "+attachedTO.getIdDevice()+"]";
 				if(dataModel.getDataVector() != null) {
 					for(Object o : dataModel.getDataVector()) {
-						if(o.toString().equals(device)) {
+						if(o.toString().equals(deviceNameAndId)) {
 							break fora;
 						}
 					}
@@ -206,13 +205,13 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 	private Vector<SelectItem> getOptionHikivisionCameras(){
 		Vector<SelectItem> itens = new Vector<SelectItem>();
 
-        if (hikivisionDevices == null || hikivisionDevices.getSearchResult().getTotalMatches() == 0) {
+        if (Utils.isNullOrEmpty(hikivisionDevices)) {
             return itens;
         }
 	        
-		for (MatchList matchList : hikivisionDevices.getSearchResult().getMatchList()) {
-            final String deviceId = matchList.getDevice().getDevIndex();
-            final String deviceName = matchList.getDevice().getDevName();
+		for (HikivisionDeviceTO.Device device : hikivisionDevices) {
+            final String deviceId = device.getDevIndex();
+            final String deviceName = device.getDevName();
             
             itens.add(new SelectItem(deviceName, deviceId));
         }

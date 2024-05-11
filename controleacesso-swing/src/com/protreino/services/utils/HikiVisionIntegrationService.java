@@ -35,9 +35,11 @@ public class HikiVisionIntegrationService {
 			user = Utils.getPreference("hikivisionUserServerConnection");
 			password = Utils.getPreference("hikivisionPasswordServerConnection");
 
+			/*
 			if (Utils.isNullOrEmpty(url) || Utils.isNullOrEmpty(user)) {
 				throw new IllegalArgumentException("Url connection não pode ser nula");
 			}
+			*/
 
 			gson = new Gson();
 

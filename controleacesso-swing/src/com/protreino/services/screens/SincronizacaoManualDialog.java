@@ -82,7 +82,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		setPreferredSize(new Dimension(920, 718));
 		setMinimumSize(getPreferredSize());
 
-		this.hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+		this.hikivisionUseCases = new HikivisionUseCases();
 
 		font = new JLabel().getFont();
 		Font font2 = font;

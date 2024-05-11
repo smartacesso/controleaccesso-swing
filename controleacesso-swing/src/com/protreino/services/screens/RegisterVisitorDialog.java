@@ -7,7 +7,6 @@ import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
-import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
@@ -241,7 +240,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         mainContentPane.add(barraLateralPanel, BorderLayout.WEST);
 
         if (Utils.isHikivisionConfigValid()) {
-            hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+            hikivisionUseCases = new HikivisionUseCases();
         }
         
 
@@ -947,7 +946,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         addVisitorButton.addActionListener(e -> {
             boolean valido = validarCampos();
             if (valido) {
-                adicionarVisitante();
+                adicionarVisitante();                                        
                 limparTodosOsCampos();
                 this.dispose();
 
@@ -1029,6 +1028,10 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private void syncronizarUsuarioInDevicesHkivision() {
+    	if(Objects.isNull(hikivisionUseCases)) {
+    		return;
+    	}
+    	
     	if(!hikivisionUseCases.getSystemInformation()) {
     		criarDialogoServidorHikivisionNaoConectado();
     		return;
@@ -1373,8 +1376,9 @@ public class RegisterVisitorDialog extends BaseDialog {
         visitante.setStatus(statusJComboBox.getSelectedItem().toString());
         visitante.setMatricula(matriculaTextField != null ? matriculaTextField.getText() : null);
         try {
-            visitante.setCardNumber(Long.valueOf(cartaoAcessoTextField.getText().replaceAll("[^\\d]", "")).toString());
+            visitante.setCardNumber(Long.valueOf(cartaoAcessoTextField.getText().replaceAll("[^0-9]", "")).toString());
         } catch (Exception e) {
+        	e.printStackTrace();
             visitante.setCardNumber(cartaoAcessoTextField.getText());
         }
         visitante.setEnviaSmsAoPassarNaCatraca(enviaSMSdeConfirmacaoEntrada.isSelected());
@@ -2017,7 +2021,9 @@ public class RegisterVisitorDialog extends BaseDialog {
             openImageSelectButton.setIcon(escolherImagemIcon);
             visitante.setFoto(null);
 			fotoVisitante = null;
-			hikivisionUseCases.apagarFotosUsuario(visitante);
+			if(Objects.nonNull(hikivisionUseCases)) {
+				hikivisionUseCases.apagarFotosUsuario(visitante);
+			}
             escolherFotoDialog.dispose();
         });
 
@@ -2043,7 +2049,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         escolherFotoDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                if (fotoVisitante != null && hikivisionUseCases != null) {
+                if (fotoVisitante != null && Objects.nonNull(hikivisionUseCases)) {
                 	isFotoModificada = true;
                 }
             }
@@ -2051,6 +2057,10 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
 
     private void salvarFotoVisitanteHikivision() {
+    	if(Objects.isNull(hikivisionUseCases)) {
+    		return;
+    	}
+    	
         final boolean isHikivisionServerOnline = hikivisionUseCases.getSystemInformation();
 
         if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
@@ -2085,7 +2095,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
     
     private void criarDialogoPedestreAtualizadoNaHikivision() {
-    	new SimpleMessageDialog("", "", "Ok");
+    	new SimpleMessageDialog("Pedestre sincronizado", "Pedestre sincronizado nas câmeras com sucesso!", "Ok");
     }
 
     private void criarFileChooserEscolherFoto() {
@@ -2156,7 +2166,6 @@ public class RegisterVisitorDialog extends BaseDialog {
             if (imageCaptured != null) {
                 setBufferedImage(imageCaptured);
                 salvarImagemCapturada();
-                hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
                 habilitaLabelImagemVisitante();
 
                 webCamCaptureViewer.dispose();

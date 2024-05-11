@@ -2,7 +2,6 @@ package com.protreino.services.screens;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -10,6 +9,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -35,10 +34,17 @@ import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.PreferenceTO;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
-import com.topdata.EasyInner;
 
 @SuppressWarnings("serial")
 public class PreferencesDialog extends JDialog {
+	
+	private final List<String> nonRequiredFields = Arrays.
+			asList("releaseAccessReason", 
+					"serverRecognizerIP",
+					"hikivisionServerRecognizerURL",
+					"hikivisionUserServerConnection",
+					"hikivisionPasswordServerConnection",
+					"tcpServerHikivisionSocketPort");
 	
 	private Image configImage;
 	private PanelWithLabel errosLabel;
@@ -158,10 +164,11 @@ public class PreferencesDialog extends JDialog {
 					}
 				});
 			}
-			if ("releaseAccessReason".equals(preference.getKey())
-					|| "serverRecognizerIP".equals(preference.getKey())) {
+			
+			if (nonRequiredFields.contains(preference.getKey())) {
 				field.setRequired(false);
 			}
+			
 			JPanel panel = groupMap.get(preference.getPreferenceGroup());
 			JPanel fieldPanel = field.getPanel();
 			fieldPanel.setMaximumSize(new Dimension(10000, (int) fieldPanel.getPreferredSize().getHeight()));

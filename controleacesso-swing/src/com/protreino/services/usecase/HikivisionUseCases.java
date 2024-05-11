@@ -28,10 +28,6 @@ public class HikivisionUseCases {
 		this.hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
 	}
 	
-	public HikivisionUseCases(final HikiVisionIntegrationService hikiVisionIntegrationService) {
-		this.hikiVisionIntegrationService = hikiVisionIntegrationService;
-	}
-	
 	public boolean getSystemInformation() {
 		return hikiVisionIntegrationService.getSystemInformation();
 	}

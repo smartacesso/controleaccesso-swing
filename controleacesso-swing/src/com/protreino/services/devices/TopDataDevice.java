@@ -125,7 +125,7 @@ public class TopDataDevice extends Device {
 	private Integer nivelSeguranca;
 	
 	protected String tipo = Tipo.ENTRADA;
-	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases(HikiVisionIntegrationService.getInstace());
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	
@@ -863,7 +863,7 @@ public class TopDataDevice extends Device {
 			if(!pedestre.temCreditos() && pedestre.isVisitante()) {
 				if(Objects.nonNull(pedestre.getFoto()) && Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
 					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
-				}else {
+				} else {
 					pedestre.apagarCartao();				
 				}
 				
