@@ -6,7 +6,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.awt.image.BufferedImage;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.Box;
@@ -24,6 +23,7 @@ import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
+
 import com.protreino.services.main.Main;
 
 public class WebCamCaptureViewer extends JDialog implements WebcamListener, WindowListener,
@@ -38,7 +38,7 @@ public class WebCamCaptureViewer extends JDialog implements WebcamListener, Wind
 	private JPanel tirarFotoPanel;
 
 	private JButton tirarFotoButton;
-
+	
 	public WebCamCaptureViewer() {
 		Webcam.addDiscoveryListener(this);
 
@@ -53,28 +53,32 @@ public class WebCamCaptureViewer extends JDialog implements WebcamListener, Wind
 		tirarFotoPanel = new JPanel();
 		tirarFotoPanel.setLayout(new BoxLayout(tirarFotoPanel, BoxLayout.Y_AXIS));
 		tirarFotoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
+		
 		picker = new WebcamPicker();
 		picker.addItemListener(this);
 
 		webcam = picker.getSelectedWebcam();
-
+		
 		if (webcam == null) {
 			System.out.println("No webcams found...");
 			return;
 		}
 		
-		if(panel != null)
+		if(panel != null) {
 			panel.stop();
+		}
 
-		if(webcam.isOpen())
+		if(webcam.isOpen()) {
 			webcam.close();
+		}
 		
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
 		webcam.addWebcamListener(WebCamCaptureViewer.this);
 
 		panel = new WebcamPanel(webcam, false);
 		panel.setFPSDisplayed(true);
+		panel.setDisplayDebugInfo(true);
+		panel.setImageSizeDisplayed(true);
 		
 		tirarFotoButton = new JButton("Capturar");
 		tirarFotoButton.setPreferredSize(new Dimension(160, 40));

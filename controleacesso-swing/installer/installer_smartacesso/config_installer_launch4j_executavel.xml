@@ -1,33 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
-  <dontWrapJar>true</dontWrapJar>
+  <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>SmartAcesso Desktop.jar</jar>
-  <outfile>C:\ambiente\workspaces\controle-acesso-web\ControleAcesso-swing\installer\installer_smartacesso\bin\SmartAcesso Desktop.exe</outfile>
+  <jar>C:\Program Files (x86)\IzPack\bin\install.jar</jar>
+  <outfile>C:\Users\User\Desktop\Smart AScesso.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
-  <priority>high</priority>
+  <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
   <supportUrl></supportUrl>
-  <stayAlive>true</stayAlive>
-  <restartOnCrash>true</restartOnCrash>
-  <manifest></manifest>
-  <icon>C:\ambiente\workspaces\controle-acesso-web\ControleAcesso-swing\installer\installer_smartacesso\bin\images\icon.ico</icon>
-  <singleInstance>
-    <mutexName>SmartAcesso Desktop</mutexName>
-    <windowTitle></windowTitle>
-  </singleInstance>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest>C:\ambiente\workspaces\controleacesso-swing\controleaccesso-swing\controleacesso-swing\installer\installer_smartacesso\config_installer_launch4j_executavel.xml</manifest>
+  <icon>C:\Program Files (x86)\IzPack\bin\images\icon.ico</icon>
   <jre>
-    <path></path>
+    <path>C:\Program Files (x86)\Java\jre1.8.0_261\bin</path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>1.8.0</minVersion>
+    <minVersion></minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>32</runtimeBits>
-    <initialHeapSize>256</initialHeapSize>
-    <maxHeapSize>1620</maxHeapSize>
-    <opt>-XX:PermSize=256m -XX:MaxPermSize=256m</opt>
+    <runtimeBits>64/32</runtimeBits>
   </jre>
 </launch4jConfig>

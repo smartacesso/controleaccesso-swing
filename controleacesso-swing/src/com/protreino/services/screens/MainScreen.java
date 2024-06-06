@@ -784,7 +784,7 @@ public class MainScreen extends JFrame {
 					.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
 		}
 		
-		List <DeviceTO> devicesFromServer = HibernateUtil.getListDeviceFromServer();
+		/*List <DeviceTO> devicesFromServer = HibernateUtil.getListDeviceFromServer();
 		if(devicesFromServer != null && !devicesFromServer.isEmpty()) {
 			for (DeviceTO deviceTO : devicesFromServer) {
 				Device device = null;
@@ -798,6 +798,8 @@ public class MainScreen extends JFrame {
 						.setStatus(device.isConnected() ? DeviceStatus.CONNECTED : DeviceStatus.DISCONNECTED);
 			}
 		}
+		*/
+		
 		// Habilita/desabilita o botao de liberar acesso nas catracas que estiverem
 		// vinculadas
 		verificaCatracasVinculadas();

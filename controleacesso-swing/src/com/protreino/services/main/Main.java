@@ -275,7 +275,6 @@ public class Main {
                     	tcpServer = new TcpServer();                    	
                     }
                     hikivisionTcpServer = new HikivisionTcpServer();
-                    //initializeLuxandSDK();
                     mainScreen = new MainScreen();
                     splash.dispose();
                     decideSeMostraTelaPrincipal();

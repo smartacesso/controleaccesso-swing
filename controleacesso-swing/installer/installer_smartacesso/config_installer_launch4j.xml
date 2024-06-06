@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\ambiente\libs\izpack\bin\install.jar</jar>
+  <jar>C:\Program Files (x86)\IzPack\bin\install.jar</jar>
   <outfile>C:\ambiente\libs\izpack\bin\SmartAcessoInstaller.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
@@ -13,7 +13,7 @@
   <stayAlive>true</stayAlive>
   <restartOnCrash>true</restartOnCrash>
   <manifest></manifest>
-  <icon>C:\ambiente\workspaces\controle-acesso-web\ControleAcesso-swing\installer\installer_smartacesso\bin\images\icon.ico</icon>
+  <icon>C:\Program Files (x86)\IzPack\bin\images\icon.ico</icon>
   <singleInstance>
     <mutexName>SmartAcesso Desktop</mutexName>
     <windowTitle></windowTitle>
@@ -26,7 +26,7 @@
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>32</runtimeBits>
-    <initialHeapSize>60</initialHeapSize>
-    <maxHeapSize>512</maxHeapSize>
+    <initialHeapSize>512</initialHeapSize>
+    <maxHeapSize>4096</maxHeapSize>
   </jre>
 </launch4jConfig>
