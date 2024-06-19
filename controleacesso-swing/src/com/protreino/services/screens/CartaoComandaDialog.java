@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.enumeration.StatusCard;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -83,11 +83,11 @@ public class CartaoComandaDialog extends JDialog {
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				
 				CartaoComandaEntity cartao = (CartaoComandaEntity) 
-						HibernateUtil.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(cartaoComanda.getId()));
+						HibernateAccessDataFacade.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(cartaoComanda.getId()));
 				cartao.setRemovido(true);
 				cartao.setDataAlteracao(new Date());
 				
-				HibernateUtil.update(CartaoComandaEntity.class, cartao);
+				HibernateAccessDataFacade.update(CartaoComandaEntity.class, cartao);
 				
 				abertoPeloAtalho = false;
 				this.dispose();
@@ -137,9 +137,10 @@ public class CartaoComandaDialog extends JDialog {
 		    	cartaoComanda.setDataAlteracao(new Date());
 		    	if(cartaoComanda.getId() == null) {
 		    		cartaoComanda.setDataCriacao(new Date());
-		    		HibernateUtil.save(CartaoComandaEntity.class, cartaoComanda);
-		    	}else
-		    		HibernateUtil.update(CartaoComandaEntity.class, cartaoComanda);
+		    		HibernateAccessDataFacade.save(CartaoComandaEntity.class, cartaoComanda);
+		    	} else {
+		    		HibernateAccessDataFacade.update(CartaoComandaEntity.class, cartaoComanda);
+		    	}
 		    	
 		    	limparTodosOsCampos();
 				this.dispose();
@@ -197,7 +198,7 @@ public class CartaoComandaDialog extends JDialog {
 		HashMap<String, Object> args = new HashMap<>();
 		args.put(campo, numero);
 		args.put("removido", false);
-		List<CartaoComandaEntity> list = (List<CartaoComandaEntity>) HibernateUtil
+		List<CartaoComandaEntity> list = (List<CartaoComandaEntity>) HibernateAccessDataFacade
 				.getResultListWithDynamicParams(CartaoComandaEntity.class, null, args);
 		
 		if(list != null && !list.isEmpty()) {
@@ -217,12 +218,6 @@ public class CartaoComandaDialog extends JDialog {
 		abertoPeloAtalho = false;
 	}
 
-
-	private void setMessageErrorLogin(String message){
-		messageLabel.setText(message);
-		messageLabel.setForeground(Color.RED);
-	}
-	
 	protected void redAndBoldFont(JLabel label) {
 		label.setForeground(Color.red);
 		Font f = label.getFont();

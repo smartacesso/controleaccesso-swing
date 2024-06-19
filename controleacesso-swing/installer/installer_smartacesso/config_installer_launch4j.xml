@@ -3,30 +3,26 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>C:\Program Files (x86)\IzPack\bin\install.jar</jar>
-  <outfile>C:\ambiente\libs\izpack\bin\SmartAcessoInstaller.exe</outfile>
+  <outfile>C:\ambiente\workspaces\controleacesso-swing\controleaccesso-swing\controleacesso-swing\installer\installer_smartacesso\SmartAcesso.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>https://www.smartacesso.com.br/downloads/jre-8u201-windows-i586.exe</downloadUrl>
+  <downloadUrl>http://java.com/download</downloadUrl>
   <supportUrl></supportUrl>
-  <stayAlive>true</stayAlive>
-  <restartOnCrash>true</restartOnCrash>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
   <icon>C:\Program Files (x86)\IzPack\bin\images\icon.ico</icon>
-  <singleInstance>
-    <mutexName>SmartAcesso Desktop</mutexName>
-    <windowTitle></windowTitle>
-  </singleInstance>
   <jre>
     <path></path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>1.4.2</minVersion>
-    <maxVersion></maxVersion>
+    <minVersion>1.8.0_111</minVersion>
+    <maxVersion>1.8.0_261</maxVersion>
     <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>32</runtimeBits>
-    <initialHeapSize>512</initialHeapSize>
-    <maxHeapSize>4096</maxHeapSize>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>1024</initialHeapSize>
+    <maxHeapSize>2048</maxHeapSize>
   </jre>
 </launch4jConfig>

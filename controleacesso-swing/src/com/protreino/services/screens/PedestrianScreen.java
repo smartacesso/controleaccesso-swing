@@ -63,7 +63,7 @@ import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -136,6 +136,7 @@ public class PedestrianScreen extends JFrame {
 	private int imageWidth = 480;
 	private int imageHeight; // sera calculada de acordo com o tamanho da imagem da camera para manter a proporcao
 	private double ratio;
+	private ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 	
 	public PedestrianScreen(Device readerDevice, Device ticketGateDevice_, String athleteScreenConfig){
 		
@@ -800,7 +801,7 @@ public class PedestrianScreen extends JFrame {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 //			Object[] retorno = HibernateUtil.processAccessRequest(codigoTextField.getText(), readerDevice.getLocation(), false);
-			Object[] retorno = HibernateUtil.processAccessRequest(codigoTextField.getText(), readerDevice.getName(), 
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest(codigoTextField.getText(), readerDevice.getName(), 
 																	1, readerDevice.getName(), false, true, 
 																	readerDevice.getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			
@@ -979,10 +980,6 @@ public class PedestrianScreen extends JFrame {
 	    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
 	    			break;
 	    		case ALLOWED:
-	    			Long agora = Calendar.getInstance().getTimeInMillis();
-	    			
-	    			if (HibernateUtil.isAniversariante())
-						statusLabel.setText("Parabéns!");
 	    			statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
 	    			
 	    			//TODO : verificar mensagens personalizadas

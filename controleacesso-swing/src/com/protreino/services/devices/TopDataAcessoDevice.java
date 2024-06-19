@@ -16,10 +16,11 @@ import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 
@@ -96,7 +97,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", "Inner Acesso " + inner.Numero);
 		
-		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateUtil
+		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 							.getUniqueResultWithParams(LogPedestrianAccessEntity.class,
 									"LogPedestrianAccessEntity.findByEquipamentDesc", args);
 		
@@ -119,9 +120,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		ultimo.setDataCriacao(new Date());
 		registraGiro(sentido, null);
 		
-		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimo);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimo);
 		
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, ultimo.getIdPedestrian());
 
 		if(pedestre == null) {
@@ -143,7 +144,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 				pedestre.decrementaQRCodeUso();
 			}
 			
-			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 		}
 		
 		try {
@@ -161,7 +162,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", "Inner Acesso " + inner.Numero);
 		
-		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateUtil
+		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 												.getUniqueResultWithParams(LogPedestrianAccessEntity.class,
 													"LogPedestrianAccessEntity.findByEquipamentDesc", args);
 		
@@ -181,9 +182,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		ultimoAcesso.setStatus("ATIVO");
 		ultimoAcesso.setDataCriacao(new Date());
 		
-		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimoAcesso);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 		
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
 		
 		if(pedestre == null)
@@ -205,7 +206,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 				pedestre.decrementaQRCodeUso();
 			}
 		
-			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 		}
 		
 	}
@@ -213,7 +214,8 @@ public class TopDataAcessoDevice extends TopDataDevice {
 	@Override
 	public void processAccessRequest(Object obj) {
 		try {
-			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, "Inner Acesso " + inner.Numero, 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest((String) obj, "Inner Acesso " + inner.Numero, 
 					inner.BilheteInner.Origem, location, getConfigurationValueAsBoolean(LOGICA_DE_CATRACA_COM_URNA), true, 
 					getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			verificationResult = (VerificationResult) retorno[0];

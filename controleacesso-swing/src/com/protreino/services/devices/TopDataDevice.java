@@ -53,6 +53,7 @@ import com.nitgen.SDK.BSP.NBioBSPJNI.EXPORT_MINCONV_TYPE;
 import com.nitgen.SDK.BSP.NBioBSPJNI.FIR_HANDLE;
 import com.nitgen.SDK.BSP.NBioBSPJNI.INPUT_FIR;
 import com.nitgen.SDK.BSP.NBioBSPJNI.IndexSearch;
+import com.protreino.services.client.SmartAcessoClient;
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.BiometricEntity;
@@ -71,6 +72,8 @@ import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
@@ -78,8 +81,7 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
-import com.protreino.services.utils.HibernateUtil;
-import com.protreino.services.utils.HikiVisionIntegrationService;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
@@ -127,6 +129,8 @@ public class TopDataDevice extends Device {
 	protected String tipo = Tipo.ENTRADA;
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
+	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
+
 	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	
 	public TopDataDevice(DeviceEntity deviceEntity){
@@ -280,7 +284,7 @@ public class TopDataDevice extends Device {
 									
 									Main.validandoAcesso = true;
 									if(Main.servidor != null) {
-										HibernateUtil.enviaInicioVerificandoAcesso();
+										HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
 									}
 									
 									inner.CountTentativasEnvioComando = 0;
@@ -317,7 +321,7 @@ public class TopDataDevice extends Device {
 								} finally {
 									Main.validandoAcesso = false;
 									if(Main.servidor != null) {
-										HibernateUtil.enviaFimVerificandoAcesso();										
+										HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
 									}
 								}
 								
@@ -474,12 +478,12 @@ public class TopDataDevice extends Device {
 				HashMap<String, Object> args = new HashMap<String, Object>();
 				args.put("ULTIMA_SINC", dataAlteracao);
 				pedestres = (List<PedestrianAccessEntity>) 
-						HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
+						HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
 				
 			} else {
 				System.out.println("Sincroniza total");
 				pedestres = (List<PedestrianAccessEntity>) 
-						HibernateUtil.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAll");
+						HibernateAccessDataFacade.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAll");
 			}
 			
 			System.out.println("Qtd encontradas: " + pedestres == null ? 0 : pedestres.size());
@@ -533,7 +537,7 @@ public class TopDataDevice extends Device {
 				
 				//indica atualizaÁ„o feita quando
 				deviceEntity.setUltimaAtualizacao(new Date());
-				deviceEntity = (DeviceEntity) HibernateUtil.save(DeviceEntity.class, deviceEntity)[0];
+				deviceEntity = (DeviceEntity) HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity)[0];
 				
 			} else {
 				System.out.println("Nenhuma altera√ß√£o em pedestres para envio.");
@@ -563,7 +567,7 @@ public class TopDataDevice extends Device {
 			portaAberta = true;
 		}
 
-		PedestrianAccessEntity p = (PedestrianAccessEntity) HibernateUtil
+		PedestrianAccessEntity p = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, pTemplate.getId());
 		if (p.getTemplates() != null && !p.getTemplates().isEmpty()) {
 			List<TemplateEntity> templates = p.getTemplates();
@@ -795,7 +799,7 @@ public class TopDataDevice extends Device {
 			}
 		}
 
-		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateUtil
+		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 							.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 		
 		if(ultimo == null) {
@@ -831,13 +835,13 @@ public class TopDataDevice extends Device {
 		
 		ultimo.setDataCriacao(new Date());
 		
-		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimo);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimo);
 		
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, ultimo.getIdPedestrian());
 		
 		if(pedestre == null) {
-			pedestre = (PedestrianAccessEntity) HibernateUtil
+			pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 					.getSingleResultByIdTemp(PedestrianAccessEntity.class, ultimo.getIdPedestrian());			
 		}
 
@@ -873,7 +877,7 @@ public class TopDataDevice extends Device {
 				pedestre.decrementaQRCodeUso();
 			}
 
-			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 		}
 
 		if(ultimo.isSaida()) {
@@ -1139,7 +1143,8 @@ public class TopDataDevice extends Device {
 				return ret;
 			}
 
-			LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(matchedAthleteAccess.getId(), matchedAthleteAccess.getQtdAcessoAntesSinc());
+			LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(matchedAthleteAccess.getId(),
+					matchedAthleteAccess.getQtdAcessoAntesSinc());
 			if(lastAccess == null || Tipo.SAIDA.equals(lastAccess.getDirection()) || lastAccess.getDirection() == null) {
 				
 				if(doisSentidosLiberado) {
@@ -1268,8 +1273,7 @@ public class TopDataDevice extends Device {
 		EasyInner.DefinirPadraoCartao(1);
 		EasyInner.DefinirQuantidadeDigitosCartao(8);
 		
-//					retorno da fun√ß√£o 
-				List<PedestrianAccessEntity> pedestresComCartao = HibernateUtil.buscaPedestresAtivosComCartao();
+		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
 				
 		for (PedestrianAccessEntity pedestre : pedestresComCartao) {
 			String temp = "";
@@ -1284,7 +1288,8 @@ public class TopDataDevice extends Device {
 			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
 			System.out.println("qual cart„o   " + temp);
 		}
-		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateUtil.buscaPedestresAtivosComBiometria();
+		
+		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateAccessDataFacade.buscaPedestresAtivosComBiometria();
 		for (PedestrianAccessEntity biometria : biometriasNaoRemovidas) {
 			System.out.println("qual usu·rio est· sendo enviado a biometria  " + biometria.getName());
 			EasyInner.InserirUsuarioListaAcesso(biometria.getId()+"", 101);
@@ -1395,7 +1400,8 @@ public class TopDataDevice extends Device {
 	@Override
 	public void processAccessRequest(Object obj) {
 		try {
-			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, getFullIdentifier(), 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest((String) obj, getFullIdentifier(), 
 					inner.BilheteInner.Origem, location, getConfigurationValueAsBoolean(LOGICA_DE_CATRACA_COM_URNA), true, 
 					getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			verificationResult = (VerificationResult) retorno[0];
@@ -1410,7 +1416,8 @@ public class TopDataDevice extends Device {
 	
 	public void processAccessRequest(Object obj, final Boolean usaUrna) {
 		try {
-			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, getFullIdentifier(), 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest((String) obj, getFullIdentifier(), 
 					inner.BilheteInner.Origem, location, usaUrna, true, 
 					getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			verificationResult = (VerificationResult) retorno[0];
@@ -1425,7 +1432,8 @@ public class TopDataDevice extends Device {
 	
 	public void processAccessRequest(Object obj, Date data) {
 		try {
-			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, getFullIdentifier(), 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest((String) obj, getFullIdentifier(), 
 					inner.BilheteInner.Origem, location, getConfigurationValueAsBoolean(LOGICA_DE_CATRACA_COM_URNA), false, data,
 					isRegistrationProcessStartedOnDevice(), getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO));
 			
@@ -1534,7 +1542,7 @@ public class TopDataDevice extends Device {
 		} else {
 			biometry.setTemplate(template);
 		}
-		HibernateUtil.save(BiometricEntity.class, biometry);
+		HibernateAccessDataFacade.save(BiometricEntity.class, biometry);
 		
 		// salva o template
 		System.out.println(sdf.format(new Date()) + "   Salvando template entity...");
@@ -1551,7 +1559,7 @@ public class TopDataDevice extends Device {
 		}
 		templateEntity.setLocal(true);
 		templateEntity.setManufacturer(modeloLC ? Manufacturer.LC_DEVICE : Manufacturer.NITGEN);
-		templateEntity = (TemplateEntity) HibernateUtil.save(TemplateEntity.class, templateEntity)[0];
+		templateEntity = (TemplateEntity) HibernateAccessDataFacade.save(TemplateEntity.class, templateEntity)[0];
 		
 		// envia o template via broadcast
 		TemplateEntity temp = new TemplateEntity(templateEntity);
@@ -1613,8 +1621,8 @@ public class TopDataDevice extends Device {
 			removeBiometricaLC(athleteAccessEntity, false);
 		}
 		
-		HibernateUtil.removeTemplates(athleteAccessEntity.getId());
-		HibernateUtil.removeTemplatesFromServer(athleteAccessEntity.getId());
+		HibernateAccessDataFacade.removeTemplates(athleteAccessEntity.getId());
+		SmartAcessoClient.removeTemplatesFromServer(athleteAccessEntity.getId());
 		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REMOVE_TEMPLATES, athleteAccessEntity.getId()));
 		}
@@ -1626,8 +1634,8 @@ public class TopDataDevice extends Device {
 		if (modeloLC) {
 			removeBiometricaLC(athleteAccessEntity, isCatraca);
 		}
-		HibernateUtil.removeTemplates(athleteAccessEntity.getId());
-		HibernateUtil.removeTemplatesFromServer(athleteAccessEntity.getId());
+		HibernateAccessDataFacade.removeTemplates(athleteAccessEntity.getId());
+		SmartAcessoClient.removeTemplatesFromServer(athleteAccessEntity.getId());
 		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(
 					new BroadcastMessageTO(BroadcastMessageType.REMOVE_TEMPLATES, athleteAccessEntity.getId()));
@@ -1880,7 +1888,7 @@ public class TopDataDevice extends Device {
 			
 			Main.validandoAcesso = true;
 			if(Main.servidor != null) {
-				HibernateUtil.enviaInicioVerificandoAcesso();
+				HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
 			}
 			
 			validandoAcesso = true;
@@ -1912,7 +1920,7 @@ public class TopDataDevice extends Device {
 			validandoAcesso = false;
 			Main.validandoAcesso = false;
 			if(Main.servidor != null) {
-				HibernateUtil.enviaFimVerificandoAcesso();										
+				HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
 			}
 		}
 		
@@ -1942,8 +1950,7 @@ public class TopDataDevice extends Device {
 			
 			if (!bsp.IsErrorOccured()) {
 				Integer idTemplate = fpInfo.ID;
-				TemplateEntity template = (TemplateEntity) HibernateUtil.getSingleResultById(TemplateEntity.class, idTemplate.longValue());
-				//System.out.println(template.getIdPedestrianAccess());
+				TemplateEntity template = (TemplateEntity) HibernateAccessDataFacade.getSingleResultById(TemplateEntity.class, idTemplate.longValue());
 				
 				if(template != null) {
 					Long idPedestrian = template.getIdPedestreianAccess();
@@ -2313,7 +2320,7 @@ public class TopDataDevice extends Device {
 	@SuppressWarnings("unchecked")
 	private void startIndexSearchEngine() {
 		indexSearchEngine = bsp.new IndexSearch();
-		List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateUtil.getResultList(TemplateEntity.class, "TemplateEntity.findAllNaoRemovido");
+		List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateAccessDataFacade.getResultList(TemplateEntity.class, "TemplateEntity.findAllNaoRemovido");
 		
 		if (templatesList == null || templatesList.isEmpty()) {
 			return;
@@ -2389,12 +2396,12 @@ public class TopDataDevice extends Device {
 			HashMap<String, Object> args = new HashMap<String, Object>();
 			args.put("ULTIMA_SINC", dataAlteracao);
 			pedestres = (List<PedestrianAccessEntity>) 
-					HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
+					HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
 			
 		} else {
 			System.out.println("Sincroniza total");
 			pedestres = (List<PedestrianAccessEntity>) 
-					HibernateUtil.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAll");
+					HibernateAccessDataFacade.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAll");
 			todas = true;
 		}
 		
@@ -2441,7 +2448,7 @@ public class TopDataDevice extends Device {
 				
 				//indica atualizaÁ„o feita quando
 				deviceEntity.setUltimaAtualizacao(new Date());
-				deviceEntity = (DeviceEntity) HibernateUtil.save(DeviceEntity.class, deviceEntity)[0];
+				deviceEntity = (DeviceEntity) HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity)[0];
 				
 			} else {
 				System.out.println("Nenhuma altera√ß√£o em pedestres para envio.");
@@ -2449,10 +2456,11 @@ public class TopDataDevice extends Device {
 		
 		} finally {
 			coletandoDadosOffLine = false;
-			if(isConnected())
+			if(isConnected()) {
 				deviceCard.setMensagem("Conectado", MessageType.NORMAL);
-			else
+			} else {
 				deviceCard.setMensagem(" ", MessageType.NORMAL);
+			}
 		}
 		
 //		List<TemplateEntity> templatesList = (List<TemplateEntity>) 
@@ -2512,7 +2520,6 @@ public class TopDataDevice extends Device {
 					System.out.println("Resposta para " + templateEntity.getPedestrianAccess().getId() + ": " + ret);
 				
 				if (ret == Enumeradores.RET_BIO_USR_NAO_CADASTRADO) {
-					
 					byte[] template1 = new byte[502];
 					byte[] template2 = new byte[502];
 					
@@ -2535,8 +2542,9 @@ public class TopDataDevice extends Device {
 					insereUserLC(templateEntity.getPedestrianAccess().getId(), 
 								 template1, template2);
 					
-					if(Main.desenvolvimento)
+					if(Main.desenvolvimento) {
 						System.out.println("Biometria inserida");
+					}
 				}
 			}
 		}

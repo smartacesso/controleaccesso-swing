@@ -26,7 +26,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
@@ -35,7 +34,7 @@ import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -389,7 +388,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		HashMap<String, Object> args = new HashMap<>();
 		args.put("TIPO_PEDESTRE", tipoPedestre);
 		
-		List<RegraEntity> regras = (List<RegraEntity>) HibernateUtil
+		List<RegraEntity> regras = (List<RegraEntity>) HibernateAccessDataFacade
 									.getResultListWithParams(RegraEntity.class, "RegraEntity.findAllByTipoPedestre", args);
 		
 		if(regras == null || regras.isEmpty())

@@ -6,7 +6,6 @@ import java.util.Objects;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
 
 public class DeviceRepository {
 
@@ -14,7 +13,7 @@ public class DeviceRepository {
 		HashMap<String, Object> args = new HashMap<>();
 		args.put("IDENTIFIER", identifier);
 		
-		DeviceEntity device = (DeviceEntity) HibernateUtil.getUniqueResultWithParams(DeviceEntity.class,
+		DeviceEntity device = (DeviceEntity) HibernateAccessDataFacade.getUniqueResultWithParams(DeviceEntity.class,
 				"DeviceEntity.findByIdentifier", args);
 		
 		return Objects.nonNull(device);

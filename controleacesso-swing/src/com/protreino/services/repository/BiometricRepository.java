@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.protreino.services.entity.BiometricEntity;
-import com.protreino.services.utils.HibernateUtil;
 
 public class BiometricRepository {
 
@@ -14,7 +13,7 @@ public class BiometricRepository {
         args.put("ID_USER", idVisitante);
 
         List<BiometricEntity> biometriasVisitantesLocais = (List<BiometricEntity>)
-                HibernateUtil.getResultListWithParams(BiometricEntity.class,
+                HibernateAccessDataFacade.getResultListWithParams(BiometricEntity.class,
                         "BiometricEntity.findByIdUser", args);
 
         return biometriasVisitantesLocais;

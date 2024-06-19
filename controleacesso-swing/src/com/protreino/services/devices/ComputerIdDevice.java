@@ -38,6 +38,7 @@ import com.digitalpersona.onetouch.processing.DPFPImageQualityException;
 import com.digitalpersona.onetouch.verification.DPFPVerification;
 import com.digitalpersona.onetouch.verification.DPFPVerificationResult;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.client.SmartAcessoClient;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.TemplateEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
@@ -48,13 +49,15 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.Utils;
 
+@SuppressWarnings("serial")
 public class ComputerIdDevice extends Device {
 
 	private DPFPCapture capturer;
@@ -357,10 +360,13 @@ public class ComputerIdDevice extends Device {
 			if (idEncontrado != null) {
 				PedestrianAccessEntity pedestre = pedestrianAccessRepository.buscaPedestrePorIdOuIdTemp(idEncontrado);
 				
-				if(pedestre != null)
+				if(pedestre != null) {
 					idEncontrado = pedestre.getId();
+				}
 				
-				Object[] retorno = HibernateUtil.processAccessRequest(idEncontrado.toString(), location, createNotification, false);
+				final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+				
+				Object[] retorno = processAccessRequestUseCase.processAccessRequest(idEncontrado.toString(), location, createNotification, false);
 				this.verificationResult = (VerificationResult) retorno[0];
 				this.allowedUserName = (String) retorno[1];
 				this.matchedAthleteAccess = (PedestrianAccessEntity) retorno[2];
@@ -423,10 +429,12 @@ public class ComputerIdDevice extends Device {
 	
 	@Override
 	public String removeUser(PedestrianAccessEntity athleteAccessEntity) {
-		HibernateUtil.removeTemplates(athleteAccessEntity.getId());
-		HibernateUtil.removeTemplatesFromServer(athleteAccessEntity.getId());
-		if (Main.broadcastServer != null)
+		HibernateAccessDataFacade.removeTemplates(athleteAccessEntity.getId());
+		SmartAcessoClient.removeTemplatesFromServer(athleteAccessEntity.getId());
+		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REMOVE_TEMPLATES, athleteAccessEntity.getId()));
+		}
+
 		return "";
 	}
 	
@@ -434,8 +442,8 @@ public class ComputerIdDevice extends Device {
 	private void setMessage(String message, String tipo) {
 		if (DeviceMode.ENROLLMENT.equals(mode) && biometricDialog != null) {
 			biometricDialog.setMessage(message, tipo);
-		}
-		else if (DeviceMode.VERIFICATION.equals(mode) && athleteScreen != null) {
+		
+		} else if (DeviceMode.VERIFICATION.equals(mode) && athleteScreen != null) {
 			athleteScreen.setErroDigital(message);
 		}
 	}
@@ -470,7 +478,8 @@ public class ComputerIdDevice extends Device {
 	@SuppressWarnings("unchecked")
 	public void createTemplateDatabase() {
 		templateDatabase = new HashMap<Long, List<DPFPTemplate>>();
-		List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateUtil.getResultList(TemplateEntity.class, "TemplateEntity.findAllNaoLocalComplete");
+		List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateAccessDataFacade.getResultList(TemplateEntity.class, 
+				"TemplateEntity.findAllNaoLocalComplete");
 		if (templatesList != null && !templatesList.isEmpty()) {
 			for (TemplateEntity templateEntity : templatesList) {
 				addTemplateToTemplateDatabase(templateEntity);

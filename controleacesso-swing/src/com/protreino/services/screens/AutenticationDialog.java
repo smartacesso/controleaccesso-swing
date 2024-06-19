@@ -11,12 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.AbstractAction;
@@ -39,9 +36,8 @@ import javax.swing.border.LineBorder;
 import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.EncryptionUtils;
-import com.protreino.services.utils.HibernateUtil;
-import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -105,11 +101,11 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Utils.isNullOrEmpty(loginField.getText())) {
-					invalidCredentialsLabel.setText("Login invÃ¡lido!");
+					invalidCredentialsLabel.setText("Login inv�lido!");
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha invÃ¡lida!");
+					invalidCredentialsLabel.setText("Senha inv�lida!");
 					return;
 				}
 				
@@ -128,7 +124,7 @@ public class AutenticationDialog extends JDialog {
 					try {
 						String senhaCripto = String.valueOf(passwordField.getPassword());
 						senhaCripto = EncryptionUtils.encrypt(senhaCripto);
-						usuario = HibernateUtil.buscaUsuarioPeloLogin(loginField.getText(), senhaCripto);
+						usuario = HibernateAccessDataFacade.buscaUsuarioPeloLogin(loginField.getText(), senhaCripto);
 						
 						if(usuario != null) {
 							System.out.println("Usuario logado: " + usuario.getName());
@@ -156,7 +152,7 @@ public class AutenticationDialog extends JDialog {
 				HashMap<String, Object> args = new HashMap<>();
 				args.put("ID_CLIENTE", Main.loggedUser.getIdClient());
 				
-				List<PlanoEntity> planos = (List<PlanoEntity>) HibernateUtil
+				List<PlanoEntity> planos = (List<PlanoEntity>) HibernateAccessDataFacade
 									.getResultListWithParams(PlanoEntity.class, "PlanoEntity.findMaiorDataVencimentoAndAtivo", args);
 				
 				if(planos != null)
@@ -326,7 +322,7 @@ public class AutenticationDialog extends JDialog {
 			    public Boolean doInBackground() {
 			    	try {			    		
 			    		String senhaEncriptado = EncryptionUtils.encrypt(senha);
-			    		UserEntity user = HibernateUtil.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
+			    		UserEntity user = HibernateAccessDataFacade.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
 
 			    	//	fazer o enable se não achar motivo para sennha
 			    		long inicioTimer = new Date().getTime();

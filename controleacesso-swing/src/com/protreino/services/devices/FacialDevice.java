@@ -30,8 +30,8 @@ import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.to.DetectFaceResult;
 import com.protreino.services.to.Face;
 import com.protreino.services.to.FacePosition;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.FSDK;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 import Luxand.FSDK.FSDK_IMAGEMODE;
@@ -569,12 +569,14 @@ public class FacialDevice extends Device {
 				}
 			}
 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			
 			Object[] retorno = null;
 			if (idEquipamento != null) {
-				retorno = HibernateUtil.processAccessRequest(idUsuario, idEquipamento, ORIGEM_FACIAL, location, false,
+				retorno = processAccessRequestUseCase.processAccessRequest(idUsuario, idEquipamento, ORIGEM_FACIAL, location, false,
 						createNotification, getConfigurationValueAsBoolean("Ignorar regras de acesso"));
 			} else {
-				retorno = HibernateUtil.processAccessRequest(idUsuario, location, createNotification,
+				retorno = processAccessRequestUseCase.processAccessRequest(idUsuario, location, createNotification,
 						getConfigurationValueAsBoolean("Ignorar regras de acesso"));
 			}
 

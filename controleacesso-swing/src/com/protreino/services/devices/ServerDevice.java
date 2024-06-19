@@ -20,9 +20,9 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.TcpMessageType;
+import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.TcpMessageTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 import tcpcom.TcpClient;
@@ -80,13 +80,13 @@ public class ServerDevice extends Device {
 	@Override
 	public void connect(String... args) throws Exception {
 		try {
-			HibernateUtil.openConnection();
+			HibernateServerAccessData.openConnection();
 		} catch (ConnectException e) {
 			disconnect("");
 			return;
 		}
 
-		if (HibernateUtil.clientSocket != null && HibernateUtil.clientSocket.isConnected()) {
+		if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
 			watchDogEnabled = true;
 			contador = 0;
 			setStatus(DeviceStatus.CONNECTED);
@@ -104,23 +104,23 @@ public class ServerDevice extends Device {
 								setStatus(DeviceStatus.DISCONNECTED);
 								
 								try {
-									HibernateUtil.openConnection();
+									HibernateServerAccessData.openConnection();
 								} catch (ConnectException e) {
 									disconnect("");
 									return null;
 								}
 								
-								if (HibernateUtil.clientSocket.isConnected())
+								if (HibernateServerAccessData.clientSocket.isConnected())
 									contador = 0;
 							} else {
 								setStatus(DeviceStatus.CONNECTED);
 								
-								if(!HibernateUtil.executando) {
-									HibernateUtil.executandoPing = true;
+								if(!HibernateServerAccessData.executando) {
+									HibernateServerAccessData.executandoPing = true;
 									
-									HibernateUtil.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
-									HibernateUtil.outToServer.flush();
-									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateUtil.clientSocket.getInputStream()));
+									HibernateServerAccessData.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
+									HibernateServerAccessData.outToServer.flush();
+									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream()));
 									TcpMessageTO resp = (TcpMessageTO) reader.readObject();
 									
 									if(TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
@@ -135,7 +135,7 @@ public class ServerDevice extends Device {
 						} catch (Exception e) {
 							e.printStackTrace();
 		                } finally {
-		                	HibernateUtil.executandoPing = false;
+		                	HibernateServerAccessData.executandoPing = false;
 							Utils.sleep(10000);
 						}
 					}
@@ -157,19 +157,7 @@ public class ServerDevice extends Device {
 	public void disconnect(String... args) throws Exception {
 		watchDogEnabled = false;
 		setStatus(DeviceStatus.DISCONNECTED);
-		HibernateUtil.closeConnetion();
-	}
-	
-	/**
-	 * Método usado para varredura de ip
-	 */
-	private boolean quickConnect() throws Exception {
-		client.connect();
-		if (client.isConnected()) {
-			client.disconnect();
-			return true;
-		}
-		return false;
+		HibernateServerAccessData.closeConnetion();
 	}
 	
 	@Override

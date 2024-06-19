@@ -20,8 +20,8 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.BroadcastMessageTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 public class EscolherSentidoLiberarAcessoDialog{
@@ -117,7 +117,7 @@ public class EscolherSentidoLiberarAcessoDialog{
 		
 		} else {
 			Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
-			HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			if (Main.broadcastServer != null) {
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));				
 			}

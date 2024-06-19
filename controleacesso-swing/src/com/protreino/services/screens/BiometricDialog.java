@@ -55,8 +55,8 @@ import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.BroadcastMessageTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -271,7 +271,7 @@ public class BiometricDialog extends JDialog{
 	
 	public void saveTemplates(byte[] template) {
 		//antes de salvar, verifica se o pedestre está correto
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade.getSingleResultByIdTemp(PedestrianAccessEntity.class, acesso.getId());
 		if(pedestre != null) {
 			acesso = pedestre;			
 		}
@@ -283,7 +283,7 @@ public class BiometricDialog extends JDialog{
 		biometry.setFinger(Finger.valueFromImport((String) fingerComboBox.getSelectedItem()));
 		biometry.setTemplate(template);
 		biometry.setSample(imageSample);
-		HibernateUtil.save(BiometricEntity.class, biometry);
+		HibernateAccessDataFacade.save(BiometricEntity.class, biometry);
 		
 		// salva o template
 		templateEntity = new TemplateEntity();
@@ -291,10 +291,10 @@ public class BiometricDialog extends JDialog{
 		templateEntity.setTemplate(template);
 		templateEntity.setLocal(true);
 		templateEntity.setManufacturer(selectedDevice.getManufacturer());
-		templateEntity = (TemplateEntity) HibernateUtil.save(TemplateEntity.class, templateEntity)[0];
+		templateEntity = (TemplateEntity) HibernateAccessDataFacade.save(TemplateEntity.class, templateEntity)[0];
 		
 		acesso.setDataAlteracao(new Date());
-		acesso = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, acesso)[0];
+		acesso = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, acesso)[0];
 	}
 	
 	public void finishCollect() {

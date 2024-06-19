@@ -9,15 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -32,8 +28,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -43,10 +37,10 @@ import org.jdatepicker.ComponentColorDefaults;
 import org.jdatepicker.ComponentColorDefaults.Key;
 import org.jdatepicker.JDatePicker;
 
-import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -239,7 +233,6 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void filterList() {
 		args = new HashMap<String, Object>();
 		try {
@@ -272,7 +265,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		totalRegistros =  HibernateUtil.getResultListWithParamsCount(LogPedestrianAccessEntity.class, 
+		totalRegistros =  HibernateAccessDataFacade.getResultListWithParamsCount(LogPedestrianAccessEntity.class, 
 															"LogPedestrianAccessEntity.countByPeriod", args);
 		executeFilter();
 		
@@ -285,7 +278,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		calculaTamanhoPaginas();
 		
 		historicoAcesso = (List<LogPedestrianAccessEntity>)
-				HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class, 
+				HibernateAccessDataFacade.getResultListWithParams(LogPedestrianAccessEntity.class, 
 							"LogPedestrianAccessEntity.findByPeriod", args, inicioPagina, registrosPorPagina);
 
 		populateTable(historicoAcesso);
@@ -383,8 +376,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 					
 				}
 			}
-		}catch (Exception e) {
-			// TODO: handle exception
+		} catch (Exception e) {
 		}
 	}
 

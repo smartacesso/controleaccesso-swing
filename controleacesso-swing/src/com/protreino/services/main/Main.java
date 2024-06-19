@@ -2,6 +2,7 @@ package com.protreino.services.main;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.client.SmartAcessoFotoServiceClient;
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
@@ -11,6 +12,8 @@ import com.protreino.services.enumeration.*;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.repository.BiometricRepository;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
@@ -23,6 +26,7 @@ import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.*;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -216,17 +220,6 @@ public class Main {
                 new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue));
     }
 
-    private static Serializable process(Serializable msg) {
-        System.out.println("Nï¿½o iniciar nova instancia: " + msg);
-        if (mainScreen != null) {
-            System.out.println("Exibe tela para usuï¿½rio");
-            mainScreen.showScreen();
-        } else {
-            System.out.println("Nï¿½o hï¿½ telas para exibir");
-        }
-        return null;
-    }
-
     public static void verificaValidandoAcesso() {
         int count = 0;
         while (Main.validandoAcesso) {
@@ -262,7 +255,7 @@ public class Main {
                     //else
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     System.getProperties().setProperty("derby.system.home", Utils.getAppDataFolder());
-                    HibernateUtil.getSessionFactory().getCurrentSession();
+                    HibernateLocalAccessData.getSessionFactory().getCurrentSession();
                     Utils.defineDefaultPreferences();
                     setSystemTrayIcon();
                     configureTimers();
@@ -407,7 +400,7 @@ public class Main {
     @SuppressWarnings("unchecked")
     private void recoverLoggedUser() {
         devicesList = new ArrayList<Device>();
-        loggedUser = HibernateUtil.getLoggedUser("UserEntity.findAll");
+        loggedUser = HibernateAccessDataFacade.getLoggedUser("UserEntity.findAll");
         if (loggedUser != null) {
             lastSync = loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L;
             lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
@@ -455,7 +448,7 @@ public class Main {
             timerTasksOfDay.scheduleAtFixedRate(uTimerTask, inicio.getTime(),
                     periodExpirar.longValue());
 
-            List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.
+            List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.
                     getResultList(DeviceEntity.class, "DeviceEntity.findAll");
             if (lista != null && !lista.isEmpty()) {
                 for (DeviceEntity deviceEntity : lista)
@@ -491,7 +484,9 @@ public class Main {
      * ou escolhe a unica catraca conectada.
      */
     public static void releaseAccess() {
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+    	final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+
+    	SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
 
@@ -500,7 +495,7 @@ public class Main {
                     if (Utils.getPreferenceAsBoolean("registerAccessWithoutConnectedDevices")
                             && idAlunoEspecifico != null) {
                         try {
-                            Object[] resultado = HibernateUtil.processAccessRequest(idAlunoEspecifico, null,
+                            Object[] resultado = processAccessRequestUseCase.processAccessRequest(idAlunoEspecifico, null,
                                     Origens.ORIGEM_LIBERADO_SISTEMA, null, false, true, false);
 
                             VerificationResult verificationResult = (VerificationResult) resultado[0];
@@ -512,11 +507,11 @@ public class Main {
                                 Utils.createNotification(
                                         "Usuï¿½rio " + matchedPedestre.getFirstName() + " liberado pelo sistema.",
                                         NotificationType.GOOD);
-                                HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
                                 Thread.sleep(1000);
 
                                 matchedPedestre.decrementaCreditos();
-                                HibernateUtil.save(PedestrianAccessEntity.class, matchedPedestre);
+                                HibernateAccessDataFacade.save(PedestrianAccessEntity.class, matchedPedestre);
                             }
 
                         } catch (Exception e) {
@@ -644,7 +639,7 @@ public class Main {
                         String equipament = selectedDevice.getFullIdentifier();
 
                         if (idAlunoEspecifico != null) {
-                            PedestrianAccessEntity athleteAccess = (PedestrianAccessEntity) HibernateUtil
+                            PedestrianAccessEntity athleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
                                     .getSingleResultById(PedestrianAccessEntity.class, Long.valueOf(idAlunoEspecifico));
 
                             LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
@@ -658,10 +653,11 @@ public class Main {
                                 Utils.createNotification(
                                         "Usuï¿½rio " + athleteAccess.getFirstName() + " liberado pelo sistema.",
                                         NotificationType.GOOD);
-                                HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
-                                if (Main.broadcastServer != null)
-                                    Main.broadcastServer.sendMessage(
-                                            new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
+                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+                                if (Main.broadcastServer != null) {
+                                	Main.broadcastServer.sendMessage(
+                                			new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
+                                }
                             }
 
                         } else {
@@ -674,7 +670,7 @@ public class Main {
 
                             } else {
                                 Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
-                                HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
                             }
                         }
                         selectedDevice.allowAccess();
@@ -759,7 +755,7 @@ public class Main {
         while (uploadingPhotosPedestres)
             Utils.sleep(50);
 
-        Boolean sessaoLimpa = HibernateUtil.cleanUserSession();
+        Boolean sessaoLimpa = HibernateLocalAccessData.cleanUserSession();
         if (sessaoLimpa) {
             Utils.createNotification("Sessão de usuário encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
@@ -779,7 +775,7 @@ public class Main {
         }
 
         systemTray.remove(trayIcon);
-        HibernateUtil.shutdown();
+        HibernateLocalAccessData.shutdown();
         finalizeDevices();
         if (!desenvolvimento) {
         	//closeLogFile();
@@ -920,7 +916,7 @@ public class Main {
 				args.put("DATE_HIKIVISION", date);
 
 				@SuppressWarnings("unchecked")
-				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
 						.getResultListWithParams(PedestrianAccessEntity.class,
 								"PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
 				if (pedestres != null && !pedestres.isEmpty()) {
@@ -928,7 +924,7 @@ public class Main {
 					
 					for (PedestrianAccessEntity pedestre : pedestres) {
 						hiviVisionUseCase.removerUsuarioFromDevices(pedestre);
-						HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+						HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 					}
 				}
 
@@ -985,7 +981,7 @@ public class Main {
         if (!Utils.getPreferenceAsBoolean("enableCardReset"))
             return;
 
-        HibernateUtil.resetStatusAllCards();
+        HibernateAccessDataFacade.resetStatusAllCards();
 
         System.out.println("saiu limpaStatusCartoes");
     }
@@ -1003,29 +999,29 @@ public class Main {
         //adiciona data para que os calculos de quantidade
         //de giros sejam refeitos
         loggedUser.setDateNewAccess(new Date());
-        HibernateUtil.save(UserEntity.class, loggedUser);
+        HibernateAccessDataFacade.save(UserEntity.class, loggedUser);
 
         //apaga tambï¿½m dados de giros anteriores nï¿½o registrados
-        HibernateUtil.apagaDadosDeGiro(loggedUser.getDateNewAccess());
+        HibernateAccessDataFacade.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 
         System.out.println("Saiu limpaSentidoTodos");
 
     }
 
     private static void limpaCartoesVisitantes() {
+        if (Main.temServidor()) {
+        	return;
+        }
 
-        //verifica se estï¿½ ativado
-        if (Main.servidor != null)
-            return;
-
-        if (!Utils.getPreferenceAsBoolean("enableCardAcessClear"))
-            return;
+        if (!Utils.getPreferenceAsBoolean("enableCardAcessClear")) {
+        	return;
+        }
 
         //pesquisa todos os pedestres que estï¿½o com cartï¿½o ativado
         //e que tenham um crï¿½dito
-        HibernateUtil.apagaDadosCartao();
-        HibernateUtil.apagaDadosDeUltimoSentido();
-        HibernateUtil.apagaQuantidadeAcessosAsinc();
+        HibernateAccessDataFacade.apagaDadosCartao();
+        HibernateAccessDataFacade.apagaDadosDeUltimoSentido();
+        HibernateAccessDataFacade.apagaQuantidadeAcessosAsinc();
     }
 
     public static Device getDefaultDevice() {
@@ -1141,20 +1137,20 @@ public class Main {
 
                     user.setIdClient(loggedUser.getIdClient());
 
-                    UserEntity usuarioExistente = (UserEntity) HibernateUtil
+                    UserEntity usuarioExistente = (UserEntity) HibernateAccessDataFacade
                             .getSingleResultById(UserEntity.class, user.getId());
 
                     if (usuarioExistente != null) {
                         usuarioExistente.update(user);
                         if (loggedUser.getId().equals(user.getId())) {
-                            loggedUser = (UserEntity) HibernateUtil.update(UserEntity.class, usuarioExistente)[0];
+                            loggedUser = (UserEntity) HibernateAccessDataFacade.update(UserEntity.class, usuarioExistente)[0];
 
                         } else {
-                            HibernateUtil.update(UserEntity.class, usuarioExistente);
+                        	HibernateAccessDataFacade.update(UserEntity.class, usuarioExistente);
                         }
 
                     } else {
-                        HibernateUtil.save(UserEntity.class, user);
+                    	HibernateAccessDataFacade.save(UserEntity.class, user);
                     }
                 }
 
@@ -1162,7 +1158,7 @@ public class Main {
                     Utils.sleep(1000);
                     lastSyncGetUsers = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                     loggedUser.setLastSyncUser(new Date(lastSyncGetUsers));
-                    loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
             }
 
@@ -1202,15 +1198,15 @@ public class Main {
                     EmpresaEntity empresa = new EmpresaEntity(empresaTO);
                     empresa.setIdClient(loggedUser.getIdClient());
 
-                    EmpresaEntity empresaExistente = (EmpresaEntity) HibernateUtil
+                    EmpresaEntity empresaExistente = (EmpresaEntity) HibernateAccessDataFacade
                             .getSingleResultById(EmpresaEntity.class, empresa.getId());
 
                     if (empresaExistente != null) {
                         empresaExistente.update(empresa);
-                        HibernateUtil.update(EmpresaEntity.class, empresaExistente);
+                        HibernateAccessDataFacade.update(EmpresaEntity.class, empresaExistente);
 
                     } else {
-                        HibernateUtil.save(EmpresaEntity.class, empresa);
+                    	HibernateAccessDataFacade.save(EmpresaEntity.class, empresa);
                     }
                 }
 
@@ -1218,7 +1214,7 @@ public class Main {
                     Utils.sleep(1000);
                     lastSyncGetEmpresas = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                     loggedUser.setLastSyncEmpresa(new Date(lastSyncGetEmpresas));
-                    loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
             }
 
@@ -1256,17 +1252,17 @@ public class Main {
 
                     RegraEntity regra = new RegraEntity(regraTO);
                     regra.setIdClient(loggedUser.getIdClient());
-                    EmpresaEntity empresa = (EmpresaEntity) HibernateUtil.getSingleResultById(EmpresaEntity.class, regraTO.getIdEmpresa());
+                    EmpresaEntity empresa = (EmpresaEntity) HibernateAccessDataFacade.getSingleResultById(EmpresaEntity.class, regraTO.getIdEmpresa());
                     regra.setEmpresa(empresa);
 
-                    RegraEntity regraExistente = (RegraEntity) HibernateUtil
+                    RegraEntity regraExistente = (RegraEntity) HibernateAccessDataFacade
                             .getSingleResultById(RegraEntity.class, regra.getId());
 
                     if (regraExistente != null) {
                         regraExistente.update(regra);
-                        HibernateUtil.update(RegraEntity.class, regraExistente);
+                        HibernateAccessDataFacade.update(RegraEntity.class, regraExistente);
                     } else {
-                        HibernateUtil.save(RegraEntity.class, regra);
+                    	HibernateAccessDataFacade.save(RegraEntity.class, regra);
                     }
                 }
 
@@ -1274,7 +1270,7 @@ public class Main {
                     Utils.sleep(1000);
                     lastSyncGetRegras = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                     loggedUser.setLastSyncRegra(new Date(lastSyncGetRegras));
-                    loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
             }
 
@@ -1313,15 +1309,15 @@ public class Main {
 
                     parametro.setIdClient(loggedUser.getIdClient());
 
-                    ParametroEntity parametroExistente = (ParametroEntity) HibernateUtil
+                    ParametroEntity parametroExistente = (ParametroEntity) HibernateAccessDataFacade
                             .getSingleResultById(ParametroEntity.class, parametro.getId());
 
                     if (parametroExistente != null) {
                         parametroExistente.update(parametro);
-                        HibernateUtil.update(ParametroEntity.class, parametroExistente);
+                        HibernateAccessDataFacade.update(ParametroEntity.class, parametroExistente);
 
                     } else {
-                        HibernateUtil.save(ParametroEntity.class, parametro);
+                    	HibernateAccessDataFacade.save(ParametroEntity.class, parametro);
                     }
 
                 });
@@ -1330,7 +1326,7 @@ public class Main {
                     Utils.sleep(1000);
                     lastSyncGetParametros = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                     loggedUser.setLastSyncParametro(new Date(lastSyncGetParametros));
-                    loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
             }
 
@@ -1368,15 +1364,15 @@ public class Main {
 
                     plano.setIdClient(loggedUser.getIdClient());
 
-                    PlanoEntity planoExistente = (PlanoEntity) HibernateUtil
+                    PlanoEntity planoExistente = (PlanoEntity) HibernateAccessDataFacade
                             .getSingleResultById(PlanoEntity.class, plano.getId());
 
                     if (planoExistente != null) {
                         planoExistente.update(plano);
-                        HibernateUtil.update(PlanoEntity.class, planoExistente);
+                        HibernateAccessDataFacade.update(PlanoEntity.class, planoExistente);
 
                     } else {
-                        HibernateUtil.save(PlanoEntity.class, plano);
+                    	HibernateAccessDataFacade.save(PlanoEntity.class, plano);
                     }
                 }
 
@@ -1384,7 +1380,7 @@ public class Main {
                     Utils.sleep(1000);
                     lastSyncGetPlanos = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                     loggedUser.setLastSyncPlano(new Date(lastSyncGetPlanos));
-                    loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
             }
         };
@@ -1418,7 +1414,7 @@ public class Main {
                     if (loggedUser != null) {
                         lastSyncHikivision = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                         loggedUser.setLastSyncHikivision(new Date(lastSyncHikivision));
-                        Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                        Main.loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                     }
 
                     System.out.println(sdf.format(new Date()) + "  Servidor Hikivision sincronizado com sucesso!");
@@ -1499,13 +1495,13 @@ public class Main {
                 args.put("LAST_SYNC_HIKIVISION", new Date(lastSyncHikivision));
 
                 @SuppressWarnings("unchecked")
-				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                         .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhotoByLastSync", args);
 
                 for (PedestrianAccessEntity pedestre : pedestres) {
                 	try {
                 		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre);
-                		HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+                		HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
                 	
                 	} catch (HikivisionIntegrationException e) {
 						System.out.println(e.getMessage());
@@ -1641,7 +1637,7 @@ public class Main {
             private List<PedestrianAccessEntity> enviaPedestresCadastradosOuEditadosDesktop() throws IOException {
                 Main.verificaValidandoAcesso();
                 final BiometricRepository biometricRepository = new BiometricRepository();
-                List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateUtil
+                List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                         .getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100L);
 
                 if (visitantesLocais == null || visitantesLocais.isEmpty()) {
@@ -1711,25 +1707,25 @@ public class Main {
 
                         if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
                             for (PedestrianMessagesEntity m : visitante.getMensagens()) {
-                                HibernateUtil.remove(m);
+                            	HibernateAccessDataFacade.remove(m);
                             }
                         }
 
                         if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
                             for (DocumentoEntity d : visitante.getDocumentos()) {
-                                HibernateUtil.remove(d);
+                            	HibernateAccessDataFacade.remove(d);
                             }
                         }
 
                         if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
                             for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
-                                HibernateUtil.remove(pr);
+                            	HibernateAccessDataFacade.remove(pr);
                             }
                         }
 
                         if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
                             for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
-                                HibernateUtil.remove(pe);
+                            	HibernateAccessDataFacade.remove(pe);
                             }
                         }
 
@@ -1739,7 +1735,7 @@ public class Main {
                         visitante.setMensagens(new ArrayList<>());
 
                         visitante.setEditadoNoDesktop(false);
-                        HibernateUtil.update(PedestrianAccessEntity.class, visitante);
+                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, visitante);
                     }
                 }
             }
@@ -1756,32 +1752,32 @@ public class Main {
                     
                     if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
                     	for (PedestrianMessagesEntity m : visitante.getMensagens()) {
-                    		HibernateUtil.remove(m);
+                    		HibernateAccessDataFacade.remove(m);
                     	}
                     }
 
                     if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
                     	for (DocumentoEntity d : visitante.getDocumentos()) {
-                    		HibernateUtil.remove(d);
+                    		HibernateAccessDataFacade.remove(d);
                     	}
                     }
 
                     if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
                     	for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
-                    		HibernateUtil.remove(pr);
+                    		HibernateAccessDataFacade.remove(pr);
                     	}
                     }
 
                     if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
                     	for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
-                    		HibernateUtil.remove(pe);
+                    		HibernateAccessDataFacade.remove(pe);
                     	}
                     }
 
                     if (visitante.getListaAcessosTransient() != null
                             && !visitante.getListaAcessosTransient().isEmpty()) {
                     	for (LogPedestrianAccessEntity acesso : visitante.getListaAcessosTransient()) {
-                    		HibernateUtil.remove(acesso);
+                    		HibernateAccessDataFacade.remove(acesso);
                     	}
                     }
 
@@ -1794,7 +1790,7 @@ public class Main {
                             log.setIdPedestrian(novoPedestre.getId());
                             log.setPedestre(novoPedestre);
 
-                            HibernateUtil.save(LogPedestrianAccessEntity.class, log);
+                            HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, log);
                         }
                         System.out.println("id do pedestre novo" + novoPedestre.getId());
                         visitante.setVersao(visitante.getVersao() + 1);
@@ -1803,12 +1799,12 @@ public class Main {
                     if (visitante.getListaBiometriasTransient() != null
                             && !visitante.getListaBiometriasTransient().isEmpty()) {
                         for (BiometricEntity biometria : visitante.getListaBiometriasTransient()) {
-                            biometria = (BiometricEntity) HibernateUtil
+                            biometria = (BiometricEntity) HibernateAccessDataFacade
                                     .getSingleResultById(BiometricEntity.class, biometria.getId());
 
                             if (biometria != null) {
                                 try {
-                                    HibernateUtil.remove(biometria);
+                                	HibernateAccessDataFacade.remove(biometria);
                                 } catch (Exception e) {
                                     System.out.println("Sem digital pra remover");
                                 }
@@ -1817,14 +1813,14 @@ public class Main {
                     }
 
                     try {
-                        HibernateUtil.remove(visitante);
+                    	HibernateAccessDataFacade.remove(visitante);
 
                     } catch (Exception e) {
-                        visitante = (PedestrianAccessEntity) HibernateUtil
+                        visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
                                 .getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
                         visitante.setInvisivel(true);
 
-                        HibernateUtil.update(PedestrianAccessEntity.class, visitante);
+                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, visitante);
                     }
                 
                 }
@@ -1872,7 +1868,7 @@ public class Main {
                     // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
                     //		  aqui ou ne
 
-                    PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateUtil.
+                    PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade.
                             getAllPedestresById(athleteAccessTO.getId());
 
                     if (existentAthleteAccess != null) {
@@ -1905,7 +1901,6 @@ public class Main {
                         final String oldStatus = existentAthleteAccess.getStatus();
 
                         existentAthleteAccess.update(athleteAccessTO);
-                        HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                         if((existentAthleteAccess.isRemovido() 
                         			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
@@ -1925,13 +1920,22 @@ public class Main {
                             atualizaDigitais = true;
                         }
                         
+                        final boolean apagaFotoDePedestresInativcos = Utils.getPreferenceAsBoolean("deletePhotoFromInactivePedestrian");
+                        
+                        if(apagaFotoDePedestresInativcos 
+                        		&& (existentAthleteAccess.isRemovido() || existentAthleteAccess.isInativo())
+                        		&& Objects.nonNull(existentAthleteAccess.getFoto())) {
+                        	existentAthleteAccess.setFoto(null);
+                        }
+                        
+                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                     } else {
                         PedestrianAccessEntity newAthleteAccess = new PedestrianAccessEntity(athleteAccessTO);
                         if (!atualizaDigitais && Boolean.TRUE.equals(newAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
                         }
-                        HibernateUtil.save(PedestrianAccessEntity.class, newAthleteAccess);
+                        HibernateAccessDataFacade.save(PedestrianAccessEntity.class, newAthleteAccess);
                     }
                 }
 
@@ -1962,7 +1966,6 @@ public class Main {
                                     topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
                             }
                         } catch (Exception e) {
-                            //nï¿½o deixa o erro para o processo
                             e.printStackTrace();
                         }
                     }
@@ -1973,7 +1976,7 @@ public class Main {
                 Utils.sleep(1000);
                 lastSync = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                 loggedUser.setLastSync(new Date(lastSync));
-                loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
 
                 //dispara para servidores
                 if (Main.broadcastServer != null) {
@@ -1984,7 +1987,8 @@ public class Main {
 			@SuppressWarnings("unchecked")
             private void enviaBiometriasColetadasLocalmente() throws IOException {
                 // Enviando as biometrias coletadas localmente
-                List<BiometricEntity> biometriasLocais = (List<BiometricEntity>) HibernateUtil.getResultList(BiometricEntity.class, "BiometricEntity.findAll");
+                List<BiometricEntity> biometriasLocais = (List<BiometricEntity>) HibernateAccessDataFacade.getResultList(BiometricEntity.class, 
+                		"BiometricEntity.findAll");
 
                 if (biometriasLocais == null || biometriasLocais.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  BIOMETRIAS LOCAIS: sem registros para enviar");
@@ -2011,7 +2015,7 @@ public class Main {
                     System.out.println(sdf.format(new Date()) + "  BIOMETRIAS LOCAIS: dados enviados!");
                     // Biometrias enviadas com sucesso, podem ser apagadas localmente porque serao recebidas novamente atraves do AthleteAccess
                     for (BiometricEntity biometria : biometriasLocais) {
-                        HibernateUtil.remove(biometria);
+                    	HibernateAccessDataFacade.remove(biometria);
                         Utils.sleep(10);
                     }
 
@@ -2022,62 +2026,39 @@ public class Main {
             }
 
             private void buscaFotosDosPedestres(Long backUpLastSync) throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/photo/query?client="
-                        + loggedUser.getIdClient() + "&lastsync=" + backUpLastSync);
-
-                int responseCode = con.getResponseCode();
-
-                if (responseCode != 200) {
-                    return;
+                final SmartAcessoFotoServiceClient smartAcessoFotoServiceClient = new SmartAcessoFotoServiceClient();
+                List<String> ids = smartAcessoFotoServiceClient.buscaIdsDePedestreComFotoAlterada(backUpLastSync);
+                
+                if(Objects.isNull(ids) || ids.isEmpty()) {
+                	return;
                 }
+                
+                System.out.println(sdf.format(new Date()) + "  BUSCANDO FOTOS: " + ids.size());
+                
+                final Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
+                final boolean resize = Utils.getPreferenceAsBoolean("shouldMakeImageResize");
+                
+                ids.forEach(id -> {
+                	final String idsParameter = id + ";";
+                	
+                    List<PedestrianAccessTO> athleteAccessTOList = smartAcessoFotoServiceClient.buscaFotoDePedestres(idsParameter, imageSize, resize);
 
-                String resposta = con.getResponseReader().readLine();
-                if (Utils.isNullOrEmpty(resposta)) {
-                    return;
-                }
+                    if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
+                        for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
+                            if (loggedUser == null) {
+                                break;
+                            }
 
-                String[] ids = resposta.split(";");
-                System.out.println(sdf.format(new Date()) + "  BUSCANDO FOTOS: " + ids.length);
-                int cont = 0;
-                Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
-                while (cont < ids.length) {
+                            PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+                                    .getSingleResultById(PedestrianAccessEntity.class, athleteAccessTO.getId());
 
-                    // monta uma string com no maximo 50 ids
-                    StringBuilder stringBuilder = new StringBuilder();
-                    int i = 0;
-                    while (i < 50 && cont < ids.length) {
-                        stringBuilder.append(ids[cont] + ";");
-                        i++;
-                        cont++;
-                    }
-
-                    // busca o pacote de fotos
-                    con = new HttpConnection(urlApplication + "/restful-services/photo/request?ids="
-                            + stringBuilder + "&type=PEDESTRES&resize=true&imageSize="
-                            + imageSize);
-                    responseCode = con.getResponseCode();
-                    if (responseCode == 200) {
-                        BufferedReader bufferedReader = con.getResponseReader();
-                        Type type = new TypeToken<List<PedestrianAccessTO>>() {
-                        }.getType();
-
-                        List<PedestrianAccessTO> athleteAccessTOList = gson.fromJson(bufferedReader, type);
-                        if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
-                            for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
-                                if (loggedUser == null) {
-                                    break;
-                                }
-
-                                PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateUtil
-                                        .getSingleResultById(PedestrianAccessEntity.class, athleteAccessTO.getId());
-                                if (existentAthleteAccess != null) {
-                                    existentAthleteAccess.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
-                                    HibernateUtil.update(PedestrianAccessEntity.class, existentAthleteAccess);
-                                }
+                            if (existentAthleteAccess != null) {
+                                existentAthleteAccess.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
+                                HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
                             }
                         }
                     }
-                }
+                });
             }
         };
         worker.execute();
@@ -2165,7 +2146,7 @@ public class Main {
 
                     System.out.println(sdf.format(new Date()) + "  BACKUP: dados enviados!");
                     Main.loggedUser.setBackupChanged(false);
-                    Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
+                    Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
 
                 } catch (ConnectException e) {
                     System.err.println("Nï¿½o foi possï¿½vel comunicar com o servidor.");
@@ -2216,7 +2197,7 @@ public class Main {
                 if (loggedUser != null) {
                     lastSyncLog = newLastSyncLog.getTime();
                     loggedUser.setLastSyncLog(new Date(lastSyncLog));
-                    Main.loggedUser = (UserEntity) HibernateUtil.updateUser(UserEntity.class, loggedUser)[0];
+                    Main.loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
                 System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: dados enviados!");
 
@@ -2263,7 +2244,7 @@ public class Main {
         args.put("CURRENT_DATE_INICIO", sdf2.parse(inicio));
         args.put("CURRENT_DATE_FIM", sdf2.parse(fim));
 
-        List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateUtil.
+        List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateAccessDataFacade.
                 getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCurrentDate", args);
 
         JsonArray responseArray = new JsonArray();
@@ -2308,7 +2289,7 @@ public class Main {
             Object[] options = {"OK"};
             JOptionPane.showOptionDialog(null, "Nï¿½o ï¿½ possï¿½vel adicionar ï¿½cones na bandeja do sistema.", "Bandeja do sistema nï¿½o suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            HibernateUtil.shutdown();
+            HibernateAccessDataFacade.shutdown();
             System.exit(0);
         }
 
@@ -2363,7 +2344,7 @@ public class Main {
             Object[] options = {"OK"};
             JOptionPane.showOptionDialog(mainScreen, "Nï¿½o foi possï¿½vel adicionar ï¿½cones na bandeja do sistema.", "Bandeja do sistema nï¿½o suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            HibernateUtil.shutdown();
+            HibernateAccessDataFacade.shutdown();
             System.exit(0);
         }
 
@@ -2866,7 +2847,7 @@ public class Main {
         args.put("ID_PEDESTRE", idVisitante);
 
         List<LogPedestrianAccessEntity> acessosVisitantesLocais = (List<LogPedestrianAccessEntity>)
-                HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class,
+        		HibernateAccessDataFacade.getResultListWithParams(LogPedestrianAccessEntity.class,
                         "LogPedestrianAccessEntity.findAllByPedestre", args);
 
         if (acessosVisitantesLocais != null
@@ -2877,7 +2858,7 @@ public class Main {
             System.out.println("Visitante com log de acesso Indefinido. Aguarda para pesquisar mais dados.");
             Utils.sleep(2000);
             acessosVisitantesLocais = (List<LogPedestrianAccessEntity>)
-                    HibernateUtil.getResultListWithParams(LogPedestrianAccessEntity.class,
+            		HibernateAccessDataFacade.getResultListWithParams(LogPedestrianAccessEntity.class,
                             "LogPedestrianAccessEntity.findAllByPedestre", args);
         }
 
@@ -3052,6 +3033,10 @@ public class Main {
 
         if (LuxandService.getInstance().serviceInitialized)
             LuxandService.getInstance().FinalizeSDK();
+    }
+    
+    public static boolean temServidor() {
+    	return Objects.nonNull(servidor);
     }
 
 }

@@ -49,10 +49,11 @@ import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.HttpRequestParser;
 import com.protreino.services.utils.Utils;
 
@@ -297,11 +298,11 @@ public class ControlIdDevice extends Device {
 			                    	byte[] data = new byte[]{};
 			                    	try {
 				                    	String idUsuario = caminho.substring(caminho.indexOf("user_id=") + 8);
-				                    	PedestrianAccessEntity acesso = (PedestrianAccessEntity) HibernateUtil
+				                    	PedestrianAccessEntity acesso = (PedestrianAccessEntity) HibernateAccessDataFacade
 			            						.getSingleResultById(PedestrianAccessEntity.class, Long.valueOf(idUsuario));
 				                    	if (acesso == null) {
 				                    		// procura pelo cartao de acesso
-				                    		acesso = (PedestrianAccessEntity) HibernateUtil
+				                    		acesso = (PedestrianAccessEntity) HibernateAccessDataFacade
 				            						.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(idUsuario));
 				                    	}
 				                    	data = acesso.getFoto();
@@ -428,7 +429,7 @@ public class ControlIdDevice extends Device {
 		
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", "Control " + notificacao.device_id);
-		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateUtil
+		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 										.getUniqueResultWithParams(LogPedestrianAccessEntity.class,
 										"LogPedestrianAccessEntity.findByEquipamentDesc", args);
 		if(ultimo == null)
@@ -448,9 +449,9 @@ public class ControlIdDevice extends Device {
 		ultimo.setStatus("ATIVO");
 		ultimo.setBloquearSaida(bloquearSaida);
 		
-		HibernateUtil.save(LogPedestrianAccessEntity.class, ultimo);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimo);
 		
-		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 							.getSingleResultById(PedestrianAccessEntity.class, ultimo.getIdPedestrian());
 		
 		if(pedestre == null)
@@ -466,7 +467,7 @@ public class ControlIdDevice extends Device {
 				pedestre.decrementaCreditos();
 			}
 			
-			HibernateUtil.save(PedestrianAccessEntity.class, pedestre);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 	
 			if(Tipo.ENTRADA.equals(direction)) {
 				enviaSmsDeRegistroUseCase.execute(pedestre);
@@ -543,7 +544,7 @@ public class ControlIdDevice extends Device {
 		String entrar = Utils.getPreference("messageEntryAllowed");
 		String sair = Utils.getPreference("messageExitAllowed");
 		
-		long quantidadeAcessos = HibernateUtil.countAcessosPedestre(matchedAthleteAccess.getId());
+		long quantidadeAcessos = HibernateAccessDataFacade.countAcessosPedestre(matchedAthleteAccess.getId());
 		
 		if(quantidadeAcessos == 0) {
 			ladoLiberarCatraca = CLOCKWISE.equals(_sentidoEntrada) ? CLOCKWISE : ANTICLOCKWISE;
@@ -643,7 +644,8 @@ public class ControlIdDevice extends Device {
 	@Override
 	public void processAccessRequest(Object obj) {
 		try {
-			Object[] retorno = HibernateUtil.processAccessRequest((String) obj, "Control " + serverId, 
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
+			Object[] retorno = processAccessRequestUseCase.processAccessRequest((String) obj, "Control " + serverId, 
 								null, location, false, true, getConfigurationValueAsBoolean("Ignorar regras de acesso"));
 			
 			verificationResult = (VerificationResult) retorno[0];
@@ -759,7 +761,7 @@ public class ControlIdDevice extends Device {
 		System.out.println("\n" + sdf.format(new Date()) + "  ... Enviando fotos para a catraca...");
     	
 		// procura na base local por usuarios com foto
-		List<PedestrianAccessEntity> listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil
+		List<PedestrianAccessEntity> listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
 				.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhoto");
 		if (listaAcesso != null && !listaAcesso.isEmpty()) {
 			System.out.println("\n" + sdf.format(new Date()) + "  ... Total de fotos para enviar: " + listaAcesso.size());

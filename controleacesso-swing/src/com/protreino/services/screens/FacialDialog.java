@@ -36,7 +36,7 @@ import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 
 @SuppressWarnings("serial")
 public class FacialDialog extends JDialog {
@@ -205,7 +205,7 @@ public class FacialDialog extends JDialog {
 		Object[] options = {"OK"};
 	    JOptionPane.showOptionDialog(instance, "Coleta facial cancelada. " + mensagem, "Coleta cancelada",
 	                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-	    HibernateUtil.apagarPastaDeFotos(acesso.getId());
+	    HibernateAccessDataFacade.apagarPastaDeFotos(acesso.getId());
 	    dispose();
 	}
 	
@@ -215,7 +215,7 @@ public class FacialDialog extends JDialog {
 	
 	public void finishCollect(String mensagem) {
 		try {
-			HibernateUtil.save(PedestrianAccessEntity.class, acesso);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, acesso);
 			
 			JOptionPane.showMessageDialog(this, mensagem != null ? mensagem : "Coleta facial realizada com sucesso!", "Coleta concluída", JOptionPane.PLAIN_MESSAGE);
 			dispose();

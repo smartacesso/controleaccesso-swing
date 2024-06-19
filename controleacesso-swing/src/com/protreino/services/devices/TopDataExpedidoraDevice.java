@@ -19,10 +19,10 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.StatusCard;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
@@ -212,7 +212,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				matched.setStatus(StatusCard.AGUARDANDO);
 			}
 
-			HibernateUtil.save(CartaoComandaEntity.class, matched);
+			HibernateAccessDataFacade.save(CartaoComandaEntity.class, matched);
 
 			// cria log de liberação (sem sincronizaÃ§Ã£o com web)
 			LogCartaoComandaEntity log = new LogCartaoComandaEntity(matched);
@@ -220,7 +220,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			log.setTipoLiberacao(this.tipo + "_" + matched.getStatus().name());
 			log.setOrigem("CATRACA");
 			log.setData(new Date());
-			HibernateUtil.save(LogCartaoComandaEntity.class, log);
+			HibernateAccessDataFacade.save(LogCartaoComandaEntity.class, log);
 
 			matched = null;
 			allowedUserName = null;
@@ -246,7 +246,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 		HashMap<String, Object> args = new HashMap<>();
 		args.put("numeroReal", cartao);
 		args.put("removido", false);
-		List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateUtil
+		List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateAccessDataFacade
 				.getResultListWithDynamicParams(CartaoComandaEntity.class, null, args);
 
 		if (cartoes != null && !cartoes.isEmpty()) {

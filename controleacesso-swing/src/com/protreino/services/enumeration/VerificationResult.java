@@ -1,6 +1,5 @@
 package com.protreino.services.enumeration;
 
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 public enum VerificationResult {
@@ -20,16 +19,10 @@ public enum VerificationResult {
 	NOT_ALLOWED_BOX;
 	
 	public String getMessage() {
-		if(this.equals(ALLOWED)){
-			if (HibernateUtil.isAniversariante())
-				return "PARABENS!";
+		if(this.equals(ALLOWED))
 			return Utils.getPreference("messageAllowed");
-		}
-		if(this.equals(AUTHORIZED)) {
-			if (HibernateUtil.isAniversariante())
-				return "PARABENS!";
+		if(this.equals(AUTHORIZED))
 			return Utils.getPreference("messageAccessAuthorized");
-		}
 		if(this.equals(NOT_ALLOWED))
 			return Utils.getPreference("messageNotAllowed");
 		if(this.equals(NOT_FOUND))
@@ -40,11 +33,8 @@ public enum VerificationResult {
 			return Utils.getPreference("messageNotAllowedToday");
 		if(this.equals(NOT_ALLOWED_NOW))
 			return Utils.getPreference("messageNotAllowedNow");
-		if(this.equals(TOLERANCE_PERIOD)){
-			if (HibernateUtil.isAniversariante())
-				return "PARABENS!";
+		if(this.equals(TOLERANCE_PERIOD))
 			return Utils.getPreference("messageTolerancePeriod");
-		}
 		if(this.equals(ALLOWED_ONLY_ONCE))
 			return Utils.getPreference("messageAllowedOnlyOnce");
 		if(this.equals(NOT_ALLOWED_ORIGEM))

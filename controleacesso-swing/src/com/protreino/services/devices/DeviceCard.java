@@ -51,6 +51,7 @@ import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.screens.AttachedDevicesPanel;
 import com.protreino.services.screens.AutenticationDialog;
 import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
@@ -63,7 +64,6 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.FieldTO.ComboBoxListener;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
@@ -495,7 +495,7 @@ public class DeviceCard extends JPanel {
 		
 		} else {
 			Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
-			HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			if (Main.broadcastServer != null)
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
     		device.setVerificationResult(VerificationResult.ALLOWED);

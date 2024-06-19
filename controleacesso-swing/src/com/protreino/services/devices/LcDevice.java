@@ -10,6 +10,7 @@ import javax.swing.SwingWorker;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.protreino.services.client.SmartAcessoClient;
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.entity.Aso15DefJNA;
 import com.protreino.services.entity.DeviceEntity;
@@ -18,15 +19,15 @@ import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.FieldType;
-import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.Utils;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -35,6 +36,7 @@ import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 
+@SuppressWarnings("serial")
 public class LcDevice extends Device {
 	
 	private int amostrasColetadas = 0;
@@ -209,6 +211,7 @@ public class LcDevice extends Device {
 	
 	@Override
 	public void processAccessRequest(Object obj) {
+		final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 		
 		Memory memorySpace = new Memory(Aso15DefJNA.SFEP_UFPDATA_SIZE);
 		memorySpace.clear();
@@ -225,11 +228,12 @@ public class LcDevice extends Device {
 		
 		if(resp == Aso15DefJNA.RES_OK && idUser != null) {
 			Integer id = idUser.getValue();
-			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 							.getSingleResultById(PedestrianAccessEntity.class, Long.valueOf(id));
 			
 			if (pedestre != null) {
-				Object[] retorno = HibernateUtil.processAccessRequest(pedestre.getId().toString(), location, createNotification, getConfigurationValueAsBoolean("Ignorar regras de acesso"));
+				Object[] retorno = processAccessRequestUseCase.processAccessRequest(pedestre.getId().toString(), location, 
+						createNotification, getConfigurationValueAsBoolean("Ignorar regras de acesso"));
 				
 				this.verificationResult = (VerificationResult) retorno[0];
 				this.allowedUserName = (String) retorno[1];
@@ -237,14 +241,16 @@ public class LcDevice extends Device {
 				
 			} else {
 				this.verificationResult = VerificationResult.NOT_FOUND;
-				if (createNotification)
+				if (createNotification) {
 					Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
+				}
 			}
 		
 		} else {
 			this.verificationResult = VerificationResult.NOT_FOUND;
-			if (createNotification)
+			if (createNotification) {
 				Utils.createNotification("Digital N„o encontrada.", NotificationType.BAD);
+			}
 		}
 	}
 	
@@ -306,10 +312,11 @@ public class LcDevice extends Device {
 						extracTopDataTemplate(stRegTem, template1, template2);
 						
 						String tStr = Base64.encodeBase64String(template2);
-						String tStr1 = Base64.encodeBase64String(template1);
+						//String tStr1 = Base64.encodeBase64String(template1);
 						//verificar se segunda est√° vazia
-						if(tStr.startsWith("AAAQAAAAAAAAAAA") )
+						if(tStr.startsWith("AAAQAAAAAAAAAAA") ) {
 							template2 = null;
+						}
 						
 					
 						
@@ -455,10 +462,12 @@ public class LcDevice extends Device {
 			}
 		}
 		
-		HibernateUtil.removeTemplates(athleteAccessEntity.getId());
-		HibernateUtil.removeTemplatesFromServer(athleteAccessEntity.getId());
-		if (Main.broadcastServer != null)
+		HibernateAccessDataFacade.removeTemplates(athleteAccessEntity.getId());
+		SmartAcessoClient.removeTemplatesFromServer(athleteAccessEntity.getId());
+		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REMOVE_TEMPLATES, athleteAccessEntity.getId()));
+		}
+
 		return "";
 	}
 	

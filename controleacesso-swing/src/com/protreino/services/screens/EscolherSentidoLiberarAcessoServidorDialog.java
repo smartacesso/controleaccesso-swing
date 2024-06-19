@@ -13,7 +13,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 
 public class EscolherSentidoLiberarAcessoServidorDialog {
 
@@ -70,12 +70,12 @@ public class EscolherSentidoLiberarAcessoServidorDialog {
 	}
 
 	private void liberarEntradaAction() {
-		HibernateUtil.liberarAcessoNoServidor(identificador, Tipo.ENTRADA);
+		HibernateAccessDataFacade.liberarAcessoNoServidor(identificador, Tipo.ENTRADA);
 		janelaLiberarAcessoAberta = false;
 	}
 
 	private void liberarSaidaAction() {
-		HibernateUtil.liberarAcessoNoServidor(identificador, Tipo.SAIDA);
+		HibernateAccessDataFacade.liberarAcessoNoServidor(identificador, Tipo.SAIDA);
 		janelaLiberarAcessoAberta = false;
 	}
 

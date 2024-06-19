@@ -28,8 +28,7 @@ import javax.swing.text.MaskFormatter;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.main.Main;
-import com.protreino.services.to.DeviceTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -146,10 +145,10 @@ public class AvailableDevicesPanel extends JPanel {
 		Vector<SelectItem> equipamentosDisponiveisItens = new Vector<SelectItem>();
 		equipamentosDisponiveisItens.add(new SelectItem("Selecione", null));
 		
-		List<DeviceEntity> devices = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+		List<DeviceEntity> devices = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
 		List<DeviceEntity> devicesServidor = null;
 		if(Main.servidor != null) {
-			devicesServidor = (List<DeviceEntity>) HibernateUtil.buscaListaDevicesDoServidor(DeviceEntity.class, "DeviceEntity.findAll");
+			devicesServidor = (List<DeviceEntity>) HibernateAccessDataFacade.buscaListaDevicesDoServidor(DeviceEntity.class, "DeviceEntity.findAll");
 		}
 		
 		

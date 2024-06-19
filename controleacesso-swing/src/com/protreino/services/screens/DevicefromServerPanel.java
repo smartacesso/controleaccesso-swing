@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -30,18 +28,16 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.main.Main;
-import com.protreino.services.screens.AccessListPanel.ActionRenderer;
-import com.protreino.services.screens.UrlRenderer;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.DeviceTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
+@SuppressWarnings("serial")
 public class DevicefromServerPanel extends JPanel {
 
 	private List<DeviceTO> devices;
-	private String[] columns = { "Nome", "Identificador", "Fabricante", "Conectado", "liberar Acesso" };
+	private String[] columns = { "Nome", "Identificador", "Fabricante", "Conectado", "Liberar Acesso" };
 	private Integer[] columnWidths = { 270, 60, 60, 50, 120 };
 	private JTable devicesListTable;
 	private JButton syncButton;
@@ -96,7 +92,7 @@ public class DevicefromServerPanel extends JPanel {
 		syncButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Main.syncAthleteAccessList();
-				devices = HibernateUtil.getListDeviceFromServer();
+				devices = HibernateAccessDataFacade.getListDeviceFromServer();
 				if (devices != null) {
 					populateTable(devices);
 				}

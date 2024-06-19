@@ -41,7 +41,7 @@ import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
 
@@ -179,7 +179,7 @@ public class LoginDialog extends JDialog {
 												null,qtdDigitos, unidadeTextField.getText(),
 												chaveIntegracaoComtele, expedidora, habilitaPedestre, perfilAcesso);
 										Main.loggedUser.setUseBiometry(true);
-										Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
+										Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
 										Main.lastSync = 0l;
 										Main.devicesList = new ArrayList<Device>();
 										Main.releaseTicketGateMenuItem.setEnabled(true);
@@ -202,7 +202,7 @@ public class LoginDialog extends JDialog {
 											Main.loggedUser.setBackupPreferences(backupPreferences);
 											Main.loggedUser.setBackupDevices(backupDevices);
 											Main.loggedUser.setBackupChanged(false);
-											Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
+											Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
 											Utils.importPreferences();
 											Utils.importDevices();
 										}

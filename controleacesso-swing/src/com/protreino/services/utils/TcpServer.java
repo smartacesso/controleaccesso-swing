@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.io.StreamCorruptedException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -41,12 +40,15 @@ import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.InternalLoginResponse;
 import com.protreino.services.to.SimpleDevice;
 import com.protreino.services.to.SimpleUser;
 import com.protreino.services.to.TcpMessageTO;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 
 public class TcpServer {
 
@@ -133,14 +135,7 @@ public class TcpServer {
 						TcpMessageTO responseTcpMessage = new TcpMessageTO();
 						responseTcpMessage.setParans(new HashMap<String, Object>());
 
-						if (TcpMessageType.PROCESS_ACCESS_REQUEST.equals(receivedTcpMessage.getType())) {
-							Object[] object = processAccessRequest(receivedTcpMessage);
-							responseTcpMessage.getParans().put("object", object);
-						} else if (TcpMessageType.PROCESS_ACCESS_REQUEST_2.equals(receivedTcpMessage.getType())) {
-							Object[] object = processAccessRequest2(receivedTcpMessage);
-							responseTcpMessage.getParans().put("object", object);
-
-						} else if (TcpMessageType.GET_RESULT_LIST.equals(receivedTcpMessage.getType())) {
+						if (TcpMessageType.GET_RESULT_LIST.equals(receivedTcpMessage.getType())) {
 							List<?> list = getResultList(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
 
@@ -214,14 +209,6 @@ public class TcpServer {
 						} else if (TcpMessageType.REMOVE_TEMPLATES.equals(receivedTcpMessage.getType())) {
 							removeTemplates(receivedTcpMessage);
 
-						} else if (TcpMessageType.IS_ANIVERSARIANTE.equals(receivedTcpMessage.getType())) {
-							Boolean isAniversariante = HibernateUtil.isAniversariante();
-							responseTcpMessage.getParans().put("isAniversariante", isAniversariante);
-
-						} else if (TcpMessageType.GET_MATCHED_ATHLETE_ACCESS.equals(receivedTcpMessage.getType())) {
-							PedestrianAccessEntity pedestre = HibernateUtil.getMatchedAthleteAccess();
-							responseTcpMessage.getParans().put("pedestre", pedestre);
-
 						} else if (TcpMessageType.BUSCA_USUARIO_PELO_LOGIN.equals(receivedTcpMessage.getType())) {
 							UserEntity user = buscaUsuarioPeloLogin(receivedTcpMessage);
 							responseTcpMessage.getParans().put("user", user);
@@ -275,7 +262,7 @@ public class TcpServer {
 
 						} else if (TcpMessageType.RESET_STATUS_ALL_CARDS.equals(receivedTcpMessage.getType())) {
 							responseTcpMessage.setType(TcpMessageType.RESET_STATUS_ALL_CARDS);
-							HibernateUtil.resetStatusAllCards();
+							HibernateLocalAccessData.resetStatusAllCards();
 
 						} else if (TcpMessageType.GET_ALL_PEDESTRIAN_BY_ID.equals(receivedTcpMessage.getType())) {
 							Object object = getAllPedestrianById(receivedTcpMessage);
@@ -346,7 +333,7 @@ public class TcpServer {
 					"LIBERADO DO CLIENTE PARA O SERVIDOR", device.getLocation(), "LIBERADO PELO SISTEMA");
 			logAccess.setDirection(sentido);
 			Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
-			HibernateUtil.save(LogPedestrianAccessEntity.class, logAccess);
+			HibernateLocalAccessData.save(LogPedestrianAccessEntity.class, logAccess);
 			
 			if (Main.broadcastServer != null) {
 				Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
@@ -370,25 +357,12 @@ public class TcpServer {
 			return devices;
 		}
 		
-		private List<?> getDevicesGromServer() {
-			List<Device> devices = new ArrayList<>();
-			if (Main.devicesList != null && !Main.devicesList.isEmpty()) {
-				for (Device device : Main.devicesList) {
-					if (device instanceof TopDataDevice) {
-						devices.add(device);
-					}
-				}
-
-			}
-			return devices;
-		} 
-
 		private Object getSingleResultByCPF(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
 			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
 			Class<?> entityClass = Class.forName(classe);
 			String cpf = (String) receivedTcpMessage.getParans().get("cpf");
 
-			return HibernateUtil.getSingleResultByCPF(entityClass, cpf);
+			return HibernateLocalAccessData.getSingleResultByCPF(entityClass, cpf);
 		}
 
 		private Object getSingleResultByRG(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -396,19 +370,19 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 			String rg = (String) receivedTcpMessage.getParans().get("rg");
 
-			return HibernateUtil.getSingleResultByRG(entityClass, rg);
+			return HibernateLocalAccessData.getSingleResultByRG(entityClass, rg);
 		}
 
 		private void registraExclusaoFotosPedestre(TcpMessageTO receivedTcpMessage) {
 			Long idUsuario = (Long) receivedTcpMessage.getParans().get("idUsuario");
 
-			HibernateUtil.registraExclusaoFotosPedestre(idUsuario);
+			HibernateLocalAccessData.registraExclusaoFotosPedestre(idUsuario);
 		}
 
 		private void registraNovasFotosPedestre(TcpMessageTO receivedTcpMessage) {
 			Long idUsuario = (Long) receivedTcpMessage.getParans().get("idUsuario");
 
-			HibernateUtil.registraNovasFotosPedestre(idUsuario);
+			HibernateLocalAccessData.registraNovasFotosPedestre(idUsuario);
 		}
 
 		private void salvarFotosNaMaquina(TcpMessageTO receivedTcpMessage) {
@@ -445,13 +419,13 @@ public class TcpServer {
 		private void apagarPastaDeFotos(TcpMessageTO receivedTcpMessage) {
 			Long idUser = (Long) receivedTcpMessage.getParans().get("idUser");
 
-			HibernateUtil.apagarPastaDeFotos(idUser);
+			HibernateLocalAccessData.apagarPastaDeFotos(idUser);
 		}
 
 		private Boolean isPastaDeFotosExistente(TcpMessageTO receivedTcpMessage) {
 			Integer idUser = (Integer) receivedTcpMessage.getParans().get("idUser");
 
-			return HibernateUtil.isPastaDeFotosExistente(idUser);
+			return HibernateLocalAccessData.isPastaDeFotosExistente(idUser);
 		}
 
 		private <T> Object getSingleResultByRegistration(TcpMessageTO receivedTcpMessage)
@@ -460,58 +434,26 @@ public class TcpServer {
 			Class<?> classeEntidade = Class.forName(classe);
 			Long cardNumber = (Long) receivedTcpMessage.getParans().get("cardNumber");
 
-			return HibernateUtil.getSingleResultByRegistration(classeEntidade, cardNumber);
-		}
-
-		private Object[] processAccessRequest(TcpMessageTO receivedTcpMessage) {
-			String codigo = (String) receivedTcpMessage.getParans().get("codigo");
-			String location = (String) receivedTcpMessage.getParans().get("location");
-			boolean ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
-			boolean createNotification = (boolean) receivedTcpMessage.getParans().get("createNotification");
-
-			return HibernateUtil.processAccessRequest(codigo, location, createNotification, ignoraRegras);
-		}
-
-		private Object[] processAccessRequest2(TcpMessageTO receivedTcpMessage) {
-			String codigo = (String) receivedTcpMessage.getParans().get("codigo");
-			String equipamento = (String) receivedTcpMessage.getParans().get("equipamento");
-			Integer origem = (Integer) receivedTcpMessage.getParans().get("origem");
-			String location = (String) receivedTcpMessage.getParans().get("location");
-			boolean usaUrna = (boolean) receivedTcpMessage.getParans().get("usaUrna");
-			boolean createNotification = (boolean) receivedTcpMessage.getParans().get("createNotification");
-			boolean ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
-			Date data = null;
-			try {
-				data = (Date) receivedTcpMessage.getParans().get("data");
-			} catch (Exception e) {
-			}
-			Boolean digitaisCatraca = Boolean.FALSE;
-			try {
-				digitaisCatraca = (Boolean) receivedTcpMessage.getParans().get("digitaisCatraca");
-			} catch (Exception e) {
-			}
-
-			return HibernateUtil.processAccessRequest(codigo, equipamento, origem, location, usaUrna,
-					createNotification, data, digitaisCatraca, ignoraRegras);
+			return HibernateLocalAccessData.getSingleResultByRegistration(classeEntidade, cardNumber);
 		}
 
 		private UserEntity buscaUsuarioPeloLogin(TcpMessageTO receivedTcpMessage) {
 			String loginName = (String) receivedTcpMessage.getParans().get("loginName");
 			String password = (String) receivedTcpMessage.getParans().get("password");
 
-			return HibernateUtil.buscaUsuarioPeloLogin(loginName, password);
+			return HibernateLocalAccessData.buscaUsuarioPeloLogin(loginName, password);
 		}
 
 		private void removeTemplates(TcpMessageTO receivedTcpMessage) {
 			Long idAthleteAccess = (Long) receivedTcpMessage.getParans().get("idAthleteAccess");
 
-			HibernateUtil.removeTemplates(idAthleteAccess);
+			HibernateAccessDataFacade.removeTemplates(idAthleteAccess);
 		}
 
 		private void remove(TcpMessageTO receivedTcpMessage) {
 			Object object = receivedTcpMessage.getParans().get("object");
 
-			HibernateUtil.remove(object);
+			HibernateLocalAccessData.remove(object);
 		}
 
 		private Object[] update(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -520,7 +462,7 @@ public class TcpServer {
 			Class<?> classeEntidade = Class.forName(classe);
 			ObjectWithId object = (ObjectWithId) receivedTcpMessage.getParans().get("object");
 
-			return HibernateUtil.update(classeEntidade, object);
+			return HibernateLocalAccessData.update(classeEntidade, object);
 		}
 
 		private Object[] save(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -528,7 +470,7 @@ public class TcpServer {
 			Class<?> classeEntidade = Class.forName(classe);
 			ObjectWithId object = (ObjectWithId) receivedTcpMessage.getParans().get("object");
 
-			return HibernateUtil.save(classeEntidade, object);
+			return HibernateLocalAccessData.save(classeEntidade, object);
 		}
 
 		private Object getSingleResultByCardNumber(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -536,7 +478,7 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 			Long cardNumber = (Long) receivedTcpMessage.getParans().get("cardNumber");
 
-			return HibernateUtil.getSingleResultByCardNumber(entityClass, cardNumber);
+			return HibernateLocalAccessData.getSingleResultByCardNumber(entityClass, cardNumber);
 		}
 
 		private Object getSingleResultById(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -544,19 +486,19 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 			Long id = (Long) receivedTcpMessage.getParans().get("id");
 
-			return HibernateUtil.getSingleResultById(entityClass, id);
+			return HibernateLocalAccessData.getSingleResultById(entityClass, id);
 		}
 
 		private Object getAllPedestrianById(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
 			Long id = (Long) receivedTcpMessage.getParans().get("id");
 
-			return HibernateUtil.getAllPedestresById(id);
+			return HibernateLocalAccessData.getAllPedestresById(id);
 		}
 
 		private Long countAcessosPedestre(TcpMessageTO receivedTcpMessage) {
 			Long idPedestre = (Long) receivedTcpMessage.getParans().get("idPedestre");
 
-			return HibernateUtil.countAcessosPedestre(idPedestre);
+			return HibernateLocalAccessData.countAcessosPedestre(idPedestre);
 		}
 
 		private Object getSingleResult(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -564,7 +506,7 @@ public class TcpServer {
 			Class<?> entityClass = Class.forName(classe);
 			String namedQuery = (String) receivedTcpMessage.getParans().get("namedQuery");
 
-			return HibernateUtil.getSingleResult(entityClass, namedQuery);
+			return HibernateLocalAccessData.getSingleResult(entityClass, namedQuery);
 		}
 
 		private List<?> getResultListWithDynamicParams(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -581,7 +523,7 @@ public class TcpServer {
 			Integer inicio = (Integer) receivedTcpMessage.getParans().get("inicio");
 			Integer quantidade = (Integer) receivedTcpMessage.getParans().get("quantidade");
 
-			return HibernateUtil.getResultListWithDynamicParams(entityClass, construtor, join, groupBy, orderColumn,
+			return HibernateLocalAccessData.getResultListWithDynamicParams(entityClass, construtor, join, groupBy, orderColumn,
 					args, inicio, quantidade);
 		}
 
@@ -596,7 +538,7 @@ public class TcpServer {
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
-			return HibernateUtil.getResultListWithDynamicParamsCount(entityClass, construtor, join, groupBy, args);
+			return HibernateLocalAccessData.getResultListWithDynamicParamsCount(entityClass, construtor, join, groupBy, args);
 		}
 
 		private Object getUniqueResultWithParams(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -607,7 +549,7 @@ public class TcpServer {
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
-			return HibernateUtil.getUniqueResultWithParams(entityClass, namedQuery, args);
+			return HibernateLocalAccessData.getUniqueResultWithParams(entityClass, namedQuery, args);
 		}
 
 		private List<?> getResultList(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -615,7 +557,7 @@ public class TcpServer {
 			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
 			Class<?> entityClass = Class.forName(classe);
 
-			return HibernateUtil.getResultList(entityClass, namedQuery);
+			return HibernateLocalAccessData.getResultList(entityClass, namedQuery);
 		}
 		
 		private List<?> getDevicesListServer(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -623,7 +565,7 @@ public class TcpServer {
 			String classe = (String) receivedTcpMessage.getParans().get("entityClass");
 			Class<?> entityClass = Class.forName(classe);
 
-			return HibernateUtil.buscaListaDevicesDoServidor(entityClass, namedQuery);
+			return HibernateLocalAccessData.buscaListaDevicesDoServidor(entityClass, namedQuery);
 		}
 	
 
@@ -635,7 +577,7 @@ public class TcpServer {
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
-			return HibernateUtil.getResultListCount(entityClass, namedQuery, args);
+			return HibernateLocalAccessData.getResultListCount(entityClass, namedQuery, args);
 		}
 
 		private List<?> getResultListLimited(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -644,7 +586,7 @@ public class TcpServer {
 			Long quantidade = (Long) receivedTcpMessage.getParans().get("quantidade");
 			Class<?> entityClass = Class.forName(classe);
 
-			return HibernateUtil.getResultListLimited(entityClass, namedQuery, quantidade);
+			return HibernateLocalAccessData.getResultListLimited(entityClass, namedQuery, quantidade);
 		}
 
 		private List<?> getResultListWithParams(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -658,7 +600,7 @@ public class TcpServer {
 			Integer inicio = (Integer) receivedTcpMessage.getParans().get("inicio");
 			Integer quantidade = (Integer) receivedTcpMessage.getParans().get("quantidade");
 
-			return HibernateUtil.getResultListWithParams(entityClass, namedQuery, args, inicio, quantidade);
+			return HibernateLocalAccessData.getResultListWithParams(entityClass, namedQuery, args, inicio, quantidade);
 		}
 
 		private Integer getResultListWithParamsCount(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {
@@ -669,7 +611,7 @@ public class TcpServer {
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
-			return HibernateUtil.getResultListWithParamsCount(entityClass, namedQuery, args);
+			return HibernateLocalAccessData.getResultListWithParamsCount(entityClass, namedQuery, args);
 		}
 
 		private InternalLoginResponse doInternalLogin(TcpMessageTO receivedTcpMessage) {
@@ -680,7 +622,7 @@ public class TcpServer {
 				String username = (String) receivedTcpMessage.getParans().get("username");
 				String password = (String) receivedTcpMessage.getParans().get("password");
 
-				UserEntity usuario = HibernateUtil.buscaUsuarioPeloLogin(username, password);
+				UserEntity usuario = HibernateLocalAccessData.buscaUsuarioPeloLogin(username, password);
 
 				if (usuario != null) {
 					response.setSuccess(true);
@@ -715,7 +657,7 @@ public class TcpServer {
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
-			return HibernateUtil.buscaLogsDeAcessoPaginados(namedQuery, args, inicio, quantidade);
+			return HibernateLocalAccessData.buscaLogsDeAcessoPaginados(namedQuery, args, inicio, quantidade);
 		}
 
 		private VerificationResult processAccessRequestFromApp(TcpMessageTO receivedTcpMessage) {
@@ -728,9 +670,7 @@ public class TcpServer {
 				ignoraRegras = (boolean) receivedTcpMessage.getParans().get("ignoraRegras");
 			} catch (Exception e) {
 			}
-			System.out.println("Recebido código: " + codigo);
-			System.out.println("Recebido catraca: " + deviceIdentifier);
-
+			
 			VerificationResult verificationResult = VerificationResult.NOT_FOUND;
 			Device device = null;
 
@@ -743,14 +683,14 @@ public class TcpServer {
 					}
 				}
 			}
+			
+			final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 
 			if (device != null && device.isConnected()) {
-
-				System.out.println("Libera na catraca: " + deviceIdentifier);
 				String idEquipamento = device instanceof TopDataDevice ? "Inner " + device.getIdentifier().split(";")[0]
 						: device.getIdentifier();
 
-				Object[] retorno = HibernateUtil.processAccessRequest(codigo, idEquipamento, FacialDevice.ORIGEM_FACIAL,
+				Object[] retorno = processAccessRequestUseCase.processAccessRequest(codigo, idEquipamento, FacialDevice.ORIGEM_FACIAL,
 						location, false, createNotification, ignoraRegras);
 				Utils.sleep(500);
 
@@ -759,20 +699,18 @@ public class TcpServer {
 				device.setAllowedUserName((String) retorno[1]);
 				device.setMatchedFacialId(((PedestrianAccessEntity) retorno[2]).getId());
 
-				System.out.println("Resultado na an�lise: " + verificationResult);
 				if (VerificationResult.ALLOWED.equals(verificationResult)
 						|| VerificationResult.TOLERANCE_PERIOD.equals(verificationResult)) {
 					device.allowAccess((PedestrianAccessEntity) retorno[2]);
 				} else if (!VerificationResult.NOT_FOUND.equals(verificationResult)) {
 					device.denyAccess();
 				}
+			
 			} else {
-				System.out.println("Libera sem catraca");
-				// se n�o tiver, realiza um processo de libera��o gen�rico
-				Object[] retorno = HibernateUtil.processAccessRequest(codigo, location, createNotification,
-						ignoraRegras);
-				if (retorno != null && retorno.length > 0)
+				Object[] retorno = processAccessRequestUseCase.processAccessRequest(codigo, location, createNotification, ignoraRegras);
+				if (retorno != null && retorno.length > 0) {
 					verificationResult = (VerificationResult) retorno[0];
+				}
 			}
 
 			return verificationResult;
@@ -900,8 +838,8 @@ public class TcpServer {
 			HashMap<String, Object> args = new HashMap<>();
 			args.put("numeroAlternativo", numero);
 			args.put("removido", false);
-			List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateUtil
-					.getResultListWithDynamicParams(CartaoComandaEntity.class, null, args);
+			List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateLocalAccessData
+					.getResultListWithDynamicParams(CartaoComandaEntity.class, null, null, null, null, args, null, null);
 
 			if (cartoes != null && !cartoes.isEmpty()) {
 				CartaoComandaEntity matched = null;
@@ -913,8 +851,9 @@ public class TcpServer {
 								break;
 							}
 						}
-					} else
+					} else {
 						matched = cartoes.get(0);
+					}
 				}
 				return matched;
 			}
@@ -925,14 +864,14 @@ public class TcpServer {
 		private void alteraStatusCartaoComanda(CartaoComandaEntity cartao, StatusCard status) {
 			cartao.setStatus(status);
 			cartao.setDataAlteracao(new Date());
-			HibernateUtil.update(CartaoComandaEntity.class, cartao);
+			HibernateLocalAccessData.update(CartaoComandaEntity.class, cartao);
 
 			LogCartaoComandaEntity log = new LogCartaoComandaEntity(cartao);
 			log.setUsuario(Main.internoLoggedUser);
 			log.setTipoLiberacao("AUTOMATICA_" + status.name());
 			log.setOrigem("API");
 			log.setData(new Date());
-			HibernateUtil.save(LogCartaoComandaEntity.class, log);
+			HibernateLocalAccessData.save(LogCartaoComandaEntity.class, log);
 
 		}
 

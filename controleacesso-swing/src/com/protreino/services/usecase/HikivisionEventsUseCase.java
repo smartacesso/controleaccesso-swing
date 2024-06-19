@@ -23,14 +23,16 @@ import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.hikivision.EventListnerTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.Utils;
 
 public class HikivisionEventsUseCase {
 
 	private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 
 	private static Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
 		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
@@ -57,6 +59,8 @@ public class HikivisionEventsUseCase {
 			return;
 		}
 		
+		System.out.println(String.format("Evento do usuario com o cartão %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
+
 		final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
 		if (Objects.isNull(attachedDevice)) {
@@ -73,7 +77,7 @@ public class HikivisionEventsUseCase {
 
 			if (DeviceStatus.CONNECTED == attachedDevice.getStatus()) {
 				try {
-					attachedDevice.disconnect(null);
+					attachedDevice.disconnect();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -87,13 +91,13 @@ public class HikivisionEventsUseCase {
 	}
 
 	private void salvaLogDePedestreOffline(final String cardNumber, final String equipamento, final OffsetDateTime dataAcesso) {
-		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateUtil
+		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
 		if (Objects.isNull(pedestre)) {
 			return;
 		}
 
-		LogPedestrianAccessEntity lastAccess = HibernateUtil.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
+		LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
 		String direcaoDeUltimoSentido = Tipo.ENTRADA;
 
 		if (Objects.nonNull(lastAccess)) {
@@ -105,7 +109,7 @@ public class HikivisionEventsUseCase {
 		LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
 				pedestre.getId(), true, "", "Offline", direcaoDeUltimoSentido, equipamento, cardNumber, new Date(dataAcesso.toInstant().toEpochMilli()));
 
-		HibernateUtil.save(LogPedestrianAccessEntity.class, logEventoOffline);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logEventoOffline);
 	}
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso) {

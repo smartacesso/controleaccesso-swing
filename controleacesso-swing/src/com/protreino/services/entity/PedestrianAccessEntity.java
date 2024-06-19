@@ -34,12 +34,11 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.utils.EncryptionUtils;
-import com.protreino.services.utils.HibernateUtil;
-import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 @Entity
@@ -717,7 +716,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		if(athleteAccessTO.getPedestreRegras() != null && !athleteAccessTO.getPedestreRegras().isEmpty()) {
 			this.pedestreRegra = new ArrayList<>();
 			for(PedestreRegraTO pr : athleteAccessTO.getPedestreRegras()) {
-				RegraEntity regra = (RegraEntity) HibernateUtil.getSingleResultById(RegraEntity.class, pr.getIdRegra());
+				RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, pr.getIdRegra());
 				pedestreRegra.add(new PedestreRegraEntity(this, pr, regra));
 			}
 		}
@@ -1061,7 +1060,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 				pedestreRegra = new ArrayList<PedestreRegraEntity>();
 				
 				for(PedestreRegraTO newPr : athleteAccessTO.getPedestreRegras()) {
-					RegraEntity regra = (RegraEntity) HibernateUtil.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
+					RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
 					pedestreRegra.add(new PedestreRegraEntity(this, newPr, regra));
 				}
 			
@@ -1082,7 +1081,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 					}
 					
 					if(!pRJaExiste) {
-						RegraEntity regra = (RegraEntity) HibernateUtil.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
+						RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
 						pedestreRegraAux.add(new PedestreRegraEntity(this, newPr, regra));
 					}
 				}
@@ -1233,6 +1232,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	public boolean isInativo() {
 		return "INATIVO".equals(status);
+	}
+	
+	public boolean isAtivo() {
+		return "ATIVO".equals(status);
 	}
 	
 	public boolean isRemovido() {

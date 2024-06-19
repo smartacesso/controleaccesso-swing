@@ -27,8 +27,8 @@ import org.hibernate.annotations.Type;
 import com.protreino.services.devices.Device;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.ConfigurationGroupTO;
-import com.protreino.services.utils.HibernateUtil;
 
 @SuppressWarnings("serial")
 @Entity
@@ -190,7 +190,7 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 	public void setConfigurationGroupsEntityFromTO(List<ConfigurationGroupTO> configurationGroupsTO) {
 		if (configurationGroups != null) {
 			for (ConfigurationGroupEntity configurationGroupEntity : configurationGroups) {
-				HibernateUtil.remove(configurationGroupEntity);
+				HibernateAccessDataFacade.remove(configurationGroupEntity);
 			}
 			configurationGroups.clear();
 		}

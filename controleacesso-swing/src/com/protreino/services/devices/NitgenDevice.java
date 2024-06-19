@@ -18,6 +18,7 @@ import com.nitgen.SDK.BSP.NBioBSPJNI.WINDOW_STYLE;
 import com.nitgen.SDK.BSP.NBioBSPJNI.EXPORT_MINCONV_TYPE;
 import com.nitgen.SDK.BSP.NBioBSPJNI.FIR;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.client.SmartAcessoClient;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.TemplateEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
@@ -28,10 +29,11 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -357,6 +359,7 @@ public class NitgenDevice extends Device {
 
 	@Override
 	public void processAccessRequest(Object obj) {
+		final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 		// Primeiro Ã© feito o processo de match para identificar o usuário.
 		// ApÃ³s a identificação Ã© verificado se o acesso Ã© permitido.
 		try {
@@ -389,10 +392,11 @@ public class NitgenDevice extends Device {
 				
 			} else {
 				Integer idTemplate = fpInfo.ID;
-				TemplateEntity template = (TemplateEntity) HibernateUtil.getSingleResultById(TemplateEntity.class, idTemplate.longValue());
+				TemplateEntity template = (TemplateEntity) HibernateAccessDataFacade.getSingleResultById(TemplateEntity.class, idTemplate.longValue());
 				
 				if (template != null && template.getPedestrianAccess() != null) {
-					Object[] retorno = HibernateUtil.processAccessRequest(template.getPedestrianAccess().getId().toString(), location, createNotification, false);
+					Object[] retorno = processAccessRequestUseCase.processAccessRequest(template.getPedestrianAccess().getId().toString(), 
+							location, createNotification, false);
 					this.verificationResult = (VerificationResult) retorno[0];
 					this.allowedUserName = (String) retorno[1];
 					this.matchedAthleteAccess = (PedestrianAccessEntity) retorno[2];
@@ -434,10 +438,12 @@ public class NitgenDevice extends Device {
 			}
 		}
 		
-		HibernateUtil.removeTemplates(athleteAccessEntity.getId());
-		HibernateUtil.removeTemplatesFromServer(athleteAccessEntity.getId());
-		if (Main.broadcastServer != null)
+		HibernateAccessDataFacade.removeTemplates(athleteAccessEntity.getId());
+		SmartAcessoClient.removeTemplatesFromServer(athleteAccessEntity.getId());
+		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REMOVE_TEMPLATES, athleteAccessEntity.getId()));
+		}
+		
 		return "";
 	}
 	
@@ -466,7 +472,8 @@ public class NitgenDevice extends Device {
 		indexSearchEngine = bsp.new IndexSearch();
 		indexSearchEngine.ClearDB();
 		
-        List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateUtil.getResultList(TemplateEntity.class, "TemplateEntity.findAllNaoRemovido");
+        List<TemplateEntity> templatesList = (List<TemplateEntity>) HibernateAccessDataFacade.getResultList(TemplateEntity.class, 
+        		"TemplateEntity.findAllNaoRemovido");
 		if (templatesList != null && !templatesList.isEmpty()) {
 			int count = 0;
 			System.out.println("tamanho do template list " + templatesList.size());

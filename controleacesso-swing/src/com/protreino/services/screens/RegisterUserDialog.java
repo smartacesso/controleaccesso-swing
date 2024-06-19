@@ -20,7 +20,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -41,8 +40,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -56,7 +53,7 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -346,7 +343,7 @@ public class RegisterUserDialog extends JDialog{
 		args.put("NOME_PARAM", nome);
 		args.put("ID_CLIENTE", Main.loggedUser.getIdClient());
 		
-		List<ParametroEntity> parametros = (List<ParametroEntity>) HibernateUtil
+		List<ParametroEntity> parametros = (List<ParametroEntity>) HibernateAccessDataFacade
 									.getResultListWithParams(ParametroEntity.class, "ParametroEntity.findByName", args);
 
 		if(parametros == null || parametros.isEmpty())
@@ -355,7 +352,6 @@ public class RegisterUserDialog extends JDialog{
 		return parametros.get(0).getValor();
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void filterList() {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -382,7 +378,7 @@ public class RegisterUserDialog extends JDialog{
 			}else {
 				paginaAtual = 1;
 				inicioPagina = 0;
-				totalRegistros =  HibernateUtil.
+				totalRegistros =  HibernateAccessDataFacade.
 						getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, join, groupBy, args);
 				
 				executeFilter();
@@ -470,7 +466,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		String groupBy = " group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
 		
-		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, join, groupBy, "name", args, inicioPagina, registrosPorPagina);
 		
 		verificarRegistradosNaCatraca();
@@ -526,14 +522,15 @@ public class RegisterUserDialog extends JDialog{
 		filtroIdTextField.setText("");
 		filtroNomeTextField.setText("");
 		
-		totalRegistros =  HibernateUtil.
+		totalRegistros =  HibernateAccessDataFacade.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToRegisterUserPedestre");
 		
 		//calcula páginas
 		calculaTamanhoPaginas();
 		
-		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
-				getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre", (long)registrosPorPagina);
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
+				getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre", 
+						(long)registrosPorPagina);
 		verificarRegistradosNaCatraca();
 		populateTable(listaAcesso);
 		
@@ -672,7 +669,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		PedestrianAccessEntity acessoSelecionado = pedestre != null 
 												? pedestre 
-												: (PedestrianAccessEntity) HibernateUtil
+												: (PedestrianAccessEntity) HibernateAccessDataFacade
 														.getSingleResultById(PedestrianAccessEntity.class, listaAcesso.get(index).getId());
 		
 		if(!Manufacturer.FACIAL.equals(device.getManufacturer())){
@@ -761,7 +758,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		PedestrianAccessEntity acessoSelecionado = pedestre != null 
 								? pedestre 
-								: (PedestrianAccessEntity) HibernateUtil
+								: (PedestrianAccessEntity) HibernateAccessDataFacade
 										.getSingleResultById(PedestrianAccessEntity.class, listaAcesso.get(index).getId());
 		
 		//verifica limite de digitais
@@ -881,11 +878,11 @@ public class RegisterUserDialog extends JDialog{
 							retorno = device.removeUser(acessoSelecionado);
 						if ("".equals(retorno)) {
 							alteradoComSucesso = true;
-							PedestrianAccessEntity athleteAccessEntity = (PedestrianAccessEntity) HibernateUtil
+							PedestrianAccessEntity athleteAccessEntity = (PedestrianAccessEntity) HibernateAccessDataFacade
 									.getSingleResultById(PedestrianAccessEntity.class, acessoSelecionado.getId());
 							athleteAccessEntity.setCadastradoNaCatraca("CADASTRO".equals(tipoOperacao) ? true : false);
 							athleteAccessEntity.setLuxandIdentifier(acessoSelecionado.getLuxandIdentifier());
-							HibernateUtil.update(PedestrianAccessEntity.class, athleteAccessEntity);
+							HibernateAccessDataFacade.update(PedestrianAccessEntity.class, athleteAccessEntity);
 						
 						} else {
 							mensagemErroRetorno = retorno;

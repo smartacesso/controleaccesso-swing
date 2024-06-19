@@ -1,5 +1,6 @@
 package com.protreino.services.screens;
 
+import com.protreino.services.client.SmartAcessoFotoServiceClient;
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
@@ -9,6 +10,7 @@ import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
@@ -338,7 +340,7 @@ public class RegisterVisitorDialog extends BaseDialog {
                 if (habilitaBuscaCPF && visitante.getId() == null && cpfTextField.getText() != null
                         && !"".equals(cpfTextField.getText())
                         && !"".equals(cpfTextField.getText().replace(".", "").replace("-", ""))) {
-                    PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateUtil
+                    PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateAccessDataFacade
                             .getSingleResultByCPF(PedestrianAccessEntity.class, cpfTextField.getText().replace(".", "").replace("-", "").trim());
 
                     if (existente != null && !"".equals(existente.getCpf())
@@ -399,7 +401,7 @@ public class RegisterVisitorDialog extends BaseDialog {
                 //pesquisa por pedestre ou visitante
                 if (habilitaBuscaRG && visitante.getId() == null && rgTextField.getText() != null
                         && !"".equals(rgTextField.getText())) {
-                    PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateUtil
+                    PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateAccessDataFacade
                             .getSingleResultByRG(PedestrianAccessEntity.class, rgTextField.getText().trim());
 
                     if (existente != null
@@ -1039,7 +1041,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     	
     	try {
     		hikivisionUseCases.syncronizarUsuarioInDevices(visitante);
-    		visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
+    		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 
     		criarDialogoPedestreAtualizadoNaHikivision();
 
@@ -1347,7 +1349,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             //verifica se j· existe um visitante novo
             if (visitante.getIdTemp() == null) {
                 PedestrianAccessEntity cadastrado = (PedestrianAccessEntity)
-                        HibernateUtil.getSingleResultByIdTemp(PedestrianAccessEntity.class, visitante.getId());
+                		HibernateAccessDataFacade.getSingleResultByIdTemp(PedestrianAccessEntity.class, visitante.getId());
                 if (cadastrado != null && cadastrado.getId() != null)
                     visitante = cadastrado;
             }
@@ -1455,7 +1457,7 @@ public class RegisterVisitorDialog extends BaseDialog {
              
         }
 
-        visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
+        visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
     private void preencheDadosVisitanteEditando() {
@@ -1818,7 +1820,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("MATRICULA", matricula);
         args.put("ID_PEDESTRE", idPedestre);
 
-        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByMatricula2", args);
 
         return pedestres != null && !pedestres.isEmpty();
@@ -1839,7 +1841,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("ID_PEDESTRE", idPedestre);
 //		fazer uma nova query verificando os removidos se acaso for removido
 //		verificar os campoos no confereCatracaOffline
-        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByCartaoAcesso", args);
 
         //	verificaCartaoAcessoRemovido(cartaoAcesso, idPedestre);
@@ -1850,7 +1852,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 
     @SuppressWarnings("unchecked")
-    private void verificaCartaoAcessoRemovido(String cartaoAcesso, Long idPedestre) {
+	private void verificaCartaoAcessoRemovido(String cartaoAcesso, Long idPedestre) {
         HashMap<String, Object> args = new HashMap<>();
 
         args.put("CARD_NUMBER", cartaoAcesso);
@@ -1858,7 +1860,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 //		verifica se o cart„o dos pedestres novos est√£o sendo vincualdos a pessas j· cadastradas
 //		se j·, o cart„o √© removido da pessoa exluida e j· atribuido ao novo
 
-        List<PedestrianAccessEntity> pedestrianExcluded = (List<PedestrianAccessEntity>) HibernateUtil
+        List<PedestrianAccessEntity> pedestrianExcluded = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByRemovedCardNumber", args);
         if (pedestrianExcluded.get(0).getCardNumber() != null) {
             pedestrianExcluded.get(0).setCardNumber("");
@@ -1872,7 +1874,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("RG", rg);
         args.put("ID_PEDESTRE", idPedestre);
 
-        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByRG", args);
 
         return pedestres != null && !pedestres.isEmpty();
@@ -1884,7 +1886,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("CPF", cpf);
         args.put("ID_PEDESTRE", idPedestre);
 
-        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateUtil
+        List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findByCPF", args);
 
         return pedestres != null && !pedestres.isEmpty();
@@ -1896,7 +1898,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("NOME_PARAM", nome);
         args.put("ID_CLIENTE", Main.loggedUser.getIdClient());
 
-        List<ParametroEntity> parametros = (List<ParametroEntity>) HibernateUtil
+        List<ParametroEntity> parametros = (List<ParametroEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(ParametroEntity.class, "ParametroEntity.findByName", args);
 
         if (parametros == null || parametros.isEmpty())
@@ -1930,7 +1932,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         regra.setIdClient(Main.loggedUser.getIdClient());
         regra.setCadastradoNoDesktop(true);
 
-        regra = (RegraEntity) HibernateUtil.save(RegraEntity.class, regra)[0];
+        regra = (RegraEntity) HibernateAccessDataFacade.save(RegraEntity.class, regra)[0];
 
         return regra;
     }
@@ -1941,7 +1943,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("NOME_REGRA", nomeRegra);
         args.put("CADASTRADO_NO_DESKTOP", false);
 
-        List<RegraEntity> regras = (List<RegraEntity>) HibernateUtil.getResultListWithParams(RegraEntity.class, "RegraEntity.findByNome", args);
+        List<RegraEntity> regras = (List<RegraEntity>) HibernateAccessDataFacade.getResultListWithParams(RegraEntity.class, "RegraEntity.findByNome", args);
 
         if (regras != null && !regras.isEmpty())
             return regras.get(0);
@@ -1950,7 +1952,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         args.put("NOME_REGRA", nomeRegra);
         args.put("CADASTRADO_NO_DESKTOP", true);
 
-        regras = (List<RegraEntity>) HibernateUtil.getResultListWithParams(RegraEntity.class, "RegraEntity.findByNome", args);
+        regras = (List<RegraEntity>) HibernateAccessDataFacade.getResultListWithParams(RegraEntity.class, "RegraEntity.findByNome", args);
 
         return regras.stream().findFirst().orElse(null);
     }
@@ -2025,6 +2027,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
             escolherFotoDialog.dispose();
         });
+        
+        JButton buscarFotoDaWebButton = new JButton("Buscar foto da web");
+        buscarFotoDaWebButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+        buscarFotoDaWebButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        buscarFotoDaWebButton.addActionListener(e -> {
+            buscarFotoNaWeb();
+        });
 
         JButton cancelarButton = new JButton("Cancelar");
         cancelarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
@@ -2038,6 +2047,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         escolherFotoPanel.add(escolherDoArquivoButton);
         escolherFotoPanel.add(Box.createVerticalStrut(10));
         escolherFotoPanel.add(deletarFotoButton);
+        escolherFotoPanel.add(Box.createVerticalStrut(10));
+        escolherFotoPanel.add(buscarFotoDaWebButton);
         escolherFotoPanel.add(Box.createVerticalStrut(20));
         escolherFotoPanel.add(cancelarButton);
 
@@ -2065,7 +2076,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
         	visitante.setDataCadastroFotoNaHikivision(new Date());
         	System.out.println("Visitante atualizado por server invalido");
-            visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
+            visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 
             criarDialogoServidorHikivisionNaoConectado();
             return;
@@ -2081,7 +2092,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			System.out.println(e.getMessage());
 		}
 
-        visitante = (PedestrianAccessEntity) HibernateUtil.save(PedestrianAccessEntity.class, visitante)[0];
+        visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
     private void criarDialogoServidorHikivisionNaoConectado() {
@@ -2095,6 +2106,23 @@ public class RegisterVisitorDialog extends BaseDialog {
     
     private void criarDialogoPedestreAtualizadoNaHikivision() {
     	new SimpleMessageDialog("Pedestre sincronizado", "Pedestre sincronizado nas c‚meras com sucesso!", "Ok");
+    }
+    
+    private void buscarFotoNaWeb() {
+        final boolean resize = Utils.getPreferenceAsBoolean("shouldMakeImageResize");
+        final Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
+        
+    	final SmartAcessoFotoServiceClient smartAcessoFotoServiceClient = new SmartAcessoFotoServiceClient();
+    	final byte[] fotoDoPedestre = smartAcessoFotoServiceClient.buscaFotoDoPedestre(visitante.getId(), resize, imageSize);
+    	
+    	if(Objects.nonNull(fotoDoPedestre)) {
+    		this.fotoVisitante = fotoDoPedestre;
+    		this.bufferedImage = Utils.createImageFromBytes(fotoDoPedestre);
+    		
+    		habilitaLabelImagemVisitante();
+    	} else {
+    		new SimpleMessageDialog("Foto n„o encontrada", "Foto n„o encontrada na web para esse pedestre.", "Ok");
+    	}
     }
 
     private void criarFileChooserEscolherFoto() {
@@ -2567,7 +2595,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     private byte[] createMiniImage(byte[] original) {
         try {
             BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(original));
-            int sizeImage = 96; // em px
+            int sizeImage = 128; // em px
             BufferedImage clipedImage = new BufferedImage(sizeImage, sizeImage, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g1 = clipedImage.createGraphics();
             g1.setClip(new RoundRectangle2D.Double(0, 0, sizeImage, sizeImage, 5, 5));
@@ -2616,7 +2644,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         HashMap<String, Object> args = new HashMap<>();
         args.put("ID_EMPRESA", idEmpresa);
 
-        cargos = (List<CargoEntity>) HibernateUtil.getResultListWithParams(CargoEntity.class, "CargoEntity.findAllByIdEmpresa", args);
+        cargos = (List<CargoEntity>) HibernateAccessDataFacade.getResultListWithParams(CargoEntity.class, "CargoEntity.findAllByIdEmpresa", args);
 
         if (cargos == null || cargos.isEmpty())
             return cargoItens;
@@ -2637,7 +2665,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         HashMap<String, Object> args = new HashMap<>();
         args.put("ID_EMPRESA", idEmpresa);
 
-        centroCustos = (List<CentroCustoEntity>) HibernateUtil
+        centroCustos = (List<CentroCustoEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(CentroCustoEntity.class, "CentroCustoEntity.findAllByIdEmpresa", args);
 
         if (centroCustos == null || centroCustos.isEmpty())
@@ -2659,7 +2687,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         HashMap<String, Object> args = new HashMap<>();
         args.put("ID_EMPRESA", idEmpresa);
 
-        departamentos = (List<DepartamentoEntity>) HibernateUtil
+        departamentos = (List<DepartamentoEntity>) HibernateAccessDataFacade
                 .getResultListWithParams(DepartamentoEntity.class, "DepartamentoEntity.findAllByIdEmpresa", args);
 
         if (departamentos == null || departamentos.isEmpty())
@@ -2678,7 +2706,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         empresaItens.add(new SelectItem("Selecione", null));
         List<EmpresaEntity> empresas = null;
 
-        empresas = (List<EmpresaEntity>) HibernateUtil.getResultList(EmpresaEntity.class,
+        empresas = (List<EmpresaEntity>) HibernateAccessDataFacade.getResultList(EmpresaEntity.class,
                 "EmpresaEntity.findAllActive");
 
         if (empresas == null || empresas.isEmpty())

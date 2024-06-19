@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
-import com.protreino.services.utils.HibernateUtil;
 
 public class HikivisionIntegrationErrorRepository {
 
@@ -27,22 +26,22 @@ public class HikivisionIntegrationErrorRepository {
 			remove(existentError.get());
 		}
 		
-		HibernateUtil.save(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
+		HibernateAccessDataFacade.save(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
 	}
 	
 	public void update(final HikivisionIntegrationErrorEntity hikivisonIntegrationError) {
-		HibernateUtil.update(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
+		HibernateAccessDataFacade.update(HikivisionIntegrationErrorEntity.class, hikivisonIntegrationError);
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<HikivisionIntegrationErrorEntity> findLatest(Integer limit) {
-		return (List<HikivisionIntegrationErrorEntity>) HibernateUtil.getResultListWithParams(HikivisionIntegrationErrorEntity.class,
+		return (List<HikivisionIntegrationErrorEntity>) HibernateAccessDataFacade.getResultListWithParams(HikivisionIntegrationErrorEntity.class,
 				"HikivisionIntegrationErrorEntity.findByLatest", null, 0, limit);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<HikivisionIntegrationErrorEntity> findFirts(final Integer limit) {
-		return (List<HikivisionIntegrationErrorEntity>) HibernateUtil.getResultListWithParams(HikivisionIntegrationErrorEntity.class,
+		return (List<HikivisionIntegrationErrorEntity>) HibernateAccessDataFacade.getResultListWithParams(HikivisionIntegrationErrorEntity.class,
 				"HikivisionIntegrationErrorEntity.findAll", null, 0, limit);
 	}
 	
@@ -51,7 +50,7 @@ public class HikivisionIntegrationErrorRepository {
 		final HashMap<String, Object> args = new HashMap<>();
 		args.put("MAX_RETRIES", maxRetries);
 		
-		return (List<HikivisionIntegrationErrorEntity>) HibernateUtil
+		return (List<HikivisionIntegrationErrorEntity>) HibernateAccessDataFacade
 				.getResultListWithParams(HikivisionIntegrationErrorEntity.class, 
 						"HikivisionIntegrationErrorEntity.findAllWhereRetriesAreLessThan", args, 0, limit);
 	}
@@ -62,14 +61,14 @@ public class HikivisionIntegrationErrorRepository {
 		args.put("CARD_NUMBER", cardNumber);
 		args.put("DEVICE_ID", deviceId);
 		
-		final List<HikivisionIntegrationErrorEntity> result = (List<HikivisionIntegrationErrorEntity>) HibernateUtil
+		final List<HikivisionIntegrationErrorEntity> result = (List<HikivisionIntegrationErrorEntity>) HibernateAccessDataFacade
 				.getResultListWithParams(HikivisionIntegrationErrorEntity.class, "HikivisionIntegrationErrorEntity.findByCardNumberAndDeviceId", args, 0, 1);
 		
 		return Objects.nonNull(result) && !result.isEmpty() ? Optional.of(result.get(0)) : Optional.empty();
 	}
 	
 	public void remove(final HikivisionIntegrationErrorEntity hikivisonIntegrationError) {
-		HibernateUtil.remove(hikivisonIntegrationError);
+		HibernateAccessDataFacade.remove(hikivisonIntegrationError);
 	}
 
 }

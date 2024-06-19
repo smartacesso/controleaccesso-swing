@@ -54,11 +54,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
-import javax.persistence.Query;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -73,7 +71,6 @@ import javax.swing.UIManager;
 import javax.swing.text.MaskFormatter;
 
 import org.apache.commons.codec.binary.Base64;
-import org.hibernate.Session;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -99,6 +96,7 @@ import com.protreino.services.enumeration.OperationalSystem;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.PreferenceTO;
@@ -220,7 +218,7 @@ public class Utils {
 		try {
 			HashMap<String, Object> args = new HashMap<String, Object>();
 			args.put("CHAVE", key);
-			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateUtil
+			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateAccessDataFacade
 					.getUniqueResultWithParams(PreferenceEntity.class, "PreferenceEntity.findByKey", args);
 			if (preferenceEntity != null) {
 				if (FieldType.IMAGE.equals(preferenceEntity.getFieldType())) {
@@ -279,7 +277,7 @@ public class Utils {
 		try {
 			HashMap<String, Object> args = new HashMap<String, Object>();
 			args.put("CHAVE", key);
-			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateUtil
+			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateAccessDataFacade
 					.getUniqueResultWithParams(PreferenceEntity.class, "PreferenceEntity.findByKey", args);
 			if (preferenceEntity != null) {
 				if (FieldType.IMAGE.equals(preferenceEntity.getFieldType())) {
@@ -305,7 +303,7 @@ public class Utils {
 		try {
 			HashMap<String, Object> args = new HashMap<String, Object>();
 			args.put("CHAVE", key);
-			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateUtil
+			PreferenceEntity preferenceEntity = (PreferenceEntity) HibernateAccessDataFacade
 					.getUniqueResultWithParams(PreferenceEntity.class, "PreferenceEntity.findByKey", args);
 			boolean novo = preferenceEntity == null;
 			if (novo) {
@@ -328,10 +326,11 @@ public class Utils {
 			} else
 				preferenceEntity.setValue(value);
 
-			if (novo)
-				HibernateUtil.save(PreferenceEntity.class, preferenceEntity);
-			else
-				HibernateUtil.update(PreferenceEntity.class, preferenceEntity);
+			if (novo) {
+				HibernateAccessDataFacade.save(PreferenceEntity.class, preferenceEntity);
+			} else {
+				HibernateAccessDataFacade.update(PreferenceEntity.class, preferenceEntity);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -378,8 +377,10 @@ public class Utils {
 				"Dias para avisar sobre vencimento do pagamento", FieldType.TEXT, "0", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "importExportDevices",
 				"Importar/Exportar dispositivos do servidor", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "shouldMakeImageResize",
+				"Fazer resize da imagem ao buscar foto da web", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageSizeRequestServer",
-				"Tamanho das fotos recebidas do servidor (dimensão em px)", FieldType.TEXT, "48", true, 10));
+				"Tamanho das fotos recebidas do servidor (dimensão em px)", FieldType.TEXT, "600", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registerAccessWithoutConnectedDevices",
 				"Registrar acesso mesmo que não haja dispositivos conectados", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "pedestrianAlwaysOpen",
@@ -508,6 +509,8 @@ public class Utils {
 				"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)", FieldType.NUMERIC_LIST, "10", "0;10;60"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reconectDeviceOnReceiveCurrentEvent",
 				"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "deletePhotoFromInactivePedestrian",
+				"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {
@@ -612,10 +615,10 @@ public class Utils {
 				continue;
 			}
 			
-			HibernateUtil.save(DeviceEntity.class, deviceEntity);
+			HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity);
 		}
 
-		List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+		List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
 		if (lista != null && !lista.isEmpty()) {
 			for (DeviceEntity deviceEntity : lista) {
 				Main.devicesList.add(deviceEntity.recoverDevice());
@@ -683,7 +686,7 @@ public class Utils {
 		if (getPreferenceAsBoolean("importExportDevices")) {
 			JsonArray deviceArray = new JsonArray();
 
-			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateUtil.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
 			
 			List<DeviceEntity> listWithDistinctIdentifiers = getDistinctsIdentifier(lista);
 			
@@ -825,7 +828,7 @@ public class Utils {
 					System.out.println("FALHA AO ENVIAR BACKUP: Exception: " + e.getMessage());
 					Main.loggedUser.setBackupChanged(true);
 				} finally {
-					Main.loggedUser = (UserEntity) HibernateUtil.saveUser(UserEntity.class, Main.loggedUser)[0];
+					Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
 				}
 				return null;
 			}
@@ -1429,28 +1432,6 @@ public class Utils {
 		return allowed;
 	}
 
-	/**
-	 * CODIGO PARA LISTAR TODAS AS CONSTRAINTS DO BANCO DE DADOS
-	 */
-	@SuppressWarnings("unchecked")
-	public static void listarConstraints() {
-		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		Query nativeQuery = session.createNativeQuery(" SELECT "
-				+ "  'ALTER TABLE '||S.SCHEMANAME||'.'||T.TABLENAME||' DROP CONSTRAINT '||C.CONSTRAINTNAME||';'"
-				+ " FROM " + "  SYS.SYSCONSTRAINTS C, " + "  SYS.SYSSCHEMAS S," + "  SYS.SYSTABLES T" + " WHERE"
-				+ "  C.SCHEMAID = S.SCHEMAID" + " AND" + "  C.TABLEID = T.TABLEID" + " AND"
-				+ "  S.SCHEMANAME = 'SMARTACESSO'" + " UNION"
-				+ " SELECT 'DROP TABLE ' || schemaname ||'.' || tablename || ';'" + " FROM SYS.SYSTABLES"
-				+ " INNER JOIN SYS.SYSSCHEMAS ON SYS.SYSTABLES.SCHEMAID = SYS.SYSSCHEMAS.SCHEMAID"
-				+ " where schemaname='SMARTACESSO'");
-		List<String> queries = nativeQuery.getResultList();
-		for (String query : queries)
-			System.out.println(query);
-		session.getTransaction().commit();
-		session.close();
-	}
-
 	public static String getPublicKey() {
 		String publicKey = null;
 		try {
@@ -1627,6 +1608,15 @@ public class Utils {
 			}
 		}
 	}
+	
+	public static BufferedImage createImageFromBytes(byte[] imageData) {
+	    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+	    try {
+	        return ImageIO.read(bais);
+	    } catch (IOException e) {
+	        throw new RuntimeException(e);
+	    }
+	}
 
 	public static String toHEX(String Cartao) {
 		try {
@@ -1702,6 +1692,7 @@ public class Utils {
 		        }
 	}
 	
+	@SuppressWarnings("unused")
 	private static OffsetDateTime getOffsetDateTime() {
         // Data original no fuso +08:00
         String dataOriginal = "2023-12-01T13:54:57-05:00";

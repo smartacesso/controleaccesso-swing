@@ -57,20 +57,17 @@ import com.protreino.services.devices.DeviceCard;
 import com.protreino.services.devices.HikivisionDeviceCard;
 import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.ServerDevice;
-import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
-import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.main.Main;
-import com.protreino.services.to.DeviceTO;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
 import com.protreino.services.utils.WrapLayout;
-import com.protreino.services.usecase.HikivisionUseCases;
 
 @SuppressWarnings("serial")
 public class MainScreen extends JFrame {
@@ -333,7 +330,7 @@ public class MainScreen extends JFrame {
 			Main.devicesList.add(newDevice);
 			addDeviceCard(newDevice);
 			DeviceEntity deviceEntity = new DeviceEntity(newDevice);
-			deviceEntity = (DeviceEntity) HibernateUtil.save(DeviceEntity.class, deviceEntity)[0];
+			deviceEntity = (DeviceEntity) HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity)[0];
 			newDevice.setDeviceEntity(deviceEntity);
 			if (Main.devicesList.size() == 1) {
 				newDevice.setDefaultDevice(true);
@@ -373,7 +370,7 @@ public class MainScreen extends JFrame {
 		if(deviceCard.getDevice() instanceof LcDevice)
 			Main.possuiLeitorLcAdd = false;
 		
-		HibernateUtil.remove(deviceCard.getDevice().getDeviceEntity());
+		HibernateAccessDataFacade.remove(deviceCard.getDevice().getDeviceEntity());
 		if (deviceCard.getDevice().isDefaultDevice()) {
 			if (!Main.devicesList.isEmpty())
 				Main.devicesList.get(0).setDefaultDevice(true);

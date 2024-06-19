@@ -2,27 +2,20 @@ package com.protreino.services.screens;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -45,7 +38,7 @@ import javax.swing.table.TableColumn;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -233,9 +226,7 @@ public class AccessListPanel extends PaginedListPanel {
 		});
 		
 	}
-
 	
-	@SuppressWarnings("unchecked")
 	private void filterList() {
 		
 		args = new HashMap<>();
@@ -267,7 +258,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		totalRegistros =  HibernateUtil.
+		totalRegistros =  HibernateAccessDataFacade.
 				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
 		
 		executeFilter();
@@ -289,10 +280,10 @@ public class AccessListPanel extends PaginedListPanel {
 				  + "obj.idUsuario) ";
 //		fazer isso no hibernate utils
 		
-		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, "name", args, inicioPagina, registrosPorPagina);
 		if(usuarioDoSistema == null || usuarioDoSistema.isEmpty()) {
-			usuarioDoSistema = (List<UserEntity>) HibernateUtil.getResultList(UserEntity.class, "UserEntity.findAll");
+			usuarioDoSistema = (List<UserEntity>) HibernateAccessDataFacade.getResultList(UserEntity.class, "UserEntity.findAll");
 		}
 		for(PedestrianAccessEntity pedestre  : listaAcesso) {
 			if(pedestre.getIdUsuario() == null)
@@ -320,13 +311,13 @@ public class AccessListPanel extends PaginedListPanel {
 		filtroNomeTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
 		
-		totalRegistros =  HibernateUtil.
+		totalRegistros =  HibernateAccessDataFacade.
 				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
 		
 		//calcula páginas
 		calculaTamanhoPaginas();
 		
-		listaAcesso = (List<PedestrianAccessEntity>) HibernateUtil.
+		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListLimited(PedestrianAccessEntity.class, 
 						"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
 		
@@ -344,7 +335,7 @@ public class AccessListPanel extends PaginedListPanel {
 			}
 		};
 		if (listaAcesso != null && !listaAcesso.isEmpty()){
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+//			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (PedestrianAccessEntity acesso : listaAcesso) {
 				Object[] obj = new Object[8];
 				obj[0] = acesso.getId();
@@ -361,7 +352,7 @@ public class AccessListPanel extends PaginedListPanel {
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
 		//countLabel.setText("Total: " + numAcessos);
-		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("P�g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -479,9 +470,9 @@ public class AccessListPanel extends PaginedListPanel {
 		if (Main.lastSync != null && Main.lastSync > 0) {
 			Date date = new Date(Main.lastSync);
 			dateLastSync.setText("Atualizado: " + sdf.format(date));
-		}
-		else
+		} else {
 			dateLastSync.setText(" ");
+		}
 	}
 
 	
@@ -523,7 +514,6 @@ public class AccessListPanel extends PaginedListPanel {
 			super(colunasComLink);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			JTable table = (JTable) e.getComponent();
@@ -533,15 +523,16 @@ public class AccessListPanel extends PaginedListPanel {
 				int crow = table.rowAtPoint(pt);
 				String idVisitante = String.valueOf(table.getValueAt(crow, 0));
 
-				HashMap args = new HashMap<String, Object>();
+				HashMap<String, Object> args = new HashMap<>();
 				args.put("ID", Long.valueOf(idVisitante));
 
-				PedestrianAccessEntity visitante = (PedestrianAccessEntity) HibernateUtil.getUniqueResultWithParams(
+				PedestrianAccessEntity visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.getUniqueResultWithParams(
 						PedestrianAccessEntity.class, "PedestrianAccessEntity.findById", args);
-				if("VISITANTE".equals(visitante.getTipo()))
+				if("VISITANTE".equals(visitante.getTipo())) {
 					Main.mainScreen.abreCadastroVisitante(visitante);
-				else
+				} else {
 					Main.mainScreen.abreCadastroPedestre(visitante);
+				}
 				
 			}
 		}

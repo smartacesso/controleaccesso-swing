@@ -45,8 +45,6 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
-import com.protreino.services.utils.HibernateUtil;
-import com.protreino.services.utils.HikiVisionIntegrationService;
 import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
 
@@ -505,7 +503,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	
 	private Integer countPesdestresParaSincronizar(final Date inicio, final Date fim) {
 		if(Objects.isNull(inicio) && Objects.isNull(fim)) {
-			return HibernateUtil.
+			return HibernateAccessDataFacade.
 	                getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistred", null);
 		}
 		
@@ -513,7 +511,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
         args.put("INIT_DATE", inicio);
         args.put("END_DATE", fim);
 
-        return HibernateUtil.
+        return HibernateAccessDataFacade.
                 getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate", args);
 	}
 
@@ -524,11 +522,11 @@ public class SincronizacaoManualDialog extends BaseDialog {
 			args.put("INIT_DATE", inicio);
 			args.put("END_DATE", fim);
 
-			return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
+			return (List<PedestrianAccessEntity>) HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class,
 					"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate", args, offset, pageSize);
 		}
 
-		return (List<PedestrianAccessEntity>) HibernateUtil.getResultListWithParams(PedestrianAccessEntity.class,
+		return (List<PedestrianAccessEntity>) HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class,
 				"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred", null, offset, pageSize);
 	}
 
@@ -560,7 +558,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 
 			@Override
 			public Class<?> getColumnClass(int columnIndex) {
-				Class clazz = String.class;
+				Class<?> clazz = String.class;
 				switch (columnIndex) {
 				case CHECKBOX_COLUMN:
 					clazz = Boolean.class;

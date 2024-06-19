@@ -18,12 +18,12 @@ import com.protreino.services.enumeration.DeviceType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.screens.PedestrianScreen;
 import com.protreino.services.screens.BiometricDialog;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.utils.HibernateUtil;
 import com.protreino.services.utils.SelectItem;
 
 public abstract class Device implements IDevice {
@@ -94,6 +94,10 @@ public abstract class Device implements IDevice {
 	
 	public boolean isConnected() {
 		return DeviceStatus.CONNECTED.equals(status);
+	}
+	
+	public boolean isNotConnected() {
+		return DeviceStatus.DISCONNECTED.equals(status);
 	}
 	
 	@Override
@@ -374,7 +378,7 @@ public abstract class Device implements IDevice {
 	}
 	
 	private void saveEntity(){
-		deviceEntity = ((DeviceEntity) HibernateUtil.update(DeviceEntity.class, deviceEntity)[0]);
+		deviceEntity = ((DeviceEntity) HibernateAccessDataFacade.update(DeviceEntity.class, deviceEntity)[0]);
 	}
 
 	public boolean isDefaultDevice() {

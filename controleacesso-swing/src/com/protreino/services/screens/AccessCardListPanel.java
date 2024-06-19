@@ -35,8 +35,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -44,11 +42,10 @@ import javax.swing.table.TableColumn;
 
 import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.LogCartaoComandaEntity;
-import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.StatusCard;
 import com.protreino.services.main.Main;
-import com.protreino.services.utils.HibernateUtil;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -256,7 +253,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
 			//apaga tamb√©m dados de giros anteriores n„o registrados
-			HibernateUtil.resetStatusAllCards();
+			HibernateAccessDataFacade.resetStatusAllCards();
 			Utils.createNotification("Cart√µes/Comandas atualizados com sucesso!", NotificationType.GOOD);
 			
 			cleanFilter();
@@ -265,9 +262,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 	}
 
 
-	@SuppressWarnings("unchecked")
 	private void filterList() {
-		
 		args = new HashMap<>();
 		args.put("removido", false);
 		
@@ -278,13 +273,15 @@ public class AccessCardListPanel extends PaginedListPanel {
 			} catch (Exception e) {}
 			args.put("id", id);
 		}
-		if (filtroNumeroTextField.getText() != null && !"".equals(filtroNumeroTextField.getText()))
+		if (filtroNumeroTextField.getText() != null && !"".equals(filtroNumeroTextField.getText())) {
 			args.put("numeroReal", filtroNumeroTextField.getText());
-		if (filtroNumeroAlternativoTextField.getText() != null && !"".equals(filtroNumeroAlternativoTextField.getText()))
+		}
+		if (filtroNumeroAlternativoTextField.getText() != null && !"".equals(filtroNumeroAlternativoTextField.getText())) {
 			args.put("numeroAlternativo", filtroNumeroAlternativoTextField.getText());
+		}
 		if (filtroTipoJComboBox.getSelectedItem() != null) {
 			SelectItem itemSelecionado = (SelectItem)filtroTipoJComboBox.getSelectedItem();
-			if(itemSelecionado.getValue() != null){
+			if(itemSelecionado.getValue() != null) {
 				if(itemSelecionado.getValue().equals("TODOS")) {
 					args.remove("status");
 				} else {
@@ -297,12 +294,10 @@ public class AccessCardListPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		totalRegistros =  HibernateUtil.
+		totalRegistros = HibernateAccessDataFacade.
 				getResultListWithDynamicParamsCount(CartaoComandaEntity.class, null, null, null, args);
 		
 		executeFilter();
-
-		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -310,11 +305,13 @@ public class AccessCardListPanel extends PaginedListPanel {
 	protected void executeFilter() {
 		calculaTamanhoPaginas();
 		
-		if(args == null)
+		if(args == null) {
 			args = new HashMap<>();
+		}
+
 		args.put("removido", false);
 		
-		listaAcesso = (List<CartaoComandaEntity>) HibernateUtil.
+		listaAcesso = (List<CartaoComandaEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(CartaoComandaEntity.class, "numeroReal", args, inicioPagina, registrosPorPagina);
 		populateTable(listaAcesso);
 		
@@ -330,14 +327,14 @@ public class AccessCardListPanel extends PaginedListPanel {
 		filtroNumeroAlternativoTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
 		
-		totalRegistros =  HibernateUtil.
+		totalRegistros =  HibernateAccessDataFacade.
 				getResultListCount(CartaoComandaEntity.class, 
 						"CartaoComandaEntity.countNaoRemovidosOrdered");
 		
 		//calcula p√°ginas
 		calculaTamanhoPaginas();
 		
-		listaAcesso = (List<CartaoComandaEntity>) HibernateUtil.
+		listaAcesso = (List<CartaoComandaEntity>) HibernateAccessDataFacade.
 				getResultListLimited(CartaoComandaEntity.class, 
 						"CartaoComandaEntity.findAllNaoRemovidosOrdered", (long)registrosPorPagina);
 		
@@ -519,14 +516,14 @@ public class AccessCardListPanel extends PaginedListPanel {
 	        Point pt = e.getPoint();
 	        int ccol = table.columnAtPoint(pt);
 	        if (ccol == 4) { // && pointInsidePrefSize(table, pt)) {
-	            int crow = table.rowAtPoint(pt);
-	            String idUser = String.valueOf(table.getValueAt(crow, 0));
-				try {
+//	            int crow = table.rowAtPoint(pt);
+//	            String idUser = String.valueOf(table.getValueAt(crow, 0));
+//				try {
 					//open(Main.urlApplication + "/paginas/sistema/pedestres/cadastroPedestre.xhtml?id=" + idUser);
-				}
-				catch (Exception e1) {
-					e1.printStackTrace();
-				}
+//				}
+//				catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
 	        }
 	    }
 	    @Override public void mouseDragged(MouseEvent e) { /* not needed */ }
@@ -548,11 +545,11 @@ public class AccessCardListPanel extends PaginedListPanel {
 		         
 		         //liberar comanda manual
 		         CartaoComandaEntity cartao = (CartaoComandaEntity) 
-							HibernateUtil.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(id));
+		        		 HibernateAccessDataFacade.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(id));
 		         if(!StatusCard.LIBERADO.equals(cartao.getStatus())) {
 		        	 cartao.setStatus(StatusCard.LIBERADO);
 		        	 cartao.setDataAlteracao(new Date());
-		        	 HibernateUtil.update(CartaoComandaEntity.class, cartao);
+		        	 HibernateAccessDataFacade.update(CartaoComandaEntity.class, cartao);
 		        	 
 		        	 //cria log de liberaÁ„o (sem sincroniza√ß√£o com web)
 		        	 LogCartaoComandaEntity log = new LogCartaoComandaEntity(cartao);
@@ -560,11 +557,11 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 log.setTipoLiberacao("MANUAL_"+cartao.getStatus().name());
 		        	 log.setOrigem("USUARIO");
 		        	 log.setData(new Date());
-		        	 HibernateUtil.save(LogCartaoComandaEntity.class, log);
+		        	 HibernateAccessDataFacade.save(LogCartaoComandaEntity.class, log);
 		        	 
 		        	 
 		        	 Utils.createNotification("Cart„o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
-		         }else {
+		         } else {
 		        	 Utils.createNotification("Cart„o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " j· est· liberado.", NotificationType.BAD);
 		         }
 		         cleanFilter();
@@ -587,9 +584,10 @@ public class AccessCardListPanel extends PaginedListPanel {
 				int crow = table.rowAtPoint(pt);
 				String id = String.valueOf(table.getValueAt(crow, 0));
 				CartaoComandaEntity cartao = (CartaoComandaEntity) 
-						HibernateUtil.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(id));
-				if(cartao != null)
+						HibernateAccessDataFacade.getSingleResultById(CartaoComandaEntity.class, Long.valueOf(id));
+				if(cartao != null) {
 					Main.mainScreen.abreCadastroCartoComanda(cartao);
+				}
 			}
 		}
 
