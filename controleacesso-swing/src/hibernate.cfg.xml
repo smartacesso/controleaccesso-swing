@@ -14,6 +14,7 @@
 		<property name="hibernate.format_sql">false</property>
 		<property name="hibernate.hbm2ddl.auto">update</property>
 		<property name="hibernate.current_session_context_class">thread</property>
+		<property name="hibernate.generate_statistics">true</property>
 		<property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
 		
 		

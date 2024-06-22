@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.SwingWorker;
 
@@ -29,7 +30,7 @@ import com.protreino.services.utils.SelectItem;
 public abstract class Device implements IDevice {
 	
 	private static final long serialVersionUID = 1L;
-	
+	private final Gson gson = new GsonBuilder().create();
 	protected DeviceCard deviceCard;
 	protected DeviceEntity deviceEntity;
 	
@@ -102,12 +103,15 @@ public abstract class Device implements IDevice {
 	
 	@Override
 	public void disconnect(String... args) throws Exception {
-		if (worker != null)
+		if (worker != null) {
 			worker.cancel(true);
-		if (watchDog != null)
+		}
+		if (watchDog != null) {
 			watchDog.cancel(true);
-		if (synchronizer != null)
+		}
+		if (synchronizer != null) {
 			synchronizer.cancel(true);
+		}
 		watchDogEnabled = false;
 		workerEnabled = false;
 		synchronizerEnabled = false;
@@ -122,13 +126,15 @@ public abstract class Device implements IDevice {
 	}
 	
 	public void setConfigurationValue(String configName, String configValue) {
-		if (configurationGroups != null) {
-			for (ConfigurationGroupTO configGroup : configurationGroups){
-				for (ConfigurationTO config : configGroup.getConfigurations()) {
-					if (config.getName().equals(configName)) {
-						config.setValue(configValue);
-						System.out.println("setConfigurationValue: " + configName + " = " + configValue);
-					}
+		if(Objects.isNull(configurationGroups)) {
+			return;
+		}
+		
+		for (ConfigurationGroupTO configGroup : configurationGroups){
+			for (ConfigurationTO config : configGroup.getConfigurations()) {
+				if (config.getName().equals(configName)) {
+					config.setValue(configValue);
+					System.out.println("setConfigurationValue: " + configName + " = " + configValue);
 				}
 			}
 		}
@@ -324,7 +330,6 @@ public abstract class Device implements IDevice {
 		deviceEntity.setLocation(location);
 		deviceEntity.setName(name);
 		
-		Gson gson = new GsonBuilder().create();
 		deviceEntity.setAttachedDevices(gson.toJson(attachedDevices));
 		deviceEntity.setAttachedHikivisionCameras(gson.toJson(attachedHikivisionCameras));
 		
@@ -387,12 +392,15 @@ public abstract class Device implements IDevice {
 
 	public void setDefaultDevice(boolean defaultDevice) {
 		this.defaultDevice = defaultDevice;
+		
 		if (defaultDevice) {
 			for (Device otherDevice : Main.devicesList){
-				if (!this.equals(otherDevice))
+				if (!this.equals(otherDevice)) {
 					otherDevice.setDefaultDevice(false);
+				}
 			}
 		}
+
 		deviceEntity.setDefaultDevice(defaultDevice);
 		saveEntity();
 		deviceCard.setDefaultLabel();
@@ -444,8 +452,10 @@ public abstract class Device implements IDevice {
 	}
 
 	public String getAthleteScreenConfig() {
-		if (athleteScreenConfig == null)
+		if (athleteScreenConfig == null) {
 			athleteScreenConfig = "NULL%null%false%false%false%";
+		}
+
 		return athleteScreenConfig;
 	}
 

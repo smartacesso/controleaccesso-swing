@@ -1520,7 +1520,7 @@ public class Main {
 
         if (Main.servidor != null) {
             System.out.println(sdf.format(new Date()) + " Sincronização desabilitada: Máquina possui servidor");
-            System.out.println(sdf.format(new Date()) + " Sincronizaï¿½ï¿½o desabilitada: Mï¿½quina possui servidor");
+            System.out.println(sdf.format(new Date()) + " Sincronizaï¿½ï¿½o desabilitada: Máquina possui servidor");
             return;
         }
 

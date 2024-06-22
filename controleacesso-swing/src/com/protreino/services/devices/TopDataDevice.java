@@ -126,6 +126,8 @@ public class TopDataDevice extends Device {
 	
 	private Integer nivelSeguranca;
 	
+	private final static StringBuffer CARTAO_MASTER = new StringBuffer(Utils.getPreference("cardMaster"));
+	
 	protected String tipo = Tipo.ENTRADA;
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
@@ -181,6 +183,7 @@ public class TopDataDevice extends Device {
 	public void connect(String... args) throws Exception {
 		easyInner = new EasyInner();
 		int ret = 0;
+		
 		if(!portaAberta) {
 			EasyInner.DefinirTipoConexao(2);
 	        ret = EasyInner.AbrirPortaComunicacao(port);
@@ -192,7 +195,8 @@ public class TopDataDevice extends Device {
 	        
 	        portaAberta = true;
 		}
-        ret = Enumeradores.Limpar;
+        
+		ret = Enumeradores.Limpar;
         Long inicio = System.currentTimeMillis();
         Long tempoDeEspera = getConfigurationValueAsLong(TEMPO_ESPERA_PARA_CONECTAR) * 1000;
         
@@ -235,13 +239,11 @@ public class TopDataDevice extends Device {
 		
 		worker = new SwingWorker<Void, Void>(){
 
-			@SuppressWarnings("unlikely-arg-type")
 			@Override
 			protected Void doInBackground() throws Exception {
 				while (workerEnabled) {
 					try {
 						while (sendingConfiguration) {
-							// aguarda configuracoes serem enviadas
 							Utils.sleep(50);
 						}
 						
@@ -275,15 +277,14 @@ public class TopDataDevice extends Device {
 								System.out.println(" o Pedestre/Visitante passou na catraca: " +inner.Numero);
 								
 								try {
-									StringBuffer cartaoMaster = new StringBuffer(Utils.getPreference("cardMaster"));
-									if(cartaoMaster.equals(Cartao+"")) {
-										System.out.printf("Habilitou o cartão Master, com o número: ", cartaoMaster);
-										EasyInner.DefinirNumeroCartaoMaster(cartaoMaster+"");
+									if(CARTAO_MASTER.equals(Cartao)) {
+										System.out.printf("Habilitou o cartão Master, com o número: ", CARTAO_MASTER);
+										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
 										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 									}
 									
 									Main.validandoAcesso = true;
-									if(Main.servidor != null) {
+									if(Main.temServidor()) {
 										HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
 									}
 									
@@ -760,50 +761,45 @@ public class TopDataDevice extends Device {
 	}
 
 	protected void registraGiro(int sentido, Date data) {
-		System.out.println("Registra giro no equipamento: " + inner.Numero);
-		
-		String query = "";
+		String query = null;
 
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", getFullIdentifier());
 
-		if(inner.BilheteInner.Cartao != null
-				&& !inner.BilheteInner.Cartao.toString().isEmpty()
-				&& !"".equals(inner.BilheteInner.Cartao.toString().replace("0",""))
-				&& !"".equals(inner.BilheteInner.Cartao.toString())) {
-			System.out.println("Registra giro com cartão: " + inner.BilheteInner.Cartao.toString());
+		if(Objects.nonNull(inner.BilheteInner.Cartao)) {
+			final String cartaoStr = inner.BilheteInner.Cartao.toString();
 			
-			args.put("NUMERO_CARTAO_RECEBIDO", inner.BilheteInner.Cartao.toString());
-			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+			if(!cartaoStr.isEmpty()
+					&& !"".equals(cartaoStr.replace("0",""))) {
+				System.out.println("Registra giro com cartão: " + cartaoStr);
+				
+				args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
+				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+			
+			} else if(cartaoStr.isEmpty()) {
+				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
+			}
 		
-		} else if(inner.BilheteInner.Cartao != null
-				&& !inner.BilheteInner.Cartao.toString().isEmpty()
-				&& !"".equals(inner.BilheteInner.Cartao.toString())) {
-			
-			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
-			
 		} else {
-			
 			if(this.matchedFacialId != null) {
-				//oara facial
 				String codigoFacial = this.matchedFacialId.toString();
 				args.put("NUMERO_CARTAO_RECEBIDO", codigoFacial);
 				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 				
 				this.matchedFacialId = null;
 			} else {
-				//retorna, pois foi um giro de liberação manual
 				System.out.println("Registra giro da liberado manual");
 				inner.BilheteInner.Cartao = new StringBuilder();
 				return;
 			}
 		}
+		
+		inner.BilheteInner.Cartao = new StringBuilder();
 
-		LogPedestrianAccessEntity ultimo = (LogPedestrianAccessEntity) HibernateAccessDataFacade
+		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 							.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 		
-		if(ultimo == null) {
-			inner.BilheteInner.Cartao = new StringBuilder();
+		if(ultimoAcesso == null) {
 			return;
 		}
 		
@@ -820,33 +816,30 @@ public class TopDataDevice extends Device {
 			direction = !"anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA ;
 		}
 		
-		System.out.println("Sentido escolhido: " + direction + " / Sentido recebido: " + sentido);
-		
-		ultimo.setDirection(direction);
-		ultimo.setStatus("ATIVO");
-		ultimo.setBloquearSaida(bloquearSaida);
+		ultimoAcesso.setDirection(direction);
+		ultimoAcesso.setStatus("ATIVO");
+		ultimoAcesso.setBloquearSaida(bloquearSaida);
 		
 		if(data != null) {
-			ultimo.setAccessDate(data);
-			ultimo.setOffline(true);
+			ultimoAcesso.setAccessDate(data);
+			ultimoAcesso.setOffline(true);
 		} else {
-			ultimo.setAccessDate(new Date());
+			ultimoAcesso.setAccessDate(new Date());
 		}
 		
-		ultimo.setDataCriacao(new Date());
+		ultimoAcesso.setDataCriacao(new Date());
 		
-		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimo);
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 		
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
-				.getSingleResultById(PedestrianAccessEntity.class, ultimo.getIdPedestrian());
+				.getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
 		
 		if(pedestre == null) {
 			pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
-					.getSingleResultByIdTemp(PedestrianAccessEntity.class, ultimo.getIdPedestrian());			
+					.getSingleResultByIdTemp(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());			
 		}
 
 		if(pedestre == null) {
-			inner.BilheteInner.Cartao = new StringBuilder();
 			return;
 		}
 		
@@ -860,12 +853,14 @@ public class TopDataDevice extends Device {
 				pedestre.decrementaMensagens();
 			}
 			
-			if(ultimo.isSaida() || !bloquearSaida) {
+			if(ultimoAcesso.isSaida() || !bloquearSaida) {
 				 pedestre.decrementaCreditos();
 			}
 			
 			if(!pedestre.temCreditos() && pedestre.isVisitante()) {
-				if(Objects.nonNull(pedestre.getFoto()) && Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
+				if(Utils.isHikivisionConfigValid() 
+						&& Objects.nonNull(pedestre.getFoto()) 
+						&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
 					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
 				} else {
 					pedestre.apagarCartao();				
@@ -880,12 +875,11 @@ public class TopDataDevice extends Device {
 			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 		}
 
-		if(ultimo.isSaida()) {
+		if(ultimoAcesso.isSaida()) {
 			enviaSmsDeRegistroUseCase.execute(pedestre);
 		}
 		
 		System.out.println("Registrou giro no equipamento: " + inner.Numero);
-		inner.BilheteInner.Cartao = new StringBuilder();
 	}
 	
 	@Override
@@ -900,6 +894,7 @@ public class TopDataDevice extends Device {
 		} else {
 			EasyInner.ConfigurarComportamentoIndexSearch("naCatraca".equals(getConfigurationValue(MODO_DE_TRABALHO)) ? 0 : 1); // 0=match na catraca  1=match no computador
 		}
+		
 //		enviarConfiguracoesOffline();
 		enviarMensagensOffline();
 		enviarConfiguracaoMudancaOnlineOffline();
@@ -1039,6 +1034,7 @@ public class TopDataDevice extends Device {
 	protected void procuraSeExisteMensagemParaPedestre() {
 		if(matchedAthleteAccess != null && matchedAthleteAccess.getMensagens() != null
 				&& !matchedAthleteAccess.getMensagens().isEmpty()) {
+			
 			for(PedestrianMessagesEntity m : matchedAthleteAccess.getMensagens()) {
 				if(m.getQuantidade() > 0) {
 					messagePersonalizedInDevice = m.getMensagem();
@@ -1106,19 +1102,12 @@ public class TopDataDevice extends Device {
 
 	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida) {
 		int ret = 0;
-		Boolean doisSentidosLiberado = Utils.getPreferenceAsBoolean("doisSentidos");
-		String entrar = Utils.getPreference("messageEntryAllowed");
-		String sair = Utils.getPreference("messageExitAllowed");
+		final Boolean doisSentidosLiberado = Utils.getPreferenceAsBoolean("doisSentidos");
+		final String entrar = Utils.getPreference("messageEntryAllowed");
+		final String sair = Utils.getPreference("messageExitAllowed");
 
-		String espacoEntrar = "";
-		String espacoSair = "";
-		
-		if(entrar.length() < 14) {
-			espacoEntrar = " ";
-		}
-		if(sair.length() < 14) {
-			espacoSair = " ";
-		}
+		final String espacoEntrar = entrar.length() < 14 ? " " : "";
+		final String espacoSair = sair.length() < 14 ? " " : "";
 		
 		if(bloquearSaida && matchedAthleteAccess != null) {
 			if(inner.BilheteInner.Origem == Enumeradores.ORIGEM_URNA || inner.BilheteInner.Origem == Origens.ORIGEM_LEITOR_2) {
@@ -1126,10 +1115,11 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				}else {
+				
+				} else {
 					ret = !"anticlockwise".equals(sentidoCatraca) 
 							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);			
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);			
 					
 				}
 		
@@ -1150,10 +1140,10 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);	
-				}else {
+				} else {
 					ret = "anticlockwise".equals(sentidoCatraca) 
 							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);	
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);	
 				}
 		
 				
@@ -1162,15 +1152,14 @@ public class TopDataDevice extends Device {
 				}
 
 			} else {
-				
 				if(doisSentidosLiberado) {
 					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 					EasyInner.AcionarBipCurto(inner.Numero);
-				} else {	
-
+				
+				} else {
 					ret = !"anticlockwise".equals(sentidoCatraca) 
 							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				}
 		
 				
@@ -1191,10 +1180,11 @@ public class TopDataDevice extends Device {
 				if(doisSentidosLiberado) {	
 					EasyInner.AcionarBipCurto(inner.Numero);
 					return EasyInner.LiberarCatracaDoisSentidos(inner.Numero);		
-				}else {
+				
+				} else {
 					return !"anticlockwise".equals(sentidoCatraca) 
 							? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-									: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+							: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 				}
 		
 			}
@@ -1205,13 +1195,14 @@ public class TopDataDevice extends Device {
 										: formatMessage(entrar + espacoEntrar + "->" + ";" + "");
 			}
 
-			if(doisSentidosLiberado) {	
+			if(doisSentidosLiberado) {
 				EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 				EasyInner.AcionarBipCurto(inner.Numero);
-			}else {
+			
+			} else {
 				ret = "anticlockwise".equals(sentidoCatraca) 
 						? EasyInner.LiberarCatracaEntrada(inner.Numero) 
-								: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+						: EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
 			}
 	
 		}
@@ -1822,12 +1813,11 @@ public class TopDataDevice extends Device {
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
-//			no validar acesso temos a configurações de colocar Access date,
-//			vem depois do processAccesRequest
+
 			if (inner.BilheteInner.Origem == 1 
 					|| inner.BilheteInner.Origem == 2
 					|| inner.BilheteInner.Origem == 3
-					|| inner.BilheteInner.Origem == 12) { // Teclado, sensor de proximidade ou biometrico(cartao)
+					|| inner.BilheteInner.Origem == 12) {
 				processAccessRequest(inner.BilheteInner.Cartao.toString());
 				
 			} else if (inner.BilheteInner.Origem == 18) { // Leitor biometrico(template)
@@ -1860,15 +1850,17 @@ public class TopDataDevice extends Device {
 			
 			if (VerificationResult.ALLOWED.equals(getVerificationResult())
 					|| VerificationResult.TOLERANCE_PERIOD.equals(getVerificationResult())) {
-				//catraca com urna
 				boolean usaUrna = getConfigurationValueAsBoolean(LOGICA_DE_CATRACA_COM_URNA);
-	            if(usaUrna && matchedAthleteAccess != null 
+
+				if(usaUrna && matchedAthleteAccess != null 
 	            			&& matchedAthleteAccess.getOrigemCatraca() != null 
 	            			&& matchedAthleteAccess.getOrigemCatraca() == 3) {
 	            	EasyInner.AcionarRele2(inner.Numero);
+
 	            } else {
 	            	allowAccess();
 	            }
+			
 			} else {
 				denyAccess();
 			}
@@ -2100,9 +2092,11 @@ public class TopDataDevice extends Device {
 				ret = EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPadraoOnLine);
 				countTentativasEnvioComando++;
 			}
-			if (ret == easyInner.RET_COMANDO_OK)
+			
+			if (ret == easyInner.RET_COMANDO_OK) {
 				return true;
-			else {
+			
+			} else {
 				Main.mainScreen.addEvento(name + ": Não foi possível enviar mensagens Padrão");
 				setStatus(DeviceStatus.DISCONNECTED);
 			}

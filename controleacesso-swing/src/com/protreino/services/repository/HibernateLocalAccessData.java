@@ -17,7 +17,6 @@ import java.util.Objects;
 
 import javax.persistence.TypedQuery;
 
-import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -59,6 +58,8 @@ public class HibernateLocalAccessData {
 		if (sessionFactory != null && !sessionFactory.isOpen()) {
 			sessionFactory = new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
 		}
+		//System.out.println("Cache 1: " + sessionFactory.getStatistics().getQueryCachePutCount());
+		//System.out.println("Cache 2: " + sessionFactory.getStatistics().getSecondLevelCachePutCount());
 		return sessionFactory;
 	}
 
@@ -78,7 +79,6 @@ public class HibernateLocalAccessData {
 		final Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 			session.beginTransaction();
-			session.setCacheMode(CacheMode.IGNORE);
 		}
 		
 		Object result = null;

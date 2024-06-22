@@ -383,6 +383,7 @@ public class MainScreen extends JFrame {
 	public void addEvento(String mensagem) {
 		eventosLabel.setText(sdf.format(new Date()) + " - " + mensagem);
 		eventos.add(eventosLabel.getText());
+		System.out.println("Evento adicionado: " + eventos.size());
 		if (toggleEventosButton.getIcon().equals(setaDownIcon)) {
 			listaEventosPanel.add(new JLabel(sdf.format(new Date()) + " - " + mensagem));
 			listaEventosPanel.revalidate();
@@ -929,7 +930,6 @@ public class MainScreen extends JFrame {
 	}
 	
 	private JPanel montarPanelEventos() {
-
 		eventosLabel = new JLabel(" ");
 		eventosLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
