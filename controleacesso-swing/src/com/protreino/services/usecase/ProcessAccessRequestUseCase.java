@@ -103,32 +103,7 @@ public class ProcessAccessRequestUseCase {
 					return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };					
 				}
 
-				if (Objects.nonNull(origem)
-						&& origem.equals(Enumeradores.VIA_TECLADO)) {
-					matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultByRegistration(PedestrianAccessEntity.class, codigoUsuario);
-
-				} else if (Objects.nonNull(origem) 
-						&& (origem == Origens.ORIGEM_LEITOR_1 || origem == Origens.ORIGEM_LEITOR_2)) {
-					matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultByCardNumber(PedestrianAccessEntity.class, codigoUsuario);
-				} else {
-					matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultById(PedestrianAccessEntity.class, codigoUsuario);
-				}
-
-				if (Objects.isNull(matchedPedestrianAccess)) {
-					matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultByCardNumber(PedestrianAccessEntity.class, codigoUsuario);
-				}
-
-				if (Objects.isNull(matchedPedestrianAccess) 
-						&& Boolean.TRUE.equals(digitaisCatraca)
-						&& origem == Origens.ORIGEM_LEITOR_1) {
-					matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultById(PedestrianAccessEntity.class, codigoUsuario);
-				}
-
+				matchedPedestrianAccess = buscaPedestrePeloCodigo(codigoUsuario, origem, digitaisCatraca);
 			}
 
 			if (Objects.isNull(matchedPedestrianAccess)) {
@@ -142,6 +117,7 @@ public class ProcessAccessRequestUseCase {
 
 			userName = matchedPedestrianAccess.getFirstName().toUpperCase();
 			foto = matchedPedestrianAccess.getFoto();
+			
 			Boolean acessoRestrito = Boolean.valueOf(Utils.getPreference("restrictAccess"));
 			Boolean permitidoHoje = true;
 			Boolean permitidoSensor = true;
@@ -204,7 +180,7 @@ public class ProcessAccessRequestUseCase {
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
 			}
 
-			LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(matchedPedestrianAccess.getId(),
+			final LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(matchedPedestrianAccess.getId(),
 					matchedPedestrianAccess.getQtdAcessoAntesSinc());
 
 			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
@@ -260,28 +236,12 @@ public class ProcessAccessRequestUseCase {
 				}
 
 			} else {
-
-				/*
-				 * regras de pedestres
-				 */
-
 				if (matchedPedestrianAccess.temCreditos()) {
-
-					/*
-					 * verificar creditos
-					 */
-
-					// verifica se tem créditos para passar
-
 					permitido = matchedPedestrianAccess.temCreditosValidos(data)
 							&& !isPermitidoPedestreRegra(matchedPedestrianAccess)
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
 				} else if (matchedPedestrianAccess.temTipoTurno()) {
-					/*
-					 * verificar turno/escala
-					 */
-
 					TipoEscala tipo = TipoEscala.valueOf(matchedPedestrianAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
 							? Calendar.HOUR
@@ -303,9 +263,9 @@ public class ProcessAccessRequestUseCase {
 					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
 
 				} else if (acessoRestrito) {
-					// verifica se há algum log de acesso para este aluno hoje
 					HashMap<String, Object> args = new HashMap<String, Object>();
 					args.put("ID_ATLETA", matchedPedestrianAccess.getId());
+					
 					List<LogPedestrianAccessEntity> acessosHoje = (List<LogPedestrianAccessEntity>) HibernateAccessDataFacade
 							.getResultListWithParams(LogPedestrianAccessEntity.class,
 									"LogPedestrianAccessEntity.findTodayByAthlete", args);
@@ -352,14 +312,8 @@ public class ProcessAccessRequestUseCase {
 				}
 
 			} else if (permitidoHoje) {
-
-				// para lógicas do pedestre:
-				// - horário
-				// - periodo
-				// - escala
 				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-						matchedPedestrianAccess.getId(), matchedPedestrianAccess.getStatus(), location, motivo, direction,
-						equipament);
+						matchedPedestrianAccess.getId(), matchedPedestrianAccess.getStatus(), location, motivo, direction, equipament);
 				if (data != null) {
 					logAccess.setAccessDate(data);
 				}
@@ -367,10 +321,6 @@ public class ProcessAccessRequestUseCase {
 				if (matchedPedestrianAccess.isAtivo()) {
 					resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedPedestrianAccess,
 							logAccess, VerificationResult.ALLOWED, foto, origem, data);
-
-					// indefine acesso
-//					if ("ATIVO".equals(logAccess.getStatus()))
-//						logAccess.setStatus("INDEFINIDO");
 
 				} else {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
@@ -709,4 +659,35 @@ public class ProcessAccessRequestUseCase {
 		return resultadoVerificacao;
 	}
 	
+	private PedestrianAccessEntity buscaPedestrePeloCodigo(final Long codigoUsuario, final Integer origem, final Boolean digitaisCatraca) {
+		PedestrianAccessEntity matchedPedestrianAccess = null;
+		
+		if (Objects.nonNull(origem)
+				&& origem.equals(Enumeradores.VIA_TECLADO)) {
+			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultByRegistration(PedestrianAccessEntity.class, codigoUsuario);
+
+		} else if (Objects.nonNull(origem) 
+				&& (origem == Origens.ORIGEM_LEITOR_1 || origem == Origens.ORIGEM_LEITOR_2)) {
+			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultByCardNumber(PedestrianAccessEntity.class, codigoUsuario);
+		} else {
+			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultById(PedestrianAccessEntity.class, codigoUsuario);
+		}
+
+		if (Objects.isNull(matchedPedestrianAccess)) {
+			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultByCardNumber(PedestrianAccessEntity.class, codigoUsuario);
+		}
+
+		if (Objects.isNull(matchedPedestrianAccess) 
+				&& Boolean.TRUE.equals(digitaisCatraca)
+				&& origem == Origens.ORIGEM_LEITOR_1) {
+			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultById(PedestrianAccessEntity.class, codigoUsuario);
+		}
+		
+		return matchedPedestrianAccess;
+	}
 }

@@ -2,6 +2,7 @@ package com.protreino.services.main;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.client.SmartAcessoClient;
 import com.protreino.services.client.SmartAcessoFotoServiceClient;
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.constants.Origens;
@@ -146,10 +147,10 @@ public class Main {
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
+    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integração Comtele";
     
     private static final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
-
-    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integraï¿½ï¿½o Comtele";
+    private static final SmartAcessoClient smartAcessoClient = new SmartAcessoClient();
 
     public static void main(String[] args) {
 
@@ -1045,16 +1046,23 @@ public class Main {
         }
         updatingUsersAccessList = true;
 
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> worker = getSyncUsersAccessListWorker();
+        worker.execute();
+    }
+    
+    private static SwingWorker<Void, Void> getSyncUsersAccessListWorker() {
+    	return new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
                 try {
-                    if (timerSyncUsersAccessList.isRunning())
-                        timerSyncUsersAccessList.stop();
+                    if (timerSyncUsersAccessList.isRunning()) {
+                    	timerSyncUsersAccessList.stop();
+                    }
 
                     while (loggedUser == null) {
                         Thread.sleep(500);
                     }
+
                     while (isCadastrandoBiometria) {
                         Thread.sleep(2000);
                     }
@@ -1086,9 +1094,7 @@ public class Main {
                     }
                     updatingUsersAccessList = false;
                     trayIcon.setImage(trayIconImage);
-                    //if (mainScreen != null && mainScreen.isVisible()) {
-                    //	mainScreen.refresh();
-                    //}
+
                     if (mainScreen != null && mainScreen.isVisible()) {
                         mainScreen.getListaAcessoPanel().getSyncButton().setText("Atualizar lista com o servidor");
                         mainScreen.getListaAcessoPanel().getSyncButton().setEnabled(true);
@@ -1100,40 +1106,17 @@ public class Main {
             }
 
             private void requestAllUsers() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllUsers"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSyncGetUsers
-                        + "&version=" + Configurations.VERSION);
+                List<UserEntity> userAccessList = smartAcessoClient.requestAllUsers(lastSyncGetUsers);
 
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de usuarios para receber");
-                    return;
-                }
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Error String: "
-                            + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<UserEntity>>() {
-                }.getType();
-                List<UserEntity> userAccessList = gson.fromJson(bufferedReader, type);
-
-                if (userAccessList == null || userAccessList.isEmpty()) {
+                if (Objects.isNull(userAccessList) || userAccessList.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de usuarios para receber");
                     return;
                 }
 
                 for (UserEntity user : userAccessList) {
-                    if (loggedUser == null) // usuario deslogou durante a sincronizacao
+                    if (Objects.isNull(loggedUser)) {
                         break;
-
-//					if (loggedUser.getId().equals(user.getId())) // retira usuï¿½rio logado
-//						continue;
+                    }
 
                     user.setIdClient(loggedUser.getIdClient());
 
@@ -1163,37 +1146,17 @@ public class Main {
             }
 
             private void requestAllEmpresas() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllEmpresas"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSyncGetEmpresas
-                        + "&version=" + Configurations.VERSION);
+                List<EmpresaTO> empresasTOList = smartAcessoClient.requestAllEmpresas(lastSyncGetEmpresas);
 
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de empresas para receber");
-                    return;
-                }
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO NA SINCRONIZACAO DE EMPRESAS: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<EmpresaTO>>() {
-                }.getType();
-                List<EmpresaTO> empresasTOList = gson.fromJson(bufferedReader, type);
-
-                if (empresasTOList == null || empresasTOList.isEmpty()) {
+                if (Objects.isNull(empresasTOList) || empresasTOList.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de empresas para receber");
                     return;
                 }
 
                 for (EmpresaTO empresaTO : empresasTOList) {
-                    if (loggedUser == null) // usuario deslogou durante a sincronizacao
+                    if (Objects.isNull(loggedUser)) {
                         break;
+                    }
 
                     EmpresaEntity empresa = new EmpresaEntity(empresaTO);
                     empresa.setIdClient(loggedUser.getIdClient());
@@ -1219,27 +1182,7 @@ public class Main {
             }
 
             private void requestAllRegras() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllRegras"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSyncGetRegras);
-
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de regras para receber");
-                    return;
-                }
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO NA SINCRONIZACAO DE REGRAS: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<RegraTO>>() {
-                }.getType();
-                List<RegraTO> regrasTOList = gson.fromJson(bufferedReader, type);
+                List<RegraTO> regrasTOList = smartAcessoClient.requestAllRegras(lastSyncGetRegras);
 
                 if (regrasTOList == null || regrasTOList.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de regras para receber");
@@ -1247,8 +1190,9 @@ public class Main {
                 }
 
                 for (RegraTO regraTO : regrasTOList) {
-                    if (loggedUser == null) // usuario deslogou durante a sincronizacao
-                        break;
+                    if (loggedUser == null) {
+                    	break;
+                    }
 
                     RegraEntity regra = new RegraEntity(regraTO);
                     regra.setIdClient(loggedUser.getIdClient());
@@ -1275,27 +1219,7 @@ public class Main {
             }
 
             private void requestAllParametros() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllParametros"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSyncGetParametros);
-
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de parametros para receber");
-                    return;
-                }
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO NA SINCRONIZACAO DE PARAMETROS: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<ParametroEntity>>() {
-                }.getType();
-                List<ParametroEntity> parametros = gson.fromJson(bufferedReader, type);
+                List<ParametroEntity> parametros = smartAcessoClient.requestAllParametros(lastSyncGetParametros);
 
                 if (parametros == null || parametros.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de parametros para receber");
@@ -1331,27 +1255,7 @@ public class Main {
             }
 
             private void requestAllPlanos() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/requestAllPlanos"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSyncGetPlanos);
-
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de planos para receber");
-                    return;
-                }
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO NA SINCRONIZACAO DE PLANOS: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<PlanoEntity>>() {
-                }.getType();
-                List<PlanoEntity> planos = gson.fromJson(bufferedReader, type);
+                List<PlanoEntity> planos = smartAcessoClient.requestAllPlanos(lastSyncGetPlanos);
 
                 if (planos == null || planos.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de planos para receber");
@@ -1359,8 +1263,9 @@ public class Main {
                 }
 
                 for (PlanoEntity plano : planos) {
-                    if (loggedUser == null) // usuario deslogou durante a sincronizacao
+                    if (loggedUser == null) {
                         break;
+                    }
 
                     plano.setIdClient(loggedUser.getIdClient());
 
@@ -1384,7 +1289,6 @@ public class Main {
                 }
             }
         };
-        worker.execute();
     }
 
     public static void syncHikivisionAccessList() {
@@ -1397,13 +1301,18 @@ public class Main {
             return;
         }
         
-        final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
-        final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
-        final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
-
         updatingHikivisionAccessList = true;
 
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> worker = getSyncHikivisionAccessListWorker();
+        worker.execute();
+    }
+    
+    private static SwingWorker<Void, Void> getSyncHikivisionAccessListWorker() {
+    	final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
+        final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+        final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
+        
+    	return new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
                 try {
@@ -1510,7 +1419,6 @@ public class Main {
 
             }
         };
-        worker.execute();
     }
 
     public static void syncAthleteAccessList() {

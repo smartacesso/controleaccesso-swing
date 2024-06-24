@@ -341,6 +341,8 @@ public class Utils {
 		defaultPreferencesList = new ArrayList<PreferenceTO>();
 		defaultPreferencesList.add(
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "disableNotifications",
+				"Desablitar notificações", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "scrollSpeed", "Velocidade de rolagem",
 				FieldType.TEXT, "5", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccess",
@@ -845,18 +847,11 @@ public class Utils {
 	}
 
 	public static void createNotification(String message, NotificationType type, byte[] photo, int duration) {
-		List<String> mensagens = new ArrayList<String>();
-		String[] palavras = message.split(" ");
-		String frase = new String();
-		for (String palavra : palavras) {
-			if ((frase.length() + palavra.length()) < 50) {
-				frase = frase + palavra + " ";
-			} else {
-				mensagens.add(frase);
-				frase = new String();
-			}
+		final Boolean disableNotifications = getPreferenceAsBoolean("disableNotifications");
+
+		if(Boolean.TRUE.equals(disableNotifications)) {
+			return;
 		}
-		mensagens.add(frase);
 
 		final JDialog dialog = new JDialog();
 		dialog.setLocationRelativeTo(null);
@@ -870,8 +865,7 @@ public class Utils {
 		JLabel proTreinoLabel = new JLabel(Main.nomeAplicacao);
 		proTreinoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		proTreinoLabel.setForeground(Color.WHITE);
-		Font customFont = new Font(proTreinoLabel.getFont().getFontName(), Font.BOLD,
-				proTreinoLabel.getFont().getSize() + 1);
+		Font customFont = new Font(proTreinoLabel.getFont().getFontName(), Font.BOLD, proTreinoLabel.getFont().getSize() + 1);
 		proTreinoLabel.setFont(customFont);
 
 		JPanel messageContainer = new JPanel();
@@ -890,6 +884,8 @@ public class Utils {
 			messageContainer.add(Box.createRigidArea(new Dimension(0, 1)));
 		}
 
+		final List<String> mensagens = createMessage(message);
+		
 		for (String mensagem : mensagens) {
 			JLabel infoMessage = new JLabel(mensagem);
 			infoMessage.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -905,10 +901,12 @@ public class Utils {
 		JPanel notificationContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		notificationContainer.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		notificationContainer.setOpaque(false);
-		if (photo != null)
+		if (photo != null) {
 			notificationContainer.add(new JLabel(new ImageIcon(createRoundImageWithIcon(photo, type))));
-		else
+		} else {
 			notificationContainer.add(new JLabel(logoImageIcon));
+		}
+
 		notificationContainer.add(messageContainer);
 
 		dialog.setContentPane(notificationContainer);
@@ -950,6 +948,26 @@ public class Utils {
 		}
 
 		new java.util.Timer().schedule(new FaderOut(dialog), duration, 5);
+	}
+	
+	private static List<String> createMessage(final String message) {
+		List<String> mensagens = new ArrayList<String>();
+		String[] palavras = message.split(" ");
+		final StringBuilder frase = new StringBuilder();
+		
+		for (String palavra : palavras) {
+			if ((frase.length() + palavra.length()) < 50) {
+				frase.append(palavra + " ");
+
+			} else {
+				mensagens.add(frase.toString());
+				frase.setLength(0);
+			}
+		}
+		
+		mensagens.add(frase.toString());
+		
+		return mensagens;
 	}
 
 	private static void updateNotificationsPosition() {
