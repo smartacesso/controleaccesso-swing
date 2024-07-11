@@ -7,12 +7,14 @@ import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.google.gson.Gson;
 import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.to.FingerPrintInfoTO;
 import com.protreino.services.to.hikivision.*;
 
 import okhttp3.*;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -146,6 +148,139 @@ public class HikiVisionIntegrationService {
 
 		return false;
 	}
+	
+	public Optional<CaptureFingerPrintTO> capturaDigitalUsuario(final String deviceId, final Integer fingerNo) {
+		final String body = "{"
+	            + "		\"CaptureFingerPrintCond\": {"
+	            + "			\"fingerNo\": " + fingerNo + ""
+	            + "		}"
+	            + "	}";
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/CaptureFingerPrint?format=json&devIndex=" + deviceId).post(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+		
+		try (Response response = client.newCall(request).execute();) {
+			if (response.isSuccessful()) {
+				 final CaptureFingerPrintTO responseBody = gson.fromJson(response.body().string(), CaptureFingerPrintTO.class);
+				return Optional.of(responseBody);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Optional.empty();
+	}
+	
+	public boolean vinculaDigitalUsuario(final String deviceId, final String idUser, final Integer printID, final String fingerData) {
+		final String body =
+			       "{"
+			       + "		\"FingerPrintCfg\": {"
+			       + "			\"employeeNo\": \"" + idUser + "\","
+			       + "			\"fingerPrintID\": " + printID + ","
+			       + "			\"fingerData\": \"" + fingerData + "\""
+			       + "		}"
+			       + "	}";
+		
+				RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/FingerPrintDownload?format=json&devIndex=" + deviceId).post(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+		
+		try (Response response = client.newCall(request).execute();) {
+			if (response.isSuccessful()) {
+				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
+
+				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
+
+				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
+						isCadastradoComSucesso));
+
+				return isCadastradoComSucesso;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
+	public boolean buscarDigitalUsuario(final String deviceId, final String searchID, final String idUser) {
+		final String body = 
+			       "{"
+			       + "		\"FingerPrintCfg\": {"
+			       + "			\"fingerPrintID\": " + searchID + ","
+			       + "			\"employeeNo\": \"" + idUser + "\","
+			       + "		}"
+			       + "	}";
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/FingerPrintUpload?format=json&devIndex=" + deviceId).post(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+		
+		try (Response response = client.newCall(request).execute();) {
+			if (response.isSuccessful()) {
+				final FingerPrintInfoTO responseBody = gson.fromJson(response.body().string(), FingerPrintInfoTO.class);
+				final boolean isCadastradoComSucesso = responseBody.status.equalsIgnoreCase("OK");
+
+				System.out.println(String.format("Usuario %s encontrado no device %s com sucesso: %b", idUser, deviceId,
+						isCadastradoComSucesso));
+
+				return isCadastradoComSucesso;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
+	public boolean apagarDigitalUsuario(final String deviceId, final String idUser, final Integer fingerNo) {
+		final String body = 
+			       "{"
+			       + "		\"FingerPrintDelete\": {"
+			       + "			\"EmployeeNoDetail\": {"	
+			       + "				\"employeeNo\": \"" + idUser + "\","
+			       + "				\"fingerPrintID\": [" + fingerNo + "],"
+			       + "		   	}"
+			       + "		}"
+			       + "	}";
+
+		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/FingerPrint/Delete?format=json&devIndex=" + deviceId).put(requestBody)
+				.addHeader("Content-Type", "application/json").build();
+		
+		try (Response response = client.newCall(request).execute();) {
+			if (response.isSuccessful()) {
+				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
+
+				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
+
+				System.out.println(String.format("Usuario %s removido no device %s com sucesso: %b", idUser, deviceId,
+						isCadastradoComSucesso));
+
+				return isCadastradoComSucesso;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
+
 
 	public boolean adicionarUsuario(final String deviceId, final String idUser, final String name) {
 		final String body = "{" 

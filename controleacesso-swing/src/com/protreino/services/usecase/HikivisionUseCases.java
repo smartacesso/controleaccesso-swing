@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.protreino.services.entity.HikivisionFingerEntity;
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
+import com.protreino.services.to.hikivision.CaptureFingerPrintTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
@@ -21,258 +25,342 @@ import com.protreino.services.utils.Utils;
 public class HikivisionUseCases {
 
 	private final HikiVisionIntegrationService hikiVisionIntegrationService;
-	
+
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
-	
+
 	public HikivisionUseCases() {
 		this.hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
 	}
-	
+
 	public boolean getSystemInformation() {
 		return hikiVisionIntegrationService.getSystemInformation();
 	}
-	
+
 	public List<HikivisionDeviceTO.Device> listarDispositivos() {
 		final HikivisionDeviceTO hikivisionDeviceTO = hikiVisionIntegrationService.listarDispositivos();
-		
+
 		if (hikivisionDeviceTO == null || hikivisionDeviceTO.getSearchResult() == null
 				|| hikivisionDeviceTO.getSearchResult().getTotalMatches() == 0) {
 			return new ArrayList<>();
 		}
-		
+
 		final List<HikivisionDeviceTO.Device> devices = new ArrayList<>();
 		for (MatchList matchList : hikivisionDeviceTO.getSearchResult().getMatchList()) {
 			devices.add(matchList.getDevice());
 		}
-		
+
 		return devices;
 	}
-	
+
 	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre) {
 		syncronizarUsuarioInDevices(pedestre, null);
 	}
-	
+
 	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if(pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
+		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
 			removerUsuarioFromDevices(pedestre, devicesToSync);
-		
+
 		} else {
 			cadastrarUsuarioInDevices(pedestre, devicesToSync);
 		}
 	}
-	
+
 	public void removerUsuarioFromDevices(final PedestrianAccessEntity pedestre) {
 		removerUsuarioFromDevices(pedestre, null);
 	}
-	
+
 	public void removerUsuarioFromDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if(Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
 			final List<Device> devices = listarDispositivos();
-			if(Objects.isNull(devices) || devices.isEmpty()) {
+			if (Objects.isNull(devices) || devices.isEmpty()) {
 				return;
 			}
-			
-			devicesToSync = devices.stream()
-								.map(Device::getDevIndex)
-								.collect(Collectors.toList());
+
+			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
 		}
-		
+
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
-		
+
 		devicesToSync.forEach(deviceId -> {
 			try {
-				final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId, pedestre.getCardNumber());
-				if(!isApagadoComSucesso) {
-					final String message = String.format("Erro ao apagar pedestre %s no device %s", pedestre.getCardNumber(), deviceId);
+				final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId,
+						pedestre.getCardNumber());
+				if (!isApagadoComSucesso) {
+					final String message = String.format("Erro ao apagar pedestre %s no device %s",
+							pedestre.getCardNumber(), deviceId);
 					logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.REMOVE);
 				}
-				
-			} catch(HikivisionIntegrationException ex) {
-				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(), ex.getDeviceId(), ex.getHikivisionAction()));
-				
+
+			} catch (HikivisionIntegrationException ex) {
+				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
+						ex.getDeviceId(), ex.getHikivisionAction()));
+
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		});
-		
+
 		pedestre.setDataCadastroFotoNaHikivision(null);
 		pedestre.setLastAccessHikiVision(null);
-		
-		if(!integrationErrors.isEmpty()) {
+
+		if (!integrationErrors.isEmpty()) {
 			hikivisionIntegrationErrorRepository.saveAll(integrationErrors);
 		}
 	}
-	
+
 	public boolean reprocessarRemocaoInDevice(final PedestrianAccessEntity pedestre, String deviceId) {
-		final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId, pedestre.getCardNumber());
-		
-		if(isApagadoComSucesso) {
+		final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId,
+				pedestre.getCardNumber());
+
+		if (isApagadoComSucesso) {
 			pedestre.setDataCadastroFotoNaHikivision(null);
 		}
 
 		return isApagadoComSucesso;
 	}
-	
+
 	public void cadastrarUsuarioInDevices(final PedestrianAccessEntity pedestre) {
 		cadastrarUsuarioInDevices(pedestre, null);
 	}
-	
+
 	public void cadastrarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if(Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
 			final List<Device> devices = listarDispositivos();
-			if(Objects.isNull(devices) || devices.isEmpty()) {
+			if (Objects.isNull(devices) || devices.isEmpty()) {
 				return;
 			}
-			
-			devicesToSync = devices.stream()
-								.map(Device::getDevIndex)
-								.collect(Collectors.toList());
+
+			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
 		}
-		
+
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
-		
+
 		devicesToSync.forEach(deviceId -> {
 			try {
 				if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, pedestre.getCardNumber())) {
-					final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId, pedestre.getCardNumber(), pedestre.getName());
+					final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId,
+							pedestre.getCardNumber(), pedestre.getName());
 
-					if(Boolean.FALSE.equals(isUsuarioCadastrado)) {
-						final String message = String.format("Erro ao cadastrar pedestre %s no device %s", pedestre.getCardNumber(), deviceId);
+					if (Boolean.FALSE.equals(isUsuarioCadastrado)) {
+						final String message = String.format("Erro ao cadastrar pedestre %s no device %s",
+								pedestre.getCardNumber(), deviceId);
 						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 					}
 				}
-				
+
 				if (hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(deviceId, pedestre.getCardNumber())) {
-					final boolean isFotoApagada = hikiVisionIntegrationService.apagarFotoUsuario(deviceId, pedestre.getCardNumber());
-					if(Boolean.FALSE.equals(isFotoApagada)) {
-						final String message = String.format("Erro ao apagar foto do pedestre %s no device %s", pedestre.getCardNumber(), deviceId);
+					final boolean isFotoApagada = hikiVisionIntegrationService.apagarFotoUsuario(deviceId,
+							pedestre.getCardNumber());
+					if (Boolean.FALSE.equals(isFotoApagada)) {
+						final String message = String.format("Erro ao apagar foto do pedestre %s no device %s",
+								pedestre.getCardNumber(), deviceId);
 						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 					}
 				}
 
-				boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, pedestre.getCardNumber(), pedestre.getFoto());
-				if(Boolean.FALSE.equals(isFotoAdicionada)) {
-					final String message = String.format("Erro ao adicionar foto do usuario %s na camera %s", pedestre.getCardNumber(), deviceId);
+				boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId,
+						pedestre.getCardNumber(), pedestre.getFoto());
+				if (Boolean.FALSE.equals(isFotoAdicionada)) {
+					final String message = String.format("Erro ao adicionar foto do usuario %s na camera %s",
+							pedestre.getCardNumber(), deviceId);
 					logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 				}
-				
-				final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId, pedestre.getCardNumber());
-		        
-		        if(!isCartaoJaCadastrado) {
-		        	final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId, pedestre.getCardNumber());
-		        	if(Boolean.FALSE.equals(isCartaoAdicionado)) {
-						final String message = String.format("Erro ao adicioar cartão do usuario %s na camera %s", pedestre.getCardNumber(), deviceId);
+
+				final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId,
+						pedestre.getCardNumber());
+
+				if (!isCartaoJaCadastrado) {
+					final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId,
+							pedestre.getCardNumber());
+					if (Boolean.FALSE.equals(isCartaoAdicionado)) {
+						final String message = String.format("Erro ao adicioar cartão do usuario %s na camera %s",
+								pedestre.getCardNumber(), deviceId);
 						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 					}
-		        }
-		        
-			} catch(HikivisionIntegrationException ex) {
-				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(), ex.getDeviceId(), ex.getHikivisionAction()));
-				
+				}
+
+			} catch (HikivisionIntegrationException ex) {
+				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
+						ex.getDeviceId(), ex.getHikivisionAction()));
+
 			} catch (InvalidPhotoException ife) {
 				throw ife;
-			
+
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		});
-		
+
 		pedestre.setDataCadastroFotoNaHikivision(new Date());
-		
-		if(!integrationErrors.isEmpty()) {
+
+		if (!integrationErrors.isEmpty()) {
 			hikivisionIntegrationErrorRepository.saveAll(integrationErrors);
 		}
 	}
-	
+
 	public boolean reprocessarCadastroInDevice(final PedestrianAccessEntity pedestre, String deviceId) {
 		if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, pedestre.getCardNumber())) {
-			final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId, pedestre.getCardNumber(), pedestre.getName());
+			final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId,
+					pedestre.getCardNumber(), pedestre.getName());
 
-			if(Boolean.FALSE.equals(isUsuarioCadastrado)) {
+			if (Boolean.FALSE.equals(isUsuarioCadastrado)) {
 				return false;
 			}
 		}
-		
+
 		if (hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(deviceId, pedestre.getCardNumber())) {
-			final boolean isFotoApagada = hikiVisionIntegrationService.apagarFotoUsuario(deviceId, pedestre.getCardNumber());
-			if(Boolean.FALSE.equals(isFotoApagada)) {
+			final boolean isFotoApagada = hikiVisionIntegrationService.apagarFotoUsuario(deviceId,
+					pedestre.getCardNumber());
+			if (Boolean.FALSE.equals(isFotoApagada)) {
 				return false;
 			}
 		}
 
 		try {
-			boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId, pedestre.getCardNumber(), pedestre.getFoto());
-			if(Boolean.FALSE.equals(isFotoAdicionada)) {
+			boolean isFotoAdicionada = hikiVisionIntegrationService.adicionarFotoUsuario(deviceId,
+					pedestre.getCardNumber(), pedestre.getFoto());
+			if (Boolean.FALSE.equals(isFotoAdicionada)) {
 				return false;
 			}
-			
+
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			return false;
 		}
-		
-		final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId, pedestre.getCardNumber());
-        if(!isCartaoJaCadastrado) {
-        	final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId, pedestre.getCardNumber());
-        	if(Boolean.FALSE.equals(isCartaoAdicionado)) {
+
+		final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId,
+				pedestre.getCardNumber());
+		if (!isCartaoJaCadastrado) {
+			final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId,
+					pedestre.getCardNumber());
+			if (Boolean.FALSE.equals(isCartaoAdicionado)) {
 				return false;
 			}
-        }
-        
-        pedestre.setDataCadastroFotoNaHikivision(new Date());
-        return true;
+		}
+
+		pedestre.setDataCadastroFotoNaHikivision(new Date());
+		return true;
 	}
-	
-	private void logAndThrowException(final String message, final String cardNumber, final String deviceId, HikivisionAction hikivisionAction) {
+
+	private void logAndThrowException(final String message, final String cardNumber, final String deviceId,
+			HikivisionAction hikivisionAction) {
 		System.out.println(message);
 		throw new HikivisionIntegrationException(message, cardNumber, deviceId, hikivisionAction);
 	}
 
-	public void adicionarDispositivoAndListener(final String ipAddress, final Integer port, final String userName, final String password,
-			final String deviceName) {
+	public void adicionarDispositivoAndListener(final String ipAddress, final Integer port, final String userName,
+			final String password, final String deviceName) {
 		hikiVisionIntegrationService.adicionarDispositivo(ipAddress, port, userName, password, deviceName);
 		Utils.sleep(300);
 		final Device device = getDeviceByName(deviceName);
 
-		if(Objects.nonNull(device)) {
+		if (Objects.nonNull(device)) {
 			adicionarListnerParaCamera(device.getDevIndex());
 		} else {
 			System.out.println("Listener não adicionado para camera: " + deviceName);
 		}
 	}
-	
+
 	public void adicionarListnerParaCamera(final String deviceId) {
-		hikiVisionIntegrationService.adicionarListenerParaEventosCamera(deviceId, Utils.getLocalIpAddress(), 
+		hikiVisionIntegrationService.adicionarListenerParaEventosCamera(deviceId, Utils.getLocalIpAddress(),
 				Integer.valueOf(Utils.getPreference("tcpServerHikivisionSocketPort")));
 	}
-	
+
+	public boolean adicionarDigitalUsuario(final String deviceId, final Integer fingerNo, final String idUser) {
+		final Optional<CaptureFingerPrintTO> digitalCadastrada = coletarbiometria(deviceId, fingerNo);
+
+		if (!digitalCadastrada.isPresent()) {
+			return false;
+		}
+
+		List<HikivisionDeviceTO.Device> devices = listarDispositivos();
+
+		devices.forEach(device -> {
+			/*
+			 * TODO: device já tem biometria para o pedestre e dedo se sim apagar digitalok
+			 * 
+			 * cadastrar biometria se nao salvar na tabela temporariaok
+			 * 
+			 * 
+			 * tentativa de reprocessar: as digitais que nao conseguiram ser vinculadas vao ser retentatadas 
+			 * salvar a biometrias na tabela fixa
+			 */
+			final boolean buscarUsuario = buscarUsuario(deviceId, null, idUser);
+
+			if (buscarUsuario) {
+				apagarUsuario(deviceId, idUser, fingerNo);
+			}
+
+			final boolean vincularBiometria = vinculaDigitalUsuario(device.getDevIndex(), fingerNo, idUser, digitalCadastrada.get().fingerData);
+			
+			if(vincularBiometria) {
+				HibernateAccessDataFacade.save(HikivisionFingerEntity.class,  new HikivisionFingerEntity(fingerNo, idUser, digitalCadastrada.get().fingerData) );
+			}
+			//deve reprocessar as digitais
+			
+
+		});
+
+		return false;
+
+	}
+
+	private Optional<CaptureFingerPrintTO> coletarbiometria(final String deviceId, final Integer fingerNo) {
+		final Optional<CaptureFingerPrintTO> digitalCadastrada = hikiVisionIntegrationService
+				.capturaDigitalUsuario(deviceId, fingerNo);
+
+		if (!digitalCadastrada.isPresent()) {
+			System.out.println(String.format("Não foi possível cadastrar a digital cadastrada %d", fingerNo));
+		}
+
+		return digitalCadastrada;
+
+	}
+
+	private boolean vinculaDigitalUsuario(final String deviceId, final Integer fingerNo, final String idUser,
+			final String fingerData) {
+		return hikiVisionIntegrationService.vinculaDigitalUsuario(deviceId, idUser, fingerNo, fingerData);
+
+	}
+
+	private boolean buscarUsuario(final String deviceId, final String searchID, final String idUser) {
+		return hikiVisionIntegrationService.buscarDigitalUsuario(deviceId, idUser, null);
+
+	}
+
+	private boolean apagarUsuario(final String deviceId, String idUser, Integer fingerNo) {
+		return hikiVisionIntegrationService.apagarDigitalUsuario(deviceId, idUser, fingerNo);
+
+	}
+
 	private HikivisionDeviceTO.Device getDeviceByName(final String deviceName) {
 		final HikivisionDeviceTO devices = hikiVisionIntegrationService.listarDispositivos();
-		
-		if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
-            return null;
-        }
 
-        for (MatchList matchList : devices.getSearchResult().getMatchList()) {
-        	if(deviceName.equalsIgnoreCase(matchList.getDevice().getDevName())) {
-        		return matchList.getDevice();
-        	}
-        }
-        
-        return null;
+		if (devices == null || devices.getSearchResult().getTotalMatches() == 0) {
+			return null;
+		}
+
+		for (MatchList matchList : devices.getSearchResult().getMatchList()) {
+			if (deviceName.equalsIgnoreCase(matchList.getDevice().getDevName())) {
+				return matchList.getDevice();
+			}
+		}
+
+		return null;
 	}
-	
+
 	public void apagarFotosUsuario(final PedestrianAccessEntity pedestre) {
 		final List<Device> devices = listarDispositivos();
-		
+
 		devices.forEach(device -> {
-			final boolean isFotoUsuarioJaCadastrada = hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(device.getDevIndex(), pedestre.getCardNumber());
-			
-			if(isFotoUsuarioJaCadastrada) {
+			final boolean isFotoUsuarioJaCadastrada = hikiVisionIntegrationService
+					.isFotoUsuarioJaCadastrada(device.getDevIndex(), pedestre.getCardNumber());
+
+			if (isFotoUsuarioJaCadastrada) {
 				hikiVisionIntegrationService.apagarFotoUsuario(device.getDevIndex(), pedestre.getCardNumber());
 			}
 		});
-		
+
 		pedestre.setDataCadastroFotoNaHikivision(null);
 		pedestre.setLastAccessHikiVision(null);
 	}

@@ -1,5 +1,8 @@
 package com.protreino.services.usecase;
 
+import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
+import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
+
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -33,6 +36,7 @@ public class HikivisionEventsUseCase {
 
 	private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 
 	private static Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
 		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
@@ -82,7 +86,7 @@ public class HikivisionEventsUseCase {
 					e.printStackTrace();
 				}
 			}
-			salvaLogDePedestreOffline(cardNumber, attachedDevice.getFullIdentifier(), offsetDateTime);
+			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime);
 
 		} else {
 			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime);
@@ -90,26 +94,59 @@ public class HikivisionEventsUseCase {
 
 	}
 
-	private void salvaLogDePedestreOffline(final String cardNumber, final String equipamento, final OffsetDateTime dataAcesso) {
+	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso) {
 		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
 		if (Objects.isNull(pedestre)) {
 			return;
 		}
-
-		LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
-		String direcaoDeUltimoSentido = Tipo.ENTRADA;
+		
+		final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffiline(pedestre, device, dataAcesso);
+		decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline);
+	}
+	
+	private LogPedestrianAccessEntity salvaLogDeAcessoEventoCatracaOffiline(final PedestrianAccessEntity pedestre, final TopDataDevice device, final OffsetDateTime dataAcesso) {
+		final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
+		String sentido = Tipo.ENTRADA;
 
 		if (Objects.nonNull(lastAccess)) {
 			if (Objects.equals(Tipo.ENTRADA.toString(), lastAccess.getDirection())) {
-				direcaoDeUltimoSentido = Tipo.SAIDA;
+				sentido = Tipo.SAIDA;
 			}
 		}
 		
 		LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-				pedestre.getId(), true, "", "Offline", direcaoDeUltimoSentido, equipamento, cardNumber, new Date(dataAcesso.toInstant().toEpochMilli()));
+				pedestre.getId(), true, "", "Offline", sentido, device.getFullIdentifier(), pedestre.getCardNumber(), new Date(dataAcesso.toInstant().toEpochMilli()));
+		
+		return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logEventoOffline)[0];
+	}
+	
+	private void decrementaCreditosERemoveUsuarioDaCamera(final PedestrianAccessEntity pedestre, final TopDataDevice device, final LogPedestrianAccessEntity logEventoOffline) {
+		boolean ignoraRegras = device.getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
 
-		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logEventoOffline);
+		if(ignoraRegras) {
+			return;
+		}
+		
+		final boolean bloquearSaida = device.getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
+		final Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean("removeVisitanteCameraSaida");
+
+		if(logEventoOffline.isSaida() || !bloquearSaida) {
+			 pedestre.decrementaCreditos();
+		}
+		
+		if(!pedestre.temCreditos() && pedestre.isVisitante()) {
+			if(Utils.isHikivisionConfigValid() 
+					&& Objects.nonNull(pedestre.getFoto()) 
+					&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
+				if(removeVisitanteCamera) {
+					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+				}
+			}
+			
+		}
+		
+		HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 	}
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso) {
@@ -121,7 +158,7 @@ public class HikivisionEventsUseCase {
 			if(selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);
 			} else {
-				salvaLogDePedestreOffline(cardNo, selectedDevice.getFullIdentifier(), dataAcesso);
+				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso);
 			}
 
 		} else {
