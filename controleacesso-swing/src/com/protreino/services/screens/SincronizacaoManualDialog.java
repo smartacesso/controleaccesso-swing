@@ -138,7 +138,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		syncCameraListners = new JButton("Sincronizar listeners");
 		syncCameraListners.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncCameraListners.setPreferredSize(new Dimension(140, 40));
-		syncCameraListners.setVisible(Objects.isNull(Main.servidor));
+		syncCameraListners.setVisible(!Main.temServidor());
 		syncCameraListners.addActionListener(e -> {
 			syncCameraListners();
 		});

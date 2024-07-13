@@ -147,7 +147,7 @@ public class AvailableDevicesPanel extends JPanel {
 		
 		List<DeviceEntity> devices = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
 		List<DeviceEntity> devicesServidor = null;
-		if(Main.servidor != null) {
+		if(Main.temServidor()) {
 			devicesServidor = (List<DeviceEntity>) HibernateAccessDataFacade.buscaListaDevicesDoServidor(DeviceEntity.class, "DeviceEntity.findAll");
 		}
 		

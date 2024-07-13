@@ -65,6 +65,7 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
 import com.protreino.services.utils.WrapLayout;
@@ -127,6 +128,7 @@ public class MainScreen extends JFrame {
 	public CartaoComandaDialog cadastroCartao;
 	
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	private final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
 
 	public MainScreen() {
 		instance = this;
@@ -247,7 +249,7 @@ public class MainScreen extends JFrame {
 			position++;
 		}
 		
-		if(Main.servidor != null) {
+		if(Main.temServidor()) {
 			devicefromServerPanel = new DevicefromServerPanel();
 			tabbedPane.addTab("Devices do servidor", devicefromServerPanel);
 			label = new JLabel("Devices do servidor");
@@ -319,14 +321,18 @@ public class MainScreen extends JFrame {
 		if ("OK".equals(option)) {
 			newDevice = newDeviceDialog.getNewDevice();
 
-			if(newDevice instanceof ServerDevice)
-				Main.servidor = (ServerDevice) newDevice;
+			if(newDevice instanceof ServerDevice) {
+				Main.addServidor((ServerDevice) newDevice);
+			}
 			
-			if(newDevice instanceof LcDevice)
+			if(newDevice instanceof LcDevice) {
 				Main.possuiLeitorLcAdd = true;
+			}
 			
-			if(Main.devicesList == null)
+			if(Main.devicesList == null) {
 				Main.devicesList = new ArrayList<Device>();
+			}
+				
 			Main.devicesList.add(newDevice);
 			addDeviceCard(newDevice);
 			DeviceEntity deviceEntity = new DeviceEntity(newDevice);
@@ -484,7 +490,7 @@ public class MainScreen extends JFrame {
 			liberarAcessoMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Main.releaseAccess();
+					releaseAccessUseCase.execute(null, null);
 				}
 			});
 			menuOpcoes.add(liberarAcessoMenuItem);
@@ -733,7 +739,7 @@ public class MainScreen extends JFrame {
 		liberarAcessoButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Main.releaseAccess();
+				releaseAccessUseCase.execute(null, null);
 			}
 		});
 		toolBar.add(liberarAcessoButton);
@@ -870,16 +876,16 @@ public class MainScreen extends JFrame {
 	private void syncUsers(){
 		try {
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			if (!Main.updatingUsersAccessList) {
+			if (!Main.getUpdatingUsersAccessList()) {
 				Main.syncUsersAccessList();
-				while (Main.updatingUsersAccessList)
+				while (Main.getUpdatingUsersAccessList()) {
 					Thread.sleep(100);
+				}
 			}
-		}
-		catch (Exception e) {
+
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 	}

@@ -928,7 +928,14 @@ public class RegisterVisitorDialog extends BaseDialog {
         cadastrarDigitalButton.setBorder(new EmptyBorder(20, 20, 20, 20));
         cadastrarDigitalButton.setPreferredSize(new Dimension(150, 40));
         cadastrarDigitalButton.addActionListener(e -> {
-            criarDialogoEscolherCatracaParaCadastroDigital();
+        
+        	if(Utils.getPreference("").equalsIgnoreCase("HIKIVISION")) {
+        		//criarDialogoCadastrarBiometriaHikivision();
+        		
+
+        	} else {
+        		criarDialogoEscolherCatracaParaCadastroDigital();
+        	}
         });
 
         cadastrarFaceButton = new JButton("Cadastrar face");
@@ -948,7 +955,14 @@ public class RegisterVisitorDialog extends BaseDialog {
         addVisitorButton.addActionListener(e -> {
             boolean valido = validarCampos();
             if (valido) {
-                adicionarVisitante();                                        
+            	
+                adicionarVisitante();          
+                
+                if(Objects.nonNull(hikivisionUseCases)) {
+                	//hikivisionUseCases.adicionarDigitalUsuario("A0F722D9-5FA8-4F80-BEFE-C7A9B38744E8", 3, "3");
+                	salvarFotoVisitanteHikivision();
+                }
+                
                 limparTodosOsCampos();
                 this.dispose();
 

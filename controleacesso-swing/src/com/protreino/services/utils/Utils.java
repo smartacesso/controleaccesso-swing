@@ -54,6 +54,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
@@ -347,12 +348,14 @@ public class Utils {
 				FieldType.TEXT, "5", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccess",
 				"Limitar a quantidade de acessos por pedestre por dia", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "biometricRegistrationType", "Tipo de cadastro de biometria",
+				FieldType.COMBOBOX, "Catraca ou Device_CATRACA", "Catraca ou Device_CATRACA;Hikivision_HIKIVISION"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccessDays", "Limite de acessos",
 				FieldType.NUMERIC_LIST, "1", "1;1;5"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "toleranceAccess",
-				"TolerÃ¢ncia de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tolerância de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "minTimeBetweenAccess",
-				"Tempo mÃ­nimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+				"Tempo mánimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeAccessList",
 				"Tempo de atualização da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeUserAccessList",
@@ -513,6 +516,8 @@ public class Utils {
 				"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "deletePhotoFromInactivePedestrian",
 				"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeVisitanteCameraSaida",
+				"Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {
@@ -550,6 +555,11 @@ public class Utils {
 				}
 			}
 		}
+	}
+	
+	public static UserEntity userLogado() {
+		UserEntity user = Main.loggedUser;
+		return user;
 	}
 
 	public static String exportPreferences() {
@@ -1024,8 +1034,10 @@ public class Utils {
 			if (con.getResponseCode() == 200) {
 				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				StringBuilder stringBuilder = new StringBuilder();
-				while (null != (bufferedString = bufferedReader.readLine()))
+				while (null != (bufferedString = bufferedReader.readLine())) {
 					stringBuilder.append(bufferedString);
+				}
+					
 				version = stringBuilder.toString();
 			}
 		} catch (Exception e) {
@@ -1038,13 +1050,15 @@ public class Utils {
 		try {
 			URL url = new URL(link);
 			Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-			if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE))
+			if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 				desktop.browse(url.toURI());
-			else
+			
+			} else {
 				JOptionPane.showConfirmDialog(null,
 						"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
-								+ link,
-						title, JOptionPane.OK_CANCEL_OPTION);
+								+ link, title, JOptionPane.OK_CANCEL_OPTION);
+			}
+		
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showConfirmDialog(null,
@@ -1112,8 +1126,10 @@ public class Utils {
 			List<InetAddress> addressesList = Utils.getAllLocalHostLANAddress();
 			if (addressesList != null && !addressesList.isEmpty()) {
 				for (InetAddress inetAddress : addressesList) {
-					if (inetAddress.isSiteLocalAddress())
+					if (inetAddress.isSiteLocalAddress()) {
 						local.add(inetAddress.getHostAddress());
+					}
+						
 				}
 			}
 		} catch (Exception e) {
@@ -1635,21 +1651,69 @@ public class Utils {
 	        throw new RuntimeException(e);
 	    }
 	}
+	
+	public static Long convert(Long key) {
+		String abatrackHexa = Long.toHexString(key);
 
-	public static String toHEX(String Cartao) {
+		if (abatrackHexa.length() == 5) {
+			abatrackHexa = "0" + abatrackHexa;
+		}
+		
+		if (abatrackHexa.length() == 4) {
+			abatrackHexa = "00" + abatrackHexa;
+		}
+		
+		int abaLength = abatrackHexa.length();
+		String abatrackLast4 = abatrackHexa.substring(abaLength - 4);
+		String abatrackRest = abatrackHexa.substring(abaLength - 6, abaLength - 4);
+
+		int numberOfZeros = 0;
+
+		for (int i = 0; i < abatrackLast4.length(); i++) {
+			if (abatrackLast4.charAt(i) == '0') {
+				numberOfZeros++;
+			} else {
+				break;
+			}
+		}
+
+		Long wiegandEnd = Long.parseLong(abatrackLast4, 16);
+		if (wiegandEnd.toString().length() < 5 && numberOfZeros == 0) {
+			numberOfZeros += 5 - wiegandEnd.toString().length();
+		}
+		Long wiegandBegin = Long.parseLong(abatrackRest, 16);
+		String wiegandEndZeros = "";
+		for (int i = 0; i < numberOfZeros; i++) {
+			wiegandEndZeros += "0";
+		}
+
+		String wiegandString = wiegandBegin.toString() + wiegandEndZeros + wiegandEnd.toString();
+
+		return Long.parseLong(wiegandString);
+	}
+
+	public static String toHEX(String cartao) {
 		try {
-			long longAbatrack = Long.parseLong(Cartao);
-			long fclong = Long.parseLong(Cartao);
+			long longAbatrack = Long.parseLong(cartao);
+//			long fclong = Long.parseLong(cartao);
+
 			String hexAbatrack = Long.toHexString(longAbatrack);
-			String hexWigan = hexAbatrack.substring(hexAbatrack.length() - 4);
+			String hexWigan = hexAbatrack.substring(0, 4);
+
 //			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
-			String fcWiegand = "";
-			String temp = "";
-			fcWiegand = hexAbatrack.substring(hexAbatrack.length() - 6);
-			temp += fcWiegand.charAt(0);
-			temp += fcWiegand.charAt(1);
+			String fcWiegand = hexAbatrack.substring(4);
+			String fcwiegand = "";
+			if(!Objects.equals(fcWiegand, "")) {
+				String temp = "";
+				temp += fcWiegand.charAt(0);
+				temp += fcWiegand.charAt(1);
+				long fclong = new BigInteger(temp, 16).longValue();
+				fcwiegand = String.valueOf(fclong);
+				
+			}
+		
 			longAbatrack = new BigInteger(hexWigan, 16).longValue();
-			fclong = new BigInteger(temp, 16).longValue();
+			
 			String wiegand = String.valueOf(longAbatrack);
 			if (wiegand.length() < 4) {
 				wiegand = "00" + wiegand;
@@ -1658,13 +1722,14 @@ public class Utils {
 				wiegand = "0" + wiegand;
 			}
 
-			String fcwiegand = String.valueOf(fclong);
+			
 			String fcwiegandtg = fcwiegand + wiegand;
 			return fcwiegandtg;
 
 		} catch (Exception e) {
-			System.out.println("Não foi possível converter cartão " + Cartao + "\n motivo " + e.getMessage());
-			return Cartao;
+			e.printStackTrace();
+			System.out.println("Não foi possível converter cartão " + cartao + "\n motivo " + e.getMessage());
+			return cartao;
 		}
 
 	}
@@ -1698,16 +1763,10 @@ public class Utils {
 	
 
 	public static void main(String[] args) {
-	
-			  String[] teste1 = {
-		                "12345", "21456", "12389", "72341"
-		        };
-		      //  teste1("12345");
-		        for (String test : teste1) {
-		            System.out.printf("%s = %b%n", test, test.matches(
-		                    "^(?=\\d{5}$)(?:(.)\\1*|0?1?2?3?4?5?6?7?8?9?)$"
-		            ));
-		        }
+		final String numberStr = "00279181436731";
+		
+		Long response = convert(Long.parseLong(numberStr));
+		System.out.println(response);
 	}
 	
 	@SuppressWarnings("unused")

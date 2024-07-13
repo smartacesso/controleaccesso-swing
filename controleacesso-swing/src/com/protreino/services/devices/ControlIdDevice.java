@@ -54,6 +54,7 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.utils.HttpRequestParser;
 import com.protreino.services.utils.Utils;
 
@@ -605,10 +606,12 @@ public class ControlIdDevice extends Device {
 			
 			String openGate = "both";
 			
-			if(Main.apertouF10)
+			if(ReleaseAccessUseCase.getApertouF10()) {
 				openGate = sentidoEntrada.equals(CLOCKWISE) ? ANTICLOCKWISE : CLOCKWISE;
-			else if(Main.apertouF9)
+			
+			} else if(ReleaseAccessUseCase.getApertouF9()) {
 				openGate = sentidoEntrada.equals(CLOCKWISE) ? CLOCKWISE : ANTICLOCKWISE;
+			}
 			
 			openGate(openGate);
 		

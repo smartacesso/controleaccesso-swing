@@ -32,6 +32,7 @@ import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.PreferenceTO;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.PanelWithLabel;
 import com.protreino.services.utils.Utils;
 
@@ -265,8 +266,9 @@ public class PreferencesDialog extends JDialog {
 					Utils.setPreference(key, field.getValue());
 				}
 				
-				if(Main.servidor == null)
+				if(Main.temServidor()) {
 					Utils.exportPreferences();
+				}
 				
 				JOptionPane.showMessageDialog(Main.mainScreen, "PreferÃªncias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();
@@ -293,10 +295,10 @@ public class PreferencesDialog extends JDialog {
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "ConfirmaÃ§Ã£o", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmação", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (dialogResult == JOptionPane.YES_OPTION){
-					Main.lastSync = 0l;
+					SyncPedestrianAccessListUseCase.setLastSync(0l);
 				}
 			}
 		});

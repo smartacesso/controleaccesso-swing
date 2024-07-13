@@ -62,6 +62,7 @@ import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianMessagesEntity;
 import com.protreino.services.entity.TemplateEntity;
+import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.DeviceStatus;
@@ -82,6 +83,7 @@ import com.protreino.services.to.ConfigurationTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
@@ -91,6 +93,7 @@ import com.topdata.easyInner.enumeradores.Enumeradores.EstadosInner;
 @SuppressWarnings("serial")
 public class TopDataDevice extends Device {
 	
+	private UserEntity user = Utils.userLogado();
 	public static boolean portaAberta = false;
 	protected EasyInner easyInner;
 	protected Inner inner;
@@ -110,8 +113,8 @@ public class TopDataDevice extends Device {
 	//private int exportType = NBioBSPJNI.EXPORT_MINCONV_TYPE.FIM01_HV; // FIM01_HV = 7 ; ANSI = 35
 	private String mensagemEntradaOffLine       = "Entrada liberada";
 	private String mensagemSaidaOffLine         = " Saida liberada ";
-	private String mensagemPadraoOffLine        = "  Modo OffLine  ";
-	private String mensagemPadraoMudancaOffLine = "  Modo OffLine  ";
+	private String mensagemPadraoOffLine        =  user.getName();
+	private String mensagemPadraoMudancaOffLine =  user.getName();
 	private String mensagemPadraoMudancaOnLine  = "  Modo Online   ";
 	protected boolean sendingConfiguration = false;
 	private IndexSearch indexSearchEngine;
@@ -135,7 +138,7 @@ public class TopDataDevice extends Device {
 
 	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	private final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
-	
+	final Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean("removeVisitanteCameraSaida");
 	public TopDataDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
 		this.deviceEntity = deviceEntity;
@@ -334,7 +337,7 @@ public class TopDataDevice extends Device {
 									e.printStackTrace();
 								} finally {
 									Main.validandoAcesso = false;
-									if(Main.servidor != null) {
+									if(Main.temServidor()) {
 										HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
 									}
 								}
@@ -773,8 +776,9 @@ public class TopDataDevice extends Device {
 		return true;
 	}
 
+	
 	protected void registraGiro(int sentido, Date data) {
-		String query = null;
+		String query = "";
 
 		HashMap<String, Object> args = new HashMap<String, Object>();
 		args.put("EQUIPAMENTO", getFullIdentifier());
@@ -789,7 +793,8 @@ public class TopDataDevice extends Device {
 				args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
 				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 			
-			} else if(cartaoStr.isEmpty()) {
+			} else if(cartaoStr.isEmpty()
+					|| "".equals(cartaoStr.replace("0",""))) {
 				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
 			}
 		
@@ -808,9 +813,10 @@ public class TopDataDevice extends Device {
 		}
 		
 		inner.BilheteInner.Cartao = new StringBuilder();
-
-		LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
-							.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+		
+		 LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
+		                        .getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+		
 		
 		if(ultimoAcesso == null) {
 			return;
@@ -873,8 +879,11 @@ public class TopDataDevice extends Device {
 			if(!pedestre.temCreditos() && pedestre.isVisitante()) {
 				if(Utils.isHikivisionConfigValid() 
 						&& Objects.nonNull(pedestre.getFoto()) 
-						&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
-					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+						&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {					
+					if(removeVisitanteCamera) {						
+						hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+					}
+
 				} else {
 					pedestre.apagarCartao();				
 				}
@@ -1184,7 +1193,7 @@ public class TopDataDevice extends Device {
 			}
 			
 		} else {
-			if(Main.apertouF10) {
+			if(ReleaseAccessUseCase.getApertouF10()) {
 				mensagemPermitido = !"anticlockwise".equals(sentidoCatraca) 
 						? formatMessage("<-" + espacoEntrar + sair + ";" + "") 
 						: formatMessage(sair + espacoEntrar + "->" + ";" + "");
@@ -1889,7 +1898,7 @@ public class TopDataDevice extends Device {
 			}
 			
 			Main.validandoAcesso = true;
-			if(Main.servidor != null) {
+			if(Main.temServidor()) {
 				HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
 			}
 			
@@ -1921,7 +1930,7 @@ public class TopDataDevice extends Device {
 		} finally {
 			validandoAcesso = false;
 			Main.validandoAcesso = false;
-			if(Main.servidor != null) {
+			if(Main.temServidor()) {
 				HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
 			}
 		}
@@ -2006,7 +2015,7 @@ public class TopDataDevice extends Device {
 		int countTentativasEnvioComando = 0;
 		EasyInner.DefinirMensagemEntradaOffLine(0, mensagemEntradaOffLine);
         EasyInner.DefinirMensagemSaidaOffLine(0, mensagemSaidaOffLine);            
-        EasyInner.DefinirMensagemPadraoOffLine(1, mensagemPadraoOffLine);
+        EasyInner.DefinirMensagemPadraoOffLine(0, mensagemPadraoOffLine);
         int ret = EasyInner.EnviarMensagensOffLine(inner.Numero);
         while (ret != easyInner.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
         	Utils.sleep(tempoEspera);
@@ -2309,7 +2318,7 @@ public class TopDataDevice extends Device {
 			EasyInner.EnviarConfiguracoes(inner.Numero);
 			EasyInner.DefinirMensagemEntradaOffLine(0, mensagemEntradaOffLine);
 			EasyInner.DefinirMensagemSaidaOffLine(0, mensagemSaidaOffLine);
-			EasyInner.DefinirMensagemPadraoOffLine(1, mensagemPadraoOffLine);
+			EasyInner.DefinirMensagemPadraoOffLine(0, mensagemPadraoOffLine);
 			EasyInner.EnviarMensagensOffLine(inner.Numero);
 
 			if(fechaPorta) {
@@ -2518,9 +2527,9 @@ public class TopDataDevice extends Device {
             
             if(indexSearchEngine != null) {
             	indexSearchEngine.AddFIR(storedInputFIR, templateEntity.getId().intValue(), indexSearchEngine.new SAMPLE_INFO());
-         
-            }	if (!bsp.IsErrorOccured() && bsp.GetErrorCode()!=0) {
-
+            }
+            
+            if (!bsp.IsErrorOccured() && bsp.GetErrorCode()!=0) {
     			System.out.println(sdf.format(new Date()) + " topdata topdata Erro ao adicionar template na IndexSearchEngine. Erro: " + bsp.GetErrorCode());
     		}
 		

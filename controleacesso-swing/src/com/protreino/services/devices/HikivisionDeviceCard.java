@@ -2,15 +2,20 @@ package com.protreino.services.devices;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -19,10 +24,12 @@ import com.protreino.services.constants.Configurations;
 import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class HikivisionDeviceCard extends JPanel {
-
+	private HikivisionUseCases hikivisionUseCases;
 	private JPanel namePanel;
 	private JLabel nameLabel;
 	private JLabel icon;
@@ -33,8 +40,14 @@ public class HikivisionDeviceCard extends JPanel {
 	private JLabel statusIcon;
 	private JLabel linkIconLabel;
 	private JLabel link;
+
 	
 	public HikivisionDeviceCard(HikivisionDeviceTO.Device device) {
+		
+		   if (Utils.isHikivisionConfigValid()) {
+	            hikivisionUseCases = new HikivisionUseCases();
+	        }
+		   
 		loadImages();
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -84,6 +97,35 @@ public class HikivisionDeviceCard extends JPanel {
 		mensagemPanel.add(mensagemLabel);
 		mensagemPanel.add(Box.createHorizontalGlue());
 		add(mensagemPanel);
+		
+		   // Adicionar botão "Conectar"
+		Dimension buttonSize = new Dimension(180,35);
+        JButton liberaButton = new JButton("Liberar");
+        liberaButton.setPreferredSize(buttonSize);
+        liberaButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centralizar o botão
+        add(liberaButton);
+        
+        liberaButton.addMouseListener(new java.awt.event.MouseAdapter() {
+		    public void mouseEntered(java.awt.event.MouseEvent evt) {
+		    	if (liberaButton.isEnabled()) {
+		    		liberaButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		    	}
+		    }
+		    public void mouseExited(java.awt.event.MouseEvent evt) {
+		    	liberaButton.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		    }
+		});
+        
+        // Adicionar listener de ação para o botão
+        liberaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {            	            	
+                // Lógica de conexão aqui          	           	
+                if(Objects.nonNull(hikivisionUseCases)) {
+                	hikivisionUseCases.liberaCameraRemoto(device.getDevIndex());
+                }
+            }
+        });
 	}
 	
 	public void setMensagem(String novaMensagem, MessageType tipoMensagem){

@@ -22,6 +22,7 @@ import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.BroadcastMessageTO;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.utils.Utils;
 
 public class EscolherSentidoLiberarAcessoDialog{
@@ -103,9 +104,9 @@ public class EscolherSentidoLiberarAcessoDialog{
 		logAccess.setDirection(Tipo.SAIDA);
 		logAccess.setEquipament(this.device.getFullIdentifier());
 		
-		Main.apertouF10 = true;
+		ReleaseAccessUseCase.setApertouF10(true);
 		liberarCatraca();
-		Main.apertouF10 = false;
+		ReleaseAccessUseCase.setApertouF10(false);
 		janelaLiberarAcessoAberta = false;
 	}
 	

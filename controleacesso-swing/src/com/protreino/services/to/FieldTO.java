@@ -525,24 +525,24 @@ public class FieldTO {
 		
 		if (FieldType.TEXT.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " Ã© obrigatÃ³rio.";
+				return "O campo " + name.toUpperCase() + " É obrigatário.";
 			if (maxCharacteres != null && textField.getText().trim().length() > maxCharacteres)
-				return "O campo " + name.toUpperCase() + " Ã© maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
 			if (minCharacteres != null && textField.getText().trim().length() < minCharacteres)
-				return "O campo " + name.toUpperCase() + " Ã© menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
 		
 		} else if (FieldType.MESSAGE_LINES.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " Ã© obrigatÃ³rio.";
+				return "O campo " + name.toUpperCase() + " É obrigatário.";
 			if (maxCharacteres != null 
 					&& (textField.getText().trim().length() > maxCharacteres 
 							|| textField2.getText().trim().length() > maxCharacteres)) {
-				return "O campo " + name.toUpperCase() + " Ã© maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
 			}
 			if (minCharacteres != null 
 					&& (textField.getText().trim().length() < minCharacteres 
 							|| textField2.getText().trim().length() < minCharacteres)) {
-				return "O campo " + name.toUpperCase() + " Ã© menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
 			}
 		}
 		

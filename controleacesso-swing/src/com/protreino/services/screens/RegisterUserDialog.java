@@ -54,6 +54,7 @@ import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -96,6 +97,7 @@ public class RegisterUserDialog extends JDialog{
 	protected int registrosPorPagina = 10;
 	
 	private HashMap<String, Object> args;
+	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
 	
 	public RegisterUserDialog(Frame owner, Device device){
 		super(owner, "Cadastro de usu·rios " + (device.isCatraca() ? "na catraca " : (device.isLeitorBiometrico() ? "com o leitor " : "com a c√¢mera ")) + device.getName(), true);
@@ -540,16 +542,16 @@ public class RegisterUserDialog extends JDialog{
 	private void sync(){
 		try {
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			if (!Main.updatingAthleteAccessList) {
-				Main.syncAthleteAccessList();
-				while (Main.updatingAthleteAccessList)
+			if (!SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
+				syncPedestrianAccessListUseCase.syncPedestrianAccessList();
+				while (SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
 					Thread.sleep(100);
+				}
+
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 	}

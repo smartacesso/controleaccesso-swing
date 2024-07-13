@@ -20,7 +20,7 @@ public class HibernateAccessDataFacade {
 
 	public static synchronized <T> Object getSingleResultById(Class<T> entityClass, Long id) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 
@@ -33,7 +33,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getAllPedestresById(Long id) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -50,7 +50,7 @@ public class HibernateAccessDataFacade {
 	
 	public static int getResultListCount(Class<?> entityClass, String namedQuery, HashMap<String, Object> args) {
 		if (Main.temServidor() && !DeviceEntity.class.equals(entityClass)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return 0;
 			}
 		
@@ -64,7 +64,7 @@ public class HibernateAccessDataFacade {
 	public static synchronized List<LogPedestrianAccessEntity> buscaLogsDeAcessoPaginados(String namedQuery, HashMap<String, Object> args, 
 			Integer inicio, Integer quantidade) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 		
@@ -77,7 +77,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> List<?> getResultList(Class<T> entityClass, String namedQuery) {
 		if (Main.temServidor() && !DeviceEntity.class.equals(entityClass)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -90,7 +90,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> List<?> buscaListaDevicesDoServidor(Class<T> entityClass, String namedQuery) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 		
@@ -103,7 +103,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> List<?> getResultListLimited(Class<T> entityClass, String namedQuery, Long quantidade) {
 		if (Main.temServidor() && !DeviceEntity.class.equals(entityClass)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -122,7 +122,7 @@ public class HibernateAccessDataFacade {
 	public static synchronized <T> List<?> getResultListWithParams(Class<T> entityClass, String namedQuery,
 			HashMap<String, Object> args, Integer inicio, Integer quantidade) {
 		if (Main.temServidor() && !entityClass.equals(PreferenceEntity.class)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 		
@@ -135,7 +135,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized int getResultListWithParamsCount(Class<?> entityClass, String namedQuery, HashMap<String, Object> args) {
 		if (Main.temServidor() && !entityClass.equals(PreferenceEntity.class)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return 0;
 			}
 			
@@ -148,7 +148,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getUniqueResultWithParams(Class<T> entityClass, String namedQuery, HashMap<String, Object> args) {
 		if (Main.temServidor() && !entityClass.equals(PreferenceEntity.class)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -177,7 +177,7 @@ public class HibernateAccessDataFacade {
 	public static synchronized <T> List<?> getResultListWithDynamicParams(Class<T> entityClass, String construtor,
 			String join, String groupBy, String orderColumn, HashMap<String, Object> args, Integer inicio, Integer quantidade) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -191,7 +191,7 @@ public class HibernateAccessDataFacade {
 	public static synchronized int getResultListWithDynamicParamsCount(Class<?> entityClass, String construtor,
 			String join, String groupBy, HashMap<String, Object> args) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return 0;
 			}
 
@@ -204,7 +204,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResult(Class<T> entityClass, String namedQuery) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 
@@ -217,7 +217,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized long countAcessosPedestre(Long idPedestre) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return 0l;
 			}
 			
@@ -230,7 +230,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResultByCardNumber(Class<T> entityClass, Long cardNumber) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -243,7 +243,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResultByRG(Class<T> entityClass, String rg) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -256,7 +256,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResultByCPF(Class<T> entityClass, String cpf) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -269,7 +269,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized Object[] save(Class<?> classeEntidade, ObjectWithId object) {
 		if (Main.temServidor() && !(object instanceof DeviceEntity) && !(object instanceof PreferenceEntity)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 
@@ -282,7 +282,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized Object[] update(Class<?> classeEntidade, ObjectWithId object) {
 		if (Main.temServidor() && !(object instanceof DeviceEntity) && !(object instanceof PreferenceEntity)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -296,7 +296,7 @@ public class HibernateAccessDataFacade {
 	public static synchronized void remove(Object object) {
 		if (Main.temServidor() && !(object instanceof DeviceEntity)
 				&& !(object instanceof ConfigurationGroupEntity)) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			
@@ -339,7 +339,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized UserEntity buscaUsuarioPeloLogin(String loginName, String password) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -352,7 +352,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResultByRegistration(Class<T> entityClass, Long matricula) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -365,7 +365,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized void apagarPastaDeFotos(Long idUser) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			
@@ -378,7 +378,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized void registraNovasFotosPedestre(Long idUsuario) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			
@@ -391,7 +391,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized void registraExclusaoFotosPedestre(Long idUsuario) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			
@@ -404,7 +404,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized Boolean isPastaDeFotosExistente(Integer idUser) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -417,7 +417,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized void enviaInicioVerificandoAcesso() {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 		}
@@ -427,7 +427,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized void enviaFimVerificandoAcesso() {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			
@@ -436,7 +436,7 @@ public class HibernateAccessDataFacade {
 	}
 	
 	public static synchronized List<DeviceTO> getListDeviceFromServer() {
-		if (Main.servidor == null || Main.servidor.isNotConnected()) {
+		if (!Main.temServidor() || Main.getServidor().isNotConnected()) {
 			return null;
 		}
 		
@@ -444,7 +444,7 @@ public class HibernateAccessDataFacade {
 	}
 	
 	public static synchronized void liberarAcessoNoServidor(String indentifier, String sentido) {
-		if (Main.servidor == null || Main.servidor.isNotConnected()) {
+		if (!Main.temServidor() || Main.getServidor().isNotConnected()) {
 			return;
 		}
 		
@@ -453,7 +453,7 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized <T> Object getSingleResultByIdTemp(Class<PedestrianAccessEntity> entityClass, Long id) {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return null;
 			}
 			
@@ -465,7 +465,7 @@ public class HibernateAccessDataFacade {
 	
 	public static void resetStatusAllCards() {
 		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
+			if (Main.getServidor().isNotConnected()) {
 				return;
 			}
 			

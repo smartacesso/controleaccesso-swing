@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -385,12 +386,12 @@ public class AccessHistoryPanel extends PaginedListPanel {
 	}
 
 	public void updateDateLastSync() {
-		if (Main.lastSyncLog != null && Main.lastSyncLog > 0) {
-			Date date = new Date(Main.lastSyncLog);
+		if (Objects.nonNull(Main.getLastSyncLog()) && Main.getLastSyncLog() > 0) {
+			Date date = new Date(Main.getLastSyncLog());
 			dateLastSync.setText("Atualizado: " + sdfComHora.format(date));
-		}
-		else
+		} else {
 			dateLastSync.setText(" ");
+		}
 	}
 	
 	public boolean isLoad() {

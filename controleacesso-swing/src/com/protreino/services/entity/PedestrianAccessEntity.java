@@ -113,6 +113,13 @@ import com.protreino.services.utils.EncryptionUtils;
 					  + "from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
 					  + "order by obj.name asc"),
+	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessListPedestre",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
+					  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo) "
+					  + "from PedestrianAccessEntity obj "
+					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
+					  + " and obj.tipo = 'PEDESTRE' "
+					  + "order by obj.name asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
 					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "

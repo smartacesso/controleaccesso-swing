@@ -42,11 +42,14 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class LoginDialog extends JDialog {
+	
+	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
 	
 	private ImageIcon logoIcon;
 	private JTextField unidadeTextField;
@@ -57,7 +60,7 @@ public class LoginDialog extends JDialog {
 	private JButton cancelarButton;
 	
 	public LoginDialog(){
-		super(Main.mainScreen, "AutenticacÃ£o", true);
+		super(Main.mainScreen, "Autenticacao", true);
 		
 		loadImages();
 		
@@ -180,7 +183,7 @@ public class LoginDialog extends JDialog {
 												chaveIntegracaoComtele, expedidora, habilitaPedestre, perfilAcesso);
 										Main.loggedUser.setUseBiometry(true);
 										Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
-										Main.lastSync = 0l;
+										SyncPedestrianAccessListUseCase.setLastSync(0l);
 										Main.devicesList = new ArrayList<Device>();
 										Main.releaseTicketGateMenuItem.setEnabled(true);
 										Main.updateAccessListMenuItem.setEnabled(true);
@@ -188,7 +191,7 @@ public class LoginDialog extends JDialog {
 										loginMessageLabel.setText("Coletando configurações e pedestres...");
 										//tras dados gerais antes de abrir
 										Main.syncUsersAccessList();
-										Main.syncAthleteAccessList();
+										syncPedestrianAccessListUseCase.syncPedestrianAccessList();
 										Main.syncLogAthleteAccess();
 										
 										// Buscando backup de dispostivos e preferÃªncias
@@ -207,9 +210,9 @@ public class LoginDialog extends JDialog {
 											Utils.importDevices();
 										}
 										
-										while(Boolean.TRUE.equals(Main.updatingUsersAccessList)
-												|| Boolean.TRUE.equals(Main.updatingAthleteAccessList)
-													|| Boolean.TRUE.equals(Main.updatingLogAccessList)) {
+										while(Boolean.TRUE.equals(Main.getUpdatingUsersAccessList())
+												|| Boolean.TRUE.equals(SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList())
+													|| Boolean.TRUE.equals(Main.getUpdatingLogAccessList())) {
 											Utils.sleep(500);
 										}
 										

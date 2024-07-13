@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.SwingWorker;
 
@@ -198,9 +199,12 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 
 		// volta cartão para o status de AGUARDANDO
 		if (matched != null) {
-
+			
+			
 			// verifica sentido
-			if ("ENTRADA".equals(this.tipo)) {
+			if ("ENTRADA".equals(this.tipo) || 
+					Objects.equals(getConfigurationValueAsString(LEITOR_1), "Somente entrada_1")) {
+				
 				// bloqueia se entrada
 				matched.setDataAlteracao(new Date());
 				matched.setStatus(
@@ -211,6 +215,8 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				matched.setDataAlteracao(new Date());
 				matched.setStatus(StatusCard.AGUARDANDO);
 			}
+			
+			System.out.println("status do cartao: " + matched.getStatus());
 
 			HibernateAccessDataFacade.save(CartaoComandaEntity.class, matched);
 
@@ -231,12 +237,12 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void processAccessRequest(Object obj) {
-
-		if (this.dataGiro == null)
+		if (this.dataGiro == null) {
 			dataGiro = new Date();
+		}
 
 		String cartao = obj.toString();
-		if ("ENTRADA".equals(this.tipo)) {
+		if ("ENTRADA".equals(this.tipo) && !Objects.equals(cartao, "0000000000000000")) {
 			cartao = Utils.toHEX(obj.toString().replaceAll("[^a-zA-Z0-9]+", ""));
 			cartao = cartao.substring(2);
 			// System.out.println("Numero do cartão: " +cartao);
@@ -257,8 +263,9 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 						break;
 					}
 				}
-			} else
+			} else {
 				matched = cartoes.get(0);
+			}
 		}
 
 		if (matched != null) {

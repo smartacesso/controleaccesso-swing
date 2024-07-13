@@ -71,7 +71,7 @@ public class AboutScreen extends JFrame {
 		versaoLabel.setFont(boldFont);
 		versaoLabel.setForeground(Main.firstColor);
 		
-		JButton procurarAtualizacaoButton = new JButton("Procurar atualiza√ß√µes");
+		JButton procurarAtualizacaoButton = new JButton("Procurar atualizacoes");
 		procurarAtualizacaoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		procurarAtualizacaoButton.setPreferredSize(new Dimension(150, 30));
 		
@@ -121,14 +121,14 @@ public class AboutScreen extends JFrame {
 	
 	public void procurarAtualizacoes(){
 		try {
-			System.out.println("Procurando atualiza√ß√µes...");
+			System.out.println("Procurando atualizacoes...");
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			
 			HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/getLastVersion");
 			Integer responseCode = con.getResponseCode();
 			
 			if (responseCode != 200) {
-				JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualiza√ß√µes. Verifique sua conex√£o e tente novamente.",
+				JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualizacoes. Verifique sua conex√o e tente novamente.",
 	            		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);
 				return;
 			}
@@ -187,7 +187,7 @@ public class AboutScreen extends JFrame {
 				
 		} catch (Exception e){
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualiza√ß√µes. Verifique sua conex√£o e tente novamente.",
+			JOptionPane.showMessageDialog(null, "n„o foi possÌvel procurar atualizacoes. Verifique sua conex√£o e tente novamente.",
             		"Atualiza√ß√£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

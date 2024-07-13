@@ -49,6 +49,7 @@ import com.protreino.services.to.SimpleDevice;
 import com.protreino.services.to.SimpleUser;
 import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
 
 public class TcpServer {
 
@@ -322,9 +323,9 @@ public class TcpServer {
 			if (Tipo.ENTRADA.equals(sentido)) {
 				allowAccess(device, sentido);
 			} else if (Tipo.SAIDA.equals(sentido)) {
-				Main.apertouF10 = true;
+				ReleaseAccessUseCase.setApertouF10(true);
 				allowAccess(device, sentido);
-				Main.apertouF10 = false;
+				ReleaseAccessUseCase.setApertouF10(false);
 			}
 		}
 

@@ -267,11 +267,20 @@ public class HikivisionUseCases {
 	}
 
 	public boolean adicionarDigitalUsuario(final String deviceId, final Integer fingerNo, final String idUser) {
+		final boolean buscarUsuario = buscarUsuario(deviceId, "3", "3");
+
+		if (buscarUsuario) {
+			apagarUsuario(deviceId, idUser, fingerNo);
+		}
 		final Optional<CaptureFingerPrintTO> digitalCadastrada = coletarbiometria(deviceId, fingerNo);
 
 		if (!digitalCadastrada.isPresent()) {
 			return false;
 		}
+
+		final boolean vincularBiometria = vinculaDigitalUsuario(deviceId, fingerNo, idUser, digitalCadastrada.get().fingerData);
+		
+		HibernateAccessDataFacade.save(HikivisionFingerEntity.class,  new HikivisionFingerEntity(fingerNo, idUser, digitalCadastrada.get().fingerData) );
 
 		List<HikivisionDeviceTO.Device> devices = listarDispositivos();
 
@@ -282,9 +291,9 @@ public class HikivisionUseCases {
 			 * cadastrar biometria se nao salvar na tabela temporariaok
 			 * 
 			 * 
-			 * tentativa de reprocessar: as digitais que nao conseguiram ser vinculadas vao ser retentatadas 
+			 * tentativa de reprocessar: as digitais que nao conseguiram ser vinculadas vao
 			 * salvar a biometrias na tabela fixa
-			 */
+			 
 			final boolean buscarUsuario = buscarUsuario(deviceId, null, idUser);
 
 			if (buscarUsuario) {
@@ -296,7 +305,7 @@ public class HikivisionUseCases {
 			if(vincularBiometria) {
 				HibernateAccessDataFacade.save(HikivisionFingerEntity.class,  new HikivisionFingerEntity(fingerNo, idUser, digitalCadastrada.get().fingerData) );
 			}
-			//deve reprocessar as digitais
+			*/
 			
 
 		});
@@ -324,7 +333,7 @@ public class HikivisionUseCases {
 	}
 
 	private boolean buscarUsuario(final String deviceId, final String searchID, final String idUser) {
-		return hikiVisionIntegrationService.buscarDigitalUsuario(deviceId, idUser, null);
+		return hikiVisionIntegrationService.buscarDigitalUsuario(deviceId, searchID, idUser);
 
 	}
 
@@ -347,6 +356,10 @@ public class HikivisionUseCases {
 		}
 
 		return null;
+	}
+	
+	public void liberaCameraRemoto(final String deviceId) {
+		hikiVisionIntegrationService.liberaRemotoCamera(deviceId);
 	}
 
 	public void apagarFotosUsuario(final PedestrianAccessEntity pedestre) {

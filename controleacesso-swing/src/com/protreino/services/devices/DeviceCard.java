@@ -873,7 +873,7 @@ public class DeviceCard extends JPanel {
 	private void showConfirmRemove(){
 		Object[] options = { DeviceStatus.CONNECTED.equals(device.getStatus()) ? "Desconectar e remover" : "Remover", "Cancelar"};
 		int result = JOptionPane.showOptionDialog(null, "Deseja realmente remover este dispositivo?",
-				"ConfirmaÃ§Ã£o", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
+				"Confirmação", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
 		if (result == JOptionPane.OK_OPTION) {
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override
@@ -888,8 +888,9 @@ public class DeviceCard extends JPanel {
 								Utils.sleep(50);
 						}
 						if(instance.getDevice() instanceof ServerDevice) {
-							Main.servidor = null;
+							Main.removeServidor();
 						}
+
 						Main.mainScreen.removeDeviceCard(instance);
 					}
 					catch (Exception e) {
@@ -911,7 +912,7 @@ public class DeviceCard extends JPanel {
 		TopDataDevice topData = (TopDataDevice) device;
 		if(topData.isConnected()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, 
-					"A sincronizaÃ§Ã£o de todas as digitais sÃ³ pode ser feita com o dispositivo desconectado.",
+					"A sincronização de todas as digitais só pode ser feita com o dispositivo desconectado.",
 					"Desconecte o dispositivo!",
 					JOptionPane.PLAIN_MESSAGE);
 			return;
@@ -932,14 +933,16 @@ public class DeviceCard extends JPanel {
 	public void openAthleteScreen() {
 		try {
 			if (device.isConnected()) {
-				if(device.getAthleteScreen() == null)
+				if(device.getAthleteScreen() == null) {
 					device.setAthleteScreen(new PedestrianScreen(device, (device.isCatraca() ?  device : null),
 							device.getDeviceEntity().getAthleteScreenConfig()));
-				else
+				} else {
 					device.getAthleteScreen().showScreen();
+				}
         	
-			} else
-        		JOptionPane.showMessageDialog(Main.mainScreen, "Conecte o dispositivo primeiro!", "Dispositivo desconectado", JOptionPane.PLAIN_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(Main.mainScreen, "Conecte o dispositivo primeiro!", "Dispositivo desconectado", JOptionPane.PLAIN_MESSAGE);
+			}
 		
 		} catch (Throwable e){
 			e.printStackTrace();

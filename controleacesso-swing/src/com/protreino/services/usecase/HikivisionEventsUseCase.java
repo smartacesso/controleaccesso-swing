@@ -135,18 +135,18 @@ public class HikivisionEventsUseCase {
 			 pedestre.decrementaCreditos();
 		}
 		
-		if(!pedestre.temCreditos() && pedestre.isVisitante()) {
-			if(Utils.isHikivisionConfigValid() 
-					&& Objects.nonNull(pedestre.getFoto()) 
-					&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
-				if(removeVisitanteCamera) {
-					hikivisionUseCases.removerUsuarioFromDevices(pedestre);
-				}
-			}
-			
+		if(pedestre.temCreditos() || !pedestre.isVisitante()) {
+			return;
 		}
 		
-		HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+		if(Utils.isHikivisionConfigValid() 
+				&& Objects.nonNull(pedestre.getFoto()) 
+				&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())
+				&& removeVisitanteCamera) {
+			hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+		}
+		
 	}
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso) {

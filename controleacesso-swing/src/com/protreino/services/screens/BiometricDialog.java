@@ -92,7 +92,7 @@ public class BiometricDialog extends JDialog{
 		this.acesso = acesso;
 		this.instance = this;
 		this.sampleCount = device.getManufacturer().getSamplesCount();
-		Main.isCadastrandoBiometria = true;
+		Main.setIsCadastrandoBiometria(true);
 		
 		loadImages();
 		
@@ -215,7 +215,7 @@ public class BiometricDialog extends JDialog{
 		addWindowListener(new WindowAdapter() {
 		    @Override
 		    public void windowClosed(WindowEvent e) {
-		    	Main.isCadastrandoBiometria = false;
+		    	Main.setIsCadastrandoBiometria(false);
 		    	if (selectedDevice != null) {
 		    		selectedDevice.setBiometricDialog(null);
 		    		selectedDevice.setMode(DeviceMode.VERIFICATION);
@@ -229,7 +229,7 @@ public class BiometricDialog extends JDialog{
 
 	
 	public void showScreen() {
-		Main.isCadastrandoBiometria = true;
+		Main.setIsCadastrandoBiometria(true);
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}

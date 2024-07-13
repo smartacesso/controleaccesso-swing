@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -39,6 +40,8 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -64,6 +67,7 @@ public class AccessListPanel extends PaginedListPanel {
 	private JLabel dateLastSync;
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
 	
 	public AccessListPanel(){
 		
@@ -204,7 +208,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		syncButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Main.syncAthleteAccessList();
+				syncPedestrianAccessListUseCase.syncPedestrianAccessList();
 			}
 		});
 		
@@ -258,8 +262,8 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		totalRegistros =  HibernateAccessDataFacade.
-				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
+		//totalRegistros =  HibernateAccessDataFacade.
+			//	getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
 		
 		executeFilter();
 	}
@@ -268,8 +272,7 @@ public class AccessListPanel extends PaginedListPanel {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFilter() {
-		
-		calculaTamanhoPaginas();
+
 		
 		if(args == null)
 			args = new HashMap<>();
@@ -279,7 +282,9 @@ public class AccessListPanel extends PaginedListPanel {
 				  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
 				  + "obj.idUsuario) ";
 //		fazer isso no hibernate utils
-		
+		totalRegistros =  HibernateAccessDataFacade.
+				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, construtor, null, null, args);
+		calculaTamanhoPaginas();
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, "name", args, inicioPagina, registrosPorPagina);
 		if(usuarioDoSistema == null || usuarioDoSistema.isEmpty()) {
@@ -362,15 +367,15 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		if("VISITANTE".equals(acesso.getTipo())) {
 			//visitante
-			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso único";
+			texto = acesso.getCardNumber() == null || acesso.getCardNumber().isEmpty() ? "--" : "Acesso unico";
 			if(acesso.getQuantidadeCreditos() != null && acesso.getQuantidadeCreditos() > 1l) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x creditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " ate " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			
 			} else if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " ate " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -380,16 +385,16 @@ public class AccessListPanel extends PaginedListPanel {
 			
 			//pedestre
 			if(acesso.getQuantidadeCreditos() != null) {
-				texto = acesso.getQuantidadeCreditos() + "x créditos ";
+				texto = acesso.getQuantidadeCreditos() + "x creditos ";
 				if(acesso.getValidadeCreditos() != null)
-					texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
+					texto += " ate " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			} else if(acesso.getValidadeCreditos() != null) {
 				texto += new SimpleDateFormat("dd/MM/yyyy").format(acesso.getValidadeCreditos());
 			}
 			
 			if(acesso.getDataInicioPeriodo() != null && acesso.getDataFimPeriodo() != null) {
 				texto = new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
-				texto += " até " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
+				texto += " ate " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataFimPeriodo());
 
 			} else if(acesso.getDataInicioPeriodo() != null) {
 				texto = "Inicia em " + new SimpleDateFormat("dd/MM/yyyy").format(acesso.getDataInicioPeriodo());
@@ -467,17 +472,18 @@ public class AccessListPanel extends PaginedListPanel {
 	}
 	
 	public void updateDateLastSync() {
-		if (Main.lastSync != null && Main.lastSync > 0) {
-			Date date = new Date(Main.lastSync);
+		if (Objects.nonNull(SyncPedestrianAccessListUseCase.getLastSync()) && SyncPedestrianAccessListUseCase.getLastSync() > 0) {
+			Date date = new Date(SyncPedestrianAccessListUseCase.getLastSync());
 			dateLastSync.setText("Atualizado: " + sdf.format(date));
 		} else {
 			dateLastSync.setText(" ");
 		}
 	}
-
 	
 	class ActionRenderer extends UrlRenderer {
 	    
+		private ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
+		
 	    public ActionRenderer(List<Integer> colunasComLink) {
 			super(colunasComLink);
 		}
@@ -496,8 +502,7 @@ public class AccessListPanel extends PaginedListPanel {
 	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
 
 	            } else {
-	            	Main.idAlunoEspecifico = idPedestre;
-	            	Main.releaseAccess();
+	            	releaseAccessUseCase.execute(idPedestre, null);
 	            }
 	            
 	        }

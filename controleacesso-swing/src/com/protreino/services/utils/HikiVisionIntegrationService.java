@@ -68,6 +68,34 @@ public class HikiVisionIntegrationService {
 
 		return false;
 	}
+	
+	public void liberaRemotoCamera(final String deviceId) {
+	      final String body = "{\n" +
+	            "  \"RemoteControlDoor\": {\n" +
+	            "    \"cmd\": \"open\"\n" +
+	            "  }\n" +
+	            "}"; 
+				
+	      RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+	      OkHttpClient client = getOkHttpClient();
+			Request request = new Request.Builder()
+					.url(url + "/ISAPI/AccessControl/RemoteControl/door/65535?format=json&devIndex=" + deviceId).put(requestBody)
+					.addHeader("Content-Type", "application/json").build();
+			
+		
+			try (Response response = client.newCall(request).execute()) {
+				if (response.isSuccessful()) {
+					final HikivisionUserInfoTO responseBody = gson.fromJson(response.body().string(),
+							HikivisionUserInfoTO.class);
+				
+					System.out.println("OK liberado remotamente");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+	}
 
 	public boolean isUsuarioJaCadastrado(final String deviceId, final String idUser) {
 		final String uuid = UUID.randomUUID().toString();
@@ -213,9 +241,9 @@ public class HikiVisionIntegrationService {
 	public boolean buscarDigitalUsuario(final String deviceId, final String searchID, final String idUser) {
 		final String body = 
 			       "{"
-			       + "		\"FingerPrintCfg\": {"
-			       + "			\"fingerPrintID\": " + searchID + ","
-			       + "			\"employeeNo\": \"" + idUser + "\","
+			       + "		\"FingerPrintCond\": {"
+			       + "			\"searchID\": \"" + searchID + "\","
+			       + "			\"employeeNo\": \"" + idUser + "\""
 			       + "		}"
 			       + "	}";
 		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));

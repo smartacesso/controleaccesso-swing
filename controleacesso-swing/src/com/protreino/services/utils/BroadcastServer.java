@@ -13,9 +13,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.google.gson.Gson;
@@ -30,7 +28,6 @@ import com.google.gson.JsonSerializationContext;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.PedestrianAccessEntity;
-import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.TemplateEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.main.Main;
@@ -90,7 +87,6 @@ public class BroadcastServer {
 			this.mensagem = mensagem;
 		}
 		
-		@SuppressWarnings("unchecked")
 		public void run() {
 			try {
 				mensagem = mensagem.substring(mensagem.indexOf(":")+1);
@@ -98,13 +94,15 @@ public class BroadcastServer {
 				BroadcastMessageTO broadcastMessage = gson.fromJson(mensagem, BroadcastMessageTO.class);
 
 				if (BroadcastMessageType.LOG_ACCESS.equals(broadcastMessage.getType())) {
-					if(Main.servidor == null)
+					if(Main.temServidor()) {
 						System.out.println(sdf.format(new Date()) + ": REGISTRAR LOG ACESSO");
+					}
 
 				} else if (BroadcastMessageType.REMOVE_TEMPLATES.equals(broadcastMessage.getType())) {
 					
-					if(Main.servidor == null)
+					if(Main.temServidor()) {
 						System.out.println(sdf.format(new Date()) + ": REMOVE TEMPLATES");
+					}
 					
 					removeCatracas(broadcastMessage);
 
@@ -164,7 +162,7 @@ public class BroadcastServer {
 								PedestrianAccessEntity p = new PedestrianAccessEntity();
 								p.setId(broadcastMessage.getIdPedestrianAccess());
 								topData.insereDigitalInner(true, p);
-							} else if(Main.servidor != null) {
+							} else if(Main.temServidor()) {
 								//atualiza catraca inteira somente se tiver um servidor
 								topData.atualizaDigitaisLFD(true, false, null);
 							}

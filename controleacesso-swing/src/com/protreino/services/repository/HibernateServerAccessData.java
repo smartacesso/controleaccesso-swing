@@ -39,10 +39,10 @@ public class HibernateServerAccessData {
 	public static void openConnection() throws ConnectException {
 		try {
 			System.out.println("Abrindo conexao");
-			clientSocket = new Socket(Main.servidor.getIp(), Main.servidor.getPort());
+			clientSocket = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
 			outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 
-			clientSocketFaceRecognizer = new Socket(Main.servidor.getIp(), Main.servidor.getPort());
+			clientSocketFaceRecognizer = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
 			outToServerFaceRecogizer = new ObjectOutputStream(clientSocketFaceRecognizer.getOutputStream());
 
 		} catch (ConnectException ce) {
@@ -690,31 +690,29 @@ public class HibernateServerAccessData {
 	}
 	
 	public static synchronized void uploadFotosParaServidorDeReconhecimento(String caminhoDasFotos, Long idUsuario) {
-		if (Main.temServidor()) {
-			if (Main.servidor.isNotConnected()) {
-				return;
+		if (!Main.temServidor() || Main.getServidor().isNotConnected()) {
+			return;
+		}
+		
+		try {
+			TcpMessageTO req = new TcpMessageTO(TcpMessageType.UPLOAD_FOTOS_PARA_SERVIDOR_DE_RECONHECIMENTO);
+			byte[] zipFileByteArray = converteFotosParaArrayDeBytes(caminhoDasFotos);
+
+			if (zipFileByteArray != null) {
+				req.getParans().put("zipFileByteArray", Base64.encodeBase64String(zipFileByteArray));
+				req.getParans().put("idUsuario", idUsuario);
+
+				outToServerFaceRecogizer.writeObject(req);
+				outToServerFaceRecogizer.flush();
+
+				ObjectInputStream reader = new ObjectInputStream(clientSocketFaceRecognizer.getInputStream());
+				reader.readObject();
+
+				apagarFotosLocais(caminhoDasFotos);
 			}
 
-			try {
-				TcpMessageTO req = new TcpMessageTO(TcpMessageType.UPLOAD_FOTOS_PARA_SERVIDOR_DE_RECONHECIMENTO);
-				byte[] zipFileByteArray = converteFotosParaArrayDeBytes(caminhoDasFotos);
-
-				if (zipFileByteArray != null) {
-					req.getParans().put("zipFileByteArray", Base64.encodeBase64String(zipFileByteArray));
-					req.getParans().put("idUsuario", idUsuario);
-
-					outToServerFaceRecogizer.writeObject(req);
-					outToServerFaceRecogizer.flush();
-
-					ObjectInputStream reader = new ObjectInputStream(clientSocketFaceRecognizer.getInputStream());
-					reader.readObject();
-
-					apagarFotosLocais(caminhoDasFotos);
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

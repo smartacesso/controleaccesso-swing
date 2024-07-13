@@ -1,64 +1,45 @@
 package com.protreino.services.main;
 
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import com.protreino.services.client.SmartAcessoClient;
-import com.protreino.services.client.SmartAcessoFotoServiceClient;
-import com.protreino.services.constants.Configurations;
-import com.protreino.services.constants.Origens;
-import com.protreino.services.constants.Tipo;
-import com.protreino.services.devices.*;
-import com.protreino.services.entity.*; 
-import com.protreino.services.enumeration.*;
-import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
-import com.protreino.services.exceptions.HikivisionIntegrationException;
-import com.protreino.services.repository.BiometricRepository;
-import com.protreino.services.repository.HibernateAccessDataFacade;
-import com.protreino.services.repository.HibernateLocalAccessData;
-import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
-import com.protreino.services.repository.LogPedestrianAccessRepository;
-import com.protreino.services.repository.PedestrianAccessRepository;
-import com.protreino.services.screens.SplashScreen;
-import com.protreino.services.screens.*;
-import com.protreino.services.services.LuxandService;
-import com.protreino.services.to.BroadcastMessageTO;
-import com.protreino.services.to.EmpresaTO;
-import com.protreino.services.to.PedestrianAccessTO;
-import com.protreino.services.to.RegraTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.usecase.HikivisionUseCases;
-import com.protreino.services.usecase.ProcessAccessRequestUseCase;
-import com.protreino.services.utils.*;
-import it.sauronsoftware.junique.AlreadyLockedException;
-import it.sauronsoftware.junique.JUnique;
-import it.sauronsoftware.junique.MessageHandler;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-import org.jnativehook.keyboard.NativeKeyEvent;
-import org.jnativehook.keyboard.NativeKeyListener;
-
-import javax.swing.Timer;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Image;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.*;
-import java.lang.reflect.Type;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -69,7 +50,75 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.keyboard.NativeKeyEvent;
+import org.jnativehook.keyboard.NativeKeyListener;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.protreino.services.client.SmartAcessoClient;
+import com.protreino.services.constants.Configurations;
+import com.protreino.services.constants.Tipo;
+import com.protreino.services.devices.Device;
+import com.protreino.services.devices.FacialDevice;
+import com.protreino.services.devices.LcDevice;
+import com.protreino.services.devices.ServerDevice;
+import com.protreino.services.entity.DeviceEntity;
+import com.protreino.services.entity.EmpresaEntity;
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
+import com.protreino.services.entity.LogPedestrianAccessEntity;
+import com.protreino.services.entity.ParametroEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.PlanoEntity;
+import com.protreino.services.entity.RegraEntity;
+import com.protreino.services.entity.UserEntity;
+import com.protreino.services.enumeration.DeviceStatus;
+import com.protreino.services.enumeration.HikivisionAction;
+import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
+import com.protreino.services.exceptions.HikivisionIntegrationException;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
+import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
+import com.protreino.services.repository.LogPedestrianAccessRepository;
+import com.protreino.services.repository.PedestrianAccessRepository;
+import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
+import com.protreino.services.screens.MainScreen;
+import com.protreino.services.screens.ReleaseReasonDialog;
+import com.protreino.services.screens.SplashScreen;
+import com.protreino.services.services.LuxandService;
+import com.protreino.services.to.EmpresaTO;
+import com.protreino.services.to.RegraTO;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.ReleaseAccessUseCase;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
+import com.protreino.services.utils.BroadcastServer;
+import com.protreino.services.utils.HikivisionTcpServer;
+import com.protreino.services.utils.HttpConnection;
+import com.protreino.services.utils.TcpServer;
+import com.protreino.services.utils.Utils;
+
+import it.sauronsoftware.junique.AlreadyLockedException;
+import it.sauronsoftware.junique.JUnique;
+import it.sauronsoftware.junique.MessageHandler;
+
 public class Main {
+	
+	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronização desabilitada: Máquina possui servidor";
 
     public static MainScreen mainScreen;
     private static SplashScreen splash;
@@ -77,35 +126,26 @@ public class Main {
     public static UserEntity loggedUser = null;
     public static UserEntity internoLoggedUser = null;
 
-    public static ServerDevice servidor;
+    private static ServerDevice servidor;
 
-    public static Long lastSync = 0L;
-    public static Long lastSyncLog = 0L;
-    public static Long lastSyncHikivision = 0l;
+    private static Long lastSyncLog = 0L;
+    private static Long lastSyncHikivision = 0l;
 
-    public static Long lastSyncGetUsers = 0L;
-    public static Long lastSyncGetEmpresas = 0L;
-    public static Long lastSyncGetRegras = 0L;
-    public static Long lastSyncGetParametros = 0L;
-    public static Long lastSyncGetPlanos = 0L;
+    private static Long lastSyncGetUsers = 0L;
+    private static Long lastSyncGetEmpresas = 0L;
+    private static Long lastSyncGetRegras = 0L;
+    private static Long lastSyncGetParametros = 0L;
+    private static Long lastSyncGetPlanos = 0L;
 
-    public static Long lastSyncUploadPhotos = 0L;
+    private static boolean updatingLogAccessList = false;
+    private static boolean updatingHikivisionAccessList = false;
+    private static boolean updatingUsersAccessList = false;
+    private static boolean uploadingPhotosPedestres = false;
 
-    public static boolean updatingAthleteAccessList = false;
-    public static boolean updatingLogAccessList = false;
-    public static boolean updatingHikivisionAccessList = false;
-    public static boolean updatingUsersAccessList = false;
-    public static boolean uploadingPhotosPedestres = false;
+    private static boolean isCadastrandoBiometria = false;
 
-    public static boolean isCadastrandoBiometria = false;
-
-    public static boolean apertouF9 = false;
-    public static boolean apertouF10 = false;
     public static List<Device> devicesList;
     public static List<Device> dispositivosReconectando;
-    public static Device selectedDevice;
-    private static String motivoLiberacao;
-    public static String idAlunoEspecifico;
 
     private static Properties properties;
     public static String urlApplication;
@@ -124,7 +164,6 @@ public class Main {
     public static java.util.Timer timerTasksOfDay;
     public static TimerTask uTimerTask;
 
-    private static Gson gson;
     private static SystemTray systemTray;
     private static TrayIcon trayIcon;
     private static Image trayIconImageLoading;
@@ -151,6 +190,8 @@ public class Main {
     
     private static final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
     private static final SmartAcessoClient smartAcessoClient = new SmartAcessoClient();
+    private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
+    private static final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
 
     public static void main(String[] args) {
 
@@ -190,8 +231,10 @@ public class Main {
         try {
             JUnique.acquireLock(nomeAplicacao + "_Controle_Acesso_lockInstance", new MessageHandler() {
                 public String handle(String message) {
-                    if (mainScreen != null)
-                        mainScreen.showScreen();
+                    if (mainScreen != null) {
+                    	mainScreen.showScreen();
+                    }
+
                     return null;
                 }
             });
@@ -297,9 +340,9 @@ public class Main {
     }
 
     private void decideSeMostraTelaPrincipal() {
-        if (loggedUser == null)
-            mainScreen.showScreen();
-        else { 
+        if (loggedUser == null) {
+        	mainScreen.showScreen();
+        } else { 
             boolean nenhumDispositivoConectado = true;
             for (Device device : Main.devicesList) {
                 if (DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
@@ -319,8 +362,10 @@ public class Main {
                     }
                 }
             }
-            if (nenhumDispositivoConectado)
-                mainScreen.showScreen();
+            
+            if (nenhumDispositivoConectado) {
+            	mainScreen.showScreen();
+            }
         }
     }
 
@@ -367,8 +412,10 @@ public class Main {
                                             }
                                         }
                                         if (exibirMensagemErro) {
-                                            if (!mainScreen.isVisible())
-                                                mainScreen.showScreen();
+                                            if (!mainScreen.isVisible()) {
+                                            	mainScreen.showScreen();
+                                            }
+
                                             mainScreen.refresh();
                                             String html = "<html><body width='%1s'>"
                                                     + "<p>Nï¿½o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
@@ -403,8 +450,9 @@ public class Main {
         devicesList = new ArrayList<Device>();
         loggedUser = HibernateAccessDataFacade.getLoggedUser("UserEntity.findAll");
         if (loggedUser != null) {
-            lastSync = loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L;
-            lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
+        	SyncPedestrianAccessListUseCase.setLastSync(loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L);;
+
+        	lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
             lastSyncHikivision = loggedUser.getLastSyncHikivision() != null
 					? loggedUser.getLastSyncHikivision().getTime() : 0l;
 
@@ -418,9 +466,6 @@ public class Main {
                     ? loggedUser.getLastSyncParametro().getTime() : 0L;
             lastSyncGetPlanos = loggedUser.getLastSyncPlano() != null
                     ? loggedUser.getLastSyncPlano().getTime() : 0L;
-
-            lastSyncUploadPhotos = loggedUser.getLastSyncUploadPhotos() != null
-                    ? loggedUser.getLastSyncUploadPhotos().getTime() : 0L;
 
             releaseTicketGateMenuItem.setEnabled(true);
             updateAccessListMenuItem.setEnabled(true);
@@ -478,233 +523,6 @@ public class Main {
         timerSyncHikivision.start();
     }
 
-    /**
-     * Libera o acesso na catraca padrao conectada.
-     * Caso nao seja catraca ou nao esteja conectada,
-     * entao exibe uma janela para selecionar uma catraca
-     * ou escolhe a unica catraca conectada.
-     */
-    public static void releaseAccess() {
-    	final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
-
-    	SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-            @Override
-            public Void doInBackground() {
-
-                if (devicesList == null || devicesList.isEmpty()) {
-
-                    if (Utils.getPreferenceAsBoolean("registerAccessWithoutConnectedDevices")
-                            && idAlunoEspecifico != null) {
-                        try {
-                            Object[] resultado = processAccessRequestUseCase.processAccessRequest(idAlunoEspecifico, null,
-                                    Origens.ORIGEM_LIBERADO_SISTEMA, null, false, true, false);
-
-                            VerificationResult verificationResult = (VerificationResult) resultado[0];
-                            PedestrianAccessEntity matchedPedestre = (PedestrianAccessEntity) resultado[2];
-
-                            if (VerificationResult.ALLOWED.equals(verificationResult)) {
-                                LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-                                        matchedPedestre.getId(), "SYSTEM", null, motivoLiberacao);
-                                Utils.createNotification(
-                                        "Usuï¿½rio " + matchedPedestre.getFirstName() + " liberado pelo sistema.",
-                                        NotificationType.GOOD);
-                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-                                Thread.sleep(1000);
-
-                                matchedPedestre.decrementaCreditos();
-                                HibernateAccessDataFacade.save(PedestrianAccessEntity.class, matchedPedestre);
-                            }
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-
-                        } finally {
-                            idAlunoEspecifico = null;
-                        }
-                        return null;
-                    }
-
-                    Utils.createNotification("Sem dispositivos conectados.", NotificationType.BAD);
-                    Utils.sleep(1000);
-                    apertouF9 = false;
-                    apertouF10 = false;
-
-                    return null;
-                }
-
-                selectedDevice = null;
-                List<Device> dispositivoConectados = new ArrayList<Device>();
-                Device defaultDevice = null;
-                for (Device device : devicesList) {
-                    if (device.isConnected()) {
-                        dispositivoConectados.add(device);
-                        if (device.isDefaultDevice())
-                            defaultDevice = device;
-                    }
-                }
-
-                if (defaultDevice != null) {
-                    selectedDevice = defaultDevice;
-
-                } else if (dispositivoConectados.isEmpty()) {
-                    Utils.createNotification("Sem catracas conectadas.", NotificationType.BAD);
-
-                } else if (dispositivoConectados.size() == 1) {
-                    selectedDevice = dispositivoConectados.get(0);
-
-                } else {
-                    ReleaseAccessDialog releaseAccessDialog = new ReleaseAccessDialog(mainScreen, dispositivoConectados);
-                    releaseAccessDialog.setVisible(true);
-                    if ("OK".equals(releaseAccessDialog.getOption()))
-                        selectedDevice = releaseAccessDialog.getSelectedDevice();
-                }
-
-                if (selectedDevice != null) {
-
-                    // F10 libera a saida da catraca Toletus, via leitor ComputerID
-//					if (apertouF10
-//							&& !Manufacturer.TOLETUS.equals(selectedDevice.getManufacturer())
-//							&& !(Manufacturer.COMPUTER_ID.equals(selectedDevice.getManufacturer())
-//									&& selectedDevice.getCatracaVinculada() != null
-//									&& Manufacturer.TOLETUS.equals(selectedDevice.getCatracaVinculada().getManufacturer()))) {
-//						// nao faz nada para outras catracas
-//						Utils.sleep(1000);
-//						apertouF9 = false;
-//						apertouF10 = false;
-//						return null;
-//					}
-
-                    Boolean exigeSenha = Utils.getPreferenceAsBoolean("releaseAccessRequiresPassword");
-                    if (exigeSenha) {
-                        AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-                                "Digite a senha do usuï¿½rio logado \npara liberar o acesso",
-                                "Aguarde, verificando senha...");
-                        Boolean retornoAuthentication = null;
-                        try {
-                            retornoAuthentication = autenticationDialog.authenticate();
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.",
-                                    "Erro na validaï¿½ï¿½o", JOptionPane.PLAIN_MESSAGE);
-                            return null;
-                        }
-
-                        if (retornoAuthentication == null)
-                            return null;
-                        if (!retornoAuthentication) {
-                            JOptionPane.showMessageDialog(null, "Nï¿½o foi possssivel validar a senha, ou senha invï¿½lida",
-                                    "Erro na validaï¿½ï¿½o", JOptionPane.PLAIN_MESSAGE);
-                            return null;
-                        }
-                    }
-
-                    String motivos = Utils.getPreferenceWithNull("releaseAccessReason");
-                    motivoLiberacao = null;
-
-                    if (!Utils.isNullOrEmpty(motivos)) {
-                        ReleaseReasonDialog releaseReasonDialog = new ReleaseReasonDialog(mainScreen, motivos);
-                        Main.releaseReasonDialog = releaseReasonDialog;
-                        releaseReasonDialog.setVisible(true);
-                        Main.releaseReasonDialog = null;
-
-                        if ("CANCEL".equals(releaseReasonDialog.getOption())) {
-                            apertouF9 = false;
-                            apertouF10 = false;
-                            return null;
-                        }
-
-                        motivoLiberacao = releaseReasonDialog.getReason();
-
-                        if (Utils.isNullOrEmpty(motivoLiberacao)) {
-                            Utils.createNotification("ï¿½ necessï¿½rio informar um motivo.", NotificationType.BAD);
-                            Utils.sleep(1000);
-                            apertouF9 = false;
-                            apertouF10 = false;
-                            return null;
-                        }
-                    }
-
-                    // TUDO PRONTO, PODE LIBERAR
-                    JButton button = mainScreen.getLiberarAcessoButton();
-
-                    Icon previousIcon = button.getIcon();
-
-                    try {
-                        releaseTicketGateMenuItem.setEnabled(false);
-                        button.setEnabled(false);
-                        button.setText("Acesso permitido!");
-                        mainScreen.getLiberarAcessoMenuItem().setEnabled(false);
-
-                        String direction = apertouF9 ? Tipo.ENTRADA : (apertouF10 ? Tipo.SAIDA : Tipo.ENTRADA);
-                        String equipament = selectedDevice.getFullIdentifier();
-
-                        if (idAlunoEspecifico != null) {
-                            PedestrianAccessEntity athleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-                                    .getSingleResultById(PedestrianAccessEntity.class, Long.valueOf(idAlunoEspecifico));
-
-                            LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-                                    athleteAccess.getId(), "SYSTEM", selectedDevice.getLocation(), motivoLiberacao,
-                                    direction, equipament);
-
-                            if (Manufacturer.SERVER.equals(selectedDevice.getManufacturer())) {
-                                ((ServerDevice) selectedDevice).setLogAccess(logAccess);
-
-                            } else {
-                                Utils.createNotification(
-                                        "Usuï¿½rio " + athleteAccess.getFirstName() + " liberado pelo sistema.",
-                                        NotificationType.GOOD);
-                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-                                if (Main.broadcastServer != null) {
-                                	Main.broadcastServer.sendMessage(
-                                			new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
-                                }
-                            }
-
-                        } else {
-                            LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(loggedUser.getId(),
-                                    null, "LIBERADO PELO SISTEMA", selectedDevice.getLocation(), motivoLiberacao,
-                                    direction, equipament);
-
-                            if (Manufacturer.SERVER.equals(selectedDevice.getManufacturer())) {
-                                ((ServerDevice) selectedDevice).setLogAccess(logAccess);
-
-                            } else {
-                                Utils.createNotification("Acesso liberado pelo sistema.", NotificationType.GOOD);
-                                HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-                            }
-                        }
-                        selectedDevice.allowAccess();
-
-                        Thread.sleep(3000);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-                    } finally {
-                        releaseTicketGateMenuItem.setEnabled(true);
-                        button.setEnabled(true);
-                        button.setIcon(previousIcon);
-                        button.setText("Liberar acesso (F9)/(F10)");
-                        mainScreen.getLiberarAcessoMenuItem().setEnabled(true);
-                        apertouF9 = false;
-                        apertouF10 = false;
-                        idAlunoEspecifico = null;
-                    }
-                    return null;
-
-                } else {
-                    Utils.sleep(1000);
-                    apertouF9 = false;
-                    apertouF10 = false;
-                }
-
-                return null;
-            }
-        };
-        worker.execute();
-    }
-
     public static void finalizarSessao() {
         if (devicesList != null && !devicesList.isEmpty()) {
             for (Device device : devicesList) {
@@ -742,19 +560,26 @@ public class Main {
         lastSyncGetParametros = 0L;
         lastSyncGetPlanos = 0L;
 
-        while (updatingAthleteAccessList) // aguarda atualizacao corrente perceber que foi desconectado e parar atualizacao
+        while (SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) { 
+        	// aguarda atualizacao corrente perceber que foi desconectado e parar atualizacao
             Utils.sleep(50);
+        }
 
-        if (!updatingLogAccessList) // tenta enviar log de acesso antes de apagar tudo
+        if (!getUpdatingLogAccessList()) { // tenta enviar log de acesso antes de apagar tudo
             syncLogAthleteAccess();
-        while (updatingLogAccessList)
-            Utils.sleep(50);
+        }
+        
+        while (getUpdatingLogAccessList()) {
+        	Utils.sleep(50);
+        }
 
-        while (updatingUsersAccessList)
-            Utils.sleep(50);
+        while (getUpdatingUsersAccessList()) {
+        	Utils.sleep(50);
+        }
 
-        while (uploadingPhotosPedestres)
-            Utils.sleep(50);
+        while (getUploadingPhotosPedestres()) {
+        	Utils.sleep(50);
+        }
 
         Boolean sessaoLimpa = HibernateLocalAccessData.cleanUserSession();
         if (sessaoLimpa) {
@@ -786,16 +611,6 @@ public class Main {
 
     private void configureTimers() {
         try {
-            gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
-                public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                    try {
-                        return Utils.convertDataJson(json);
-                    } catch (Exception e) {
-                    }
-
-                    return null;
-                }
-            }).create();
             timerSyncUsersAccessList = new Timer(Integer.valueOf(Utils.getPreference("timeUserAccessList")) * 60000, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -804,7 +619,7 @@ public class Main {
             });
             timerSyncAthleteAccessList = new Timer(Integer.valueOf(Utils.getPreference("timeAccessList")) * 60000, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    syncAthleteAccessList();
+                	syncPedestrianAccessListUseCase.syncPedestrianAccessList();
                 }
             });
             timerSyncLogAthleteAccess = new Timer(Configurations.TIME_LOG_ATHLETE_ACCESS, new ActionListener() {
@@ -988,8 +803,7 @@ public class Main {
     }
 
     private static void limpaSentidoTodos() {
-        //verifica se estï¿½ ativado
-        if (Main.servidor != null) {
+        if (Main.temServidor()) {
         	return;
         }
 
@@ -1036,18 +850,50 @@ public class Main {
     }
 
     public static void syncUsersAccessList() {
-        if (updatingUsersAccessList) {
+        if (getUpdatingUsersAccessList()) {
         	return;
         }
 
         if (Objects.nonNull(Main.servidor)) {
-            System.out.println(sdf.format(new Date()) + " Sincronizaï¿½ï¿½o desabilitada: Mï¿½quina possui servidor");
+            System.out.println(sdf.format(new Date()) + " " + MAQUINA_TEM_SERVER_MESSAGE);
             return;
         }
-        updatingUsersAccessList = true;
+        setUpdatingUsersAccessList(true);
 
         SwingWorker<Void, Void> worker = getSyncUsersAccessListWorker();
         worker.execute();
+    }
+    
+    public static synchronized void setUpdatingUsersAccessList(final boolean status) {
+    	updatingUsersAccessList = status;
+    }
+    
+    public static synchronized boolean getUpdatingUsersAccessList() {
+    	return updatingUsersAccessList;
+    }
+    
+    public static synchronized void setUpdatingLogAccessList(final boolean status) {
+    	updatingLogAccessList = status;
+    }
+    
+    public static synchronized boolean getUpdatingLogAccessList() {
+    	return updatingLogAccessList;
+    }
+    
+    public static synchronized void setUpdatingHikivisionAccessList(final boolean status) {
+    	updatingHikivisionAccessList = status;
+    }
+    
+    public static synchronized boolean getUpdatingHikivisionAccessList() {
+    	return updatingHikivisionAccessList;
+    }
+    
+    public static synchronized void setUploadingPhotosPedestres(final boolean status) {
+    	uploadingPhotosPedestres = status;
+    }
+    
+    public static synchronized boolean getUploadingPhotosPedestres() {
+    	return uploadingPhotosPedestres;
     }
     
     private static SwingWorker<Void, Void> getSyncUsersAccessListWorker() {
@@ -1092,7 +938,7 @@ public class Main {
                     if (loggedUser != null) {
                     	timerSyncUsersAccessList.start();
                     }
-                    updatingUsersAccessList = false;
+                    setUpdatingUsersAccessList(false);
                     trayIcon.setImage(trayIconImage);
 
                     if (mainScreen != null && mainScreen.isVisible()) {
@@ -1292,7 +1138,7 @@ public class Main {
     }
 
     public static void syncHikivisionAccessList() {
-        if (updatingHikivisionAccessList) {
+        if (getUpdatingHikivisionAccessList()) {
             return;
         }
 
@@ -1301,7 +1147,7 @@ public class Main {
             return;
         }
         
-        updatingHikivisionAccessList = true;
+        setUpdatingHikivisionAccessList(true);
 
         SwingWorker<Void, Void> worker = getSyncHikivisionAccessListWorker();
         worker.execute();
@@ -1337,7 +1183,7 @@ public class Main {
                         timerSyncHikivision.start();
                     }
 
-                    updatingHikivisionAccessList = false;
+                    setUpdatingHikivisionAccessList(false);
                 }
 
                 return null;
@@ -1421,559 +1267,9 @@ public class Main {
         };
     }
 
-    public static void syncAthleteAccessList() {
-        if (updatingAthleteAccessList) {
-            return;
-        }
-
-        if (Main.servidor != null) {
-            System.out.println(sdf.format(new Date()) + " Sincronização desabilitada: Máquina possui servidor");
-            System.out.println(sdf.format(new Date()) + " Sincronizaï¿½ï¿½o desabilitada: Máquina possui servidor");
-            return;
-        }
-
-        updatingAthleteAccessList = true;
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-
-            @Override
-            public Void doInBackground() {
-                try {
-                    while (isCadastrandoBiometria) {
-                        Thread.sleep(2000);
-                    }
-                    while (updatingUsersAccessList) {
-                        Thread.sleep(500);
-                    }
-
-                    while (loggedUser == null) {
-                        Thread.sleep(500);
-                    }
-
-                    if (mainScreen != null && mainScreen.isVisible()) {
-                        mainScreen.getListaAcessoPanel().getSyncButton().setText("Atualizando lista com o servidor...");
-                        mainScreen.getListaAcessoPanel().getSyncButton().setEnabled(false);
-                        mainScreen.getListaAcessoPanel().getSyncButton().revalidate();
-                    }
-
-                    if (timerSyncAthleteAccessList.isRunning()) {
-                        timerSyncAthleteAccessList.stop();
-                    }
-
-                    timerSyncAthleteAccessList.setInitialDelay(Integer.valueOf(Utils.getPreference("timeAccessList")) * 60000);
-                    trayIcon.setImage(trayIconImageLoading);
-
-                    //Sincroniza os logs de acesso antes de sincronizar os pedestres
-                    syncLogAthleteAccess();
-
-                    while (updatingLogAccessList) {
-                        Thread.sleep(500);
-                    }
-
-                    HttpConnection con = new HttpConnection(urlApplication + "/restful-services/login/action");
-                    int responseCode = con.getResponseCode();
-
-                    if (responseCode != 200) {
-                        return null;
-                    }
-
-                    Long backUpLastSync = lastSync != null ? lastSync.longValue() : 0L;
-
-                    List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
-
-                    enviaBiometriasColetadasLocalmente();
-                    recebePedestresEBiometriasDaWeb();
-                    buscaFotosDosPedestres(backUpLastSync);
-
-                    if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
-                        apagaDadosNovos(visitantesLocais);
-                    }
-
-                    atualizaListadeAcessoCatracaOffline();
-
-                } catch (UnknownHostException | SocketTimeoutException | ConnectException ce) {
-                    System.out.println(ce.getMessage());
-                    ce.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Exception: " + e.getMessage());
-
-                } finally {
-                    if (loggedUser != null) {
-                        timerSyncAthleteAccessList.start();
-                    }
-
-                    updatingAthleteAccessList = false;
-                    trayIcon.setImage(trayIconImage);
-                    //if (mainScreen != null && mainScreen.isVisible())
-                    //	mainScreen.refresh();
-
-                    if (mainScreen != null && mainScreen.isVisible()) {
-                        mainScreen.getListaAcessoPanel().getSyncButton().setText("Atualizar lista com o servidor");
-                        mainScreen.getListaAcessoPanel().getSyncButton().setEnabled(true);
-                        mainScreen.getListaAcessoPanel().getSyncButton().revalidate();
-                        mainScreen.getListaAcessoPanel().updateDateLastSync();
-                    }
-                }
-
-                //limpa lixos
-                new Thread() {
-                    public void run() {
-                        Runtime.getRuntime().gc();
-                    }
-
-                }.start();
-
-                return null;
-            }
-
-            private void atualizaListadeAcessoCatracaOffline() throws Exception {
-                // TODO Auto-generated method stub
-                if (devicesList == null || devicesList.isEmpty()) {
-                    return;
-                }
-                for (Device device : devicesList) {
-                    if (device instanceof TopDataDevice) {
-                        TopDataDevice topDataDevice = (TopDataDevice) device;
-                        if (!topDataDevice.isConnected()) {
-                            topDataDevice.enviaCartaoCatracaOffline();
-                        }
-                    }
-                }
-            }
-
-            @SuppressWarnings("unchecked")
-            private List<PedestrianAccessEntity> enviaPedestresCadastradosOuEditadosDesktop() throws IOException {
-                Main.verificaValidandoAcesso();
-                final BiometricRepository biometricRepository = new BiometricRepository();
-                List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
-                        .getResultListLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100L);
-
-                if (visitantesLocais == null || visitantesLocais.isEmpty()) {
-                    System.out.println(sdf.format(new Date()) + "  PEDESTRES/VISITANTES LOCAIS: sem registros para enviar");
-                    return null;
-                }
-
-                System.out.println("Iniciando sincronismo de pedestres para web");
-
-                JsonArray responseArray = new JsonArray();
-                for (PedestrianAccessEntity visitante : visitantesLocais) {
-                    // se foi criado, envia os dados para o servidor
-                    // porque estï¿½ sem o ID
-                    if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
-                        visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
-
-                        if (visitante.getListaAcessosTransient() != null
-                                && !visitante.getListaAcessosTransient().isEmpty()) {
-                            int countAtivos = 0;
-                            for (LogPedestrianAccessEntity l : visitante.getListaAcessosTransient()) {
-                                if (!"Regras ignoradas".equals(l.getReason())
-                                        && l.getStatus() != null
-                                        && "ATIVO".equalsIgnoreCase(l.getStatus())) {
-                                    countAtivos++;
-                                }
-                            }
-                            if (countAtivos > 0) {
-                                visitante.setQtdAcessoAntesSinc(countAtivos);
-                            }
-                        }
-
-                        visitante.setListaBiometriasTransient(biometricRepository.buscaBiometriasVisitante(visitante.getId()));
-                    }
-
-                    JsonObject responseObj = getNewVisitanteResponseObj(visitante);
-                    responseArray.add(responseObj);
-                }
-
-                System.out.println("Enviando request com visitantes: " + responseArray.size());
-
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/uploadVisitantes");
-                int responseCode = con.sendResponse(responseArray.toString());
-
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO AO ENVIAR VISITANTES LOCAIS: Response code: " + responseCode);
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO AO ENVIAR VISITANTES LOCAIS: Error String: " + con.getErrorString());
-                    return null;
-                }
-
-                atualizaDadosAlterados(visitantesLocais);
-
-                return visitantesLocais;
-            }
-
-            private void atualizaDadosAlterados(List<PedestrianAccessEntity> visitantesLocais) {
-                if (visitantesLocais == null || visitantesLocais.isEmpty()) {
-                    return;
-                }
-
-                //antes de alterar dados, verifica se existe validaï¿½ï¿½o de acesso em andamento
-                Main.verificaValidandoAcesso();
-
-                for (PedestrianAccessEntity visitante : visitantesLocais) {
-                    if (!Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
-
-                        if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
-                            for (PedestrianMessagesEntity m : visitante.getMensagens()) {
-                            	HibernateAccessDataFacade.remove(m);
-                            }
-                        }
-
-                        if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
-                            for (DocumentoEntity d : visitante.getDocumentos()) {
-                            	HibernateAccessDataFacade.remove(d);
-                            }
-                        }
-
-                        if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
-                            for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
-                            	HibernateAccessDataFacade.remove(pr);
-                            }
-                        }
-
-                        if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
-                            for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
-                            	HibernateAccessDataFacade.remove(pe);
-                            }
-                        }
-
-                        visitante.setDocumentos(new ArrayList<>());
-                        visitante.setPedestreRegra(new ArrayList<>());
-                        visitante.setEquipamentos(new ArrayList<>());
-                        visitante.setMensagens(new ArrayList<>());
-
-                        visitante.setEditadoNoDesktop(false);
-                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, visitante);
-                    }
-                }
-            }
-
-            private void apagaDadosNovos(List<PedestrianAccessEntity> visitantesLocais) {
-                //antes de alterar dados, verifica se existe validaï¿½ï¿½o de acesso em andamento
-                Main.verificaValidandoAcesso();
-
-                final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
-                for (PedestrianAccessEntity visitante : visitantesLocais) {
-                    if (!Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
-                    	continue;
-                    }
-                    
-                    if (visitante.getMensagens() != null && !visitante.getMensagens().isEmpty()) {
-                    	for (PedestrianMessagesEntity m : visitante.getMensagens()) {
-                    		HibernateAccessDataFacade.remove(m);
-                    	}
-                    }
-
-                    if (visitante.getDocumentos() != null && !visitante.getDocumentos().isEmpty()) {
-                    	for (DocumentoEntity d : visitante.getDocumentos()) {
-                    		HibernateAccessDataFacade.remove(d);
-                    	}
-                    }
-
-                    if (visitante.getPedestreRegra() != null && !visitante.getPedestreRegra().isEmpty()) {
-                    	for (PedestreRegraEntity pr : visitante.getPedestreRegra()) {
-                    		HibernateAccessDataFacade.remove(pr);
-                    	}
-                    }
-
-                    if (visitante.getEquipamentos() != null && !visitante.getEquipamentos().isEmpty()) {
-                    	for (PedestrianEquipamentEntity pe : visitante.getEquipamentos()) {
-                    		HibernateAccessDataFacade.remove(pe);
-                    	}
-                    }
-
-                    if (visitante.getListaAcessosTransient() != null
-                            && !visitante.getListaAcessosTransient().isEmpty()) {
-                    	for (LogPedestrianAccessEntity acesso : visitante.getListaAcessosTransient()) {
-                    		HibernateAccessDataFacade.remove(acesso);
-                    	}
-                    }
-
-                    List<LogPedestrianAccessEntity> novosLogs = buscaAcessosVisitante(visitante.getId());
-
-                    if (novosLogs != null && !novosLogs.isEmpty()) {
-                        PedestrianAccessEntity novoPedestre = pedestrianAccessRepository.buscaPedestrePorIdTemp(visitante.getId());
-                        System.out.println("id do pedestre antigo" + visitante.getId());
-                        for (LogPedestrianAccessEntity log : novosLogs) {
-                            log.setIdPedestrian(novoPedestre.getId());
-                            log.setPedestre(novoPedestre);
-
-                            HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, log);
-                        }
-                        System.out.println("id do pedestre novo" + novoPedestre.getId());
-                        visitante.setVersao(visitante.getVersao() + 1);
-                    }
-
-                    if (visitante.getListaBiometriasTransient() != null
-                            && !visitante.getListaBiometriasTransient().isEmpty()) {
-                        for (BiometricEntity biometria : visitante.getListaBiometriasTransient()) {
-                            biometria = (BiometricEntity) HibernateAccessDataFacade
-                                    .getSingleResultById(BiometricEntity.class, biometria.getId());
-
-                            if (biometria != null) {
-                                try {
-                                	HibernateAccessDataFacade.remove(biometria);
-                                } catch (Exception e) {
-                                    System.out.println("Sem digital pra remover");
-                                }
-                            }
-                        }
-                    }
-
-                    try {
-                    	HibernateAccessDataFacade.remove(visitante);
-
-                    } catch (Exception e) {
-                        visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
-                                .getSingleResultById(PedestrianAccessEntity.class, visitante.getId());
-                        visitante.setInvisivel(true);
-
-                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, visitante);
-                    }
-                
-                }
-            }
-
-            private void recebePedestresEBiometriasDaWeb() throws IOException {
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/request"
-                        + "?client=" + loggedUser.getIdClient()
-                        + "&lastsync=" + lastSync
-                        + "&version=" + Configurations.VERSION);
-                Integer responseCode = con.getResponseCode();
-
-                if (responseCode != 200 && responseCode != 404) {
-                    System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                if (responseCode == 404) {
-                    System.out.println(sdf.format(new Date()) + "  SEM REGISTROS PARA RECEBER: Error String: " + con.getErrorString());
-                    return;
-                }
-
-                BufferedReader bufferedReader = con.getResponseReader();
-                Type type = new TypeToken<List<PedestrianAccessTO>>() {
-                }.getType();
-                List<PedestrianAccessTO> athleteAccessTOList = gson.fromJson(bufferedReader, type);
-
-                if (athleteAccessTOList == null || athleteAccessTOList.isEmpty()) {
-                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros para receber");
-                    return;
-                }
-
-                if ("true".equals(Utils.getPreference("printLog"))) {
-                	System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: Response string: " + gson.toJson(athleteAccessTOList, type));                	
-                }
-
-                boolean atualizaDigitais = false;
-                for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
-                    if (loggedUser == null) { // usuario deslogou durante a sincronizacao
-                    	break;
-                    }
-
-                    // TODO : criar novo mï¿½todo para pegar pedestre removido ou nï¿½o
-                    //        isso pode resolver vï¿½rios bugs
-                    // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
-                    //		  aqui ou ne
-
-                    PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade.
-                            getAllPedestresById(athleteAccessTO.getId());
-
-                    if (existentAthleteAccess != null) {
-
-                        // verifica se houve alteracao nos campos principais e se recebeu templates
-                        if (existentAthleteAccess.toString().equals(athleteAccessTO.toString())) {
-                            continue;
-                        }
-
-                        // Procedimento de atualizacao de usuarios nas catracas RWTech
-                        if (Boolean.TRUE.equals(existentAthleteAccess.getCadastradoNaCatracaRWTech())
-                                && !Boolean.TRUE.equals(existentAthleteAccess.getDesatualizadoNaCatracaRWTech())) {
-                            existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
-                        }
-
-                        //verifica se usuï¿½rio foi apagado e se tem facial para apagar tambï¿½m no servidor facial
-                        String idFacial = null;
-                        if ((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
-                                || !"ATIVO".equals(athleteAccessTO.getStatus()))
-                                && existentAthleteAccess.getLuxandIdentifier() != null) {
-                            idFacial = existentAthleteAccess.getLuxandIdentifier();
-                        }
-
-                        //apaga dados do facial
-//						if(idFacial != null && !"".equals(idFacial) && LuxandService.getInstance() != null) {
-//							System.out.println("Estou deletando automaticamente, face: " + idFacial);
-//							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
-//						}
-                        
-                        final String oldStatus = existentAthleteAccess.getStatus();
-
-                        existentAthleteAccess.update(athleteAccessTO);
-
-                        if((existentAthleteAccess.isRemovido() 
-                        			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
-                        		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
-                        		&& Utils.isHikivisionConfigValid() ) {
-                        	
-                        	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
-                        	try {
-                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
-
-                        	} catch (Exception e) {
-                        		System.out.println(e.getMessage());
-							}
-                        }
-
-                        if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
-                            atualizaDigitais = true;
-                        }
-                        
-                        final boolean apagaFotoDePedestresInativcos = Utils.getPreferenceAsBoolean("deletePhotoFromInactivePedestrian");
-                        
-                        if(apagaFotoDePedestresInativcos 
-                        		&& (existentAthleteAccess.isRemovido() || existentAthleteAccess.isInativo())
-                        		&& Objects.nonNull(existentAthleteAccess.getFoto())) {
-                        	existentAthleteAccess.setFoto(null);
-                        }
-                        
-                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
-
-                    } else {
-                        PedestrianAccessEntity newAthleteAccess = new PedestrianAccessEntity(athleteAccessTO);
-                        if (!atualizaDigitais && Boolean.TRUE.equals(newAthleteAccess.getNovasDigitais())) {
-                            atualizaDigitais = true;
-                        }
-                        HibernateAccessDataFacade.save(PedestrianAccessEntity.class, newAthleteAccess);
-                    }
-                }
-
-                if (loggedUser == null) {
-                    return;
-                }
-
-                while (isCadastrandoBiometria) {
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (atualizaDigitais) {
-                    for (Device device : devicesList) {
-                        try {
-                            //reinicializa digitais na catraca topdata
-                            if (device instanceof TopDataDevice && device.isConnected()) {
-                                System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: atualizando templates " + device.getName());
-                                TopDataDevice topData = (TopDataDevice) device;
-                                if (topData.modeloLC)
-                                    topData.verificaCadastroNoInner(true, false, lastSync != null ? new Date(lastSync) : null);
-                                else if (topData.getIndexSearchEngine() != null)
-                                    topData.restartIndexSearchEngine();
-                                else
-                                    topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem alteraï¿½ï¿½es de templates para catracas");
-                }
-
-                Utils.sleep(1000);
-                lastSync = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
-                loggedUser.setLastSync(new Date(lastSync));
-                loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
-
-                //dispara para servidores
-                if (Main.broadcastServer != null) {
-                    Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REFRESH_TEMPLATES));
-                }
-            }
-
-			@SuppressWarnings("unchecked")
-            private void enviaBiometriasColetadasLocalmente() throws IOException {
-                // Enviando as biometrias coletadas localmente
-                List<BiometricEntity> biometriasLocais = (List<BiometricEntity>) HibernateAccessDataFacade.getResultList(BiometricEntity.class, 
-                		"BiometricEntity.findAll");
-
-                if (biometriasLocais == null || biometriasLocais.isEmpty()) {
-                    System.out.println(sdf.format(new Date()) + "  BIOMETRIAS LOCAIS: sem registros para enviar");
-                    return;
-                }
-
-                System.out.println("\r\n" + sdf.format(new Date()) + "  BIOMETRIAS LOCAIS: " + biometriasLocais.size() + " registros para enviar");
-                JsonArray responseArray = new JsonArray();
-
-                for (BiometricEntity biometria : biometriasLocais) {
-                    JsonObject responseObj = new JsonObject();
-                    responseObj.addProperty("idUser", biometria.getUser());
-                    responseObj.addProperty("finger", biometria.getFinger().toString());
-                    responseObj.addProperty("template", Base64.encodeBase64String(biometria.getTemplate()));
-                    responseObj.addProperty("sample", biometria.getSample() != null ? Base64.encodeBase64String(biometria.getSample()) : null);
-                    responseArray.add(responseObj);
-                }
-
-                HttpConnection con = new HttpConnection(urlApplication + "/restful-services/access/saveBiometry");
-
-                int responseCode = con.sendResponse(responseArray.toString());
-
-                if (responseCode == 200) { // OK
-                    System.out.println(sdf.format(new Date()) + "  BIOMETRIAS LOCAIS: dados enviados!");
-                    // Biometrias enviadas com sucesso, podem ser apagadas localmente porque serao recebidas novamente atraves do AthleteAccess
-                    for (BiometricEntity biometria : biometriasLocais) {
-                    	HibernateAccessDataFacade.remove(biometria);
-                        Utils.sleep(10);
-                    }
-
-                } else {
-                    System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR BIOMETRIAS LOCAIS: Response code: " + responseCode);
-                    System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR BIOMETRIAS LOCAIS: Error String: " + con.getErrorString());
-                }
-            }
-
-            private void buscaFotosDosPedestres(Long backUpLastSync) throws IOException {
-                final SmartAcessoFotoServiceClient smartAcessoFotoServiceClient = new SmartAcessoFotoServiceClient();
-                List<String> ids = smartAcessoFotoServiceClient.buscaIdsDePedestreComFotoAlterada(backUpLastSync);
-                
-                if(Objects.isNull(ids) || ids.isEmpty()) {
-                	return;
-                }
-                
-                System.out.println(sdf.format(new Date()) + "  BUSCANDO FOTOS: " + ids.size());
-                
-                final Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
-                final boolean resize = Utils.getPreferenceAsBoolean("shouldMakeImageResize");
-                
-                ids.forEach(id -> {
-                	final String idsParameter = id + ";";
-                	
-                    List<PedestrianAccessTO> athleteAccessTOList = smartAcessoFotoServiceClient.buscaFotoDePedestres(idsParameter, imageSize, resize);
-
-                    if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
-                        for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
-                            if (loggedUser == null) {
-                                break;
-                            }
-
-                            PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
-                                    .getSingleResultById(PedestrianAccessEntity.class, athleteAccessTO.getId());
-
-                            if (existentAthleteAccess != null) {
-                                existentAthleteAccess.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
-                                HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
-                            }
-                        }
-                    }
-                });
-            }
-        };
-        worker.execute();
-    }
 
     public static void syncLogAthleteAccess() {
-        if (updatingLogAccessList) {
+        if (getUpdatingLogAccessList()) {
             return;
         }
 
@@ -1989,7 +1285,7 @@ public class Main {
             }
         }
 
-        updatingLogAccessList = true;
+        setUpdatingLogAccessList(true);
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -2018,7 +1314,7 @@ public class Main {
                     if (loggedUser != null) {
                     	timerSyncLogAthleteAccess.start();
                     }
-                    updatingLogAccessList = false;
+                    setUpdatingLogAccessList(false);
                     trayIcon.setImage(trayIconImage);
 
                     if (mainScreen != null && mainScreen.isVisible()) {
@@ -2250,7 +1546,7 @@ public class Main {
             systemTray.add(trayIcon);
         } catch (AWTException e) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(mainScreen, "Nï¿½o foi possï¿½vel adicionar ï¿½cones na bandeja do sistema.", "Bandeja do sistema nï¿½o suportada.",
+            JOptionPane.showOptionDialog(mainScreen, "Não foi possível adicionar ícones na bandeja do sistema.", "Bandeja do sistema não suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);
@@ -2264,7 +1560,7 @@ public class Main {
 
         releaseTicketGateMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                releaseAccess();
+            	releaseAccessUseCase.execute(null, null);
             }
         });
 
@@ -2284,9 +1580,9 @@ public class Main {
     public static void sync() {
         try {
             mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            if (!Main.updatingAthleteAccessList) {
-                Main.syncAthleteAccessList();
-                while (Main.updatingAthleteAccessList) {
+            if (!SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
+            	syncPedestrianAccessListUseCase.syncPedestrianAccessList();
+                while (SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
                 	Thread.sleep(100);
                 }
 
@@ -2351,18 +1647,18 @@ public class Main {
 
 
             if (e.getKeyCode() == NativeKeyEvent.VC_F9) {
-                if (!apertouF9) {
-                    apertouF9 = true;
-                    apertouF10 = false;
-                    releaseAccess();
+                if (!ReleaseAccessUseCase.getApertouF9()) {
+                	ReleaseAccessUseCase.setApertouF9(true);
+                	ReleaseAccessUseCase.setApertouF10(false);
+                	releaseAccessUseCase.execute(null, null);
                 }
             }
 
             if (e.getKeyCode() == NativeKeyEvent.VC_F10) {
-                if (!apertouF10) {
-                    apertouF10 = true;
-                    apertouF9 = false;
-                    releaseAccess();
+                if (!ReleaseAccessUseCase.getApertouF10()) {
+                	ReleaseAccessUseCase.setApertouF10(true);
+                	ReleaseAccessUseCase.setApertouF9(false);
+                	releaseAccessUseCase.execute(null, null);
                 }
             }
 
@@ -2407,25 +1703,25 @@ public class Main {
         if (firstColorCode != null && !firstColorCode.isEmpty()) {
             String[] partes = firstColorCode.split(",");
             firstColor = new Color(Integer.valueOf(partes[0]), Integer.valueOf(partes[1]), Integer.valueOf(partes[2]));
-        } else
-            firstColor = new Color(39, 57, 74); // DARK BLUE
+        } else {
+        	firstColor = new Color(39, 57, 74); // DARK BLUE
+        }
+        	
         if (secondColorCode != null && !secondColorCode.isEmpty()) {
             String[] partes = secondColorCode.split(",");
             secondColor = new Color(Integer.valueOf(partes[0]), Integer.valueOf(partes[1]), Integer.valueOf(partes[2]));
-        } else
-            secondColor = new Color(70, 178, 202); // LIGHT BLUE
+        } else {
+        	secondColor = new Color(70, 178, 202); // LIGHT BLUE
+        }
     }
 
     private static void configLogFile() {
         try {
-            System.out.println(sdf.format(new Date()) + "  Enviando as mensagens do console para um arquivo.");
-
-            // salva o printStrem do console
             originalOut = System.out;
             originalErr = System.err;
 
-            // cria o arquivo
             logPath = Utils.getAppDataFolder() + "/Logs_controle_de_acesso/";
+
             new File(logPath).mkdirs();
             SimpleDateFormat df = new SimpleDateFormat("yyyy_MM_dd__HH_mm_ss");
             String fileName = logPath + "Log_Controle_de_acesso_"
@@ -2442,7 +1738,6 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("saiu configLogFile");
     }
 
     private static void closeLogFile() {
@@ -2460,317 +1755,6 @@ public class Main {
         }
         System.setOut(originalOut);
         System.setErr(originalErr);
-        System.out.println(sdf.format(new Date()) + "  Voltando as mensagens para o console.");
-        System.out.println("Saiu closeLogFile");
-    }
-
-    private static JsonObject getNewVisitanteResponseObj(PedestrianAccessEntity visitante) {
-        JsonObject responseObj = new JsonObject();
-
-        if (visitante.getEditadoNoDesktop() && !visitante.getCadastradoNoDesktop()) {
-            responseObj.addProperty("id", visitante.getId().toString());
-        } else {
-            responseObj.addProperty("id", "");
-        }
-
-        responseObj.addProperty("idTemp", visitante.getIdTemp() != null ? visitante.getIdTemp().toString() : "");
-        responseObj.addProperty("idCliente", loggedUser.getIdClient());
-        responseObj.addProperty("idUsuario", visitante.getIdUsuario() != null ? visitante.getIdUsuario().toString() : "");
-
-        //Dados basicos
-        responseObj.addProperty("nome", visitante.getName() != null ? visitante.getName() : "");
-        try {
-            responseObj.addProperty("dataNascimento", sdf.format(visitante.getDataNascimento()));
-        } catch (Exception e) {
-            responseObj.addProperty("dataNascimento", "");
-        }
-        responseObj.addProperty("email", visitante.getEmail() != null ? visitante.getEmail() : "");
-        responseObj.addProperty("cpf", visitante.getCpf() != null ? visitante.getCpf() : "");
-        responseObj.addProperty("genero", visitante.getGenero() != null ? visitante.getGenero() : "");
-        responseObj.addProperty("rg", visitante.getRg() != null ? visitante.getRg() : "");
-        responseObj.addProperty("telefone", visitante.getTelefone() != null ? visitante.getTelefone() : "");
-        responseObj.addProperty("celular", visitante.getCelular() != null ? visitante.getCelular() : "");
-        responseObj.addProperty("responsavel", visitante.getResponsavel() != null ? visitante.getResponsavel() : "");
-        responseObj.addProperty("observacoes", visitante.getObservacoes() != null ? visitante.getObservacoes() : "");
-
-        //Dados empresa
-        responseObj.addProperty("idEmpresa", visitante.getIdEmpresa() != null ? visitante.getIdEmpresa().toString() : "");
-        responseObj.addProperty("idDepartamento", visitante.getIdDepartamento() != null ? visitante.getIdDepartamento().toString() : "");
-        responseObj.addProperty("idCentroCusto", visitante.getIdCentroCusto() != null ? visitante.getIdCentroCusto().toString() : "");
-        responseObj.addProperty("idCargo", visitante.getIdCargo() != null ? visitante.getIdCargo().toString() : "");
-
-        //Dados aba lateral
-        responseObj.addProperty("foto", visitante.getFoto() != null ? Base64.encodeBase64String(visitante.getFoto()) : "");
-        responseObj.addProperty("tipo", visitante.getTipo() != null ? visitante.getTipo() : "");
-        responseObj.addProperty("status", visitante.getStatus() != null ? visitante.getStatus() : "INATIVO");
-        responseObj.addProperty("matricula", visitante.getMatricula() != null ? visitante.getMatricula() : "");
-        responseObj.addProperty("numeroCartao", visitante.getCardNumber() != null ? visitante.getCardNumber() : "");
-        responseObj.addProperty("sempreLiberado", visitante.getSempreLiberado() != null ? visitante.getSempreLiberado().toString() : "false");
-        responseObj.addProperty("habilitarTeclado", visitante.getHabilitarTeclado() != null
-                ? visitante.getHabilitarTeclado().toString() : "false");
-        responseObj.addProperty("enviaSmsAoPassarNaCatraca", visitante.getEnviaSmsAoPassarNaCatraca() != null
-                ? visitante.getEnviaSmsAoPassarNaCatraca().toString() : "false");
-
-        try {
-            responseObj.addProperty("dataCadastroFotoNaHikivision", sdf.format(visitante.getDataCadastroFotoNaHikivision()));
-        } catch (Exception e) {
-            responseObj.addProperty("dataCadastroFotoNaHikivision", "");
-        }
-        
-        //Dados endereco
-        responseObj.addProperty("cep", visitante.getCep() != null ? visitante.getCep() : "");
-        responseObj.addProperty("logradouro", visitante.getLogradouro() != null ? visitante.getLogradouro() : "");
-        responseObj.addProperty("numero", visitante.getNumero() != null ? visitante.getNumero() : "");
-        responseObj.addProperty("complemento", visitante.getComplemento() != null ? visitante.getComplemento() : "");
-        responseObj.addProperty("bairro", visitante.getBairro() != null ? visitante.getBairro() : "");
-        responseObj.addProperty("cidade", visitante.getCidade() != null ? visitante.getCidade() : "");
-        responseObj.addProperty("estado", visitante.getEstado() != null ? visitante.getEstado() : "");
-        responseObj.addProperty("qtdeCreditos", visitante.getQuantidadeCreditos() != null ?
-                visitante.getQuantidadeCreditos().toString() : "");
-
-        responseObj.addProperty("luxandIdentifier", visitante.getLuxandIdentifier() != null ?
-                visitante.getLuxandIdentifier() : "");
-        responseObj.addProperty("idRegra", visitante.getIdRegra() != null ? visitante.getIdRegra().toString() : "");
-
-        responseObj.addProperty("login", visitante.getLogin() != null ? visitante.getLogin() : "");
-        responseObj.addProperty("senha", visitante.getSenha() != null ? visitante.getSenha() : "");
-        responseObj.addProperty("tipoAcesso", visitante.getTipoAcesso() != null ? visitante.getTipoAcesso() : "");
-        responseObj.addProperty("tipoQRCode", visitante.getTipoQRCode() != null ? visitante.getTipoQRCode() : "");
-        responseObj.addProperty("qrCodeParaAcesso", visitante.getQrCodeParaAcesso() != null ? visitante.getQrCodeParaAcesso() : "");
-        responseObj.addProperty("qtdeAcessosAntesSinc", visitante.getQtdAcessoAntesSinc() != null
-                ? visitante.getQtdAcessoAntesSinc().toString() : "");
-
-        adicionaListaDeRegras(responseObj, visitante.getPedestreRegra());
-
-        adicionaListaDeDocumentos(responseObj, visitante.getDocumentos());
-
-        adicionaListaDeEquipamentos(responseObj, visitante.getEquipamentos());
-
-        adicionaListaDeMensagens(responseObj, visitante.getMensagens());
-
-        adicionaListaDeAcessosTransiente(responseObj, visitante.getListaAcessosTransient());
-
-        adicionaListaDeBiometriasTransiente(responseObj, visitante.getListaBiometriasTransient());
-
-        return responseObj;
-    }
-
-    private static void adicionaListaDeRegras(JsonObject responseObj, List<PedestreRegraEntity> pedestresRegras) {
-        if (pedestresRegras == null || pedestresRegras.isEmpty()) {
-            responseObj.add("pedestresRegras", new JsonArray());
-            return;
-        }
-
-        JsonArray pedestresRegrasArray = new JsonArray();
-
-        for (PedestreRegraEntity pedestreRegra : pedestresRegras) {
-            if (!pedestreRegra.getCadastradoNoDesktop()
-                    && !pedestreRegra.getRemovidoNoDesktop())
-                continue;
-
-            JsonObject pedestreRegraObj = new JsonObject();
-            pedestreRegraObj.addProperty("idRegraPR", pedestreRegra.getRegra() != null ? pedestreRegra.getRegra().getId().toString() : "0");
-            try {
-                pedestreRegraObj.addProperty("validadeRegraPR", sdf.format(pedestreRegra.getValidade()));
-
-            } catch (Exception e) {
-                pedestreRegraObj.addProperty("validadeRegraPR", "");
-            }
-            pedestreRegraObj.addProperty("qtdeDeCreditosPR", pedestreRegra.getQtdeDeCreditos() != null
-                    ? pedestreRegra.getQtdeDeCreditos().toString() : "");
-            pedestreRegraObj.addProperty("qtdeTotalDeCreditosPR", pedestreRegra.getQtdeTotalDeCreditos() != null
-                    ? pedestreRegra.getQtdeTotalDeCreditos().toString() : "");
-            pedestreRegraObj.addProperty("diasValidadeCreditoPR", pedestreRegra.getDiasValidadeCredito() != null
-                    ? pedestreRegra.getDiasValidadeCredito().toString() : "");
-            try {
-                pedestreRegraObj.addProperty("dataInicioPeriodoPR", sdf.format(pedestreRegra.getDataInicioPeriodo()));
-            } catch (Exception e) {
-                pedestreRegraObj.addProperty("dataInicioPeriodoPR", "");
-            }
-
-            try {
-                pedestreRegraObj.addProperty("dataFimPeriodo", sdf.format(pedestreRegra.getDataFimPeriodo()));
-
-            } catch (Exception e) {
-                pedestreRegraObj.addProperty("dataFimPeriodo", "");
-            }
-            pedestreRegraObj.addProperty("removido", pedestreRegra.getRemovidoNoDesktop().toString());
-            pedestreRegraObj.addProperty("idPedestreRegra", pedestreRegra.getId().toString());
-
-            pedestresRegrasArray.add(pedestreRegraObj);
-        }
-
-        responseObj.add("pedestresRegras", pedestresRegrasArray);
-    }
-
-    private static void adicionaListaDeDocumentos(JsonObject responseObj, List<DocumentoEntity> documentos) {
-        if (documentos == null || documentos.isEmpty()) {
-            responseObj.add("documentos", new JsonArray());
-            return;
-        }
-
-        JsonArray documentosArray = new JsonArray();
-
-        for (DocumentoEntity documento : documentos) {
-            if (!documento.getCadastradoNoDesktop()
-                    && !documento.getRemovidoNoDesktop())
-                continue;
-
-            JsonObject documentoObj = new JsonObject();
-            documentoObj.addProperty("nomeDoc", documento.getNome() != null ? documento.getNome() : "");
-            documentoObj.addProperty("arquivoDoc", documento.getArquivo() != null ? Base64.encodeBase64String(documento.getArquivo()) : "");
-            try {
-                documentoObj.addProperty("validadeDoc", sdf.format(documento.getValidade()));
-
-            } catch (Exception e) {
-                documentoObj.addProperty("validadeDoc", "");
-            }
-            documentoObj.addProperty("removido", documento.getRemovidoNoDesktop().toString());
-            documentoObj.addProperty("idDocumento", documento.getId().toString());
-
-            documentosArray.add(documentoObj);
-        }
-
-        responseObj.add("documentos", documentosArray);
-    }
-
-    private static void adicionaListaDeEquipamentos(JsonObject responseObj, List<PedestrianEquipamentEntity> equipamentos) {
-        if (equipamentos == null || equipamentos.isEmpty()) {
-            responseObj.add("equipamentos", new JsonArray());
-            return;
-        }
-
-        JsonArray equipamentosArray = new JsonArray();
-
-        for (PedestrianEquipamentEntity equipamento : equipamentos) {
-            if (!equipamento.getCadastradoNoDesktop()
-                    && !equipamento.getRemovidoNoDesktop())
-                continue;
-
-            JsonObject equipamentoObj = new JsonObject();
-            equipamentoObj.addProperty("idEquipamento", equipamento.getIdEquipamento() != null ? equipamento.getIdEquipamento() : "");
-            try {
-                equipamentoObj.addProperty("validadeEquipamento", sdf.format(equipamento.getValidadeEquipamento()));
-
-            } catch (Exception e) {
-                equipamentoObj.addProperty("validadeEquipamento", "");
-            }
-            equipamentoObj.addProperty("nomeEquipamento", equipamento.getNomeEquipamento() != null ? equipamento.getNomeEquipamento() : "");
-            equipamentoObj.addProperty("removido", equipamento.getRemovidoNoDesktop().toString());
-            equipamentoObj.addProperty("id", equipamento.getId().toString());
-
-            equipamentosArray.add(equipamentoObj);
-        }
-
-        responseObj.add("equipamentos", equipamentosArray);
-    }
-
-    private static void adicionaListaDeMensagens(JsonObject responseObj, List<PedestrianMessagesEntity> mensagens) {
-        if (mensagens == null || mensagens.isEmpty()) {
-            responseObj.add("mensagens", new JsonArray());
-            return;
-        }
-
-        JsonArray mensagensArray = new JsonArray();
-
-        for (PedestrianMessagesEntity mensagem : mensagens) {
-            if (!mensagem.getCadastradoNoDesktop()
-                    && !mensagem.getRemovidoNoDesktop())
-                continue;
-
-            JsonObject mensagemObj = new JsonObject();
-            mensagemObj.addProperty("nomeMsg", mensagem.getNome() != null ? mensagem.getNome() : "");
-            mensagemObj.addProperty("statusMsg", mensagem.getStatus() != null ? mensagem.getStatus().toString() : "");
-            mensagemObj.addProperty("mensagemMsg", mensagem.getMensagem() != null ? mensagem.getMensagem() : "");
-            mensagemObj.addProperty("quantidadeMsg", mensagem.getQuantidade() != null ? mensagem.getQuantidade().toString() : "0");
-            try {
-                mensagemObj.addProperty("validadeMsg", sdf.format(mensagem.getValidade()));
-            } catch (Exception e) {
-                mensagemObj.addProperty("validadeMsg", "");
-            }
-            mensagemObj.addProperty("removido", mensagem.getRemovidoNoDesktop().toString());
-            mensagemObj.addProperty("idMensagem", mensagem.getId().toString());
-
-            mensagensArray.add(mensagemObj);
-        }
-
-        responseObj.add("mensagens", mensagensArray);
-    }
-
-    private static void adicionaListaDeBiometriasTransiente(JsonObject responseObj, List<BiometricEntity> biometrias) {
-        if (biometrias == null || biometrias.isEmpty()) {
-            responseObj.add("biometrias", new JsonArray());
-            return;
-        }
-
-        JsonArray biometriasArray = new JsonArray();
-
-        for (BiometricEntity biometria : biometrias) {
-            JsonObject biometriaObj = new JsonObject();
-
-            biometriaObj.addProperty("idBiometria", biometria.getId() != null ? biometria.getId().toString() : "");
-            biometriaObj.addProperty("idUserBiometria", biometria.getUser() != null ? biometria.getUser().toString() : "");
-            biometriaObj.addProperty("userNameBiometria", biometria.getUserName() != null ? biometria.getUserName() : "");
-            biometriaObj.addProperty("finger", biometria.getFinger() != null ? biometria.getFinger().toString() : "");
-            biometriaObj.addProperty("template", biometria.getTemplate() != null
-                    ? Base64.encodeBase64String(biometria.getTemplate()) : "");
-            biometriaObj.addProperty("sample", biometria.getSample() != null ? Base64.encodeBase64String(biometria.getSample()) : null);
-
-            biometriasArray.add(biometriaObj);
-        }
-        responseObj.add("biometrias", biometriasArray);
-    }
-
-    private static void adicionaListaDeAcessosTransiente(JsonObject responseObj, List<LogPedestrianAccessEntity> acessos) {
-        if (acessos == null || acessos.isEmpty()) {
-            responseObj.add("acessos", new JsonArray());
-            return;
-        }
-
-        JsonArray acessosArray = new JsonArray();
-
-        for (LogPedestrianAccessEntity acesso : acessos) {
-            JsonObject acessoObj = new JsonObject();
-
-            acessoObj.addProperty("idAcesso", acesso.getId() != null ? acesso.getId().toString() : "");
-            try {
-                acessoObj.addProperty("dataAcesso", sdf.format(acesso.getAccessDate()));
-            } catch (Exception e) {
-                acessoObj.addProperty("dataAcesso", "");
-            }
-            acessoObj.addProperty("statusAcesso", acesso.getStatus() != null ? acesso.getStatus() : "");
-            acessoObj.addProperty("localizacao", acesso.getLocation() != null ? acesso.getLocation() : "");
-            acessoObj.addProperty("razao", acesso.getReason() != null ? acesso.getReason() : "");
-            acessoObj.addProperty("direcao", acesso.getDirection() != null ? acesso.getDirection() : "");
-            acessoObj.addProperty("equipamento", acesso.getEquipament() != null ? acesso.getEquipament() : "");
-
-            acessosArray.add(acessoObj);
-        }
-        responseObj.add("acessos", acessosArray);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<LogPedestrianAccessEntity> buscaAcessosVisitante(Long idVisitante) {
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("ID_PEDESTRE", idVisitante);
-
-        List<LogPedestrianAccessEntity> acessosVisitantesLocais = (List<LogPedestrianAccessEntity>)
-        		HibernateAccessDataFacade.getResultListWithParams(LogPedestrianAccessEntity.class,
-                        "LogPedestrianAccessEntity.findAllByPedestre", args);
-
-        if (acessosVisitantesLocais != null
-                && acessosVisitantesLocais.size() == 1
-                && acessosVisitantesLocais.get(0) != null
-                && "INDEFINIDO".equals(acessosVisitantesLocais.get(0).getStatus())) {
-            //Aguarda um pouco e pesquisa mais, pode estar passando
-            System.out.println("Visitante com log de acesso Indefinido. Aguarda para pesquisar mais dados.");
-            Utils.sleep(2000);
-            acessosVisitantesLocais = (List<LogPedestrianAccessEntity>)
-            		HibernateAccessDataFacade.getResultListWithParams(LogPedestrianAccessEntity.class,
-                            "LogPedestrianAccessEntity.findAllByPedestre", args);
-        }
-
-        return acessosVisitantesLocais;
     }
 
     public static void apagarArquivo(String path) {
@@ -2915,36 +1899,80 @@ public class Main {
     }
 
     private static void finalizeDevices() {
-        if (Main.devicesList != null && !Main.devicesList.isEmpty()) {
-            for (Device device : Main.devicesList) {
-                if (device instanceof FacialDevice) {
-                    FacialDevice facialDevice = (FacialDevice) device;
-                    if (facialDevice.isConnected())
-                        try {
-                            facialDevice.disconnect("");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+    	if (LuxandService.getInstance().serviceInitialized) {
+        	LuxandService.getInstance().FinalizeSDK();
+        }
+    	
+        if (Objects.isNull(devicesList) || devicesList.isEmpty()) {
+            return;
+        }
+        
+        for (Device device : Main.devicesList) {
+            if (device instanceof FacialDevice) {
+                FacialDevice facialDevice = (FacialDevice) device;
+                if (facialDevice.isConnected()) {
+                	try {
+                		facialDevice.disconnect("");
+                	} catch (Exception e) {
+                		e.printStackTrace();
+                	}
                 }
-                if (device instanceof LcDevice) {
-                    LcDevice lc = (LcDevice) device;
-                    if (lc.isConnected()) {
-                        try {
-                            lc.disconnect("");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+            }
+            
+            if (device instanceof LcDevice) {
+                LcDevice lc = (LcDevice) device;
+                if (lc.isConnected()) {
+                    try {
+                        lc.disconnect("");
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
         }
-
-        if (LuxandService.getInstance().serviceInitialized)
-            LuxandService.getInstance().FinalizeSDK();
     }
     
-    public static boolean temServidor() {
+    public static synchronized boolean temServidor() {
     	return Objects.nonNull(servidor);
     }
+    
+    public static synchronized ServerDevice getServidor() {
+    	return servidor;
+    }
+    
+    public static synchronized void removeServidor() {
+    	servidor = null;
+    }
+    
+    public static synchronized void addServidor(final ServerDevice serverDevice) {
+    	servidor = serverDevice;
+    }
+    
+    public static Long getLastSyncLog() {
+    	return lastSyncLog;
+    }
+    
+    public static void setLastSyncLog(final Long value) {
+    	lastSyncLog = value;
+    }
+    
+    public static synchronized TrayIcon getTrayIcon() {
+    	return trayIcon;
+    }
+    
+    public static synchronized Image getTrayIconImageLoading() {
+    	return trayIconImageLoading;
+    }
+    
+    public static synchronized Image getTrayIconImage() {
+    	return trayIconImage;
+    }
+    
+    public static synchronized boolean isCadastrandoBiometria() {
+    	return isCadastrandoBiometria;
+    }
 
+    public static synchronized void setIsCadastrandoBiometria(final boolean value) {
+    	isCadastrandoBiometria = value;
+    }
 }

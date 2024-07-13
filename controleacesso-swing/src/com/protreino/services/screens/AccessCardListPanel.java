@@ -46,6 +46,7 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.StatusCard;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
@@ -68,6 +69,8 @@ public class AccessCardListPanel extends PaginedListPanel {
 	public  JButton clearCardStateButton;
 	private HashMap<String, Object> args;
 	private List<Integer> colunasComLink;
+	
+	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
 	
 	public AccessCardListPanel(){
 		
@@ -249,12 +252,12 @@ public class AccessCardListPanel extends PaginedListPanel {
 		
 		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa a√ß√£o far√° com que todos os cartıes/comandas voltem para o "
 				+ "status de AGUARDANDO (dentro da urna expedidora). "
-				+ "Tem certeza que deseja continuar?", "Confirma√ß√£o", 
+				+ "Tem certeza que deseja continuar?", "ConfirmaÁ„o", 
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
-			//apaga tamb√©m dados de giros anteriores n„o registrados
+			//apaga tambem dados de giros anteriores n„o registrados
 			HibernateAccessDataFacade.resetStatusAllCards();
-			Utils.createNotification("Cart√µes/Comandas atualizados com sucesso!", NotificationType.GOOD);
+			Utils.createNotification("Cartıes/Comandas atualizados com sucesso!", NotificationType.GOOD);
 			
 			cleanFilter();
 		}
@@ -349,17 +352,16 @@ public class AccessCardListPanel extends PaginedListPanel {
 	public void sync(){
 		try {
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			if (!Main.updatingAthleteAccessList) {
-				Main.syncAthleteAccessList();
-				while (Main.updatingAthleteAccessList)
+			if (!SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
+				syncPedestrianAccessListUseCase.syncPedestrianAccessList();
+				while (SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
 					Thread.sleep(100);
+				}
 				cleanFilter();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 	}

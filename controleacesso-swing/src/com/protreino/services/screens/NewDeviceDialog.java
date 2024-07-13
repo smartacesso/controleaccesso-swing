@@ -39,7 +39,6 @@ import com.protreino.services.devices.ControlIdDevice;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.NitgenDevice;
-import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.FieldTO;
@@ -105,7 +104,7 @@ public class NewDeviceDialog extends JDialog{
 					&& !Manufacturer.SYSTEMTEC.equals(manufacturer)) {
 				
 				if(Manufacturer.SERVER.equals(manufacturer) 
-						&& Boolean.TRUE.equals(Main.servidor != null)) {
+						&& Boolean.TRUE.equals(Main.temServidor())) {
 					continue;
 				}
 				if(Manufacturer.LC_DEVICE.equals(manufacturer)
