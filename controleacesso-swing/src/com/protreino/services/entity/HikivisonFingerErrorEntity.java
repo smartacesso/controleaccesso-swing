@@ -3,56 +3,50 @@ package com.protreino.services.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
-public class HikivisonFingerErrorEntity extends BaseEntity implements Serializable {
+@SuppressWarnings("serial")
+@Entity
+@Table(name="TB_HIKIVISION_FINGER_ERROR")
+public class HikivisonFingerErrorEntity extends BaseEntity implements ObjectWithId, Serializable {
 
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="ID_HIKIVISION_FINGER", nullable=false)
+	@Column(name="ID_HIKIVISION_FINGER_ERROR", nullable=false)
 	private Long id;
 	
-	@Column(name="ID_USER", nullable=false, length=100)
-	private String idUser;
+	@Column(name="ID_USER", nullable=false)
+	private Long idUser = 0L;
 	
-	@Column(name="FINGER_NO", nullable=false)
-	private Integer fingerNo = 0;
 	
 	@Column(name="ERROR_MESSAGE", nullable=false, length=100)
 	private String errorMessage;
 	
-	@Column(name="FINGER_DATA", nullable=false, length=100)
-	private String fingerData;
+	@Column(name="DEVICE_ID", nullable=false, length=200)
+	private String deviceId;
+	
 	
 	public HikivisonFingerErrorEntity() {
 	}
 	
-	public HikivisonFingerErrorEntity(Long id, String idUser, Integer fingerNo, String errorMessage,
-			String fingerData) {
+	public HikivisonFingerErrorEntity(Long idUser, String errorMessage, String deviceId) {
 		this.idUser = idUser;
-		this.fingerNo = fingerNo;
 		this.errorMessage = errorMessage;
-		this.fingerData = fingerData;
+		this.deviceId = deviceId;
 	}
 	
 
-	public String getIdUser() {
+	public Long getIdUser() {
 		return idUser;
 	}
 
-	public void setIdUser(String idUser) {
+	public void setIdUser(Long idUser) {
 		this.idUser = idUser;
-	}
-
-	public Integer getFingerNo() {
-		return fingerNo;
-	}
-
-	public void setFingerNo(Integer fingerNo) {
-		this.fingerNo = fingerNo;
 	}
 
 	public String getErrorMessage() {
@@ -63,16 +57,14 @@ public class HikivisonFingerErrorEntity extends BaseEntity implements Serializab
 		this.errorMessage = errorMessage;
 	}
 
-	public String getFingerData() {
-		return fingerData;
-	}
-
-	public void setFingerData(String fingerData) {
-		this.fingerData = fingerData;
-	}
-
 	public Long getId() {
 		return id;
+	}
+
+	@Override
+	public void setId(Long id) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 

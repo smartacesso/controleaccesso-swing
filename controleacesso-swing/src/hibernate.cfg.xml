@@ -54,7 +54,8 @@
 		<mapping class="com.protreino.services.entity.LogCartaoComandaEntity" />
 		<mapping class="com.protreino.services.entity.HikivisionIntegrationErrorEntity" />
 		<mapping class="com.protreino.services.entity.HikivisionFingerEntity" />
-		
-		
+		<mapping class="com.protreino.services.entity.HikivisionFingerEntity" />
+		<mapping class="com.protreino.services.entity.HikivisonFingerErrorEntity" />
+
 	</session-factory>
 </hibernate-configuration>

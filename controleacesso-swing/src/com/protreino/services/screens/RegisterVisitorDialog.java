@@ -6,6 +6,7 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
+import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
@@ -929,8 +930,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         cadastrarDigitalButton.setPreferredSize(new Dimension(150, 40));
         cadastrarDigitalButton.addActionListener(e -> {
         
-        	if(Utils.getPreference("").equalsIgnoreCase("HIKIVISION")) {
-        		//criarDialogoCadastrarBiometriaHikivision();
+        	if(Utils.getPreferenceAsBoolean("cadastroDigitalHikivision")) {
+        		new ColetarBiometriaHikvisionDialog(visitante); 
         		
 
         	} else {
@@ -959,7 +960,6 @@ public class RegisterVisitorDialog extends BaseDialog {
                 adicionarVisitante();          
                 
                 if(Objects.nonNull(hikivisionUseCases)) {
-                	//hikivisionUseCases.adicionarDigitalUsuario("A0F722D9-5FA8-4F80-BEFE-C7A9B38744E8", 3, "3");
                 	salvarFotoVisitanteHikivision();
                 }
                 
@@ -999,6 +999,13 @@ public class RegisterVisitorDialog extends BaseDialog {
         		&& !visitante.getCardNumber().isEmpty()
         		&& Utils.isHikivisionConfigValid()) {
         	panelInterno.add(syncInHikivisionButton);
+        	panelInterno.add(Box.createHorizontalStrut(10));
+        }
+        if(Objects.nonNull(visitante.getCardNumber()) 
+        		&& !visitante.getCardNumber().isEmpty()
+        		&& Utils.isHikivisionConfigValid()
+        		&& Utils.getPreferenceAsBoolean("cadastroDigitalHikivision")) {
+        	panelInterno.add(cadastrarDigitalButton);
         	panelInterno.add(Box.createHorizontalStrut(10));
         }
         
@@ -1043,7 +1050,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         return panel;
     }
 
-    private void syncronizarUsuarioInDevicesHkivision() {
+	private void syncronizarUsuarioInDevicesHkivision() {
     	if(Objects.isNull(hikivisionUseCases)) {
     		return;
     	}

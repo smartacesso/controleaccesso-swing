@@ -6,6 +6,7 @@ import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.google.gson.Gson;
+import com.protreino.services.enumeration.Finger;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.to.FingerPrintInfoTO;
 import com.protreino.services.to.hikivision.*;
@@ -177,10 +178,10 @@ public class HikiVisionIntegrationService {
 		return false;
 	}
 	
-	public Optional<CaptureFingerPrintTO> capturaDigitalUsuario(final String deviceId, final Integer fingerNo) {
+	public Optional<CaptureFingerPrintTO> capturaDigitalUsuario(final String deviceId, final Finger fingerNo) {
 		final String body = "{"
 	            + "		\"CaptureFingerPrintCond\": {"
-	            + "			\"fingerNo\": " + fingerNo + ""
+	            + "			\"fingerNo\": " + fingerNo.getPosition() + ""
 	            + "		}"
 	            + "	}";
 		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
@@ -202,12 +203,12 @@ public class HikiVisionIntegrationService {
 		return Optional.empty();
 	}
 	
-	public boolean vinculaDigitalUsuario(final String deviceId, final String idUser, final Integer printID, final String fingerData) {
+	public boolean vinculaDigitalUsuario(final String deviceId, final Long idUser, final Finger fingerNo, final String fingerData) {
 		final String body =
 			       "{"
 			       + "		\"FingerPrintCfg\": {"
-			       + "			\"employeeNo\": \"" + idUser + "\","
-			       + "			\"fingerPrintID\": " + printID + ","
+			       + "			\"employeeNo\": \"" + String.valueOf(idUser) + "\","
+			       + "			\"fingerPrintID\": " + fingerNo.ordinal() + ","
 			       + "			\"fingerData\": \"" + fingerData + "\""
 			       + "		}"
 			       + "	}";
@@ -238,11 +239,11 @@ public class HikiVisionIntegrationService {
 		return false;
 	}
 	
-	public boolean buscarDigitalUsuario(final String deviceId, final String searchID, final String idUser) {
+	public boolean buscarDigitalUsuario(final String deviceId, final String idUser) {
 		final String body = 
 			       "{"
 			       + "		\"FingerPrintCond\": {"
-			       + "			\"searchID\": \"" + searchID + "\","
+			       + "			\"searchID\": \"" + idUser + "\","
 			       + "			\"employeeNo\": \"" + idUser + "\""
 			       + "		}"
 			       + "	}";
@@ -271,7 +272,7 @@ public class HikiVisionIntegrationService {
 		return false;
 	}
 	
-	public boolean apagarDigitalUsuario(final String deviceId, final String idUser, final Integer fingerNo) {
+	public boolean apagarDigitalUsuario(final String deviceId, final Long idUser, final Finger fingerNo) {
 		final String body = 
 			       "{"
 			       + "		\"FingerPrintDelete\": {"

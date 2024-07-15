@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import com.protreino.services.entity.HikivisionFingerEntity;
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
+import com.protreino.services.entity.HikivisonFingerErrorEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
@@ -266,55 +268,32 @@ public class HikivisionUseCases {
 				Integer.valueOf(Utils.getPreference("tcpServerHikivisionSocketPort")));
 	}
 
-	public boolean adicionarDigitalUsuario(final String deviceId, final Integer fingerNo, final String idUser) {
-		final boolean buscarUsuario = buscarUsuario(deviceId, "3", "3");
-
-		if (buscarUsuario) {
-			apagarUsuario(deviceId, idUser, fingerNo);
-		}
-		final Optional<CaptureFingerPrintTO> digitalCadastrada = coletarbiometria(deviceId, fingerNo);
-
-		if (!digitalCadastrada.isPresent()) {
-			return false;
-		}
-
-		final boolean vincularBiometria = vinculaDigitalUsuario(deviceId, fingerNo, idUser, digitalCadastrada.get().fingerData);
-		
-		HibernateAccessDataFacade.save(HikivisionFingerEntity.class,  new HikivisionFingerEntity(fingerNo, idUser, digitalCadastrada.get().fingerData) );
+	public boolean adicionarDigitalNoDevice(final Finger fingerNo, final Long idUser, final String fingerData) {
 
 		List<HikivisionDeviceTO.Device> devices = listarDispositivos();
-
+		
 		devices.forEach(device -> {
-			/*
-			 * TODO: device já tem biometria para o pedestre e dedo se sim apagar digitalok
-			 * 
-			 * cadastrar biometria se nao salvar na tabela temporariaok
-			 * 
-			 * 
-			 * tentativa de reprocessar: as digitais que nao conseguiram ser vinculadas vao
-			 * salvar a biometrias na tabela fixa
-			 
-			final boolean buscarUsuario = buscarUsuario(deviceId, null, idUser);
+			final boolean buscarUsuario = buscarUsuario(device.getDevIndex(), String.valueOf(idUser));
 
 			if (buscarUsuario) {
-				apagarUsuario(deviceId, idUser, fingerNo);
+				apagarUsuario(device.getDevIndex(), idUser, fingerNo);
 			}
 
-			final boolean vincularBiometria = vinculaDigitalUsuario(device.getDevIndex(), fingerNo, idUser, digitalCadastrada.get().fingerData);
-			
-			if(vincularBiometria) {
-				HibernateAccessDataFacade.save(HikivisionFingerEntity.class,  new HikivisionFingerEntity(fingerNo, idUser, digitalCadastrada.get().fingerData) );
-			}
-			*/
-			
+			final boolean vincularBiometria = vinculaDigitalUsuario(device.getDevIndex(), fingerNo, idUser, fingerData);
 
-		});
+			if(!vincularBiometria) {
+				HibernateAccessDataFacade.save(HikivisonFingerErrorEntity.class,
+						new HikivisonFingerErrorEntity(idUser, "Digital Não vinculada", device.getDevIndex()));
+			} 	
+		}); 
+			
+	
 
-		return false;
+		return true;
 
 	}
 
-	private Optional<CaptureFingerPrintTO> coletarbiometria(final String deviceId, final Integer fingerNo) {
+	public Optional<CaptureFingerPrintTO> coletarBiometriabiometria(final String deviceId, final Finger fingerNo) {
 		final Optional<CaptureFingerPrintTO> digitalCadastrada = hikiVisionIntegrationService
 				.capturaDigitalUsuario(deviceId, fingerNo);
 
@@ -326,18 +305,18 @@ public class HikivisionUseCases {
 
 	}
 
-	private boolean vinculaDigitalUsuario(final String deviceId, final Integer fingerNo, final String idUser,
+	private boolean vinculaDigitalUsuario(final String deviceId, final Finger fingerNo, final Long idUser,
 			final String fingerData) {
-		return hikiVisionIntegrationService.vinculaDigitalUsuario(deviceId, idUser, fingerNo, fingerData);
+		return hikiVisionIntegrationService.vinculaDigitalUsuario(deviceId ,idUser, fingerNo, fingerData);
 
 	}
 
-	private boolean buscarUsuario(final String deviceId, final String searchID, final String idUser) {
-		return hikiVisionIntegrationService.buscarDigitalUsuario(deviceId, searchID, idUser);
+	private boolean buscarUsuario(final String deviceId, final String idUser) {
+		return hikiVisionIntegrationService.buscarDigitalUsuario(deviceId, idUser);
 
 	}
 
-	private boolean apagarUsuario(final String deviceId, String idUser, Integer fingerNo) {
+	private boolean apagarUsuario(final String deviceId, Long idUser, Finger fingerNo) {
 		return hikiVisionIntegrationService.apagarDigitalUsuario(deviceId, idUser, fingerNo);
 
 	}

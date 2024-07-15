@@ -97,8 +97,9 @@ public class PreferencesDialog extends JDialog {
 				field = new FieldTO(preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()),
 						options);
 			
-			} else
-				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()));
+			} else {
+				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()));				
+			}
 			
 			field.setNumeric(preference.getNumeric());
 			field.setTextFieldSize(preference.getTextFieldSize());

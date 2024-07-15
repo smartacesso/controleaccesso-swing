@@ -316,15 +316,17 @@ public class AccessListPanel extends PaginedListPanel {
 		filtroNomeTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
 		
-		totalRegistros =  HibernateAccessDataFacade.
-				getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
+		totalRegistros = 0;  
+				//HibernateAccessDataFacade.
+				//getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
 		
 		//calcula páginas
 		calculaTamanhoPaginas();
 		
-		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
-				getResultListLimited(PedestrianAccessEntity.class, 
-						"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
+		listaAcesso = null;
+				//(List<PedestrianAccessEntity>) HibernateAccessDataFacade.
+				//getResultListLimited(PedestrianAccessEntity.class, 
+					//	"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
 		
 		if(Main.internoLoggedUser != null)
 			colunasComLink.add(2);

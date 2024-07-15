@@ -4,10 +4,14 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.protreino.services.enumeration.Finger;
 
 
 @SuppressWarnings("serial")
@@ -21,32 +25,30 @@ public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="ID_HIKIVISION_FINGER", nullable=false)
 	private Long id;
 	
-	@Column(name="FINGER_NO", nullable=false)
-	private Integer fingerNo = 0;
+	@Enumerated(EnumType.STRING)
+	@Column(name="FINGER_NO", nullable=true, length=10)
+	private Finger fingerNo;
 	
 	@Column(name="FINGER_DATA", nullable=false, length=700)
 	private String fingerData;
 	
-	@Column(name="ERROR_MESSAGE", nullable=false, length=100)
-	private String errorMessage;
-	
 	@Column(name="ID_USER", nullable=false, length=100)
-	private String idUser;
+	private Long idUser;
 	
 	public HikivisionFingerEntity() {
 	}
 	
-	public HikivisionFingerEntity(Integer fingerNo, String fingerData, String idUser) {
+	public HikivisionFingerEntity(Finger fingerNo, String fingerData, Long idUser) {
 		this.fingerNo = fingerNo;
 		this.fingerData = fingerData;
 		this.idUser = idUser;
 	}
 
-	public Integer getFingerNo() {
+	public Finger getFingerNo() {
 		return fingerNo;
 	}
 
-	public void setFingerNo(Integer fingerNo) {
+	public void setFingerNo(Finger fingerNo) {
 		this.fingerNo = fingerNo;
 	}
 
@@ -58,11 +60,11 @@ public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 		this.fingerData = fingerData;
 	}
 
-	public String getIdUser() {
+	public Long getIdUser() {
 		return idUser;
 	}
 
-	public void setIdUser(String idUser) {
+	public void setIdUser(Long idUser) {
 		this.idUser = idUser;
 	}
 
@@ -76,13 +78,6 @@ public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 		
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
-	}
-
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
-	}
 
 
 	

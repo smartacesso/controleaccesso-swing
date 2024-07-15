@@ -498,6 +498,9 @@ public class Utils {
 				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cadastroDigitalHikivision",
+				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
+		
 		
 		// Preferencias do nova Integração HIKIVISION
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
