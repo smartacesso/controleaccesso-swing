@@ -800,7 +800,10 @@ public class RegisterVisitorDialog extends BaseDialog {
         openImageSelectButton.setToolTipText("Escolher imagem");
 
         openImageSelectButton.addActionListener(e -> {
-            criarDialogoEscolherFoto();
+//        	boolean valido = validarCampos();
+//            if (valido) {         	
+            	criarDialogoEscolherFoto();
+//            }
         });
 
         GridBagConstraints c = getNewGridBag(0, 0, 20, 5);
@@ -2212,10 +2215,14 @@ public class RegisterVisitorDialog extends BaseDialog {
             BufferedImage imageCaptured = webCamCaptureViewer.getWebcam().getImage();
 
             if (imageCaptured != null) {
+            	
                 setBufferedImage(imageCaptured);
                 salvarImagemCapturada();
                 habilitaLabelImagemVisitante();
 
+//                if(Objects.nonNull(hikivisionUseCases) && TirarFotoVisitanteHabilitado(visitante)) {
+//                	salvarFotoVisitanteHikivision();
+//                }
                 webCamCaptureViewer.dispose();
                 escolherFotoDialog.dispose();
             }
@@ -2224,6 +2231,17 @@ public class RegisterVisitorDialog extends BaseDialog {
         webCamCaptureViewer.start();
     }
 
+    private boolean TirarFotoVisitanteHabilitado(PedestrianAccessEntity visitante) {
+    	if(Objects.nonNull(visitante)) {
+    		return false;
+    	}
+    	
+    	if(visitante.getCardNumber().isEmpty() || visitante.getName().isEmpty() ) {
+    		return false;
+    	}
+    	return true;
+    }
+    
     private void habilitaLabelImagemVisitante() {
         openImageSelectButton.setIcon(new ImageIcon(resizeToIconFotoVisitante(bufferedImage)));
         panelInternoLateral.remove(openImageSelectButton);

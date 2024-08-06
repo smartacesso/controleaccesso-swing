@@ -116,7 +116,7 @@ public class HikivisionEventsUseCase {
 		}
 		
 		LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-				pedestre.getId(), true, "", "Offline", sentido, device.getFullIdentifier(), pedestre.getCardNumber(), new Date(dataAcesso.toInstant().toEpochMilli()));
+				pedestre.getId(), true, "", "Facial", sentido, device.getFullIdentifier(), pedestre.getCardNumber(), new Date(dataAcesso.toInstant().toEpochMilli()));
 		
 		return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logEventoOffline)[0];
 	}
@@ -150,10 +150,13 @@ public class HikivisionEventsUseCase {
 	}
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso) {
-		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED) {
+		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED 
+				|| selectedDevice.getStatus() == DeviceStatus.ONLY_ENABLED) {
 			System.out.println("Evento online, catraca desconectada: " + cardNo + " | " + dataAcesso);
 			
-			tryReconectDevice(selectedDevice);
+			if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED) {
+				tryReconectDevice(selectedDevice);
+			}
 			
 			if(selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);

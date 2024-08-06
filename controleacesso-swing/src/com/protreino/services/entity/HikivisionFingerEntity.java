@@ -26,7 +26,7 @@ public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 	private Long id;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(name="FINGER_NO", nullable=true, length=10)
+	@Column(name="FINGER_NO", nullable=true, length=100)
 	private Finger fingerNo;
 	
 	@Column(name="FINGER_DATA", nullable=false, length=700)
@@ -74,8 +74,7 @@ public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 
 	@Override
 	public void setId(Long id) {
-		// TODO Auto-generated method stub
-		
+		this.id = id;
 	}
 
 

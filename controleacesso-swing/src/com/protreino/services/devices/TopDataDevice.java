@@ -28,6 +28,7 @@ import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_TECL
 import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOMETRICO;
 import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
 import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
+import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.SwingWorker;
+import javax.swing.SwingWorker.StateValue;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
@@ -131,6 +133,9 @@ public class TopDataDevice extends Device {
 	
 	private final static StringBuffer CARTAO_MASTER = new StringBuffer(Utils.getPreference("cardMaster"));
 	
+	private SwingWorker<Void, Void> onlyEnabledPingWorker;
+	private boolean isOnlyEnabledPingWorkerExecuting;
+
 	protected String tipo = Tipo.ENTRADA;
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
@@ -139,6 +144,7 @@ public class TopDataDevice extends Device {
 	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	private final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 	final Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean("removeVisitanteCameraSaida");
+	
 	public TopDataDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
 		this.deviceEntity = deviceEntity;
@@ -206,6 +212,35 @@ public class TopDataDevice extends Device {
         
         if(Objects.nonNull(args) && args.length > 0 && "NOT_WAIT_TIME".equals(args[0])) {
         	tempoDeEspera = 1000l;
+        }
+
+        
+        boolean onlyEnabledMode = getConfigurationValueAsBoolean(ONLY_ENABLED_MODE);
+        if(!(this instanceof TopDataAcessoDevice)
+        		&& !(this instanceof TopDataExpedidoraDevice)
+        		&& Boolean.TRUE.equals(onlyEnabledMode)) {
+        	
+        	disconnect();
+        	
+        	onlyEnabledPingWorker = getOnlyEnabledPingWorker();
+        	
+        	if(!isOnlyEnabledPingWorkerExecuting) {
+        		isOnlyEnabledPingWorkerExecuting = true;
+        		onlyEnabledPingWorker.execute();
+        	}
+        	
+        	ret = pingOffline();
+        	
+        	if (ret == Enumeradores.RET_COMANDO_OK) {
+        		setStatus(DeviceStatus.ONLY_ENABLED);
+        		
+        		return;
+        	
+        	} else {
+        		setStatus(DeviceStatus.DISCONNECTED);
+        		throw new Exception("Catraca " + deviceEntity.getName() +  " não pode ser conectada");
+        	}
+
         }
         
         while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis() - inicio) < tempoDeEspera) {
@@ -414,6 +449,18 @@ public class TopDataDevice extends Device {
 						int ret = 0; 
 						if (!busy) {
 							ret = ping();
+							
+							if (ret == easyInner.RET_COMANDO_OK) {
+								inner.TempoInicialPingOnLine = System.currentTimeMillis();
+								if(!coletandoDadosOffLine) {
+									setStatus(DeviceStatus.CONNECTED);
+								}
+								inner.CountRepeatPingOnline = 0;
+							
+							} else {
+								System.out.println("a catraca caiu " + inner.Numero);
+								setStatus(DeviceStatus.DISCONNECTED);
+							}
 						}
 
 						sleepTime = getConfigurationValueAsLong(TEMPO_DE_PING) * 1000;
@@ -427,25 +474,25 @@ public class TopDataDevice extends Device {
 							System.out.println(Main.sdf.format(new Date()) + " Catraca reconectada, resposta do ping: " + ret);
 							System.out.println(Main.sdf.format(new Date()) + " LanÃ§ado processo de reconexÃ£o");
 							
-							new Thread() {
-								public void run() {
-									try {
-										System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar atÃ© 5 segundos");
-										disconnect();
-										Utils.sleep(5000);
-										System.out.println(Main.sdf.format(new Date()) + " Tentando reconectar catraca...");
-										connect();
-									} catch (Exception e) {
-										System.out.println(Main.sdf.format(new Date()) + " Erro ao reconectar a catraca, veja abaixo: ");
-										e.printStackTrace();
-										if(watchDog != null && !watchDogEnabled) {
-											System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexÃ£o automÃ¡tica... ");
-											watchDogEnabled = true;
-											watchDog.execute();
-										}
-									}
+//							new Thread() {
+//								public void run() {
+							try {
+								System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar até 5 segundos");
+								disconnect();
+								Utils.sleep(5000);
+								System.out.println(Main.sdf.format(new Date()) + " Tentando reconectar catraca...");
+								connect();
+							} catch (Exception e) {
+								System.out.println(Main.sdf.format(new Date()) + " Erro ao reconectar a catraca, veja abaixo: ");
+								e.printStackTrace();
+								if(watchDog != null && !watchDogEnabled) {
+									System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexÃ£o automática... ");
+									watchDogEnabled = true;
+									watchDog.execute();
 								}
-							}.start();
+							}
+//								}
+//							}.start();
 							
 						}
 					} catch (Exception e) {
@@ -460,25 +507,70 @@ public class TopDataDevice extends Device {
 		};
 	}
 	
-	public void atualizaDigitaisLFD(boolean online, boolean todas, Date data) {
-		if(isSyncUsers()) {
-			if(!portaAberta) {
-				EasyInner.DefinirTipoConexao(2);
-		        int ret = EasyInner.AbrirPortaComunicacao(port);
-		        if (ret != Enumeradores.RET_COMANDO_OK 
-		        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
-		        	System.out.println("Porta já aberta");		        	
-		        }
-		        portaAberta = true;
+	private SwingWorker<Void, Void> getOnlyEnabledPingWorker() {
+		return new SwingWorker<Void, Void>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				while (isOnlyEnabledPingWorkerExecuting) {
+					Long sleepTime = null;
+					try {
+						int ret = 0; 
+						if (!busy) {
+							ret = pingOffline();
+							
+							if (ret == easyInner.RET_COMANDO_OK) {
+								inner.TempoInicialPingOnLine = System.currentTimeMillis();
+								setStatus(DeviceStatus.ONLY_ENABLED);
+								inner.CountRepeatPingOnline = 0;
+							
+							} else {
+								System.out.println("a catraca caiu " + inner.Numero);
+								setStatus(DeviceStatus.DISCONNECTED);
+							}
+						}
+
+						sleepTime = getConfigurationValueAsLong(TEMPO_DE_PING) * 1000;
+						
+						if(DeviceStatus.DISCONNECTED.equals(getStatus())) {
+							System.out.println(Main.sdf.format(new Date()) + " Catraca desconectada, resposta do ping: " + ret);
+						}
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+						setStatus(DeviceStatus.DISCONNECTED);
+					} finally {
+						Utils.sleep(sleepTime != null ? sleepTime : 5000);
+					}
+				}
+
+				return null;
 			}
-			
-			enviarDigitaisLFD(online, todas, data);
+		};
+	}
+	
+	public void atualizaDigitaisLFD(boolean online, boolean todas, Date data) {
+		if(!isSyncUsers()) {
+			return;
 		}
+		
+		if(!portaAberta) {
+			EasyInner.DefinirTipoConexao(2);
+	        int ret = EasyInner.AbrirPortaComunicacao(port);
+	        if (ret != Enumeradores.RET_COMANDO_OK 
+	        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
+	        	System.out.println("Porta já aberta");
+	        }
+	        portaAberta = true;
+		}
+		
+		enviarDigitaisLFD(online, todas, data);
 	}
 	
 	public boolean isDeviceRestrito() {
 		return getConfigurationValueAsBoolean(IS_DEVICE_RESTRITO);
 	}
+	
+
 
 	@SuppressWarnings("unchecked")
 	private void enviarDigitaisLFD(boolean online, boolean todas, Date data) {
@@ -487,7 +579,6 @@ public class TopDataDevice extends Device {
 		try {
 			Date dataAlteracao = data != null ? data : deviceEntity.getUltimaAtualizacao();
 		
-			//busca biometrias alteradas/cadastrada deste a Ãºltima sincronizaÃ§Ã£o
 			List<PedestrianAccessEntity> pedestres = null;
 			if(!todas && dataAlteracao != null) {
 				System.out.println("Sincroniza por data " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(deviceEntity.getUltimaAtualizacao()));
@@ -495,72 +586,69 @@ public class TopDataDevice extends Device {
 				HashMap<String, Object> args = new HashMap<String, Object>();
 				args.put("ULTIMA_SINC", dataAlteracao);
 				pedestres = (List<PedestrianAccessEntity>) 
-						HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
+						HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllPedestreAlterados", args);
 				
 			} else {
 				System.out.println("Sincroniza total");
 				pedestres = (List<PedestrianAccessEntity>) 
-						HibernateAccessDataFacade.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAll");
+						HibernateAccessDataFacade.getResultList(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllPedestre");
 			}
 			
-			System.out.println("Qtd encontradas: " + pedestres == null ? 0 : pedestres.size());
-			if(pedestres != null && !pedestres.isEmpty()) {
-				
-				coletandoDadosOffLine = true;
-				//realiza atualização
-				for (PedestrianAccessEntity pedestre : pedestres) {
-					if(pedestre.getTemplates() != null && !pedestre.getTemplates().isEmpty()) {
-						boolean alteraTemplate = false;
-						List<TemplateEntity> templates = pedestre.getTemplates();
-						
-						if(todas) {
-							alteraTemplate = true;
-						}
-						if(!alteraTemplate 
-								&& dataAlteracao != null
-								&& templates.get(0).getDataCriacao().getTime() >= dataAlteracao.getTime()) {
-							alteraTemplate = true;
-						}
-						
-						if(!alteraTemplate 
-								&& dataAlteracao != null
-								&& templates.size() >= 2
-								&& templates.get(1).getDataCriacao().getTime() >= dataAlteracao.getTime()) {
-							alteraTemplate = true;
-						}
-						
-						//ajusta atÃ© duas digitais no mesmo template
-						if(alteraTemplate) {
-							System.out.println("Enviar " + pedestre.getName());
-							TemplateEntity envio = new TemplateEntity();
-							envio.setPedestrianAccess(pedestre);	
-							envio.setTemplate(templates.get(0).getTemplate());
-							
-							if(templates.size() >= 2) {
-								envio.setSample(templates.get(1).getTemplate());
-							}
-							manutencaoDigitalCatraca(online, envio);
-						
-						} else{
-							System.out.println("Biometrias Não alteradas " + pedestre.getName());
-						}
-						
-					} else {
-						removeDigitalLFD(online, pedestre);
-					}
-				
+			System.out.println("Qtd encontradas: " + (Objects.isNull(pedestres) ? 0 : pedestres.size()));
+			if(Objects.isNull(pedestres) || pedestres.isEmpty()) {
+				System.out.println("Nenhuma alteração em pedestres para envio.");
+				return;
+			}
+			
+			coletandoDadosOffLine = true;
+			
+			for (PedestrianAccessEntity pedestre : pedestres) {
+				if(Objects.isNull(pedestre.getTemplates()) || pedestre.getTemplates().isEmpty()) {
+					removeDigitalLFD(online, pedestre);
+					continue;
 				}
-				System.out.println("Digitais sincronizadas.");
+
+				boolean alteraTemplate = false;
+				List<TemplateEntity> templates = pedestre.getTemplates();
 				
-				//indica atualização feita quando
-				deviceEntity.setUltimaAtualizacao(new Date());
-				deviceEntity = (DeviceEntity) HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity)[0];
+				if(todas) {
+					alteraTemplate = true;
+				}
 				
-			} else {
-				System.out.println("Nenhuma alteraÃ§Ã£o em pedestres para envio.");
-			}
+				if(!alteraTemplate 
+						&& dataAlteracao != null
+						&& templates.get(0).getDataCriacao().getTime() >= dataAlteracao.getTime()) {
+					alteraTemplate = true;
+				}
+				
+				if(!alteraTemplate 
+						&& dataAlteracao != null
+						&& templates.size() >= 2
+						&& templates.get(1).getDataCriacao().getTime() >= dataAlteracao.getTime()) {
+					alteraTemplate = true;
+				}
+				
+				if(alteraTemplate) {
+					System.out.println("Enviar " + pedestre.getName());
+					TemplateEntity envio = new TemplateEntity();
+					envio.setPedestrianAccess(pedestre);	
+					envio.setTemplate(templates.get(0).getTemplate());
+					
+					if(templates.size() >= 2) {
+						envio.setSample(templates.get(1).getTemplate());
+					}
+					manutencaoDigitalCatraca(online, envio);
+				
+				} else{
+					System.out.println("Biometrias Não alteradas " + pedestre.getName());
+				}
 			
-		
+			}
+			System.out.println("Digitais sincronizadas.");
+			
+			deviceEntity.setUltimaAtualizacao(new Date());
+			deviceEntity = (DeviceEntity) HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity)[0];
+				
 		} finally {
 			coletandoDadosOffLine = false;
 			if(isConnected()) {
@@ -605,15 +693,11 @@ public class TopDataDevice extends Device {
 	}
 
 	private void manutencaoDigitalCatraca(boolean online, TemplateEntity t) {
-		//System.out.println("Registrando biometrias");
 		if(Boolean.TRUE.equals(t.getPedestrianAccess().getRemovido())) {
-			//remove template
 			removeDigitalLFD(online, t.getPedestrianAccess());
 			return;
 		}
 		
-		//verifica se existe na catraca
-		//System.out.println("Verificando existencia");
 		boolean excluidoSeExiste = removeDigitalLFD(online, t.getPedestrianAccess());
 		
 		if(!excluidoSeExiste) {
@@ -941,8 +1025,11 @@ public class TopDataDevice extends Device {
 	public boolean isSyncUsers() {
 		String modo = getConfigurationValueAsString(MODO_DE_TRABALHO);
 		Boolean enviaDigitais = getConfigurationValueAsBoolean(ENVIA_DIGITAIS_PARA_CATRACA);
-		if("naCatraca".equals(modo) && Boolean.TRUE.equals(enviaDigitais))
+
+		if("naCatraca".equals(modo) && Boolean.TRUE.equals(enviaDigitais)) {
 			return true;
+		}
+			
 		return false;
 	}
 	
@@ -1038,6 +1125,12 @@ public class TopDataDevice extends Device {
 	@Override
 	public void disconnect(String... args) throws Exception {
 		super.disconnect();
+		
+		if(onlyEnabledPingWorker != null) {
+			onlyEnabledPingWorker.cancel(true);
+		}
+		
+		isOnlyEnabledPingWorkerExecuting = false;
 
 		if (easyInner != null) {
 			encerrarConexao(args != null && args.length > 0 && "SAIR".equals(args[0]));
@@ -1747,6 +1840,7 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(COLETA_CARTOES_OFFLINE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IS_DEVICE_RESTRITO, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(ONLY_ENABLED_MODE, "false", FieldType.CHECKBOX));
 		
 		String nomeAcademia = "SmartPonto;Controle Acesso";
     	if (Main.loggedUser != null) {
@@ -1797,7 +1891,7 @@ public class TopDataDevice extends Device {
 		return ret;
 	}
 	
-	protected int ping(){
+	protected int ping() {
 		int ret = 0;
 		try {
 			int countTentativasEnvioComando = 0;
@@ -1807,21 +1901,31 @@ public class TopDataDevice extends Device {
 				ret = EasyInner.PingOnLine(inner.Numero);
 				countTentativasEnvioComando++;
 			}
-			if (ret == easyInner.RET_COMANDO_OK) {
-				inner.TempoInicialPingOnLine = System.currentTimeMillis();
-				if(!coletandoDadosOffLine) {
-					setStatus(DeviceStatus.CONNECTED);
-				}
-				inner.CountRepeatPingOnline = 0;
 			
-			} else {
-				System.out.println("a catraca caiu " + inner.Numero);
-				setStatus(DeviceStatus.DISCONNECTED);
-			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			setStatus(DeviceStatus.DISCONNECTED);
+			ret = -1;
 		}
+		
+		return ret;
+	}
+	
+	protected int pingOffline() {
+		int ret = 0;
+		try {
+			int countTentativasEnvioComando = 0;
+			ret = EasyInner.Ping(inner.Numero);
+			while (ret != easyInner.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
+				Utils.sleep(300);
+				ret = EasyInner.Ping(inner.Numero);
+				countTentativasEnvioComando++;
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			ret = -1;
+		}
+		
 		return ret;
 	}
 	
@@ -2408,7 +2512,7 @@ public class TopDataDevice extends Device {
 			HashMap<String, Object> args = new HashMap<String, Object>();
 			args.put("ULTIMA_SINC", dataAlteracao);
 			pedestres = (List<PedestrianAccessEntity>) 
-					HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args);
+					HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllPedestreAlterados", args);
 			
 		} else {
 			System.out.println("Sincroniza total");

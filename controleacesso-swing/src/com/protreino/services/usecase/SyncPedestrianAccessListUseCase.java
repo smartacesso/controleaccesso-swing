@@ -511,12 +511,16 @@ public class SyncPedestrianAccessListUseCase {
                             if (device instanceof TopDataDevice && device.isConnected()) {
                                 System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: atualizando templates " + device.getName());
                                 TopDataDevice topData = (TopDataDevice) device;
-                                if (topData.modeloLC)
-                                    topData.verificaCadastroNoInner(true, false, lastSync != null ? new Date(lastSync) : null);
-                                else if (topData.getIndexSearchEngine() != null)
-                                    topData.restartIndexSearchEngine();
-                                else
-                                    topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
+
+                                if (topData.modeloLC) {
+                                	topData.verificaCadastroNoInner(true, false, lastSync != null ? new Date(lastSync) : null);
+                                
+                                } else if (topData.getIndexSearchEngine() != null) {
+                                	topData.restartIndexSearchEngine();
+                                
+                                } else {
+                                	topData.atualizaDigitaisLFD(true, false, lastSync != null ? new Date(lastSync) : null);
+                                }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

@@ -400,6 +400,8 @@ public class Utils {
 				"Habilita reset status de cartão/comanda", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableOfflineCard",
 				"Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
+//		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "onlyEnabledMode",
+//				"Catracas somente no modo habilitado", FieldType.CHECKBOX, "false"));
 
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
 

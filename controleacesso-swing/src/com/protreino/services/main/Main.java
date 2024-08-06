@@ -27,8 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -106,6 +104,7 @@ import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
+import com.protreino.services.usecase.SyncTemplatesInTopDataDevices;
 import com.protreino.services.utils.BroadcastServer;
 import com.protreino.services.utils.HikivisionTcpServer;
 import com.protreino.services.utils.HttpConnection;
@@ -192,6 +191,7 @@ public class Main {
     private static final SmartAcessoClient smartAcessoClient = new SmartAcessoClient();
     private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
     private static final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
+    private static final SyncTemplatesInTopDataDevices syncTemplatesInTopDataDevices = new SyncTemplatesInTopDataDevices();
 
     public static void main(String[] args) {
 
@@ -334,38 +334,36 @@ public class Main {
 
     private void recoverArgs(String[] args) {
         desenvolvimento = args != null && args.length > 0 && "dev".equals(args[0]);
-
-		/*if (desenvolvimento)
-			urlApplication = "http://localhost:8080";*/
     }
 
     private void decideSeMostraTelaPrincipal() {
         if (loggedUser == null) {
         	mainScreen.showScreen();
-        } else { 
-            boolean nenhumDispositivoConectado = true;
-            for (Device device : Main.devicesList) {
-                if (DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
-                    nenhumDispositivoConectado = false;
-                    if (DeviceStatus.DISCONNECTED.equals(device.getStatus())) {
-                        System.out.println(sdf.format(new Date()) + "  Setando timer para reconectar dispositivos...");
-                        new java.util.Timer().schedule(
-                                new java.util.TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        reconectarDispositivos();
-                                    }
-                                },
-                                Integer.valueOf(Utils.getPreference("timeReconectDevices")) * 1000
-                        );
-                        break;
-                    }
+        	return;
+        }
+        
+        boolean nenhumDispositivoConectado = true;
+        for (Device device : Main.devicesList) {
+            if (DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
+                nenhumDispositivoConectado = false;
+                if (DeviceStatus.DISCONNECTED.equals(device.getStatus())) {
+                    System.out.println(sdf.format(new Date()) + "  Setando timer para reconectar dispositivos...");
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    reconectarDispositivos();
+                                }
+                            },
+                            Integer.valueOf(Utils.getPreference("timeReconectDevices")) * 1000
+                    );
+                    break;
                 }
             }
-            
-            if (nenhumDispositivoConectado) {
-            	mainScreen.showScreen();
-            }
+        }
+        
+        if (nenhumDispositivoConectado) {
+        	mainScreen.showScreen();
         }
     }
 
@@ -418,11 +416,11 @@ public class Main {
 
                                             mainScreen.refresh();
                                             String html = "<html><body width='%1s'>"
-                                                    + "<p>Nï¿½o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
+                                                    + "<p>Não conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
                                                     + "<br><br>"
-                                                    + "- A catraca e/ou leitor estï¿½ ligado na tomada?"
+                                                    + "- A catraca e/ou leitor está ligado na tomada?"
                                                     + "<br>"
-                                                    + "- Os cabos estï¿½o conectados de forma correta?"
+                                                    + "- Os cabos estão conectados de forma correta?"
                                                     + "<br><br>"
                                                     + "Se estiver tudo OK, clique em Conectar."
                                                     + "</p></html>";
@@ -449,71 +447,74 @@ public class Main {
     private void recoverLoggedUser() {
         devicesList = new ArrayList<Device>();
         loggedUser = HibernateAccessDataFacade.getLoggedUser("UserEntity.findAll");
-        if (loggedUser != null) {
-        	SyncPedestrianAccessListUseCase.setLastSync(loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L);;
-
-        	lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
-            lastSyncHikivision = loggedUser.getLastSyncHikivision() != null
-					? loggedUser.getLastSyncHikivision().getTime() : 0l;
-
-            lastSyncGetUsers = loggedUser.getLastSyncUser() != null
-                    ? loggedUser.getLastSyncUser().getTime() : 0L;
-            lastSyncGetEmpresas = loggedUser.getLastSyncEmpresa() != null
-                    ? loggedUser.getLastSyncEmpresa().getTime() : 0L;
-            lastSyncGetRegras = loggedUser.getLastSyncRegra() != null
-                    ? loggedUser.getLastSyncRegra().getTime() : 0L;
-            lastSyncGetParametros = loggedUser.getLastSyncParametro() != null
-                    ? loggedUser.getLastSyncParametro().getTime() : 0L;
-            lastSyncGetPlanos = loggedUser.getLastSyncPlano() != null
-                    ? loggedUser.getLastSyncPlano().getTime() : 0L;
-
-            releaseTicketGateMenuItem.setEnabled(true);
-            updateAccessListMenuItem.setEnabled(true);
-
-            inicializaTimers();
-            
-           // verificaRemocaoDefacesHV();
-          
-            //tarefas diï¿½rias
-
-            String hora = Utils.getPreference("hourAutomaticRoutines");
-            hora = (hora == null || "".equals(hora) ? "0" : hora);
-
-            Long periodExpirar = 24L * 3600L * 1000L;
-            Calendar inicio = Calendar.getInstance();
-            System.out.println(" hora para reset " + hora);
-
-
-            inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-            inicio.set(Calendar.MINUTE, 0);
-            inicio.set(Calendar.SECOND, 0);
-            if (new Date().getTime() > inicio.getTimeInMillis()) {
-                //registra pra iniciar smanhï¿½
-                inicio.add(Calendar.DATE, 1);
-            }
-            timerTasksOfDay.scheduleAtFixedRate(uTimerTask, inicio.getTime(),
-                    periodExpirar.longValue());
-
-            List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.
-                    getResultList(DeviceEntity.class, "DeviceEntity.findAll");
-            if (lista != null && !lista.isEmpty()) {
-                for (DeviceEntity deviceEntity : lista)
-                    devicesList.add(deviceEntity.recoverDevice());
-            }
-            boolean haveDefaultDevice = false;
-            for (Device device : devicesList) {
-                if (device.isDefaultDevice()) {
-                    haveDefaultDevice = true;
-                    break;
-                }
-            }
-
-            if (!haveDefaultDevice && !devicesList.isEmpty())
-                devicesList.get(0).setDefaultDevice(true);
-
-            Main.servidor = verificaSePossuiServidorAdicionado();
-            Main.possuiLeitorLcAdd = verificaSePossuiLeitorLcAdicionado();
+        
+        if (Objects.isNull(loggedUser)) {
+        	return;
         }
+
+    	SyncPedestrianAccessListUseCase.setLastSync(loggedUser.getLastSync() != null ? loggedUser.getLastSync().getTime() : 0L);;
+
+    	lastSyncLog = loggedUser.getLastSyncLog() != null ? loggedUser.getLastSyncLog().getTime() : 0L;
+        lastSyncHikivision = loggedUser.getLastSyncHikivision() != null
+				? loggedUser.getLastSyncHikivision().getTime() : 0l;
+
+        lastSyncGetUsers = loggedUser.getLastSyncUser() != null
+                ? loggedUser.getLastSyncUser().getTime() : 0L;
+        lastSyncGetEmpresas = loggedUser.getLastSyncEmpresa() != null
+                ? loggedUser.getLastSyncEmpresa().getTime() : 0L;
+        lastSyncGetRegras = loggedUser.getLastSyncRegra() != null
+                ? loggedUser.getLastSyncRegra().getTime() : 0L;
+        lastSyncGetParametros = loggedUser.getLastSyncParametro() != null
+                ? loggedUser.getLastSyncParametro().getTime() : 0L;
+        lastSyncGetPlanos = loggedUser.getLastSyncPlano() != null
+                ? loggedUser.getLastSyncPlano().getTime() : 0L;
+
+        releaseTicketGateMenuItem.setEnabled(true);
+        updateAccessListMenuItem.setEnabled(true);
+
+        inicializaTimers();
+        
+       // verificaRemocaoDefacesHV();
+      
+        String hora = Utils.getPreference("hourAutomaticRoutines");
+        hora = (hora == null || "".equals(hora) ? "0" : hora);
+
+        Long periodExpirar = 24L * 3600L * 1000L;
+        Calendar inicio = Calendar.getInstance();
+        System.out.println(" hora para reset " + hora);
+
+        inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
+        inicio.set(Calendar.MINUTE, 0);
+        inicio.set(Calendar.SECOND, 0);
+        if (new Date().getTime() > inicio.getTimeInMillis()) {
+            inicio.add(Calendar.DATE, 1);
+        }
+
+        timerTasksOfDay.scheduleAtFixedRate(uTimerTask, inicio.getTime(), periodExpirar.longValue());
+
+        List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.
+                getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+        if (lista != null && !lista.isEmpty()) {
+            for (DeviceEntity deviceEntity : lista) {
+            	devicesList.add(deviceEntity.recoverDevice());
+            }
+        }
+        
+        boolean haveDefaultDevice = false;
+        
+        for (Device device : devicesList) {
+            if (device.isDefaultDevice()) {
+                haveDefaultDevice = true;
+                break;
+            }
+        }
+
+        if (!haveDefaultDevice && !devicesList.isEmpty()) {
+        	devicesList.get(0).setDefaultDevice(true);
+        }
+
+        Main.servidor = verificaSePossuiServidorAdicionado();
+        Main.possuiLeitorLcAdd = verificaSePossuiLeitorLcAdicionado();
     }
 
 	private void inicializaTimers() {
@@ -707,69 +708,20 @@ public class Main {
 
 
     public static void tasksOfDay(boolean timerCall) {
-
         if (timerCall) {
             limpaCartoesVisitantes();
         }
         
+        syncTemplatesInTopDataDevices.execute();
+
         limpaSentidoTodos();
         limpaStatusCartoes();
         limpaTelas();
         closeLogFile();
         configLogFile();
-        //	enviarLogsComFalhaAoEnviar();
-        
-        //verificar task 
-   
-		java.util.Timer timer = new java.util.Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
-
-			@Override
-			public void run() {
-				LocalDateTime localDate = LocalDateTime.now().minusMonths(6);
-				Date date = Date.from(localDate.atZone(ZoneId.systemDefault()).toInstant());
-				HashMap<String, Object> args = new HashMap<>();
-				args.put("DATE_HIKIVISION", date);
-
-				@SuppressWarnings("unchecked")
-				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
-						.getResultListWithParams(PedestrianAccessEntity.class,
-								"PedestrianAccessEntity.findAllWhitLastAccessHikivision", args);
-				if (pedestres != null && !pedestres.isEmpty()) {
-					HikivisionUseCases hiviVisionUseCase = new HikivisionUseCases();
-					
-					for (PedestrianAccessEntity pedestre : pedestres) {
-						hiviVisionUseCase.removerUsuarioFromDevices(pedestre);
-						HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
-					}
-				}
-
-			}
-
-		}, 0, 0);
-		
-	//	 180 * 86400000
     }
 	
-    /*
-
-	private static void enviarLogsComFalhaAoEnviar() {
-		try {
-			Integer countLogs = HibernateUtil.getResultListCount(LogPedestrianAccessEntity.class,
-					"LogPedestrianAccessEntity.findUnsubmittedLogsCount", null);
-			System.out.println("Quantidade total de logs com falha ao enviar: " + countLogs);
-
-			HibernateUtil.sendLogs(countLogs, "LogPedestrianAccessEntity.findUnsubmittedLogs", null, true);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	*/
-
     private static void limpaTelas() {
-
         if (mainScreen != null) {
             //fecha tela
             mainScreen.setVisible(false);

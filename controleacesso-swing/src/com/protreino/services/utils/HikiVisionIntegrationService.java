@@ -8,8 +8,9 @@ import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.google.gson.Gson;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.exceptions.InvalidPhotoException;
-import com.protreino.services.to.FingerPrintInfoTO;
 import com.protreino.services.to.hikivision.*;
+import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
+import com.protreino.services.to.hikivision.UserInfoTO.UserInfoOut;
 
 import okhttp3.*;
 
@@ -178,7 +179,7 @@ public class HikiVisionIntegrationService {
 		return false;
 	}
 	
-	public Optional<CaptureFingerPrintTO> capturaDigitalUsuario(final String deviceId, final Finger fingerNo) {
+	public Optional<CaptureFingerPrint> capturaDigitalUsuario(final String deviceId, final Finger fingerNo) {
 		final String body = "{"
 	            + "		\"CaptureFingerPrintCond\": {"
 	            + "			\"fingerNo\": " + fingerNo.getPosition() + ""
@@ -193,13 +194,15 @@ public class HikiVisionIntegrationService {
 		
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
-				 final CaptureFingerPrintTO responseBody = gson.fromJson(response.body().string(), CaptureFingerPrintTO.class);
-				return Optional.of(responseBody);
+				final CaptureFingerPrintTO responseBody = gson.fromJson(response.body().string(), CaptureFingerPrintTO.class);
+				System.out.println(responseBody.CaptureFingerPrint.fingerData);
+				return Optional.of(responseBody.CaptureFingerPrint);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return Optional.empty();
 	}
 	
@@ -208,7 +211,7 @@ public class HikiVisionIntegrationService {
 			       "{"
 			       + "		\"FingerPrintCfg\": {"
 			       + "			\"employeeNo\": \"" + String.valueOf(idUser) + "\","
-			       + "			\"fingerPrintID\": " + fingerNo.ordinal() + ","
+			       + "			\"fingerPrintID\": " + fingerNo.getPosition() + ","
 			       + "			\"fingerData\": \"" + fingerData + "\""
 			       + "		}"
 			       + "	}";
@@ -222,44 +225,11 @@ public class HikiVisionIntegrationService {
 		
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
-				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
+				final UserInfoOut responseBody = gson.fromJson(response.body().string(), UserInfoOut.class);
 
-				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
+				final boolean isCadastradoComSucesso = "OK".equalsIgnoreCase(responseBody.statusString);
 
 				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
-						isCadastradoComSucesso));
-
-				return isCadastradoComSucesso;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-	
-	public boolean buscarDigitalUsuario(final String deviceId, final String idUser) {
-		final String body = 
-			       "{"
-			       + "		\"FingerPrintCond\": {"
-			       + "			\"searchID\": \"" + idUser + "\","
-			       + "			\"employeeNo\": \"" + idUser + "\""
-			       + "		}"
-			       + "	}";
-		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
-		OkHttpClient client = getOkHttpClient();
-
-		Request request = new Request.Builder()
-				.url(url + "/ISAPI/AccessControl/FingerPrintUpload?format=json&devIndex=" + deviceId).post(requestBody)
-				.addHeader("Content-Type", "application/json").build();
-		
-		try (Response response = client.newCall(request).execute();) {
-			if (response.isSuccessful()) {
-				final FingerPrintInfoTO responseBody = gson.fromJson(response.body().string(), FingerPrintInfoTO.class);
-				final boolean isCadastradoComSucesso = responseBody.status.equalsIgnoreCase("OK");
-
-				System.out.println(String.format("Usuario %s encontrado no device %s com sucesso: %b", idUser, deviceId,
 						isCadastradoComSucesso));
 
 				return isCadastradoComSucesso;
@@ -700,8 +670,8 @@ public class HikiVisionIntegrationService {
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
 
 		return new OkHttpClient.Builder().authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
-				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(5000, TimeUnit.MILLISECONDS)
-				.writeTimeout(5000, TimeUnit.MILLISECONDS).build();
+				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(10000, TimeUnit.MILLISECONDS)
+				.writeTimeout(10000, TimeUnit.MILLISECONDS).build();
 	}
 
 }

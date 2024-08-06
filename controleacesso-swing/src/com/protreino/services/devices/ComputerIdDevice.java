@@ -209,13 +209,14 @@ public class ComputerIdDevice extends Device {
 	@Override
 	public void sendConfiguration() throws Exception {
 		String opcaoCatracaVinculada = getConfigurationValue("Catraca vinculada");
-		if ("COMM".equals(opcaoCatracaVinculada))
+		if ("COMM".equals(opcaoCatracaVinculada)) {
 			catracaVinculada = Manufacturer.COMM.getNewDevice("");
-		else if ("USB".equals(opcaoCatracaVinculada)) {
+
+		} else if ("USB".equals(opcaoCatracaVinculada)) {
 			catracaVinculada = Manufacturer.USB.getNewDevice("");
 			catracaVinculada.connect("");
-		}
-		else if (!"NULL".equals(opcaoCatracaVinculada)) {
+		
+		} else if (!"NULL".equals(opcaoCatracaVinculada)) {
 			String identifier = opcaoCatracaVinculada.replace("$", ";");
 			for (Device device : Main.devicesList) {
 				if (identifier.equals(device.getIdentifier())) {
@@ -223,9 +224,9 @@ public class ComputerIdDevice extends Device {
 					break;
 				}
 			}
-		}
-		else
+		} else {
 			catracaVinculada = null;
+		}
 		
 		String[] partes = athleteScreenConfig.split("%");
 		boolean openAthleteScreenOnInit = Boolean.valueOf(partes[2]);

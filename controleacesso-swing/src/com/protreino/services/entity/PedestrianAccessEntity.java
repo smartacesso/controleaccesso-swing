@@ -45,12 +45,18 @@ import com.protreino.services.utils.EncryptionUtils;
 @Table(name="TB_PEDESTRIAN_ACCESS")
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllPedestre", query = "select obj from PedestrianAccessEntity obj "
+					  + "where obj.tipo = 'PEDESTRE' and obj.status = 'ATIVO'"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllPedestrian", query = "select obj from PedestrianAccessEntity obj "
 					  + "order by obj.id desc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllAlterados", 
 				query = "select obj "
 					  + "from PedestrianAccessEntity obj "
 					  + "where obj.dataAlteracao >= :ULTIMA_SINC "),
+	@NamedQuery(name  = "PedestrianAccessEntity.findAllPedestreAlterados", 
+				query = "select obj "
+					  + "from PedestrianAccessEntity obj "
+					  + "where obj.tipo = 'PEDESTRE' and obj.dataAlteracao >= :ULTIMA_SINC "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllOrdered", query = "select obj from PedestrianAccessEntity obj order by obj.name"),
 	@NamedQuery(name = "PedestrianAccessEntity.findById", query = "select obj from PedestrianAccessEntity obj where obj.id = :ID "),
 	@NamedQuery(name  = "PedestrianAccessEntity.findByIdNaoRemovido", 

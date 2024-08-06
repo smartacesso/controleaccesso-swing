@@ -55,7 +55,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<CartaoComandaEntity> listaAcesso;
-	private String[] columns = {"Código", "Número", "RÃ³tulo", "Status", "AÃ§Ãµes"};
+	private String[] columns = {"Código", "Número", "Rótulo", "Status", "Acões"};
 	private Integer[] columnWidths = {60, 100, 100, 80, 80};
 	
 	private JTextField filtroIdTextField;
@@ -251,7 +251,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 	protected void clearCardState() {
 		
 		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa aÃ§Ã£o farÃ¡ com que todos os cartões/comandas voltem para o "
-				+ "status de AGUARDANDO (dentro da urna expedidora). "
+				+ "           de AGUARDANDO (dentro da urna expedidora). "
 				+ "Tem certeza que deseja continuar?", "Confirmação", 
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
@@ -265,7 +265,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 	}
 
 
-	private void filterList() {
+	private void filterList() {                                                                                                                                                                    
 		args = new HashMap<>();
 		args.put("removido", false);
 		

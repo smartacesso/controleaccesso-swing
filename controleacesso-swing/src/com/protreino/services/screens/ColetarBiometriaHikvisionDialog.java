@@ -21,7 +21,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,13 +34,11 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import com.protreino.services.constants.Configurations;
 import com.protreino.services.devices.Device;
-import com.protreino.services.entity.BiometricEntity;
 import com.protreino.services.entity.HikivisionFingerEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.TemplateEntity;
@@ -49,8 +46,7 @@ import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
-import com.protreino.services.screens.BiometricDialog.RoundedPanel;
-import com.protreino.services.to.hikivision.CaptureFingerPrintTO;
+import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.Utils;
@@ -61,7 +57,6 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 	private JLabel userLabel;
 	public JComboBox<String> fingerComboBox;
 	public JComboBox<String> deviceComboBox;
-	private JLabel deviceLabel;
 	private JButton startReadingButton;
 	public JLabel sampleLabel;
 	private JPanel samplesLabelContainer;
@@ -185,8 +180,9 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		Finger finger = Finger.valueFromImport(fingerComboBox.getSelectedItem().toString());
 		
 		
-		startReadingButton.addActionListener( (e) -> 
-		startReading(finger, String.valueOf(deviceComboBox.getSelectedItem().toString()), visitante));
+		startReadingButton.addActionListener(e -> {
+			startReading(finger, String.valueOf(deviceComboBox.getSelectedItem().toString()), visitante);
+		});
 		
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -266,19 +262,30 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		
 	}
 	
-	private void startReading(Finger finger, final String device, 	PedestrianAccessEntity visitante){
-		Optional<CaptureFingerPrintTO> digitalCadastrada = hikivisionUseCases.coletarBiometriabiometria(device, finger);
-		if(!digitalCadastrada.isPresent()) {
+	private void startReading(Finger finger, final String device, PedestrianAccessEntity visitante) {
+		Optional<CaptureFingerPrint> digitalCadastrada = hikivisionUseCases.coletarBiometriabiometria(device, finger);
+		
+		if (!digitalCadastrada.isPresent()) {
 			System.out.println(String.format("Não foi possível cadastrar a digital cadastrada %d", finger.ordinal()));
 			return;
 		}
-		hikivisionUseCases.adicionarDigitalNoDevice(finger, Long.valueOf(visitante.getCardNumber()), device);
 		
-		HibernateAccessDataFacade.save(HikivisionFingerEntity.class,
-				new HikivisionFingerEntity(finger, digitalCadastrada.get().fingerData, Long.valueOf(visitante.getCardNumber())));
+		HikivisionFingerEntity hikivisionSaved = hikvivisinFingerDataSaved(finger, digitalCadastrada.get().fingerData, Long.valueOf(visitante.getCardNumber()));
 		
 		
+		HibernateAccessDataFacade.save(HikivisionFingerEntity.class, hikivisionSaved);
+
+		hikivisionUseCases.adicionarDigitalNoDevice(finger, Long.valueOf(visitante.getCardNumber()),
+				digitalCadastrada.get().fingerData, hikivisionSaved);
+
+		// TODO: Fazer uma alteração pra saber se já existe um registro para o mesmo
+		// dedo e mesmo usuario
+		// Se existir devemos atualizar o dedo existente
+	}
 	
+	private HikivisionFingerEntity hikvivisinFingerDataSaved(Finger finger, String fingerData, Long cardNumber) {
+		HikivisionFingerEntity hikivisionSaved = new HikivisionFingerEntity(finger, fingerData, cardNumber);
+		return hikivisionSaved;
 	}
 	
 	public void cancelCollect(){

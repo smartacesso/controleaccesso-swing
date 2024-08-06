@@ -32,5 +32,6 @@ public class TopDataDeviceConstants {
 	public static final String MENSAGEM_ONLINE= "Mensagem online";
 	public static final String SAIDA = "saída";
 	public static final String ENTRADA = "entrada";
+	public static final String ONLY_ENABLED_MODE = "Catracas somente no modo habilitado";
 
 }

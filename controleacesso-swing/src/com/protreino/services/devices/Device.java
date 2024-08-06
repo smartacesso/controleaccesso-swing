@@ -196,12 +196,15 @@ public abstract class Device implements IDevice {
 	}
 	
 	protected void createConfigurationMap(){
-		if (configurationGroups == null)
+		if (configurationGroups == null) {
 			return;
+		}
+
 		configurationMap = new HashMap<String, String>();
 		for (ConfigurationGroupTO configGroup : configurationGroups) {
-			for (ConfigurationTO config : configGroup.getConfigurations())
+			for (ConfigurationTO config : configGroup.getConfigurations()) {
 				configurationMap.put(config.getName(), config.getValue());
+			}
 		}
 	}
 	

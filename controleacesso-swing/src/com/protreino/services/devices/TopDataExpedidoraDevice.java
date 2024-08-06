@@ -420,7 +420,21 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 
 	protected int ping() {
 		if ("SAIDA".equals(this.tipo)) {
-			return super.ping();
+			final int ret = super.ping();
+			
+			if (ret == easyInner.RET_COMANDO_OK) {
+				inner.TempoInicialPingOnLine = System.currentTimeMillis();
+				if(!coletandoDadosOffLine) {
+					setStatus(DeviceStatus.CONNECTED);
+				}
+				inner.CountRepeatPingOnline = 0;
+			
+			} else {
+				System.out.println("a catraca caiu " + inner.Numero);
+				setStatus(DeviceStatus.DISCONNECTED);
+			}
+			
+			return ret;
 		} else {
 			int ret = 0;
 			try {

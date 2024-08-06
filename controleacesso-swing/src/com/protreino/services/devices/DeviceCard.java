@@ -82,6 +82,7 @@ public class DeviceCard extends JPanel {
 	private JLabel defaultDeviceLabel;
 	private ImageIcon catracaIcon;
 	private ImageIcon connectedIcon;
+	private ImageIcon onlyEnabledIcon;
 	private ImageIcon disconnectedIcon;
 	private Image configImage;
 	private JLabel statusIcon;
@@ -201,11 +202,11 @@ public class DeviceCard extends JPanel {
 				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 					@Override
 				    public Void doInBackground() {
-				    	try {
-				    		
+						try {
 				    		//Não faz nada caso esteja recuperando dados
-				    		if(device.coletandoDadosOffLine)
+				    		if(device.coletandoDadosOffLine) {
 				    			return null;
+				    		}
 				    		
 				    		device.setTentandoConectar(true);
 				    		if (!autoConnect && (device.getManufacturer().usePassword() 
@@ -216,30 +217,31 @@ public class DeviceCard extends JPanel {
 								String option = autenticationDialog.getOption();
 								if ("OK".equals(option)) {
 									device.setCredentials(autenticationDialog.getLogin(), new String(autenticationDialog.getPassword()));
-				    			}
-				    			else
+				    			
+								} else {
 				    				return null;
+				    			}
 				    		}
 				    		setMensagem(autoConnect ? "Reconectando..." : "Conectando...", MessageType.NORMAL);
 				    		autoConnect = false;
 				    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				    		connectButton.setEnabled(false);
+				    		//connectButton.setEnabled(false);
 			    			device.setDesiredStatus(DeviceStatus.CONNECTED);
 			    			device.connect();
-			    			connectButton.setVisible(false);
-			    			disconnectButton.setVisible(true);
-			    			disconnectButton.setEnabled(true);
-						}
-						catch (Throwable t) {
+			    			//connectButton.setVisible(false);
+			    			//disconnectButton.setVisible(true);
+			    			//disconnectButton.setEnabled(true);
+						
+				    	} catch (Throwable t) {
 							t.printStackTrace();
 							device.setDesiredStatus(DeviceStatus.DISCONNECTED);
 							setMensagem("Não foi possível conectar", MessageType.ERROR);
 							Main.mainScreen.addEvento(device.getName() + ": " + t.getMessage());
-							connectButton.setEnabled(true);
-							connectButton.setVisible(true);
-				    		disconnectButton.setVisible(false);
-						}
-						finally {
+							//connectButton.setEnabled(true);
+							//connectButton.setVisible(true);
+				    		//disconnectButton.setVisible(false);
+						
+				    	} finally {
 							setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 							revalidate();
 							device.setTentandoConectar(false);
@@ -277,17 +279,17 @@ public class DeviceCard extends JPanel {
 				    		device.setDesiredStatus(DeviceStatus.DISCONNECTED);
 				    		setMensagem("Desconectando...", MessageType.NORMAL);
 				    		device.disconnect();
-				    		disconnectButton.setVisible(false);
-			    			connectButton.setVisible(true);
-			    			connectButton.setEnabled(true);
+				    		//disconnectButton.setVisible(false);
+			    			//connectButton.setVisible(true);
+			    			//connectButton.setEnabled(true);
 						
 				    	} catch (Exception e) {
 							e.printStackTrace();
 							setMensagem("Não foi possível desconectar", MessageType.ERROR);
 							Main.mainScreen.addEvento("Erro ao desconectar " + device.getName() + ": " + e.getMessage());
-							disconnectButton.setEnabled(true);
-							disconnectButton.setVisible(true);
-				    		connectButton.setVisible(false);
+							//disconnectButton.setEnabled(true);
+							//disconnectButton.setVisible(true);
+				    		//connectButton.setVisible(false);
 						
 						} finally {
 							setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -481,7 +483,6 @@ public class DeviceCard extends JPanel {
 		configMenuItem.addActionListener( (e) -> showConfigurationDialog() );
 		removeMenuItem.addActionListener( (e) -> showConfirmRemove() );
 		setComponentPopupMenu(jPopup);
-		
 	}
 	
 	private void liberarCatraca() {
@@ -504,20 +505,24 @@ public class DeviceCard extends JPanel {
 	}
 	
 	public void setMensagem(String novaMensagem, MessageType tipoMensagem){
-		if (novaMensagem == null || "".equals(novaMensagem))
+		if (novaMensagem == null || "".equals(novaMensagem)) {
 			novaMensagem = " ";
+		}
+
 		mensagemLabel.setText(novaMensagem);
-		if (MessageType.ERROR.equals(tipoMensagem))
+		if (MessageType.ERROR.equals(tipoMensagem)) {
 			mensagemLabel.setForeground(Color.PINK);
-		else
+		
+		} else {
 			mensagemLabel.setForeground(Main.secondColor);
+		}
 		
 		if(!device.coletandoDadosOffLine)
 			connectButton.setEnabled(true);
 	}
 	
-	public void setStatus(DeviceStatus status){
-		if (DeviceStatus.CONNECTED.equals(status)){
+	public void setStatus(DeviceStatus status) {
+		if (DeviceStatus.CONNECTED.equals(status)) {
 			statusIcon.setIcon(connectedIcon);
 			liberarAcessoButton.setEnabled(bloquearLiberarAcesso ? false : true);
 			estadoDesejadoLiberarAcesso = true;
@@ -526,8 +531,19 @@ public class DeviceCard extends JPanel {
 			disconnectButton.setEnabled(true);
 			cadastrarFaceButton.setEnabled(true);
 			setMensagem("Conectado", MessageType.NORMAL);
-		}
-		else {
+		
+		} else if(DeviceStatus.ONLY_ENABLED.equals(status)) {
+			statusIcon.setIcon(onlyEnabledIcon);
+			liberarAcessoButton.setVisible(false);
+			liberarAcessoButton.setEnabled(false);
+			estadoDesejadoLiberarAcesso = false;
+			connectButton.setVisible(true);
+			disconnectButton.setVisible(true);
+			disconnectButton.setEnabled(true);
+			cadastrarFaceButton.setEnabled(true);
+			setMensagem("Somente modo habilitado", MessageType.NORMAL);
+		
+		} else {
 			statusIcon.setIcon(disconnectedIcon);
 			liberarAcessoButton.setEnabled(false);
 			cadastrarFaceButton.setEnabled(false);
@@ -537,14 +553,14 @@ public class DeviceCard extends JPanel {
 				disconnectButton.setEnabled(true);
 				disconnectButton.setVisible(true);
 	    		connectButton.setVisible(false);
-			}
-			else {
+			
+			} else {
 				disconnectButton.setVisible(false);
 	    		connectButton.setVisible(true);
 	    		if(device.coletandoDadosOffLine) {
 	    			setMensagem("Ainda trabalhando...", MessageType.NORMAL);
 	    			connectButton.setEnabled(false);
-	    		}else {
+	    		} else {
 	    			setMensagem(" ", MessageType.NORMAL);
 	    		}
 			}
@@ -975,6 +991,7 @@ public class DeviceCard extends JPanel {
 		catracaIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "thumbnails/" 
 						+ device.getManufacturer().getIconName())));
 		connectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/ok.png")));
+		onlyEnabledIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/ping.png")));
 		disconnectedIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/erro.png")));
 		linkIcon = new ImageIcon(toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + "comuns/link.png")));
 	}

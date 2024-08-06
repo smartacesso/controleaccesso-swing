@@ -62,11 +62,13 @@ public class TopDataAcessoDevice extends TopDataDevice {
 	public void allowAccess() {
 		procuraSeExisteMensagemParaPedestre();
 		
-		if(mensagemPermitido == null || mensagemPermitido.isEmpty())
+		if(mensagemPermitido == null || mensagemPermitido.isEmpty()) {
 			mensagemPermitido = formatMessage(VerificationResult.AUTHORIZED.getMessage());
+		}
 		
-		if(allowedUserName != null)
+		if(allowedUserName != null) {
 			mensagemPermitido = formatMessage(mensagemPermitido + ";" + allowedUserName);
+		}
 		
 		EasyInner.LigarLedVerde(inner.Numero);
 		EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);

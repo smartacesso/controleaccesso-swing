@@ -129,11 +129,13 @@ public class CartaoComandaDialog extends JDialog {
 	    	
 	    	if(valido) {
 	    		boolean usaCadastroLote = false;
-	    		if(cartaoComanda.getId() == null)
-	    			usaCadastroLote = true;
+	    		if(cartaoComanda.getId() == null) {
+	    			usaCadastroLote = true;	 
+	    			cartaoComanda.setStatus(StatusCard.AGUARDANDO);
+	    		}
 		    	cartaoComanda.setNumeroReal(numeroTextField.getText());
 		    	cartaoComanda.setNumeroAlternativo(numeroAlternativoTextField.getText());
-		    	cartaoComanda.setStatus(StatusCard.AGUARDANDO);
+		    	cartaoComanda.setStatus(cartaoComanda.getStatus());
 		    	cartaoComanda.setDataAlteracao(new Date());
 		    	if(cartaoComanda.getId() == null) {
 		    		cartaoComanda.setDataCriacao(new Date());

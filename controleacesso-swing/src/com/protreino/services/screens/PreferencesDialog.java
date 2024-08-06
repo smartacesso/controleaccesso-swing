@@ -271,7 +271,7 @@ public class PreferencesDialog extends JDialog {
 					Utils.exportPreferences();
 				}
 				
-				JOptionPane.showMessageDialog(Main.mainScreen, "PreferÃªncias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(Main.mainScreen, "Preferências salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();
 			}
 		});
