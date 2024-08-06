@@ -9,6 +9,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import com.protreino.services.enumeration.Finger;
@@ -17,6 +19,10 @@ import com.protreino.services.enumeration.Finger;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="TB_HIKIVISION_FINGER")
+@NamedQueries({
+	@NamedQuery(name = "PedestrianAccessEntity.findByIdUserAndFingerNo", query = "select obj from HikivisionFingerEntity obj "
+			+ "where obj.fingerNo = :FINGER_NO and "
+			+ "obj.idUser = ID_USER")})
 public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 
 

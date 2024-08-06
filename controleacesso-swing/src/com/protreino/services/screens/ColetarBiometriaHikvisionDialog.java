@@ -22,7 +22,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.imageio.ImageIO;
@@ -270,21 +272,34 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 			return;
 		}
 		
-		HikivisionFingerEntity hikivisionSaved = hikvivisinFingerDataSaved(finger, digitalCadastrada.get().fingerData, Long.valueOf(visitante.getCardNumber()));
-		
+		Long cardNumber = Long.valueOf(visitante.getCardNumber());
+		Long idUser = visitante.getId();
+		HikivisionFingerEntity hikivisionSaved = hikvivisinFingerDataSaved(finger, digitalCadastrada.get().fingerData, cardNumber, idUser);
 		
 		HibernateAccessDataFacade.save(HikivisionFingerEntity.class, hikivisionSaved);
 
 		hikivisionUseCases.adicionarDigitalNoDevice(finger, Long.valueOf(visitante.getCardNumber()),
 				digitalCadastrada.get().fingerData, hikivisionSaved);
 
-		// TODO: Fazer uma alteração pra saber se já existe um registro para o mesmo
+		// TODO: Fazer uma alteração pra saber se já existe um registro para o mesmo, ok
 		// dedo e mesmo usuario
 		// Se existir devemos atualizar o dedo existente
 	}
 	
-	private HikivisionFingerEntity hikvivisinFingerDataSaved(Finger finger, String fingerData, Long cardNumber) {
-		HikivisionFingerEntity hikivisionSaved = new HikivisionFingerEntity(finger, fingerData, cardNumber);
+	private HikivisionFingerEntity hikvivisinFingerDataSaved(final Finger finger, final String fingerData, final Long cardNumber, final Long idUser) {
+		HikivisionFingerEntity hikivisionSaved = null;
+		
+		 HashMap<String, Object> args = new HashMap<>();
+         args.put("FINGER_NO", finger);
+         args.put("ID_USER", idUser);
+		
+		 hikivisionSaved = (HikivisionFingerEntity) HibernateAccessDataFacade
+				.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", null);
+		 
+		 if(Objects.isNull(hikivisionSaved)) {
+			 hikivisionSaved = new HikivisionFingerEntity(finger, fingerData, cardNumber);
+		 }
+		
 		return hikivisionSaved;
 	}
 	

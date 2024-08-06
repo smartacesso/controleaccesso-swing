@@ -2,6 +2,7 @@ package com.protreino.services.usecase;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -305,18 +306,19 @@ public class HikivisionUseCases {
 
 	}
 	
-	@SuppressWarnings("unused")
-	private void processarBiometriasComErros() {
+	@SuppressWarnings({ "unused", "unchecked" })
+	private void processarBiometriasComErros( final Finger fingerNo) {
 		List<HikivisonFingerErrorEntity> biometricsWithErros = (List<HikivisonFingerErrorEntity>) HibernateAccessDataFacade
-				.getResultList(HikivisonFingerErrorEntity.class, "findAllBiometricWithErrrors");
-		//TODO para cada dedo vou ter que ir no banco de novo para pegar o FingerData
+				.getResultList(HikivisonFingerErrorEntity.class, "findAllBiometricWithErrors");
 		
-		
-
 		biometricsWithErros.forEach(biometric -> {
 			
+			 HashMap<String, Object> args = new HashMap<>();
+             args.put("FINGER_NO", biometric.getFingerNo());
+             args.put("ID_USER", biometric.getIdUser());
+             
 			HikivisionFingerEntity hikivisionSaved = (HikivisionFingerEntity) HibernateAccessDataFacade
-					.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", null);
+					.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", args);
 			
 			final boolean vincularBiometria = vinculaDigitalUsuario(biometric.getDeviceId(),
 					hikivisionSaved.getFingerNo(), biometric.getIdUser(),
@@ -324,9 +326,7 @@ public class HikivisionUseCases {
 			if (!vincularBiometria) {
 				System.out.println(String.format("Não foi possível reprocessar a biometria do usuário %d",
 						biometric.getIdUser(), null));
-			}
-
-		});
+			}});
 
 		// TODO: apagar base de dados caso sucesso
 

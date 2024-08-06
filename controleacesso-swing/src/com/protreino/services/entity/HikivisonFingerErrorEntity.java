@@ -24,7 +24,7 @@ import com.protreino.services.enumeration.Finger;
 @Entity
 @Table(name="TB_HIKIVISION_FINGER_ERROR")
 @NamedQueries({
-	@NamedQuery(name = "HikivisonFingerErrorEntity.findAllBiometricWithErrrors", 
+	@NamedQuery(name = "HikivisonFingerErrorEntity.findAllBiometricWithErrors", 
 				query = "select obj from HikivisonFingerErrorEntity obj "
 						+ "order by obj.id asc")
 })
@@ -92,6 +92,14 @@ public class HikivisonFingerErrorEntity extends BaseEntity implements ObjectWith
 
 	public void setDeviceId(String deviceId) {
 		this.deviceId = deviceId;
+	}
+
+	public Finger getFingerNo() {
+		return fingerNo;
+	}
+
+	public void setFingerNo(Finger fingerNo) {
+		this.fingerNo = fingerNo;
 	}
 
 
