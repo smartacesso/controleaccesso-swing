@@ -17,6 +17,7 @@ import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HikivisionFingerRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
@@ -307,18 +308,15 @@ public class HikivisionUseCases {
 	}
 	
 	@SuppressWarnings({ "unused", "unchecked" })
-	private void processarBiometriasComErros( final Finger fingerNo) {
+	private void processarBiometriasComErros(final Finger fingerNo) {
 		List<HikivisonFingerErrorEntity> biometricsWithErros = (List<HikivisonFingerErrorEntity>) HibernateAccessDataFacade
 				.getResultList(HikivisonFingerErrorEntity.class, "findAllBiometricWithErrors");
 		
+		HikivisionFingerRepository hikivisionFingerRepository = new HikivisionFingerRepository();
+		
 		biometricsWithErros.forEach(biometric -> {
 			
-			 HashMap<String, Object> args = new HashMap<>();
-             args.put("FINGER_NO", biometric.getFingerNo());
-             args.put("ID_USER", biometric.getIdUser());
-             
-			HikivisionFingerEntity hikivisionSaved = (HikivisionFingerEntity) HibernateAccessDataFacade
-					.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", args);
+			HikivisionFingerEntity	hikivisionSaved = hikivisionFingerRepository.findByFingerNoAndIdUser(fingerNo, biometric.getIdUser());
 			
 			final boolean vincularBiometria = vinculaDigitalUsuario(biometric.getDeviceId(),
 					hikivisionSaved.getFingerNo(), biometric.getIdUser(),
@@ -327,8 +325,6 @@ public class HikivisionUseCases {
 				System.out.println(String.format("Não foi possível reprocessar a biometria do usuário %d",
 						biometric.getIdUser(), null));
 			}});
-
-		// TODO: apagar base de dados caso sucesso
 
 	}
 

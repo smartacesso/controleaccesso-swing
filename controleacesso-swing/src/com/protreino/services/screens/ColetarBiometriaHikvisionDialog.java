@@ -36,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
@@ -175,7 +176,7 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		contentPane.add(buttonPane, BorderLayout.PAGE_END);
 		
 		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
+			public void windowClosing(WindowEvent e) { 
 			    cancelButton.doClick();
 			}
 		});
@@ -280,10 +281,6 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 
 		hikivisionUseCases.adicionarDigitalNoDevice(finger, Long.valueOf(visitante.getCardNumber()),
 				digitalCadastrada.get().fingerData, hikivisionSaved);
-
-		// TODO: Fazer uma alteração pra saber se já existe um registro para o mesmo, ok
-		// dedo e mesmo usuario
-		// Se existir devemos atualizar o dedo existente
 	}
 	
 	private HikivisionFingerEntity hikvivisinFingerDataSaved(final Finger finger, final String fingerData, final Long cardNumber, final Long idUser) {
@@ -304,7 +301,19 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 	}
 	
 	public void cancelCollect(){
+		setMessage("Coleta de biometria cancelada!", "erro");
+		Object[] options = {"OK"};
+		JOptionPane.showOptionDialog(instance, "Biometria cancelada.","Biometria cancelada",
+				JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+		dispose();
+	}
 	
+	private void setMessage(final String message, String type){
+		messageLabel.setText(message);
+		if (type.equals("erro"))
+			messageLabel.setForeground(Color.RED);
+		else
+			messageLabel.setForeground(Main.firstColor);
 	}
 	
 	class RoundedPanel extends JPanel {
