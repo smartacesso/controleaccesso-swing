@@ -33,5 +33,6 @@ public class TopDataDeviceConstants {
 	public static final String SAIDA = "saída";
 	public static final String ENTRADA = "entrada";
 	public static final String ONLY_ENABLED_MODE = "Catracas somente no modo habilitado";
+	public static final String BOTAO_EXTERNO = "Habilita botao externo";
 
 }

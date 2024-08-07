@@ -29,6 +29,7 @@ import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOME
 import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
 import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
 import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
+import static com.protreino.services.constants.TopDataDeviceConstants.BOTAO_EXTERNO;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -216,8 +217,10 @@ public class TopDataDevice extends Device {
 
         
         boolean onlyEnabledMode = getConfigurationValueAsBoolean(ONLY_ENABLED_MODE);
-        if(!(this instanceof TopDataAcessoDevice)
-        		&& !(this instanceof TopDataExpedidoraDevice)
+        boolean BotaoExternoHbilitado = getConfigurationValueAsBoolean(BOTAO_EXTERNO);
+        System.out.println("Botao externo : " + BotaoExternoHbilitado);
+     //   !(this instanceof TopDataAcessoDevice)&& 
+        if(!(this instanceof TopDataExpedidoraDevice)
         		&& Boolean.TRUE.equals(onlyEnabledMode)) {
         	
         	disconnect();
@@ -230,6 +233,13 @@ public class TopDataDevice extends Device {
         	}
         	
         	ret = pingOffline();
+//        	if(BotaoExternoHbilitado) {   		
+//        		ret = EasyInner.ConfigurarBotaoExternoOffline(1);
+//        		System.out.println("retorn" + ret);
+//        	}else {
+//        		ret = EasyInner.ConfigurarBotaoExternoOffline(0);
+//        		System.out.println("retorn" + ret);
+//        	}
         	
         	if (ret == Enumeradores.RET_COMANDO_OK) {
         		setStatus(DeviceStatus.ONLY_ENABLED);

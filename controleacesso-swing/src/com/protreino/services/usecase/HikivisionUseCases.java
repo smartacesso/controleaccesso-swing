@@ -17,6 +17,7 @@ import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HikivisionFingerErrorRepository;
 import com.protreino.services.repository.HikivisionFingerRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
@@ -31,6 +32,8 @@ public class HikivisionUseCases {
 	private final HikiVisionIntegrationService hikiVisionIntegrationService;
 
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
+	
+	HikivisionFingerRepository hikivisionFingerRepository;
 
 	public HikivisionUseCases() {
 		this.hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
@@ -307,24 +310,27 @@ public class HikivisionUseCases {
 
 	}
 	
-	@SuppressWarnings({ "unused", "unchecked" })
-	private void processarBiometriasComErros(final Finger fingerNo) {
-		List<HikivisonFingerErrorEntity> biometricsWithErros = (List<HikivisonFingerErrorEntity>) HibernateAccessDataFacade
-				.getResultList(HikivisonFingerErrorEntity.class, "findAllBiometricWithErrors");
+
+	public void processarBiometriasComErros() {
+		HikivisionFingerErrorRepository hikivisionFingerErrors = new HikivisionFingerErrorRepository();
+		List<HikivisonFingerErrorEntity> biometricsWithErros = hikivisionFingerErrors.findAll();
 		
-		HikivisionFingerRepository hikivisionFingerRepository = new HikivisionFingerRepository();
+		 hikivisionFingerRepository = new HikivisionFingerRepository();
 		
 		biometricsWithErros.forEach(biometric -> {
-			
-			HikivisionFingerEntity	hikivisionSaved = hikivisionFingerRepository.findByFingerNoAndIdUser(fingerNo, biometric.getIdUser());
+			HikivisionFingerEntity	hikivisionSaved = hikivisionFingerRepository.findByFingerNoAndIdUser(biometric.getFingerNo(), biometric.getIdUser());
 			
 			final boolean vincularBiometria = vinculaDigitalUsuario(biometric.getDeviceId(),
 					hikivisionSaved.getFingerNo(), biometric.getIdUser(),
 					hikivisionSaved.getFingerData());
-			if (!vincularBiometria) {
+
+			if (vincularBiometria) {
+				//apagar biometria
+			} else {
 				System.out.println(String.format("Não foi possível reprocessar a biometria do usuário %d",
 						biometric.getIdUser(), null));
-			}});
+			}
+		});
 
 	}
 

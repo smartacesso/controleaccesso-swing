@@ -229,7 +229,7 @@ public class HikiVisionIntegrationService {
 
 				final boolean isCadastradoComSucesso = "OK".equalsIgnoreCase(responseBody.statusString);
 
-				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
+				System.out.println(String.format("Usuario %s com a digital vinculada no device %s com sucesso: %b", idUser, deviceId,
 						isCadastradoComSucesso));
 
 				return isCadastradoComSucesso;

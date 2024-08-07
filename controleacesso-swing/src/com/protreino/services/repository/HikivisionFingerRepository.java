@@ -10,10 +10,10 @@ public class HikivisionFingerRepository {
 	
 	public HikivisionFingerEntity findByFingerNoAndIdUser(Finger fingerNo, Long idUser) {
 		 HashMap<String, Object> args = new HashMap<>();
-         args.put("FINGER_NO", fingerNo);
+     //    args.put("FINGER_NO", fingerNo);
          args.put("ID_USER", idUser);
          
 		return (HikivisionFingerEntity) HibernateAccessDataFacade
-				.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", args);
+				.getUniqueResultWithParams(HikivisionFingerEntity.class, "HikivisionFingerEntity.findByIdUserAndFingerNo", args);
 	}
 }

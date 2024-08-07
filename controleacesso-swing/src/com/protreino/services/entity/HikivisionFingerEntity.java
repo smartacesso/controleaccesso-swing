@@ -20,9 +20,9 @@ import com.protreino.services.enumeration.Finger;
 @Entity
 @Table(name="TB_HIKIVISION_FINGER")
 @NamedQueries({
-	@NamedQuery(name = "PedestrianAccessEntity.findByIdUserAndFingerNo", query = "select obj from HikivisionFingerEntity obj "
-			+ "where obj.fingerNo = :FINGER_NO and "
-			+ "obj.idUser = ID_USER")})
+	@NamedQuery(name = "HikivisionFingerEntity.findByIdUserAndFingerNo", query = "select obj from HikivisionFingerEntity obj "
+			+ "where  "
+			+ "obj.idUser = :ID_USER")})
 public class HikivisionFingerEntity extends BaseEntity implements ObjectWithId {
 
 

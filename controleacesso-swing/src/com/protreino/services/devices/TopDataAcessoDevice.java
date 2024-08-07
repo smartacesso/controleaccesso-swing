@@ -25,6 +25,7 @@ import com.protreino.services.utils.Utils;
 import com.topdata.EasyInner;
 
 import static com.protreino.services.constants.TopDataAcessoDeviceConstatns.*;
+import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
 
 @SuppressWarnings("serial")
 public class TopDataAcessoDevice extends TopDataDevice {
@@ -267,6 +268,9 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(TEMPO_ACIONAMENTO_DO_RELE, "3", FieldType.NUMERIC_LIST, "0;1;10"));
 		geralConfigurations.add(new ConfigurationTO(COLETA_CARTOES_OFFLINE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(ONLY_ENABLED_MODE, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(BOTAO_EXTERNO, "true", FieldType.CHECKBOX));
+		
 		
 		String nomeEmpresa = "SmartPonto;Controle Acesso";
     	if (Main.loggedUser != null)
