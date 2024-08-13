@@ -156,6 +156,7 @@ public class Main {
 
     public static Timer timerSyncUsersAccessList;
     public static Timer timerSyncAthleteAccessList;
+    public static Timer timerFingerProcessingHikivision;
     public static Timer timerSyncHikivision;
     public static Timer timerSyncLogAthleteAccess;
     public static Timer timerOnline;
@@ -192,6 +193,7 @@ public class Main {
     private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
     private static final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
     private static final SyncTemplatesInTopDataDevices syncTemplatesInTopDataDevices = new SyncTemplatesInTopDataDevices();
+    private HikivisionUseCases hikivisionUseCases;
 
     public static void main(String[] args) {
 
@@ -522,6 +524,8 @@ public class Main {
         timerSyncAthleteAccessList.start();
         timerSyncLogAthleteAccess.start();
         timerSyncHikivision.start();
+        if(!Objects.isNull(timerFingerProcessingHikivision))
+        timerFingerProcessingHikivision.start();
     }
 
     public static void finalizarSessao() {
@@ -553,6 +557,9 @@ public class Main {
         }
         if(timerSyncHikivision.isRunning()) {
         	timerSyncHikivision.stop();
+        }
+        if(timerFingerProcessingHikivision.isRunning()) {
+        	timerFingerProcessingHikivision.stop();
         }
 
         lastSyncGetUsers = 0L;
@@ -652,8 +659,24 @@ public class Main {
                     tasksOfDay(true);
                 }
             };
+            
+            if(Utils.getPreferenceAsBoolean("hikiVisionFingerRegistration")) {
+            	timerFingerProcessingHikivision = new Timer(Integer.valueOf(Utils.getPreference("hikivisionTimeProcessing"))* 60000, new ActionListener() {
+                     public void actionPerformed(ActionEvent e) {
+                    	 hikivisionUseCases = new HikivisionUseCases();
+                    	hikivisionUseCases.processarBiometriasComErros();
+                     }
+                 });
+            	
+            }
+            
+            
 
             timerSyncUsersAccessList.stop();
+            if(!Objects.isNull(timerFingerProcessingHikivision)) {
+            	 timerFingerProcessingHikivision.stop();
+            }
+           
             timerSyncAthleteAccessList.stop();
             timerSyncLogAthleteAccess.stop();
             timerSyncHikivision.stop();

@@ -500,8 +500,7 @@ public class Utils {
 				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cadastroDigitalHikivision",
-				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
+
 		
 		
 		// Preferencias do nova Integração HIKIVISION
@@ -522,7 +521,11 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "deletePhotoFromInactivePedestrian",
 				"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeVisitanteCameraSaida",
-				"Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));
+				"Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FINGER_RECOGONIZER, "hikiVisionFingerRegistration",
+				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FINGER_RECOGONIZER, "hikivisionTimeProcessing",
+				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {

@@ -144,12 +144,12 @@ import com.protreino.services.utils.EncryptionUtils;
 					  + "from PedestrianAccessEntity obj "
 					  + "where obj.tipo = 'PEDESTRE'and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.tipo, obj.status, "
 					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
 					  + "from PedestrianAccessEntity obj "
 					  + "left join obj.templates temp "
 					  + "where obj.tipo = 'PEDESTRE' and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
-					  + "group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier "
+					  + "group by obj.id, obj.name, obj.tipo, obj.status ,obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier "
 					  + "order by obj.name"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllComFotoParaUpload",
 				query = "select obj from PedestrianAccessEntity obj "
@@ -553,6 +553,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cardNumber = cardNumber;
 	}
 	
+	
 	public PedestrianAccessEntity(Long id, Date datePhotosExcluded) {
 		this.id = id;
 		this.datePhotosExcluded = datePhotosExcluded;
@@ -575,6 +576,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cadastradoNoDesktop = cadastradoNoDesktop;
 	}
 	
+	
 	public PedestrianAccessEntity(Long id, String name, String status, Integer tamanhoListaTemplates, Boolean cadastradoNaCatracaRWTech,
 			String cardNumber, Boolean cadastradoNoDesktop) {
 		this.id = id;
@@ -585,7 +587,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cardNumber = cardNumber;
 		this.cadastradoNoDesktop = cadastradoNoDesktop;
 	}
-	
+	//nesse
 	public PedestrianAccessEntity(Long id, String name, String status, Long tamanhoListaTemplates, Boolean cadastradoNaCatracaRWTech,
 			String cardNumber, Boolean cadastradoNoDesktop, String luxandIdentifier) {
 		this.id = id;
@@ -602,6 +604,19 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			String cardNumber, Boolean cadastradoNoDesktop, String luxandIdentifier) {
 		this.id = id;
 		this.name = name;
+		this.status = status;
+		this.tamanhoListaTemplates = Long.valueOf(tamanhoListaTemplates);
+		this.cadastradoNaCatracaRWTech = cadastradoNaCatracaRWTech;
+		this.cardNumber = cardNumber;
+		this.cadastradoNoDesktop = cadastradoNoDesktop;
+		this.luxandIdentifier = luxandIdentifier;
+	}
+	
+	public PedestrianAccessEntity(Long id, String name, String tipo ,String status, Long tamanhoListaTemplates, Boolean cadastradoNaCatracaRWTech,
+			String cardNumber, Boolean cadastradoNoDesktop, String luxandIdentifier) {
+		this.id = id;
+		this.name = name;
+		this.tipo = tipo;
 		this.status = status;
 		this.tamanhoListaTemplates = Long.valueOf(tamanhoListaTemplates);
 		this.cadastradoNaCatracaRWTech = cadastradoNaCatracaRWTech;

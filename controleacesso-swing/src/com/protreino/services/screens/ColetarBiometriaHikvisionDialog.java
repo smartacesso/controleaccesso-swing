@@ -49,6 +49,7 @@ import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HikivisionFingerRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
@@ -56,6 +57,8 @@ import com.protreino.services.utils.Utils;
 
 public class ColetarBiometriaHikvisionDialog extends JDialog {
 	public ColetarBiometriaHikvisionDialog instance;
+	
+	private final 	HikivisionFingerRepository hikivisionFingerRepository = new HikivisionFingerRepository();
 	
 	private JLabel userLabel;
 	public JComboBox<String> fingerComboBox;
@@ -265,17 +268,20 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		
 	}
 	
-	private void startReading(Finger finger, final String device, PedestrianAccessEntity visitante) {
+	private void startReading(final Finger finger, final String device, PedestrianAccessEntity visitante) {
 		Optional<CaptureFingerPrint> digitalCadastrada = hikivisionUseCases.coletarBiometriabiometria(device, finger);
+	
+		//TODO Exibir dialogo progressbar
 		
 		if (!digitalCadastrada.isPresent()) {
 			System.out.println(String.format("Não foi possível cadastrar a digital cadastrada %d", finger.ordinal()));
+			//TODO Exibir dialogo
 			return;
 		}
 		
 		Long cardNumber = Long.valueOf(visitante.getCardNumber());
 		Long idUser = visitante.getId();
-		HikivisionFingerEntity hikivisionSaved = hikvivisinFingerDataSaved(finger, digitalCadastrada.get().fingerData, cardNumber, idUser);
+		HikivisionFingerEntity hikivisionSaved = hikivisionFingerDataSaved(finger, digitalCadastrada.get().fingerData, cardNumber, idUser);
 		
 		HibernateAccessDataFacade.save(HikivisionFingerEntity.class, hikivisionSaved);
 
@@ -283,15 +289,10 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 				digitalCadastrada.get().fingerData, hikivisionSaved);
 	}
 	
-	private HikivisionFingerEntity hikvivisinFingerDataSaved(final Finger finger, final String fingerData, final Long cardNumber, final Long idUser) {
+	private HikivisionFingerEntity hikivisionFingerDataSaved(final Finger finger, final String fingerData, final Long cardNumber, final Long idUser) {
 		HikivisionFingerEntity hikivisionSaved = null;
 		
-		 HashMap<String, Object> args = new HashMap<>();
-         args.put("FINGER_NO", finger);
-         args.put("ID_USER", idUser);
-		
-		 hikivisionSaved = (HikivisionFingerEntity) HibernateAccessDataFacade
-				.getUniqueResultWithParams(HikivisionFingerEntity.class, "findByIdUserAndFingerNo", null);
+		hikivisionFingerRepository.findByFingerNoAndIdUser(finger, idUser);
 		 
 		 if(Objects.isNull(hikivisionSaved)) {
 			 hikivisionSaved = new HikivisionFingerEntity(finger, fingerData, cardNumber);

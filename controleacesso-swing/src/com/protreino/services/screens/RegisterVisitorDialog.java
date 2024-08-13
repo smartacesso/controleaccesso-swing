@@ -933,9 +933,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         cadastrarDigitalButton.setPreferredSize(new Dimension(150, 40));
         cadastrarDigitalButton.addActionListener(e -> {
         
-        	if(Utils.getPreferenceAsBoolean("cadastroDigitalHikivision")) {
+        	if(Utils.getPreferenceAsBoolean("hikiVisionFingerRegistration")) {
         		new ColetarBiometriaHikvisionDialog(visitante); 
-        		
 
         	} else {
         		criarDialogoEscolherCatracaParaCadastroDigital();
@@ -1007,7 +1006,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         if(Objects.nonNull(visitante.getCardNumber()) 
         		&& !visitante.getCardNumber().isEmpty()
         		&& Utils.isHikivisionConfigValid()
-        		&& Utils.getPreferenceAsBoolean("cadastroDigitalHikivision")) {
+        		&& Utils.getPreferenceAsBoolean("hikiVisionFingerRegistration")) {
         	panelInterno.add(cadastrarDigitalButton);
         	panelInterno.add(Box.createHorizontalStrut(10));
         }

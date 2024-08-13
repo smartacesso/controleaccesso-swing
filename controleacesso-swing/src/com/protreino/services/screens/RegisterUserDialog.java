@@ -14,6 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -22,12 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -55,6 +59,7 @@ import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
+import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
@@ -81,7 +86,7 @@ public class RegisterUserDialog extends JDialog{
 	private Boolean alteradoComSucesso;
 	private String mensagemErroRetorno;
 	private Set<Integer> hashSetRegistradosNaCatraca;
-	
+	private JComboBox<SelectItem> filtroTipoJComboBox;
 	private Device device;
 	
 	protected JButton first = null;
@@ -120,11 +125,12 @@ public class RegisterUserDialog extends JDialog{
 			columns = new String[] {"CÛdigo", 
 									"Nome", 
 									Manufacturer.FACIAL.equals(device.getManufacturer()) ? "Face coletada" : "Digitais coletadas", 
+											"Tipo",
 									"Acesso Permitido"};
-			columnWidths = new Integer[] {50, 320, 120, 120};
+			columnWidths = new Integer[] {50, 320, 80,80, 120};
 		
 		} else {
-			columns = new String[] {"CÛdigo", "Nome", "Acesso Permitido"};
+			columns = new String[] {"CÛdigo", "Nome","Acesso Permitido"};
 			columnWidths = new Integer[] {80, 400, 130};
 		}
 		
@@ -151,6 +157,22 @@ public class RegisterUserDialog extends JDialog{
 		filtroNomeContainer.add(filtroNomeTextField);
 		filtroNomeContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
+		JPanel filtroTipoPanel= new JPanel();
+		filtroTipoPanel.setLayout(new BoxLayout(filtroTipoPanel, BoxLayout.Y_AXIS));
+		JLabel filtroTipoLabel = new JLabel("Tipo");
+		filtroTipoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		filtroTipoPanel.add(filtroTipoLabel);
+		
+		Vector<SelectItem> itens = new Vector<SelectItem>();
+		itens.add(new SelectItem("Todos", "TODOS"));
+		itens.add(new SelectItem("PEDESTRE", "PEDESTRE"));
+		itens.add(new SelectItem("VISITANTE", "VISITANTE"));
+		
+		filtroTipoJComboBox =  new JComboBox<SelectItem>(itens);
+		filtroTipoJComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		filtroTipoPanel.add(filtroTipoJComboBox);
+		filtroTipoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		
 		JPanel cleanButtonContainer= new JPanel();
 		cleanButtonContainer.setLayout(new BoxLayout(cleanButtonContainer, BoxLayout.Y_AXIS));
 		cleanButton = new JButton("Limpar filtros");
@@ -169,6 +191,8 @@ public class RegisterUserDialog extends JDialog{
 		filterContainer.add(filtroIdContainer);
 		filterContainer.add(Box.createHorizontalStrut(10));
 		filterContainer.add(filtroNomeContainer);
+		filterContainer.add(Box.createHorizontalStrut(10));
+		filterContainer.add(filtroTipoPanel);
 		filterContainer.add(Box.createHorizontalStrut(10));
 		filterContainer.add(cleanButtonContainer);
 		filterContainer.add(Box.createHorizontalStrut(10));
@@ -324,7 +348,12 @@ public class RegisterUserDialog extends JDialog{
 		searchButton.addActionListener(search);
 		filtroIdTextField.addActionListener(search);
 		filtroNomeTextField.addActionListener(search);
-		
+		filtroTipoJComboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				filterList();
+			}
+		});
 		pack();
 		//showScreen();
 	}
@@ -371,6 +400,19 @@ public class RegisterUserDialog extends JDialog{
 			if (filtroNomeTextField.getText() != null && !"".equals(filtroNomeTextField.getText()))
 				args.put("name", filtroNomeTextField.getText());
 			
+			if (filtroTipoJComboBox.getSelectedItem() != null) {
+				SelectItem itemSelecionado = (SelectItem)filtroTipoJComboBox.getSelectedItem();
+				if(itemSelecionado.getValue() != null){
+					if(itemSelecionado.getValue().equals("TODOS")) {
+						args.remove("tipo");
+					} else {
+						args.put("tipo", itemSelecionado.getValue());
+					}
+				}
+			} else {
+				args.remove("tipo");
+			}
+			
 			String join = " left join obj.templates temp ";
 			
 			String groupBy = " group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
@@ -380,8 +422,8 @@ public class RegisterUserDialog extends JDialog{
 			}else {
 				paginaAtual = 1;
 				inicioPagina = 0;
-				totalRegistros =  HibernateAccessDataFacade.
-						getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, join, groupBy, args);
+//				totalRegistros =  HibernateAccessDataFacade.
+//						getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, join, groupBy, args);
 				
 				executeFilter();
 			}
@@ -454,19 +496,23 @@ public class RegisterUserDialog extends JDialog{
 	@SuppressWarnings("unchecked")
 	protected void executeFilter() {
 		
-		calculaTamanhoPaginas();
 		
 		if(args == null)
 			args = new HashMap<>();
 		args.put("removido", false);
 		
 		
-		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
+		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.tipo, obj.status, "
 				+ "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier)  ";
 		
 		String join = " left join obj.templates temp ";
 		
-		String groupBy = " group by obj.id, obj.name, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
+		String groupBy = " group by obj.id, obj.name, obj.tipo, obj.status, obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier ";
+		
+		totalRegistros =  HibernateAccessDataFacade.
+				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, join, groupBy, args);
+		
+		calculaTamanhoPaginas();
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, join, groupBy, "name", args, inicioPagina, registrosPorPagina);
@@ -633,6 +679,10 @@ public class RegisterUserDialog extends JDialog{
 				acesso.setCadastradoNaCatraca(acesso.getCadastradoNaCatracaRWTech());
 			
 		} else {
+			if(!Objects.nonNull(listaAcesso)) {
+				return;
+			}
+			
 			for (PedestrianAccessEntity acesso : listaAcesso) {
 				if (hashSetRegistradosNaCatraca != null) {
 					if (hashSetRegistradosNaCatraca.contains(acesso.getId().intValue()))
@@ -1001,7 +1051,8 @@ public class RegisterUserDialog extends JDialog{
 					obj[2] = Manufacturer.FACIAL.equals(device.getManufacturer()) 
 							? (acesso.getLuxandIdentifier() != null && !"".equals(acesso.getLuxandIdentifier()) ? "1" : "0") 
 							: (acesso.getTamanhoListaTemplates() == null ? "0" : acesso.getTamanhoListaTemplates());
-					obj[3] = "ATIVO".equals(acesso.getStatus()) ? "SIM" : "N√ÉO";
+					obj[3] = acesso.getTipo();
+					obj[4] = "ATIVO".equals(acesso.getStatus()) ? "SIM" : "N√ÉO";
 				}
 				dataModel.addRow(obj);
 			}

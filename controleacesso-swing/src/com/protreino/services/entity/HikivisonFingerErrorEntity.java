@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
@@ -48,15 +49,20 @@ public class HikivisonFingerErrorEntity extends BaseEntity implements ObjectWith
 	@Column(name="FINGER_NO", nullable=true, length=100)
 	private Finger fingerNo;
 	
+	@ManyToOne(cascade= {}, fetch=FetchType.EAGER)
+	@JoinColumn(name="ID_HIKIVISION_FINGER", nullable=true)
+	private HikivisionFingerEntity hikisionFingerEntity;
+	
 	
 	public HikivisonFingerErrorEntity() {
 	}
 	
-	public HikivisonFingerErrorEntity(Long idUser, String errorMessage, String deviceId, Finger fingerNo) {
+	public HikivisonFingerErrorEntity(Long idUser, String errorMessage, String deviceId, Finger fingerNo, HikivisionFingerEntity hikisionFingerEntity) {
 		this.idUser = idUser;
 		this.errorMessage = errorMessage;
 		this.deviceId = deviceId;
 		this.fingerNo = fingerNo;
+		this.hikisionFingerEntity = hikisionFingerEntity;
 	}
 	
 
@@ -100,6 +106,14 @@ public class HikivisonFingerErrorEntity extends BaseEntity implements ObjectWith
 
 	public void setFingerNo(Finger fingerNo) {
 		this.fingerNo = fingerNo;
+	}
+
+	public HikivisionFingerEntity getHikisionFingerEntity() {
+		return hikisionFingerEntity;
+	}
+
+	public void setHikisionFingerEntity(HikivisionFingerEntity hikisionFingerEntity) {
+		this.hikisionFingerEntity = hikisionFingerEntity;
 	}
 
 
