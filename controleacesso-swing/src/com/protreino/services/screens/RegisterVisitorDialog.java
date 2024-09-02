@@ -6,7 +6,6 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
-import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
@@ -1740,7 +1739,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
     private boolean validaCamposDuplicados() {
         boolean valido = true;
-       // boolean bloquearCartaoZerado =  Utils.getPreferenceAsBoolean("bloquearCartaoZero");
+        boolean bloquearCartaoZerado =  Utils.getPreferenceAsBoolean("bloquearCartaoZero");
         
         if (cpfTextField != null
                 && !cpfTextField.getText().replace(".", "").replace("-", "").replace(" ", "").isEmpty()) {
@@ -1810,7 +1809,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             }
         }
         
-      /*  if(bloquearCartaoZerado) {  	
+        if(bloquearCartaoZerado) {  	
         	if (cartaoAcessoTextField != null
         			&& !cartaoAcessoTextField.getText().isEmpty()) {
         		if (cartaoAcessoTextField.getText().matches(
@@ -1821,7 +1820,7 @@ public class RegisterVisitorDialog extends BaseDialog {
         		}
         	}	
         }
-        */
+       
               
 //        if (cartaoAcessoTextField != null
 //                && !cartaoAcessoTextField.getText().isEmpty()

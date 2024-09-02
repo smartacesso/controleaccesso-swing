@@ -57,8 +57,12 @@ public class HikivisionEventsUseCase {
 				requestBody.indexOf(" HTTP"));
 		final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
 
-		if (Objects.isNull(eventListnerTO) || Objects.isNull(eventListnerTO.getAccessControllerEvent())
+		if (Objects.isNull(eventListnerTO) 
+				|| Objects.isNull(eventListnerTO.getAccessControllerEvent())
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
+			System.out.println("eventlistenre : ---- " + eventListnerTO);
+			System.out.println("EVENTLISTENER GETACCSS : ---- " + eventListnerTO.getAccessControllerEvent());
+			System.out.println("EVENTLISTENER GETACCSS NUMERO : ----" + eventListnerTO.getAccessControllerEvent().getCardNo());
 			System.out.println("Evento de pedestre não reconhecido pela camera");
 			return;
 		}

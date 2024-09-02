@@ -64,7 +64,6 @@ public class ProgressDialog extends JDialog {
 		setContentPane(mainPanel);
 		pack();
 		setLocationRelativeTo(null);
-		
 	}
 	
 	

@@ -521,7 +521,7 @@ public class HibernateAccessDataFacade {
 	}
 	
 	public static synchronized List<PedestrianAccessEntity> buscaPedestresAtivosComCartao() {
-		return HibernateLocalAccessData.buscaPedestresAtivosComBiometria();
+		return HibernateLocalAccessData.buscaPedestresAtivosComCartao();
 	}
 	
 }

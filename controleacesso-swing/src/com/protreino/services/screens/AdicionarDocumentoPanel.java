@@ -284,8 +284,7 @@ public class AdicionarDocumentoPanel extends JPanel {
 	}
 
 	public void salvarImagemCapturada() {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
 			ImageIO.write(bufferedImage, "jpg", baos);
 			baos.flush();
 			arquivoDocumento = baos.toByteArray();

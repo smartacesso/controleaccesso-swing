@@ -1382,6 +1382,10 @@ public class TopDataDevice extends Device {
 		EasyInner.DefinirQuantidadeDigitosCartao(8);
 		
 		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
+		
+		if(Objects.isNull(pedestresComCartao) || pedestresComCartao.isEmpty()) {
+			return;
+		}
 				
 		for (PedestrianAccessEntity pedestre : pedestresComCartao) {
 			String temp = "";

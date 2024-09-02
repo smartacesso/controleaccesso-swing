@@ -88,11 +88,15 @@ public class SmartAcessoFotoServiceClient {
 		return null;
 	}
 	
-	public List<PedestrianAccessTO> buscaFotoDePedestres(final String idsParameter, final Integer imageSize, final boolean resize) {
+	public List<PedestrianAccessTO> buscaFotoDePedestres(final String idsParameter, final Integer imageSize, final boolean resize, 
+			final Integer targetWidth, final Integer targetHeight) {
 		try {
 			final HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/photo/request?ids="
-	                + idsParameter + "&type=PEDESTRES&resize=" + resize 
-	                + "&imageSize=" + imageSize);
+	                + idsParameter 
+	                + "&resize=" + resize 
+	                + "&imageSize=" + imageSize
+	                + "&targetWidth=" + targetWidth
+	                + "&targetHeight=" + targetHeight);
 
 			final int responseCode = con.getResponseCode();
 	        

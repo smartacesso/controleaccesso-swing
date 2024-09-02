@@ -267,9 +267,9 @@ public class PreferencesDialog extends JDialog {
 					Utils.setPreference(key, field.getValue());
 				}
 				
-				if(Main.temServidor()) {
-					Utils.exportPreferences();
-				}
+//				if(Main.temServidor()) {
+	//			}
+				Utils.exportPreferences();
 				
 				JOptionPane.showMessageDialog(Main.mainScreen, "Preferências salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();

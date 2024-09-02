@@ -367,7 +367,15 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessReason",
 				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
-				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));
+				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableAlmitecTCPServer",
+				"Habilitar servidor Almitec TCP", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "catracaAlmitecURL",
+				"URL do servidor catraca almitec", FieldType.TEXT, "192.168.0.201", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerAlmitecSocketPort",
+				"Porta do servidor almitec TCP", FieldType.TEXT, "5000", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerAlmitecUdpSocketPort",
+				"Porta do servidor almitec UPD", FieldType.TEXT, "5001", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
 				"Habilitar servidor TCP", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerSocketPort",
@@ -386,6 +394,10 @@ public class Utils {
 				"Fazer resize da imagem ao buscar foto da web", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageSizeRequestServer",
 				"Tamanho das fotos recebidas do servidor (dimensão em px)", FieldType.TEXT, "600", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageTargetWidthRequestServer",
+				"Tamanho da altura da foto recebida do servidor (dimensão em px)", FieldType.TEXT, "600", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "imageTargetHeightRequestServer",
+				"Tamanho da largura da foto recebida do servidor (dimensão em px)", FieldType.TEXT, "480", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registerAccessWithoutConnectedDevices",
 				"Registrar acesso mesmo que não haja dispositivos conectados", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "pedestrianAlwaysOpen",
@@ -522,9 +534,9 @@ public class Utils {
 				"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeVisitanteCameraSaida",
 				"Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));		
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FINGER_RECOGONIZER, "hikiVisionFingerRegistration",
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionFingerRegistration",
 				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FINGER_RECOGONIZER, "hikivisionTimeProcessing",
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
 				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {

@@ -71,12 +71,18 @@ public class TopDataAcessoDevice extends TopDataDevice {
 			mensagemPermitido = formatMessage(mensagemPermitido + ";" + allowedUserName);
 		}
 		
+		
+		
 		EasyInner.LigarLedVerde(inner.Numero);
 		EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
+		//relé 2
+		EasyInner.AcionarRele1(inner.Numero);
+		EasyInner.AcionarRele2(inner.Numero);
+		
 		EasyInner.ManterRele1Acionado(inner.Numero);
 		EasyInner.ManterRele2Acionado(inner.Numero);
 		EasyInner.AcionarBipCurto(inner.Numero);
-		
+			
 		Integer tempoAcionamentoRele = getConfigurationValueAsInteger(TEMPO_ACIONAMENTO_DO_RELE);
 		if(tempoAcionamentoRele == null)
 			tempoAcionamentoRele = 3;

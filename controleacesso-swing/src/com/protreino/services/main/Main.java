@@ -105,6 +105,7 @@ import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.usecase.SyncTemplatesInTopDataDevices;
+import com.protreino.services.utils.AlmTCP;
 import com.protreino.services.utils.BroadcastServer;
 import com.protreino.services.utils.HikivisionTcpServer;
 import com.protreino.services.utils.HttpConnection;
@@ -180,6 +181,7 @@ public class Main {
     public static ReleaseReasonDialog releaseReasonDialog;
     public static BroadcastServer broadcastServer;
     public static TcpServer tcpServer;
+    public static AlmTCP almTCP;
     public static HikivisionTcpServer hikivisionTcpServer;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
     public static SimpleDateFormat sdfWithoutTIme = new SimpleDateFormat("dd/MM/yyyy");
@@ -314,6 +316,9 @@ public class Main {
                     	tcpServer = new TcpServer();                    	
                     }
                     hikivisionTcpServer = new HikivisionTcpServer();
+                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableAlmitecTCPServer"))) {
+                    	almTCP = new AlmTCP();                    	
+                    }
                     mainScreen = new MainScreen();
                     splash.dispose();
                     decideSeMostraTelaPrincipal();

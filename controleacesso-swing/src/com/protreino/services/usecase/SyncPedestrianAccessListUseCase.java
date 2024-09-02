@@ -591,12 +591,15 @@ public class SyncPedestrianAccessListUseCase {
                 System.out.println(sdf.format(new Date()) + "  BUSCANDO FOTOS: " + ids.size());
                 
                 final Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
+                final Integer targetWidth = Utils.getPreferenceAsInteger("imageTargetWidthRequestServer");
+                final Integer targetHeight = Utils.getPreferenceAsInteger("imageTargetHeightRequestServer");
                 final boolean resize = Utils.getPreferenceAsBoolean("shouldMakeImageResize");
                 
                 ids.forEach(id -> {
                 	final String idsParameter = id + ";";
                 	
-                    List<PedestrianAccessTO> athleteAccessTOList = smartAcessoFotoServiceClient.buscaFotoDePedestres(idsParameter, imageSize, resize);
+                    List<PedestrianAccessTO> athleteAccessTOList = smartAcessoFotoServiceClient
+                    		.buscaFotoDePedestres(idsParameter, imageSize, resize, targetWidth, targetHeight);
 
                     if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
                         for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
