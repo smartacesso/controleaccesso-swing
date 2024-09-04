@@ -62,6 +62,7 @@ import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.usecase.HikivisionUseCases;
@@ -675,7 +676,9 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-		if(Boolean.FALSE.equals(Main.loggedUser.getHabilitaPedestre())) {
+		if(Main.internoLoggedUser.getPerfilAcesso().equals(PerfilAcesso.PORTEIRO)) {
+			JOptionPane.showMessageDialog(null,"Usuario não possui acesso");
+			//dispose();
 			return;
 		}
 		PedestrianAccessEntity pedestre = p;
