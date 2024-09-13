@@ -114,9 +114,7 @@ public class ReleaseAccessUseCase {
                 if (selectedDevice != null) {
                     final Boolean exigeSenha = Utils.getPreferenceAsBoolean("releaseAccessRequiresPassword");
                     if (Boolean.TRUE.equals(exigeSenha)) {
-                        AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-                                "Digite a senha do usuário logado \npara liberar o acesso",
-                                "Aguarde, verificando senha...");
+                        AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
                         Boolean retornoAuthentication = null;
                         try {
                             retornoAuthentication = autenticationDialog.authenticate();

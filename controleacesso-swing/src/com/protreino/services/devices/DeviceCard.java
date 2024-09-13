@@ -100,6 +100,9 @@ public class DeviceCard extends JPanel {
 	
 	private LogPedestrianAccessEntity logAccess;
 	
+	
+	JMenuItem configMenuItem;
+	
 	public DeviceCard(Device device){
 		this.instance = this;
 		this.device = device;
@@ -321,11 +324,11 @@ public class DeviceCard extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				
+				System.out.println("teste");
+				
 				Boolean exigeSenha = Utils.getPreferenceAsBoolean("releaseAccessRequiresPassword");
 				if (exigeSenha) {
-					AutenticationDialog autenticationDialog = new AutenticationDialog(null, 
-							"Digite a senha do usuário logado \npara liberar o acesso", 
-							"Aguarde, verificando senha...");
+					AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
 					Boolean retornoAuthentication = null;
 					try {
 						retornoAuthentication = autenticationDialog.authenticate();
@@ -340,7 +343,7 @@ public class DeviceCard extends JPanel {
 					if (retornoAuthentication == null)
 						return;
 					if (!retornoAuthentication) {
-						JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha inválida",
+						JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
 								"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
@@ -606,8 +609,7 @@ public class DeviceCard extends JPanel {
 		
 		Boolean retornoAuthentication = false;
 		try {
-			AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-					"Digite a senha do usuário logado", "Aguarde, verificando a senha informada...");
+			AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
 			retornoAuthentication = autenticationDialog.authenticate();
 		if (retornoAuthentication == null)
 			return;
@@ -615,6 +617,7 @@ public class DeviceCard extends JPanel {
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}
+		
 		
 		if (retornoAuthentication) {
 		
@@ -881,7 +884,7 @@ public class DeviceCard extends JPanel {
 			dialog.setVisible(true);
 		
 		} else {
-			JOptionPane.showMessageDialog(null, "Não foi possível validar a senha, ou senha invÃ¡lida",
+			JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
 					"Erro na validaÃ§Ã£o", JOptionPane.PLAIN_MESSAGE);
 		}
 	}

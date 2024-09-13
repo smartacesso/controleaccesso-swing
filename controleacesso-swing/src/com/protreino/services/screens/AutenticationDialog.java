@@ -35,6 +35,7 @@ import javax.swing.border.LineBorder;
 
 import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.UserEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.utils.EncryptionUtils;
@@ -320,20 +321,24 @@ public class AutenticationDialog extends JDialog {
 			SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
 			    @Override
 			    public Boolean doInBackground() {
-			    	try {			    		
+			    	try {			  
 			    		String senhaEncriptado = EncryptionUtils.encrypt(senha);
-			    		UserEntity user = HibernateAccessDataFacade.buscaUsuarioPeloLogin(Main.loggedUser.getLoginName(), senhaEncriptado);
+			    		UserEntity user = HibernateAccessDataFacade.buscaUsuarioPeloLogin(loginField.getText(), senhaEncriptado);
 
 			    	//	fazer o enable se não achar motivo para sennha
 			    		long inicioTimer = new Date().getTime();
 			    	
-			    		if(Main.loggedUser.getLoginName().equals("admin") && senha.equals("123456")) {
-			    			return true;
-			    		}
+	//		    		if(Main.loggedUser.getLoginName().equals("admin") && senha.equals("123456")) {
+	//		    			return true;
+	//		    		}
 			    		
 			    		long fimTimer =  new Date().getTime();
 			    		System.out.println("tempo com shortcut: "+ (fimTimer - inicioTimer));
 			    		if(user != null) {
+			    			System.out.println("Perfil : " + user.getPerfilAcesso());
+			    			if(!user.getPerfilAcesso().equals(PerfilAcesso.ADMINISTRADOR)) {
+			    				return false;
+			    			}
 			    			return true;			    			
 			    		}
 			    	

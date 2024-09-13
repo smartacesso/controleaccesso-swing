@@ -399,8 +399,7 @@ public class MainScreen extends JFrame {
 
 	public void doLogout(JDialog dialog) {
 		try {
-			AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-					"Digite a senha do usuario logado \npara confirmar a saida", "Aguarde, realizando logout...");
+			AutenticationDialog autenticationDialog = new AutenticationDialog(null,true, true, true);
 			Boolean retornoAuthentication = autenticationDialog.authenticate();
 			if (retornoAuthentication == null)
 				return;
@@ -501,8 +500,8 @@ public class MainScreen extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+//						AutenticationDialog autenticationDialog = new AutenticationDialog(null,"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true, true,true);
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
 						if (retornoAuthentication == null) {
 							return;
@@ -515,7 +514,7 @@ public class MainScreen extends JFrame {
 							buildUI();
 							tabbedPane.setSelectedIndex(index);
 						} else {
-							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
@@ -532,8 +531,9 @@ public class MainScreen extends JFrame {
 			hikivisionManualSyncMenuItem.addActionListener(
 				e -> {
 					try {
-						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+	//					AutenticationDialog autenticationDialog = new AutenticationDialog(null,
+//								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true, true, true);
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
 						if (retornoAuthentication == null) {
 							return;
@@ -544,7 +544,7 @@ public class MainScreen extends JFrame {
 							buildUI();
 							tabbedPane.setSelectedIndex(index);
 						} else {
-							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
@@ -563,16 +563,16 @@ public class MainScreen extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
-						
+//						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
+//								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
 						Boolean retornoAuthentication = autenticationDialog.authenticate();
 						if (retornoAuthentication == null)
 							return;
 						if (retornoAuthentication) {
 							syncUsers();
 						} else {
-							JOptionPane.showMessageDialog(null, "Nao foi possivel validar a senha, ou senha invalida",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {

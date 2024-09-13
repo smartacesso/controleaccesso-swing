@@ -1783,7 +1783,7 @@ public class Utils {
 	
 
 	public static void main(String[] args) {
-		final String numberStr = "00279181436731";
+		final String numberStr = "0005637387";
 		
 		Long response = convert(Long.parseLong(numberStr));
 		System.out.println(response);
