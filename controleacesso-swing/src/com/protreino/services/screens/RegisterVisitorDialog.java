@@ -2105,7 +2105,11 @@ public class RegisterVisitorDialog extends BaseDialog {
         }
 
     	try {
-    		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+            new Thread() {
+                public void run() {
+                	hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+                }
+            }.start();
     		
     	} catch (InvalidPhotoException ife) {
 			criarDialogoFotoInvalida();
