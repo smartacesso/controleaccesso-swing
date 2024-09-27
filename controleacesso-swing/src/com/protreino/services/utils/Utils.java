@@ -33,6 +33,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -1782,11 +1783,24 @@ public class Utils {
     }
 	
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException, SocketException {
 		final String numberStr = "0005637387";
 		
 		Long response = convert(Long.parseLong(numberStr));
 		System.out.println(response);
+		
+        String ip = "192.168.0.100"; // IP da placa
+        int portaTCP1 = 2000;        // Porta para serial 1
+        int portaTCP2 = 2001;        // Porta para serial 2
+        int udpPorta = 2000;         // Porta para UDP (acionamento)
+
+        // Instanciar o equipamento
+        AlmTCP equipamento = new AlmTCP(ip, portaTCP1, portaTCP2, udpPorta);
+
+        // Testar acionamentos (substitua por eventos reais)
+        equipamento.recolherComanda();  // Acionar RELE 1
+        Thread.sleep(2000);             // Espera 2 segundos
+        equipamento.devolverComanda();  // Acionar RELE 2
 	}
 	
 	@SuppressWarnings("unused")

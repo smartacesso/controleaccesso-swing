@@ -146,7 +146,7 @@ public class ProcessAccessRequestUseCase {
 			matchedPedestrianAccess.setOrigemCatraca(origem);
 
 			if ("INATIVO".equals(matchedPedestrianAccess.getStatus())) {
-				Utils.createNotification(" Acesso Negado, usuário: " + userName + "Inativo", NotificationType.BAD, foto);
+				Utils.createNotification(" Acesso Negado, usuario: " + userName + " Inativo", NotificationType.BAD, foto);
 				motivo = "Usuário inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedPedestrianAccess };
 			}
