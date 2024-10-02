@@ -817,34 +817,40 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			
 		
 		if(this.mensagens != null) {
-			for(PedestrianMessagesEntity m : this.mensagens)
+			for(PedestrianMessagesEntity m : this.mensagens) {
 				stringBuilder.append(m.getId()).append(";");
+			}
 		}
 		
 		if(this.templates != null) {
-			for(TemplateEntity t : this.templates)
+			for(TemplateEntity t : this.templates) {
 				stringBuilder.append(Base64.encodeBase64String(t.getTemplate())).append(";");
+			}
 		}
 		
 		if(this.equipamentos != null) {
-			for(PedestrianEquipamentEntity e : this.equipamentos)
+			for(PedestrianEquipamentEntity e : this.equipamentos) {
 				stringBuilder.append(e.getId()).append(";");
+			}
 		}
 		
 		if(this.documentos != null) {
-			for(DocumentoEntity doc : this.documentos)
+			for(DocumentoEntity doc : this.documentos) {
 				stringBuilder.append(doc.getId()).append(";");
+			}
 		}
 		
 		if(this.pedestreRegra != null) {
-			for(PedestreRegraEntity pr : this.pedestreRegra)
+			for(PedestreRegraEntity pr : this.pedestreRegra) {
 				stringBuilder.append(pr.getId()).append(";");
+			}
 		}
 		
 		if(this.horariosPermitidos != null) {
 			for(AllowedTimeEntity a : this.horariosPermitidos) {
-				if(a.getInicio() != null)
+				if(a.getInicio() != null) {
 					stringBuilder.append(a.getInicio()).append(";");
+				}
 			}
 		}
 		
@@ -913,16 +919,19 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	    
 		if (athleteAccessTO.getHorariosPermitidos() != null
 				&& !athleteAccessTO.getHorariosPermitidos().isEmpty()) {
-			if (horariosPermitidos != null && !horariosPermitidos.isEmpty())
+			if (horariosPermitidos != null && !horariosPermitidos.isEmpty()) {
 				horariosPermitidos.clear();
-			else
+			} else {
 				horariosPermitidos = new ArrayList<AllowedTimeEntity>();
+			}
+
 			for (AllowedTimeEntity horario : athleteAccessTO.getHorariosPermitidos()){
 				horariosPermitidos.add(new AllowedTimeEntity(this, horario.getInicio(), horario.getFim(), horario.getDiasPermitidos()));
 			}
 		} else {
-			if (horariosPermitidos != null)
+			if (horariosPermitidos != null) {
 				horariosPermitidos.clear();
+			}
 		}
 		
 		if (athleteAccessTO.getTemplates() != null
@@ -953,28 +962,25 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 							System.out.println("Digitais iguais");
 					}
 				}
-			}else{
+			} else {
 				alterar = true;
 			}
 			
 			if(alterar) {
-				if(Main.desenvolvimento)
-					System.out.println("Altera dados!");
-				if (templates != null && !templates.isEmpty())
+				if (templates != null && !templates.isEmpty()) {
 					templates.clear();
-				else
+				
+				} else {
 					templates = new ArrayList<TemplateEntity>();
-				for (String s : athleteAccessTO.getTemplates()){
+				}
+				
+				for (String s : athleteAccessTO.getTemplates()) {
 					templates.add(new TemplateEntity(this, Base64.decodeBase64(s), athleteAccessTO.getDataAlteracao()));
 				}
 				
 				novasDigitais = true;
 			}
 		} else {
-			if(Main.desenvolvimento) {
-//				System.out.println("Sem digitais no servidor!");
-			}
-
 			if (templates != null) {
 				templates.clear();
 			}
@@ -985,8 +991,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			if (equipamentos == null || equipamentos.isEmpty()) {
 				equipamentos = new ArrayList<>();
 				
-				for(PedestrianEquipamentEntity newEquip : athleteAccessTO.getEquipamentos())
+				for(PedestrianEquipamentEntity newEquip : athleteAccessTO.getEquipamentos()) {
 					equipamentos.add(new PedestrianEquipamentEntity(this, newEquip));
+				}
 			
 			} else {
 				List<PedestrianEquipamentEntity> equipamentosAux = new ArrayList<>();
@@ -1001,8 +1008,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 						}
 					}
 					
-					if(!equipExistente)
+					if(!equipExistente) {
 						equipamentosAux.add(new PedestrianEquipamentEntity(this, newEquip));
+					}
 				}
 				equipamentos = equipamentosAux;
 			}
@@ -1035,8 +1043,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 						}
 					}
 					
-					if(!msgExistente)
+					if(!msgExistente) {
 						mensagensAux.add(new PedestrianMessagesEntity(this, newMensagem));
+					}
 				}
 				
 				mensagens = mensagensAux;
@@ -1054,8 +1063,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			if(documentos == null || documentos.isEmpty()) {
 				documentos = new ArrayList<>();
 				
-				for(DocumentoTo newDoc : athleteAccessTO.getDocumentos())
+				for(DocumentoTo newDoc : athleteAccessTO.getDocumentos()) {
 					documentos.add(new DocumentoEntity(this, newDoc));
+				}
 			
 			} else {
 				List<DocumentoEntity> documentoAux = new ArrayList<>();
@@ -1071,15 +1081,17 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 						}
 					}
 					
-					if(!docJaExiste)
+					if(!docJaExiste) {
 						documentoAux.add(new DocumentoEntity(this, newDoc));
+					}
 				}
 				documentos = documentoAux;
 			}
 			
 		} else {
-			if (documentos != null)
+			if (documentos != null) {
 				documentos.clear();
+			}
 		}
 		
 		//pedestreRegras
@@ -1117,8 +1129,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			}
 		
 		} else {
-			if(pedestreRegra != null)
+			if(pedestreRegra != null) {
 				pedestreRegra.clear();
+			}
 		}
 		
 		setDataAlteracao(new Date());

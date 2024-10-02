@@ -23,7 +23,7 @@ public class AlmTCP {
         conectarTCP();  // Inicia a conexão TCP automaticamente
     }
 
-    
+    /*
     public AlmTCP() throws SocketException {
     	
     	// Inicializa a porta UDP e IP da placa
@@ -34,7 +34,7 @@ public class AlmTCP {
     	this.udpPorta = Integer.valueOf(Utils.getPreference("tcpServerAlmitecUdpSocketPort"));
     	this.udpSocket = new DatagramSocket();
     	conectarTCP();
-    }	
+    }*/	
     
     // Método para conectar ao equipamento via TCP
     private void conectarTCP() {
@@ -51,7 +51,8 @@ public class AlmTCP {
                 new Thread(() -> receberDadosTCP(tcp1, "Leitor 1")).start();
                 // Receber dados de TCP2 (se precisar)
                 new Thread(() -> receberDadosTCP(tcp2, "Leitor 2")).start();
-
+                
+                recolherComanda();
             } catch (IOException e) {
                 System.err.println("Erro na conexão TCP: " + e.getMessage());
             }
@@ -119,5 +120,4 @@ public class AlmTCP {
             System.err.println("Erro ao acionar RELE 2: " + e.getMessage());
         }
     }
-
 }

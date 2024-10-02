@@ -1243,8 +1243,8 @@ public class TopDataDevice extends Device {
 
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
-											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
-											: formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
+											? formatMessage(sair + espacoSair + "->" + ";" /*+ allowedUserName*/)
+											: formatMessage("<-" + espacoSair + sair + ";" /*+ allowedUserName*/);
 				}
 				
 				return ret;
@@ -1282,8 +1282,8 @@ public class TopDataDevice extends Device {
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
-											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
-											: formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
+											? formatMessage(sair + espacoSair + "->" + ";" /*+ allowedUserName*/)
+											: formatMessage("<-" + espacoSair + sair + ";" /*+ allowedUserName*/);
 				}
 			}
 			

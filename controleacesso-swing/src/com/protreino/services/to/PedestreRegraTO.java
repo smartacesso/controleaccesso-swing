@@ -12,6 +12,7 @@ public class PedestreRegraTO {
 	private Long diasValidadeCredito;
 	private Date dataInicioPeriodo;
 	private Date dataFimPeriodo;
+	private Date dataInicioEscala3_3;
 	
 	public Long getId() {
 		return id;
@@ -60,5 +61,11 @@ public class PedestreRegraTO {
 	}
 	public void setDataFimPeriodo(Date dataFimPeriodo) {
 		this.dataFimPeriodo = dataFimPeriodo;
+	}
+	public Date getDataInicioEscala3_3() {
+		return dataInicioEscala3_3;
+	}
+	public void setDataInicioEscala3_3(Date dataInicioEscala3_3) {
+		this.dataInicioEscala3_3 = dataInicioEscala3_3;
 	}
 }

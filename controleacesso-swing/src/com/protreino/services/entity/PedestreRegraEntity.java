@@ -74,6 +74,10 @@ public class PedestreRegraEntity extends BaseEntity {
 	@Column(name="REMOVIDO_NO_DESKTOP", nullable=true, length=30)
 	private Boolean removidoNoDesktop = false;
 	
+	@Temporal(TemporalType.DATE)
+	@Column(name="DATA_INICIO_ESCALA_3_3", nullable=true, length=11)
+	private Date dataInicioEscala3_3;
+	
 	public PedestreRegraEntity() {}
 	
 	public PedestreRegraEntity(PedestrianAccessEntity pedestrianAccess, PedestreRegraTO pr, RegraEntity regra) {
@@ -86,6 +90,7 @@ public class PedestreRegraEntity extends BaseEntity {
 		this.diasValidadeCredito = pr.getDiasValidadeCredito();
 		this.dataInicioPeriodo = pr.getDataInicioPeriodo();
 		this.dataFimPeriodo = pr.getDataFimPeriodo();
+		this.dataInicioEscala3_3 = pr.getDataInicioEscala3_3();
 	}
 	
 	public boolean temCreditos() {
@@ -185,5 +190,13 @@ public class PedestreRegraEntity extends BaseEntity {
 	}
 	public void setRemovidoNoDesktop(Boolean removidoNoDesktop) {
 		this.removidoNoDesktop = removidoNoDesktop;
+	}
+
+	public Date getDataInicioEscala3_3() {
+		return dataInicioEscala3_3;
+	}
+
+	public void setDataInicioEscala3_3(Date dataInicioEscala3_3) {
+		this.dataInicioEscala3_3 = dataInicioEscala3_3;
 	}
 }

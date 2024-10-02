@@ -317,7 +317,7 @@ public class Main {
                     }
                     hikivisionTcpServer = new HikivisionTcpServer();
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableAlmitecTCPServer"))) {
-                    	almTCP = new AlmTCP();                    	
+                    	//almTCP = new AlmTCP();                    	
                     }
                     mainScreen = new MainScreen();
                     splash.dispose();

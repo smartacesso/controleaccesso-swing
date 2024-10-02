@@ -1789,7 +1789,7 @@ public class Utils {
 		Long response = convert(Long.parseLong(numberStr));
 		System.out.println(response);
 		
-        String ip = "192.168.0.100"; // IP da placa
+        String ip = "192.168.15.50"; // IP da placa
         int portaTCP1 = 2000;        // Porta para serial 1
         int portaTCP2 = 2001;        // Porta para serial 2
         int udpPorta = 2000;         // Porta para UDP (acionamento)
@@ -1798,9 +1798,9 @@ public class Utils {
         AlmTCP equipamento = new AlmTCP(ip, portaTCP1, portaTCP2, udpPorta);
 
         // Testar acionamentos (substitua por eventos reais)
-        equipamento.recolherComanda();  // Acionar RELE 1
-        Thread.sleep(2000);             // Espera 2 segundos
-        equipamento.devolverComanda();  // Acionar RELE 2
+       // equipamento.recolherComanda();  // Acionar RELE 1
+        //Thread.sleep(2000);             // Espera 2 segundos
+    //    equipamento.devolverComanda();  // Acionar RELE 2
 	}
 	
 	@SuppressWarnings("unused")

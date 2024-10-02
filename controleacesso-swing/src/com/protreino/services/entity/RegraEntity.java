@@ -22,7 +22,6 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.Type;
 
 import com.protreino.services.enumeration.TipoEscala;
