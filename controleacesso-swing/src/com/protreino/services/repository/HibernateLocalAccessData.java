@@ -35,6 +35,7 @@ import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
+import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
 
@@ -42,6 +43,8 @@ public class HibernateLocalAccessData {
 
 	private static SessionFactory sessionFactory;
 
+	
+	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	static {
@@ -1290,7 +1293,45 @@ public class HibernateLocalAccessData {
 		}
 
 	}
+	
+	@SuppressWarnings("rawtypes")
+	public static void buscaVisitantesComFoto() {
+	    System.out.println("Buscando visitantes com foto");
+	    Session session = getSessionFactory().getCurrentSession();
+	    if (session.getTransaction() == null || !session.getTransaction().isActive())
+	        session.beginTransaction();
 
+	    try {
+	        // Consulta para selecionar os registros conforme os critérios do where
+	    	Query<PedestrianAccessEntity> q = session.createQuery(
+	    		    "from PedestrianAccessEntity p " +
+	    		    "where p.tipo = 'VISITANTE' " +
+	    		    "and p.cardNumber != null " +
+	    		    "and p.cardNumber != '' " +
+	    		    "and p.dataCadastroFotoNaHikivision is not null", 
+	    		    PedestrianAccessEntity.class
+	    		);
+
+
+	        // Executa a consulta e obtém os resultados
+	        List<PedestrianAccessEntity> visitantes = q.getResultList();
+
+	        // Processa os resultados (por exemplo, exibindo no console)
+	        for (PedestrianAccessEntity visitante : visitantes) {
+	        	HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	        	hikivisionUseCases.removerUsuarioFromDevices(visitante);
+	        }
+
+	        session.getTransaction().commit();
+	    } catch (Exception e) {
+	        session.getTransaction().rollback();
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+	}
+
+	
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeUltimoSentido() {
 		System.out.println(" chegou no apaga logs do do pedestre ");

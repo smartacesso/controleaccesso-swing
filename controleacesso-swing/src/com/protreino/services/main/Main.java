@@ -738,6 +738,7 @@ public class Main {
     public static void tasksOfDay(boolean timerCall) {
         if (timerCall) {
             limpaCartoesVisitantes();
+            HibernateLocalAccessData.buscaVisitantesComFoto();
         }
         
         syncTemplatesInTopDataDevices.execute();
