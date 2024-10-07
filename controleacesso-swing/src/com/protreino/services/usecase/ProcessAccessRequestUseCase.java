@@ -246,11 +246,15 @@ public class ProcessAccessRequestUseCase {
 							&& !isPermitidoPedestreRegra(matchedPedestrianAccess)
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
-				}else if(matchedPedestrianAccess.TemTipoEscala()) {			
+				}else if(matchedPedestrianAccess.TemTipoEscala3x3()) {	
+					//Data do acesso
 					Calendar dataAcesso = Calendar.getInstance();
+					
 					// Data base de início do turno
 					Calendar dataInicioTurno = Calendar.getInstance();
-					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Exemplo: 07/10/2024 às 07:00
+					Date DataInicioEscala3_3 = matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3();
+					
+					dataInicioTurno.setTime(DataInicioEscala3_3);  // Exemplo: 07/10/2024 às 07:00
 
 					// Calcular a diferença em milissegundos entre agora e o início do turno
 					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();

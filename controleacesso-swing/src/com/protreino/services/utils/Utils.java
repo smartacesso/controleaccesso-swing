@@ -82,6 +82,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.protreino.services.constants.Configurations;
+import com.protreino.services.devices.AlmitecDevice;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.AllowedTimeEntity;
 import com.protreino.services.entity.ConfigurationEntity;
@@ -1795,7 +1796,7 @@ public class Utils {
         int udpPorta = 2000;         // Porta para UDP (acionamento)
 
         // Instanciar o equipamento
-        AlmTCP equipamento = new AlmTCP(ip, portaTCP1, portaTCP2, udpPorta);
+//        AlmitecDevice equipamento = new AlmitecDevice(ip, portaTCP1, portaTCP2, udpPorta);
 
         // Testar acionamentos (substitua por eventos reais)
        // equipamento.recolherComanda();  // Acionar RELE 1

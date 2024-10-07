@@ -3,6 +3,7 @@ package com.protreino.services.enumeration;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.protreino.services.devices.AlmitecDevice;
 import com.protreino.services.devices.ComputerIdDevice;
 import com.protreino.services.devices.ControlIDUHFDevice;
 import com.protreino.services.devices.ControlIdDevice;
@@ -40,7 +41,8 @@ public enum Manufacturer {
 	SYSTEMTEC,
 	SERVER,
 	LC_DEVICE,
-	FACIAL;
+	FACIAL,
+	ALMITEC;
 	
 	public String toString(){
 		if (this.equals(NENHUM))
@@ -83,6 +85,8 @@ public enum Manufacturer {
 			return "Reconhecimento facial";
 		if(this.equals(LC_DEVICE))
 			return "Leitor LC";
+		if(this.equals(ALMITEC))
+			return "Catraca Almitec";
 		return "";
 	}
 	
@@ -125,6 +129,8 @@ public enum Manufacturer {
 			return Manufacturer.FACIAL;
 		if("Leitor LC".equals(string))
 			return Manufacturer.LC_DEVICE;
+		if("Catraca Almitec".equals(string))
+			return Manufacturer.ALMITEC;
 		return null;
 	}
 	
@@ -191,6 +197,8 @@ public enum Manufacturer {
 			return "facial.png";
 		if(this.equals(LC_DEVICE))
 			return "leitor_lc.png";
+		if(this.equals(ALMITEC))
+			return "catraca_almitec.png";
 		return "";
 	}
 	
@@ -236,6 +244,8 @@ public enum Manufacturer {
 			return new FacialDevice(deviceEntity);
 		if(this.equals(LC_DEVICE))
 			return new LcDevice(deviceEntity);
+		if(this.equals(ALMITEC))
+			return new AlmitecDevice(deviceEntity);
 		return null;
 	}
 	
@@ -278,6 +288,8 @@ public enum Manufacturer {
 			return new FacialDevice(identifier);
 		if(this.equals(LC_DEVICE))
 			return new LcDevice(identifier);
+		if(this.equals(ALMITEC))
+			return new AlmitecDevice(identifier);
 		return null;
 	}
 	
@@ -335,6 +347,11 @@ public enum Manufacturer {
 		
 		} else if(this.equals(LC_DEVICE)) {
 			fields.add(new FieldTO("Número do leitor", FieldType.TEXT, "1"));
+		}else if(this.equals(ALMITEC)) {
+			fields.add(new FieldTO("Numero IP do servidor", FieldType.TEXT, "192.168.0.190"));
+			fields.add(new FieldTO("Porta do servidor", FieldType.TEXT, "2000"));
+			fields.add(new FieldTO("Porta do servidor", FieldType.TEXT, "2001"));
+			fields.add(new FieldTO("Porta do servidor", FieldType.TEXT, "2000"));
 		}
 		return fields;
 	}

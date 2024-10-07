@@ -1224,7 +1224,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	}
 	
 	
-	public Boolean TemTipoEscala() {
+	public Boolean TemTipoEscala3x3() {
 		if (Objects.isNull(pedestreRegra)) {
 			return false;
 		}
