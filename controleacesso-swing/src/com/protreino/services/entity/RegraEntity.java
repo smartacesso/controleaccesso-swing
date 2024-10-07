@@ -94,7 +94,7 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="TIPO_ESCALA", nullable=true, length=100)
 	private TipoEscala tipoEscala;
 	
-	@Temporal(TemporalType.TIME)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="HORARIO_INICIO_TURNO", nullable=true, length=11)
 	private Date horarioInicioTurno;
 	

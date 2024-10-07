@@ -260,7 +260,33 @@ public class ProcessAccessRequestUseCase {
 					periodoPermitidoFim.setTime(dataInicial);
 					periodoPermitidoFim.add(tipoAdicao, Integer.parseInt(escala[0]));
 
-					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
+					System.out.println("Periodo Permitido Início: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
+					System.out.println("Periodo Permitido Fim: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoFim.getTime()));
+					System.out.println("Data Acesso: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dataAcesso.getTime()));
+
+//					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
+					
+					Calendar dataInicioTurno = Calendar.getInstance();
+					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Data base do início do turno, ex.: 04/10/2024 às 10:00
+
+					// Calcular a diferença em milissegundos entre agora e o início do turno
+					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
+					long diffHours = diffMillis / (1000 * 60 * 60);  // Convertendo para horas
+
+					// Cada ciclo tem 48 horas (12 horas de trabalho + 36 horas de folga)
+					long cicloAtual = diffHours % 48;
+
+					// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo período de trabalho)
+					if ((cicloAtual >= 0 && cicloAtual < 12) || (cicloAtual >= 24 && cicloAtual < 36)) {
+					    // Está no período de trabalho
+					    permitido = true;
+					} else {
+					    // Está no período de folga
+					    permitido = false;
+					}
+
+//					permitido = !dataAcesso.before(periodoPermitidoIni) && !dataAcesso.after(periodoPermitidoFim);
+
 
 				} else if (acessoRestrito) {
 					HashMap<String, Object> args = new HashMap<String, Object>();
@@ -603,22 +629,38 @@ public class ProcessAccessRequestUseCase {
 		Calendar h = Calendar.getInstance();
 		h.setTime(pedestre.getInicioTurno());
 
+
 		c.set(Calendar.HOUR_OF_DAY, h.get(Calendar.HOUR_OF_DAY));
 		c.set(Calendar.MINUTE, h.get(Calendar.MINUTE));
 		c.set(Calendar.SECOND, 0);
 
+//		if (ultimoAcesso != null) {
+//			Calendar ajuste = Calendar.getInstance();
+//			ajuste.setTime(c.getTime());
+//			ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));
+//
+//			Calendar agora = Calendar.getInstance();
+//			if (agora.after(ajuste)) {
+//				c.add(tipoAdicao, Integer.parseInt(escala[1]));
+//			} else {
+//				c.add(tipoAdicao, Integer.parseInt(escala[0]) * -1);
+//			}
+//		}
+		
 		if (ultimoAcesso != null) {
-			Calendar ajuste = Calendar.getInstance();
-			ajuste.setTime(c.getTime());
-			ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));
+		    Calendar ajuste = Calendar.getInstance();
+		    ajuste.setTime(c.getTime());  // c já contém o início do turno
+		    ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));  // Adiciona 12 horas de trabalho
 
-			Calendar agora = Calendar.getInstance();
-			if (agora.after(ajuste)) {
-				c.add(tipoAdicao, Integer.parseInt(escala[1]));
-			} else {
-				c.add(tipoAdicao, Integer.parseInt(escala[0]) * -1);
-			}
+		    Calendar agora = Calendar.getInstance();
+		    
+		    // Se o acesso for após o fim do turno atual
+		    if (agora.after(ajuste)) {
+		        // Adiciona 36 horas de folga e move para o próximo ciclo de trabalho
+		        c.add(tipoAdicao, Integer.parseInt(escala[1]));  // Adiciona 36 horas de folga
+		    }
 		}
+
 
 		return c.getTime();
 	}
