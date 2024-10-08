@@ -254,9 +254,9 @@ public class ProcessAccessRequestUseCase {
 					Calendar dataInicioTurno = Calendar.getInstance();
 					Date DataInicioEscala3_3 = matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3();
 					
-					dataInicioTurno.setTime(DataInicioEscala3_3);  // Exemplo: 07/10/2024 às 07:00
+					dataInicioTurno.setTime(DataInicioEscala3_3);  // Exemplo: 07/10/2024
 
-					// Calcular a diferença em milissegundos entre agora e o início do turno
+					//diferença em milissegundos entre agora e o início do turno
 					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
 					long diffDays = diffMillis / (1000 * 60 * 60 * 24);  // Convertendo para dias
 

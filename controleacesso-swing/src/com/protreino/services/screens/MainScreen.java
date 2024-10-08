@@ -676,27 +676,35 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-		if(Main.internoLoggedUser.getPerfilAcesso().equals(PerfilAcesso.PORTEIRO)) {
-			JOptionPane.showMessageDialog(null,"Usuario não possui acesso");
-			//dispose();
-			return;
-		}
-		PedestrianAccessEntity pedestre = p;
-		if(pedestre == null) {
-			pedestre = new PedestrianAccessEntity();
-			pedestre.setTipo("PEDESTRE");
-		}
-		if(!RegisterVisitorDialog.abertoPeloAtalho) {
-			RegisterVisitorDialog.abertoPeloAtalho = true;
-			cadastroPedestre = new RegisterVisitorDialog(pedestre);
-			SwingUtilities.invokeLater( 
-			    new Runnable() { 
-			        @Override public void run() {
-			        	cadastroPedestre.setVisible(true);
-			        }
-			    }
-			);
-		}
+	    // Verifica se o usuário tem um perfil de acesso
+	    if(Main.internoLoggedUser.getPerfilAcesso() != null) {
+	        // Se o perfil for PORTEIRO, exibe uma mensagem e retorna sem abrir o cadastro
+	        if(Main.internoLoggedUser.getPerfilAcesso().equals(PerfilAcesso.PORTEIRO)) {
+	            JOptionPane.showMessageDialog(null, "Usuário não possui acesso");
+	            return;
+	        }
+	    }
+
+	    // Caso o perfil seja diferente de PORTEIRO, continua para abrir o cadastro
+	    PedestrianAccessEntity pedestre = p;
+	    if (pedestre == null) {
+	        pedestre = new PedestrianAccessEntity();
+	        pedestre.setTipo("PEDESTRE");
+	    }
+
+	    // Verifica se o cadastro já foi aberto pelo atalho
+	    if (!RegisterVisitorDialog.abertoPeloAtalho) {
+	        RegisterVisitorDialog.abertoPeloAtalho = true;
+	        cadastroPedestre = new RegisterVisitorDialog(pedestre);
+	        
+	        // Mostra a tela do cadastro em uma thread separada
+	        SwingUtilities.invokeLater(new Runnable() { 
+	            @Override
+	            public void run() {
+	                cadastroPedestre.setVisible(true);
+	            }
+	        });
+	    }
 	}
 	
 	public void abreCadastroCartoComanda(CartaoComandaEntity c) {
