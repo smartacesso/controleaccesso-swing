@@ -17,13 +17,17 @@ import com.protreino.services.to.ConfigurationGroupTO;
 import com.topdata.easyInner.entity.Inner;
 
 public class AlmitecDevice extends Device{
-    private String equipamentoIP;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static  String equipamentoIP;
     private int portaTCP1;
     private int portaTCP2;
-    private int udpPorta;
+    private static int udpPorta;
     private Socket tcp1;
     private Socket tcp2;
-    private DatagramSocket udpSocket;
+    private static DatagramSocket udpSocket;
     private boolean conectado = false;
 
     // Construtor teste
@@ -58,8 +62,8 @@ public class AlmitecDevice extends Device{
 		String partes[] = identifier.split(";");
 		this.equipamentoIP = partes[0];
 		this.portaTCP1 = Integer.parseInt(partes[1]);
-		this.portaTCP2 = Integer.parseInt(partes[2]);
-		this.udpPorta = Integer.parseInt(partes[3]);
+//		this.portaTCP2 = Integer.parseInt(partes[2]);
+		this.udpPorta = Integer.parseInt(partes[2]);
 		
 
 
@@ -97,7 +101,7 @@ public class AlmitecDevice extends Device{
 	        while (tentativaConexao) {
 	            try {
 	                tcp1 = new Socket(equipamentoIP, portaTCP1);
-	                tcp2 = new Socket(equipamentoIP, portaTCP2);
+//	                tcp2 = new Socket(equipamentoIP, portaTCP2);
 
 	                conectado = true;
 	                System.out.println("Conectado ao equipamento via TCP.");
@@ -106,7 +110,7 @@ public class AlmitecDevice extends Device{
 	                leituraAtiva = true;
 
 	                new Thread(() -> receberDadosTCP(tcp1, "Leitor 1")).start();
-	                new Thread(() -> receberDadosTCP(tcp2, "Leitor 2")).start();
+//	                new Thread(() -> receberDadosTCP(tcp2, "Leitor 2")).start();
 
 	                setStatus(DeviceStatus.CONNECTED);
 	                break; // Conexão bem-sucedida
@@ -140,10 +144,10 @@ public class AlmitecDevice extends Device{
 	            tcp1.close();
 	            System.out.println("Conexão TCP1 fechada.");
 	        }
-	        if (tcp2 != null && !tcp2.isClosed()) {
-	            tcp2.close();
-	            System.out.println("Conexão TCP2 fechada.");
-	        }
+//	        if (tcp2 != null && !tcp2.isClosed()) {
+//	            tcp2.close();
+//	            System.out.println("Conexão TCP2 fechada.");
+//	        }
 
 	        conectado = false;
 	        setStatus(DeviceStatus.DISCONNECTED);
@@ -194,7 +198,7 @@ public class AlmitecDevice extends Device{
 	}
 
     // M�todo para acionar o RELE via UDP
-    public void acionarRele(int rele, int tempoEmDecimosDeSegundo) throws IOException {
+    public static void acionarRele(int rele, int tempoEmDecimosDeSegundo) throws IOException {
         byte[] comando = montarComandoRele(rele, tempoEmDecimosDeSegundo);
         udpSocket = new DatagramSocket();
         InetAddress endereco = InetAddress.getByName(equipamentoIP);
@@ -205,7 +209,7 @@ public class AlmitecDevice extends Device{
     }
 
     // M�todo para montar o comando de acionamento do RELE
-    private byte[] montarComandoRele(int rele, int tempoEmDecimosDeSegundo) {
+    private static byte[] montarComandoRele(int rele, int tempoEmDecimosDeSegundo) {
         byte[] header = {(byte) 0x55, (byte) 0xAA};
         byte[] comando = new byte[4];  // 2 bytes para o header + 2 bytes para comando e tempo
 
@@ -222,7 +226,7 @@ public class AlmitecDevice extends Device{
     }
 
     // M�todo para testar o acionamento do RELE 1 (recolher comanda)
-    public void recolherComanda() {
+    public static void recolherComanda() {
         try {
             acionarRele(1, 3); // Aciona o RELE 1 por 300ms
         } catch (IOException e) {
@@ -231,7 +235,7 @@ public class AlmitecDevice extends Device{
     }
 
     // M�todo para testar o acionamento do RELE 2 (devolver comanda)
-    public void devolverComanda() {
+    public static void devolverComanda() {
         try {
             acionarRele(2, 3); // Aciona o RELE 2 por 300ms
         } catch (IOException e) {

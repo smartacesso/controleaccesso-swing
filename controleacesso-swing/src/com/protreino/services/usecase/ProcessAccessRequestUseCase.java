@@ -2,6 +2,7 @@ package com.protreino.services.usecase;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
@@ -96,7 +97,7 @@ public class ProcessAccessRequestUseCase {
 					matchedPedestrianAccess = trataPedestreQRCode(codigo);
 				} catch (QrcodeVencidoException e) {
 					if (createNotification) {
-						Utils.createNotification("QRCode do usuário expirado.", NotificationType.BAD, foto);
+						Utils.createNotification("QRCode do usuï¿½rio expirado.", NotificationType.BAD, foto);
 					}
 					
 					return new Object[] { VerificationResult.NOT_FOUND, userName, matchedPedestrianAccess };
@@ -115,7 +116,7 @@ public class ProcessAccessRequestUseCase {
 			if (Objects.isNull(matchedPedestrianAccess)) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification) {
-					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD, foto);					
+					Utils.createNotification("Usuï¿½rio de Cï¿½digo " + codigo + " nï¿½o encontrado.", NotificationType.BAD, foto);					
 				}
 
 				return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
@@ -146,7 +147,7 @@ public class ProcessAccessRequestUseCase {
 
 				if (isPedestreNaoPossuiRegras(matchedPedestrianAccess)) {
 					if (createNotification) {
-						Utils.createNotification(userName + " não possui regras.", NotificationType.BAD, foto);
+						Utils.createNotification(userName + " nï¿½o possui regras.", NotificationType.BAD, foto);
 					}
 					return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedPedestrianAccess };
 				}
@@ -156,13 +157,13 @@ public class ProcessAccessRequestUseCase {
 
 			if ("INATIVO".equals(matchedPedestrianAccess.getStatus())) {
 				Utils.createNotification(" Acesso Negado, usuario: " + userName + " Inativo", NotificationType.BAD, foto);
-				motivo = "Usuário inativo.";
+				motivo = "Usuï¿½rio inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedPedestrianAccess };
 			}
 			
 			if(isNaoPermitidoEquipamentoRestrito(equipament, matchedPedestrianAccess.getEquipamentos())) {
 				if (createNotification) {
-					Utils.createNotification(userName + " não permitido nesse equipamento restrito.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " nï¿½o permitido nesse equipamento restrito.", NotificationType.BAD, foto);
 				}
 
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
@@ -183,7 +184,7 @@ public class ProcessAccessRequestUseCase {
 			
 			if (isNaoPermitidoNoEquipamento(equipament, matchedPedestrianAccess.getEquipamentos())) {
 				if (createNotification) {
-					Utils.createNotification(userName + " não permitido nesse equipamento.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " nï¿½o permitido nesse equipamento.", NotificationType.BAD, foto);
 				}
 
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
@@ -251,23 +252,23 @@ public class ProcessAccessRequestUseCase {
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
 				} else if(matchedPedestrianAccess.temTipoEscala3x3()) {
-					// Pegar a data do acesso e subtrair a diferença de dias com a data do inicio da escala
-					// Pegar o resultado e fazer uma divisão por 12 e pegar o resto da divisão
-					// Somar o resto da divisão mais 1 pra indicar qual é o dia que ele esta trabalhando
+					// Pegar a data do acesso e subtrair a diferenï¿½a de dias com a data do inicio da escala
+					// Pegar o resultado e fazer uma divisï¿½o por 12 e pegar o resto da divisï¿½o
+					// Somar o resto da divisï¿½o mais 1 pra indicar qual ï¿½ o dia que ele esta trabalhando
 					// se dias 1, 2 e 3 de 07:00 as 19:00 pode passar
-					// se dias 4, 5 e 6 não pode passar
+					// se dias 4, 5 e 6 nï¿½o pode passar
 					// se dia 7 pode passar das 19:00 as 23:59:59
 					// se dia 8 e 9 pode passar das 00:00 as 07:00 e 19:00 as 23:59:59
 					// se dia 10 pode passar de 00:00 as 07:00
-					// se dia 11 e 12 não pode passar
+					// se dia 11 e 12 nï¿½o pode passar
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
-					LocalDateTime dataInicioEscala = matchedPedestrianAccess.getRegraAtivaPedestre()
-								.get().getDataInicioEscala3_3().toInstant()
+					LocalDate dataInicioEscala = new java.util.Date(matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3().getTime())
+							.toInstant()
 						      .atZone(ZoneId.systemDefault())
-						      .toLocalDateTime();
+						      .toLocalDate();
 					
-					final int diaDaEscala = Period.between(dataAcesso.toLocalDate(), dataInicioEscala.toLocalDate()).getDays() + 1;
+					final int diaDaEscala = (Period.between(dataInicioEscala, dataAcesso.toLocalDate()).getDays() % 12) + 1;
 
 					if(diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
 						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
@@ -284,8 +285,8 @@ public class ProcessAccessRequestUseCase {
 								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(23, 59, 59)));
 					
 					} else if(diaDaEscala == 10) {
-						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0));
+						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(0, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(7, 0, 0));
 					
 					} else {
 						permitido = false;
@@ -295,33 +296,33 @@ public class ProcessAccessRequestUseCase {
 					/*
 					Calendar dataAcesso = Calendar.getInstance();
 					
-					// Data base de início do turno
+					// Data base de inï¿½cio do turno
 					Calendar dataInicioTurno = Calendar.getInstance();
 					Date DataInicioEscala3_3 = matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3();
 					
 					dataInicioTurno.setTime(DataInicioEscala3_3);  // Exemplo: 07/10/2024
 
-					//diferença em milissegundos entre agora e o início do turno
+					//diferenï¿½a em milissegundos entre agora e o inï¿½cio do turno
 					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
 					long diffDays = diffMillis / (1000 * 60 * 60 * 24);  // Convertendo para dias
 
-					// Cada ciclo é de 6 dias: 3 dias de trabalho e 3 dias de folga
-					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 está
+					// Cada ciclo ï¿½ de 6 dias: 3 dias de trabalho e 3 dias de folga
+					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 estï¿½
 
-					// Verificar se está nos 3 dias de trabalho
+					// Verificar se estï¿½ nos 3 dias de trabalho
 					if (cicloAtual < 3) {
 					    // Alternar entre turno de 7h e 19h (dias 7,8,9) e turno de 19h e 7h (dias 13,14,15)
-					    long alternanciaTurno = (diffDays / 6) % 2;  // Alteração a cada 6 dias
+					    long alternanciaTurno = (diffDays / 6) % 2;  // Alteraï¿½ï¿½o a cada 6 dias
 
 					    Calendar periodoPermitidoIni = Calendar.getInstance();
 					    Calendar periodoPermitidoFim = Calendar.getInstance();
 
 					    if (alternanciaTurno == 0) {
-					        // Turno de 7h às 19h
+					        // Turno de 7h ï¿½s 19h
 					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 7);
 					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 19);
 					    } else {
-					        // Turno de 19h às 7h do dia seguinte
+					        // Turno de 19h ï¿½s 7h do dia seguinte
 					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 19);
 					        periodoPermitidoFim.add(Calendar.DATE, 1);  // Passa para o dia seguinte
 					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 7);
@@ -329,12 +330,12 @@ public class ProcessAccessRequestUseCase {
 
 					    // Verificar se o acesso ocorre dentro do turno de trabalho
 					    if (dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim)) {
-					        permitido = true;  // Está dentro do turno de trabalho
+					        permitido = true;  // Estï¿½ dentro do turno de trabalho
 					    } else {
 					        permitido = false;  // Fora do turno de trabalho
 					    }
 					} else {
-					    // Está nos 3 dias de folga
+					    // Estï¿½ nos 3 dias de folga
 					    permitido = false;
 					}
 					*/
@@ -358,28 +359,28 @@ public class ProcessAccessRequestUseCase {
 					periodoPermitidoFim.setTime(dataInicial);
 					periodoPermitidoFim.add(tipoAdicao, Integer.parseInt(escala[0]));
 
-					System.out.println("Periodo Permitido Início: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
+					System.out.println("Periodo Permitido Inï¿½cio: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
 					System.out.println("Periodo Permitido Fim: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoFim.getTime()));
 					System.out.println("Data Acesso: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dataAcesso.getTime()));
 
 //					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
 					
 					Calendar dataInicioTurno = Calendar.getInstance();
-					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Data base do início do turno, ex.: 04/10/2024 às 10:00
+					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Data base do inï¿½cio do turno, ex.: 04/10/2024 ï¿½s 10:00
 
-					// Calcular a diferença em milissegundos entre agora e o início do turno
+					// Calcular a diferenï¿½a em milissegundos entre agora e o inï¿½cio do turno
 					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
 					long diffHours = diffMillis / (1000 * 60 * 60);  // Convertendo para horas
 
 					// Cada ciclo tem 48 horas (12 horas de trabalho + 36 horas de folga)
 					long cicloAtual = diffHours % 48;
 
-					// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo período de trabalho)
+					// Se estï¿½ nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo perï¿½odo de trabalho)
 					if ((cicloAtual >= 0 && cicloAtual < 12) || (cicloAtual >= 24 && cicloAtual < 36)) {
-					    // Está no período de trabalho
+					    // Estï¿½ no perï¿½odo de trabalho
 					    permitido = true;
 					} else {
-					    // Está no período de folga
+					    // Estï¿½ no perï¿½odo de folga
 					    permitido = false;
 					}
 
@@ -412,27 +413,27 @@ public class ProcessAccessRequestUseCase {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cartão na urna.", NotificationType.BAD, foto);
-						motivo = "Deve depositar cartão na urna.";
+						Utils.createNotification(userName + " deve depositar cartï¿½o na urna.", NotificationType.BAD, foto);
+						motivo = "Deve depositar cartï¿½o na urna.";
 
 					} else {
-						Utils.createNotification(userName + " não deve depositar na urna", NotificationType.BAD, foto);
-						motivo = "Não deve depositar cartão na urna.";
+						Utils.createNotification(userName + " nï¿½o deve depositar na urna", NotificationType.BAD, foto);
+						motivo = "Nï¿½o deve depositar cartï¿½o na urna.";
 					}
 				}
 
 			} else if (!permitido) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
-					Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
-					motivo = "Não permitido.";
+					Utils.createNotification(userName + " nï¿½o permitido.", NotificationType.BAD, foto);
+					motivo = "Nï¿½o permitido.";
 				}
 
 			} else if (!permitidoRetornar) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				if (createNotification) {
-					Utils.createNotification(userName + " não pode retornar agora.", NotificationType.BAD, foto);
-					motivo = "Não pode retornar agora.";
+					Utils.createNotification(userName + " nï¿½o pode retornar agora.", NotificationType.BAD, foto);
+					motivo = "Nï¿½o pode retornar agora.";
 				}
 
 			} else if (permitidoHoje) {
@@ -450,8 +451,8 @@ public class ProcessAccessRequestUseCase {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
 					if (createNotification) {
-						Utils.createNotification(userName + " não permitido.", NotificationType.BAD, foto);
-						motivo = "Não permitido.";
+						Utils.createNotification(userName + " nï¿½o permitido.", NotificationType.BAD, foto);
+						motivo = "Nï¿½o permitido.";
 					}
 				}
 
@@ -473,7 +474,7 @@ public class ProcessAccessRequestUseCase {
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
 				if (createNotification) {
-					Utils.createNotification(userName + " já registrado hoje.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " jï¿½ registrado hoje.", NotificationType.BAD, foto);
 				}
 			}
 
@@ -605,7 +606,7 @@ public class ProcessAccessRequestUseCase {
 		}
 		*/
 
-		// não tem bloqueo por equipamento
+		// nï¿½o tem bloqueo por equipamento
 		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
 			return false;
 		}
@@ -748,14 +749,14 @@ public class ProcessAccessRequestUseCase {
 		
 		if (ultimoAcesso != null) {
 		    Calendar ajuste = Calendar.getInstance();
-		    ajuste.setTime(c.getTime());  // c já contém o início do turno
+		    ajuste.setTime(c.getTime());  // c jï¿½ contï¿½m o inï¿½cio do turno
 		    ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));  // Adiciona 12 horas de trabalho
 
 		    Calendar agora = Calendar.getInstance();
 		    
-		    // Se o acesso for após o fim do turno atual
+		    // Se o acesso for apï¿½s o fim do turno atual
 		    if (agora.after(ajuste)) {
-		        // Adiciona 36 horas de folga e move para o próximo ciclo de trabalho
+		        // Adiciona 36 horas de folga e move para o prï¿½ximo ciclo de trabalho
 		        c.add(tipoAdicao, Integer.parseInt(escala[1]));  // Adiciona 36 horas de folga
 		    }
 		}
@@ -777,7 +778,7 @@ public class ProcessAccessRequestUseCase {
 				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem)) {
 					Utils.createNotification(
 							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerância."
+									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela tolerï¿½ncia."
 											: "."), NotificationType.GOOD, foto);
 				}
 
@@ -785,7 +786,7 @@ public class ProcessAccessRequestUseCase {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification) {
-					Utils.createNotification(userName + " fora do horário.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horï¿½rio.", NotificationType.BAD, foto);
 				}
 			}
 
@@ -793,7 +794,7 @@ public class ProcessAccessRequestUseCase {
 			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
 			logAccess.setStatus("INATIVO");
 			if (createNotification) {
-				Utils.createNotification(userName + " não permitido hoje.", NotificationType.BAD, foto);
+				Utils.createNotification(userName + " nï¿½o permitido hoje.", NotificationType.BAD, foto);
 			}
 		}
 
