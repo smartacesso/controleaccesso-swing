@@ -43,7 +43,7 @@ public class SplashScreen extends JWindow {
         message.setFont(new Font("Sans-Serif", Font.BOLD, 13));
         message.setForeground(Main.firstColor);
         message.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel versao = new JLabel("Versão " + Configurations.VERSION, JLabel.CENTER);
+        JLabel versao = new JLabel("Versao " + Configurations.VERSION, JLabel.CENTER);
         versao.setFont(new Font("Sans-Serif", Font.BOLD, 11));
         versao.setForeground(Main.firstColor);
         versao.setAlignmentX(Component.CENTER_ALIGNMENT);

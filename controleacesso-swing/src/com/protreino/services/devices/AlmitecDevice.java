@@ -2,19 +2,25 @@ package com.protreino.services.devices;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
-import com.protreino.services.to.AttachedTO;
+import com.protreino.services.enumeration.StatusCard;
+import com.protreino.services.enumeration.VerificationResult;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+
 import com.protreino.services.to.ConfigurationGroupTO;
-import com.topdata.easyInner.entity.Inner;
 
 public class AlmitecDevice extends Device{
     /**
@@ -29,7 +35,7 @@ public class AlmitecDevice extends Device{
     private Socket tcp2;
     private static DatagramSocket udpSocket;
     private boolean conectado = false;
-
+    private CartaoComandaEntity CartaoRecebido;
     // Construtor teste
 //    public AlmitecDevice(String ip, int portaTCP1, int portaTCP2, int udpPorta) throws SocketException {
 //        this.equipamentoIP = ip;
@@ -182,6 +188,7 @@ public class AlmitecDevice extends Device{
 	                // Ler a linha com um timeout, se necessário
 	                if ((linha = reader.readLine()) != null) {
 	                    System.out.println(descricaoLeitor + " recebeu: " + linha);
+	                    processAccessRequest(linha);
 	                    // Processar a leitura do código de barras
 	                }
 	            } catch (SocketTimeoutException e) {
@@ -286,8 +293,58 @@ public class AlmitecDevice extends Device{
 	public void processAccessRequest(Object obj) {
 		// TODO Auto-generated method stub
 		
-	}
+		    // Converte o objeto para string
+		    String cartao = obj.toString();
 
+		    // Verifica se o cartão é diferente de "0000000000000000"
+		    if (!Objects.equals(cartao, "0000000000000000")) {
+		        // Remove caracteres não alfanuméricos e zeros à esquerda
+		        cartao = cartao.replaceAll("[^a-zA-Z0-9]+", "");  // Remove caracteres não alfanuméricos
+		        cartao = cartao.replaceFirst("^0+(?!$)", "");  // Remove zeros à esquerda
+
+		        System.out.println("Número do cartão processado: " + cartao);
+		    }
+		
+		@SuppressWarnings("unchecked")
+		List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateAccessDataFacade.
+				getResultList(CartaoComandaEntity.class, 
+						"CartaoComandaEntity.findAllNaoRemovidosOrdered");
+		
+
+		if (cartoes != null && !cartoes.isEmpty()) {
+			
+			for(CartaoComandaEntity cartaoEncontrado : cartoes) {
+				if(cartao.equals(cartaoEncontrado.getNumeroReal())) {
+					CartaoRecebido = cartaoEncontrado;
+					break;
+				}					
+			}
+			
+		if (CartaoRecebido != null) {  
+			allowedUserName = CartaoRecebido.getNumeroAlternativo();
+			if (StatusCard.LIBERADO.equals(CartaoRecebido.getStatus())) {
+						verificationResult = VerificationResult.ALLOWED;
+						recolherComanda();
+						CartaoRecebido.setDataAlteracao(new Date());
+//						CartaoRecebido.setStatus(StatusCard.AGUARDANDO);
+
+						System.out.println("status do cartao: " + CartaoRecebido.getStatus());
+
+						HibernateAccessDataFacade.save(CartaoComandaEntity.class, CartaoRecebido);
+						CartaoRecebido = null;
+						allowedUserName = null;
+						
+					} else {
+						verificationResult = VerificationResult.NOT_ALLOWED;
+//						devolverComanda();
+					}
+				}else {
+			// cartão nÃ£o encontrado
+			verificationResult = VerificationResult.NOT_FOUND;
+//			devolverComanda();
+		}
+	}
+}
 
 	@Override
 	public Set<Integer> getRegisteredUserList() throws Exception {

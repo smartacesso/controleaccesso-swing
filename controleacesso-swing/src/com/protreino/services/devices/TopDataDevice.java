@@ -201,7 +201,7 @@ public class TopDataDevice extends Device {
 	        EasyInner.LigarLedVerde(1);
 	        if (ret != Enumeradores.RET_COMANDO_OK 
 	        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
-	        	throw new Exception("Erro ao abrir a porta de comunicação: " + ret);
+	        	throw new Exception("Erro ao abrir a porta de comunicaï¿½ï¿½o: " + ret);
 	        }
 	        
 	        portaAberta = true;
@@ -240,7 +240,7 @@ public class TopDataDevice extends Device {
         	
         	} else {
         		setStatus(DeviceStatus.DISCONNECTED);
-        		throw new Exception("Catraca " + deviceEntity.getName() +  " não pode ser conectada");
+        		throw new Exception("Catraca " + deviceEntity.getName() +  " nï¿½o pode ser conectada");
         	}
 
         }
@@ -251,7 +251,7 @@ public class TopDataDevice extends Device {
         }
         
         if (ret != Enumeradores.RET_COMANDO_OK) {
-        	throw new Exception("Não foi possível conectar na catraca " + deviceEntity.getName() + ", motivo: " + ret);
+        	throw new Exception("Nï¿½o foi possï¿½vel conectar na catraca " + deviceEntity.getName() + ", motivo: " + ret);
         }
         
         bsp = new NBioBSPJNI();
@@ -331,7 +331,7 @@ public class TopDataDevice extends Device {
 								
 								try {
 									if(CARTAO_MASTER.equals(Cartao)) {
-										System.out.printf("Habilitou o cartão Master, com o número: ", CARTAO_MASTER);
+										System.out.printf("Habilitou o cartï¿½o Master, com o nï¿½mero: ", CARTAO_MASTER);
 										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
 										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 									}
@@ -479,7 +479,7 @@ public class TopDataDevice extends Device {
 //							new Thread() {
 //								public void run() {
 							try {
-								System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar até 5 segundos");
+								System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar atï¿½ 5 segundos");
 								disconnect();
 								Utils.sleep(5000);
 								System.out.println(Main.sdf.format(new Date()) + " Tentando reconectar catraca...");
@@ -488,7 +488,7 @@ public class TopDataDevice extends Device {
 								System.out.println(Main.sdf.format(new Date()) + " Erro ao reconectar a catraca, veja abaixo: ");
 								e.printStackTrace();
 								if(watchDog != null && !watchDogEnabled) {
-									System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexÃ£o automática... ");
+									System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexÃ£o automï¿½tica... ");
 									watchDogEnabled = true;
 									watchDog.execute();
 								}
@@ -560,7 +560,7 @@ public class TopDataDevice extends Device {
 	        int ret = EasyInner.AbrirPortaComunicacao(port);
 	        if (ret != Enumeradores.RET_COMANDO_OK 
 	        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
-	        	System.out.println("Porta já aberta");
+	        	System.out.println("Porta jï¿½ aberta");
 	        }
 	        portaAberta = true;
 		}
@@ -598,7 +598,7 @@ public class TopDataDevice extends Device {
 			
 			System.out.println("Qtd encontradas: " + (Objects.isNull(pedestres) ? 0 : pedestres.size()));
 			if(Objects.isNull(pedestres) || pedestres.isEmpty()) {
-				System.out.println("Nenhuma alteração em pedestres para envio.");
+				System.out.println("Nenhuma alteraï¿½ï¿½o em pedestres para envio.");
 				return;
 			}
 			
@@ -642,7 +642,7 @@ public class TopDataDevice extends Device {
 					manutencaoDigitalCatraca(online, envio);
 				
 				} else{
-					System.out.println("Biometrias Não alteradas " + pedestre.getName());
+					System.out.println("Biometrias Nï¿½o alteradas " + pedestre.getName());
 				}
 			
 			}
@@ -670,7 +670,7 @@ public class TopDataDevice extends Device {
 			EasyInner.DefinirTipoConexao(2);
 			int ret = EasyInner.AbrirPortaComunicacao(port);
 			if (ret != Enumeradores.RET_COMANDO_OK && ret != Enumeradores.RET_PORTA_JAABERTA)
-				System.out.println("Porta já aberta");
+				System.out.println("Porta jï¿½ aberta");
 			portaAberta = true;
 		}
 
@@ -703,7 +703,7 @@ public class TopDataDevice extends Device {
 		boolean excluidoSeExiste = removeDigitalLFD(online, t.getPedestrianAccess());
 		
 		if(!excluidoSeExiste) {
-			System.out.println("usuário Não foi removido !! id: " + t.getIdPedestreianAccess());
+			System.out.println("usuï¿½rio Nï¿½o foi removido !! id: " + t.getIdPedestreianAccess());
 			return;
 		}
 		
@@ -721,13 +721,13 @@ public class TopDataDevice extends Device {
 			} while(ret != 0 && ret != 1 && tentativas <= 5);
 			
 			if(ret == Enumeradores.RET_COMANDO_OK || ret == 1) {
-				System.out.println("Usuário enviado catraca ID: " + t.getPedestrianAccess().getId());				
+				System.out.println("Usuï¿½rio enviado catraca ID: " + t.getPedestrianAccess().getId());				
 			} else {
-				System.out.println("Usuário Não enviado catraca, motivo: " + ret);				
+				System.out.println("Usuï¿½rio Nï¿½o enviado catraca, motivo: " + ret);				
 			}
 
 		} else {
-			System.out.println("Usuário Não enviado catraca, motivo: " + ret);
+			System.out.println("Usuï¿½rio Nï¿½o enviado catraca, motivo: " + ret);
 		}
 	}
 	
@@ -735,10 +735,10 @@ public class TopDataDevice extends Device {
 		byte[] template = new byte[844];
 		//Bytes DescriÃ§Ã£o
 		
-		//0 Master (0 = Não / 1 = sim) sempre utilizar 0
+		//0 Master (0 = Nï¿½o / 1 = sim) sempre utilizar 0
 		template[0] = 0;
 		
-		//1 - 10 NÃºmero do usuário (em ASC)
+		//1 - 10 NÃºmero do usuï¿½rio (em ASC)
 		int p = 1;
 		String id = StringUtils.leftPad(t.getPedestrianAccess().getId().toString(), 10, '0');
         for (int j = 0; j < id.length(); j++) {
@@ -816,7 +816,7 @@ public class TopDataDevice extends Device {
 		        int ret = EasyInner.AbrirPortaComunicacao(port);
 		        if (ret != Enumeradores.RET_COMANDO_OK 
 		        		&& ret != Enumeradores.RET_PORTA_JAABERTA) 
-		        	System.out.println("Porta já aberta");
+		        	System.out.println("Porta jï¿½ aberta");
 		        portaAberta = true;
 			}
 			
@@ -844,7 +844,7 @@ public class TopDataDevice extends Device {
 			if(ret != Enumeradores.RET_COMANDO_OK
 					&& ret != 1
 					&& ret != Enumeradores.RET_BIO_USR_NAO_CADASTRADO) {
-				System.out.println("Não encontrado na catraca (verifica removido): " + ret);
+				System.out.println("Nï¿½o encontrado na catraca (verifica removido): " + ret);
 				return false;
 			}
 			
@@ -854,7 +854,7 @@ public class TopDataDevice extends Device {
 
 		} else {
 			if(Main.desenvolvimento) {
-				System.out.println("Não encontrado na catraca (solicita removido): "  + ret);
+				System.out.println("Nï¿½o encontrado na catraca (solicita removido): "  + ret);
 			}
 			return false;
 		}
@@ -874,7 +874,7 @@ public class TopDataDevice extends Device {
 			
 			if(!cartaoStr.isEmpty()
 					&& !"".equals(cartaoStr.replace("0",""))) {
-				System.out.println("Registra giro com cartão: " + cartaoStr);
+				System.out.println("Registra giro com cartï¿½o: " + cartaoStr);
 				
 				args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
 				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
@@ -1076,7 +1076,7 @@ public class TopDataDevice extends Device {
                                     		 sentido = bilhete[0];
                                     	} else {
 	                                		 if(bilhete[0] == 10 || bilhete[0] == 11) {
-	                                         	//cartão
+	                                         	//cartï¿½o
 	                                        	sentido = bilhete[0] == 10 ? 0 : 1;
 	                                         	inner.BilheteInner.Origem = 2;
 	                                         } else {
@@ -1091,15 +1091,15 @@ public class TopDataDevice extends Device {
                                     	registraGiro(sentido, c.getTime());
                                         ++qtdPermitido;
                                     } else {
-                                    	System.out.println("Não permitido!");
+                                    	System.out.println("Nï¿½o permitido!");
                                         ++qtdNaoPermitido;
                                     }
                                 
                                 } else{
-                                	System.out.println("cartão vazio!");
+                                	System.out.println("cartï¿½o vazio!");
                                 }
                             } else {
-                                System.out.println("Não foi possível coletar os bilhetes na catraca: " + Ret);
+                                System.out.println("Nï¿½o foi possï¿½vel coletar os bilhetes na catraca: " + Ret);
                             }
                         } catch (Throwable e) {
                             e.printStackTrace();
@@ -1115,7 +1115,7 @@ public class TopDataDevice extends Device {
             ex.printStackTrace();
             
             if(this instanceof TopDataExpedidoraDevice) {
-            	//Não mexe aqui
+            	//Nï¿½o mexe aqui
             } else {
             	this.inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_CONECTAR;
             }
@@ -1202,7 +1202,7 @@ public class TopDataDevice extends Device {
 			}
 			
 			if (ret != Enumeradores.RET_COMANDO_OK) {
-				Main.mainScreen.addEvento(name + ": Não foi possível enviar liberar a catraca");
+				Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar liberar a catraca");
 				setStatus(DeviceStatus.DISCONNECTED);
 			}
 			
@@ -1357,9 +1357,9 @@ public class TopDataDevice extends Device {
 				configurarEntradasOnline();
 
 			} else {
-				Main.mainScreen.addEvento(name + ": Não foi possível enviar mensagem acesso negado");
+				Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar mensagem acesso negado");
 				setStatus(DeviceStatus.DISCONNECTED);
-				throw new Exception(name + ": Não foi possível enviar mensagem acesso negado");
+				throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar mensagem acesso negado");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1396,14 +1396,14 @@ public class TopDataDevice extends Device {
 				}
 			}
 			EasyInner.InserirUsuarioListaAcesso(temp, 101);
-			System.out.println("quem está sendo enviado   " + pedestre.getName());
+			System.out.println("quem estï¿½ sendo enviado   " + pedestre.getName());
 			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
-			System.out.println("qual cartão   " + temp);
+			System.out.println("qual cartï¿½o   " + temp);
 		}
 		
 		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateAccessDataFacade.buscaPedestresAtivosComBiometria();
 		for (PedestrianAccessEntity biometria : biometriasNaoRemovidas) {
-			System.out.println("qual usuário está sendo enviado a biometria  " + biometria.getName());
+			System.out.println("qual usuï¿½rio estï¿½ sendo enviado a biometria  " + biometria.getName());
 			EasyInner.InserirUsuarioListaAcesso(biometria.getId()+"", 101);
 		}	
 		
@@ -1764,7 +1764,7 @@ public class TopDataDevice extends Device {
 		}
 		while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis()-inicio) < 5000); 
 		System.out.println("caiu na emoveBiometricaLC");
-		//remove usuário em outras catracas
+		//remove usuï¿½rio em outras catracas
 		if(isCatraca) {
 			System.out.println(sdf.format(new Date()) + "   Remove template nas outras catracas...");
 			for(Device d : Main.devicesList) {
@@ -1799,7 +1799,7 @@ public class TopDataDevice extends Device {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			return "Erro ao enviar as configurações. " + e.getMessage();
+			return "Erro ao enviar as configuraï¿½ï¿½es. " + e.getMessage();
 		}
 		return "";
 	}
@@ -1815,8 +1815,8 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(MODO_DE_TRABALHO, "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horário_clockwise", FieldType.COMBOBOX, 
-				"Horário_clockwise;Antihorário_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horï¿½rio_clockwise", FieldType.COMBOBOX, 
+				"Horï¿½rio_clockwise;Antihorï¿½rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_MENSAGEM_NEGADO, "1", FieldType.NUMERIC_LIST, "1;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));
@@ -1828,20 +1828,20 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_PING, "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_ESPERA_PARA_CONECTAR, "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO(TIPO_LEITOR, "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Codigo de barras_0;Magnï¿½tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		geralConfigurations.add(new ConfigurationTO(QUANTIDADE_DIGITOS_CARTAO, "5", FieldType.NUMERIC_LIST, "4;1;16"));
 
 		geralConfigurations.add(new ConfigurationTO(MODELO_BIOMETRICO, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(TIPO_BIOMETRICO, "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 		geralConfigurations.add(new ConfigurationTO(DOIS_LEITORES, "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
-		geralConfigurations.add(new ConfigurationTO(LEITOR_1, "Entrada e saída_3", FieldType.COMBOBOX, 
-				"Desativado_0;Somente entrada_1;Somente saída_2;Entrada e saída_3;saída e entrada_4"));
-		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Entrada e saída_3", FieldType.COMBOBOX, 
-				"Desativado_0;Somente entrada_1;Somente saída_2;Entrada e saída_3;saída e entrada_4"));
-		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Não_0", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrão livre_1", FieldType.COMBOBOX, "Padrão livre_1;Padrão TopData_0"));
+		geralConfigurations.add(new ConfigurationTO(LEITOR_1, "Entrada e saï¿½da_3", FieldType.COMBOBOX, 
+				"Desativado_0;Somente entrada_1;Somente saï¿½da_2;Entrada e saï¿½da_3;saï¿½da e entrada_4"));
+		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Entrada e saï¿½da_3", FieldType.COMBOBOX, 
+				"Desativado_0;Somente entrada_1;Somente saï¿½da_2;Entrada e saï¿½da_3;saï¿½da e entrada_4"));
+		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Nï¿½o_0"));
+		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nï¿½o_0", FieldType.COMBOBOX, "Sim_1;Nï¿½o_0"));
+		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrï¿½o livre_1", FieldType.COMBOBOX, "Padrï¿½o livre_1;Padrï¿½o TopData_0"));
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(COLETA_CARTOES_OFFLINE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
@@ -2048,7 +2048,7 @@ public class TopDataDevice extends Device {
 	}
 	
 	private Long searchTemplate(){
-		// Primeiro Ã© feito o processo de match para identificar o usuário.
+		// Primeiro Ã© feito o processo de match para identificar o usuï¿½rio.
 		// Apos a identificaao Ã© verificado se o acesso Ã© permitido.
 		try {
 			int exportType = EXPORT_MINCONV_TYPE.FIM01_HV;
@@ -2115,9 +2115,9 @@ public class TopDataDevice extends Device {
         	countTentativasEnvioComando++;
         }
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar configurações offline");
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es offline");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar configurações offline");
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es offline");
         }
 	}
 	
@@ -2133,9 +2133,9 @@ public class TopDataDevice extends Device {
         	countTentativasEnvioComando++;
         }
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar mensagens offline. Retorno da catraca " + ret);
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar mensagens offline. Retorno da catraca " + ret);
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar mensagens offline. Retorno da catraca " + ret);
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar mensagens offline. Retorno da catraca " + ret);
         }
 	}
 	
@@ -2165,9 +2165,9 @@ public class TopDataDevice extends Device {
         }
        
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar configurações de mudança online/offline");
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es de mudanï¿½a online/offline");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar configurações de mudança online/offline");
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es de mudanï¿½a online/offline");
         }
 	}
 	
@@ -2181,9 +2181,9 @@ public class TopDataDevice extends Device {
         	countTentativasEnvioComando++;
         }
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar configurações online");
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es online");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar configurações online");
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es online");
         }
 	}
 	
@@ -2203,9 +2203,9 @@ public class TopDataDevice extends Device {
         	countTentativasEnvioComando++;
         }
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar data e hora");
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar data e hora");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar data e hora");
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar data e hora");
         }
 	}
 	
@@ -2226,13 +2226,13 @@ public class TopDataDevice extends Device {
 				return true;
 			
 			} else {
-				Main.mainScreen.addEvento(name + ": Não foi possível enviar mensagens Padrão");
+				Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar mensagens Padrï¿½o");
 				setStatus(DeviceStatus.DISCONNECTED);
 			}
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Main.mainScreen.addEvento(name + ": Não foi possível enviar mensagens Padrão. " + ex.getMessage());
+			Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar mensagens Padrï¿½o. " + ex.getMessage());
 			setStatus(DeviceStatus.DISCONNECTED);
 		}
 		return false;
@@ -2261,9 +2261,9 @@ public class TopDataDevice extends Device {
         }
         
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Não foi possível enviar configurações entradas online");
+        	Main.mainScreen.addEvento(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es entradas online");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Não foi possível enviar configurações entradas online");
+        	throw new Exception(name + ": Nï¿½o foi possï¿½vel enviar configuraï¿½ï¿½es entradas online");
         }
 	}
 	
@@ -2362,10 +2362,10 @@ public class TopDataDevice extends Device {
 	         --------------------------------------------------------------------------------------------------
 	         | 1 ' Habilita   | 000 - Desativa leitor        |  000 - Desativa leitor        | 1 ' Habilita   |
 	         | 0 ' Desabilita | 001 - Leitor sÃ³ entrada      |  001 - Leitor sÃ³ entrada      | 0 ' Desabilita |
-	         |                | 010 - Leitor sÃ³ saída        |  010 - Leitor sÃ³ saída        |                |
-	         |                | 011 - Leitor Entrada e saida |  011 - Leitor Entrada e saída |                |
-	         |                | 100 - Leitor Entrada e saída |  100 - Leitor Entrada e       |                |
-	         |                |   Invertido                  |   saída Invertido             |                |
+	         |                | 010 - Leitor sÃ³ saï¿½da        |  010 - Leitor sÃ³ saï¿½da        |                |
+	         |                | 011 - Leitor Entrada e saida |  011 - Leitor Entrada e saï¿½da |                |
+	         |                | 100 - Leitor Entrada e saï¿½da |  100 - Leitor Entrada e       |                |
+	         |                |   Invertido                  |   saï¿½da Invertido             |                |
 	         --------------------------------------------------------------------------------------------------
 	         */
 	    
@@ -2373,8 +2373,8 @@ public class TopDataDevice extends Device {
 	
 	        configuracao = "0" + //Bit Fixo
 	                "1" + //Habilitado
-	                inner.Identificacao + //identificação
-	                inner.Verificacao + //Verificação
+	                inner.Identificacao + //identificaï¿½ï¿½o
+	                inner.Verificacao + //Verificaï¿½ï¿½o
 	                "0" + //Bit fixo
 	                (inner.DoisLeitores ? "11" : "10") + // 11 -> habilita leitor 1 e 2, 10 -> habilita apenas leitor 1
 	                configuracao;
@@ -2383,7 +2383,7 @@ public class TopDataDevice extends Device {
 	         ------------------------------------------------------------------------------------------------------------------------
 	         |    7     |       6       |       5       |       4       |      3       |       2      |      1       |      0       |
 	         ------------------------------------------------------------------------------------------------------------------------
-	         | Bit fixo | Seta/Reseta   | identificação |  Verificação  |   Bit fixo   |   Leitor 1   | Leitor 2     |  Teclado     |
+	         | Bit fixo | Seta/Reseta   | identificaï¿½ï¿½o |  Verificaï¿½ï¿½o  |   Bit fixo   |   Leitor 1   | Leitor 2     |  Teclado     |
 	         |   '0'    |    config.    |      Bio      |      Bio      |     '0'      |              |              |              |
 	         |          | bit-a-bit bio |               |               |              |              |              |              |
 	         ------------------------------------------------------------------------------------------------------------------------
@@ -2487,7 +2487,7 @@ public class TopDataDevice extends Device {
 			return;
 		}
 		
-		//usa Lógica de IndexSearch para Nitgen
+		//usa Lï¿½gica de IndexSearch para Nitgen
 		if(indexSearchEngine != null) {
 
 			int i = 0;
@@ -2608,12 +2608,12 @@ public class TopDataDevice extends Device {
 		byte[] template1 = new byte[502];
 		byte[] template2 = new byte[502];
 		
-		//cadastra usuário
+		//cadastra usuï¿½rio
 		if(templateEntity.getTemplate().length > 502) {
 			//proveniente do leitor
 			LcDevice.extracTopDataTemplate(templateEntity.getTemplate(), template1, template2);
 			String tStr = Base64.encodeBase64String(template2);
-			//verificar se segunda está vazia
+			//verificar se segunda estï¿½ vazia
 			if(tStr.startsWith("AAAQAAAAAAAAAAA") ) {
 				template2 = null;
 			}

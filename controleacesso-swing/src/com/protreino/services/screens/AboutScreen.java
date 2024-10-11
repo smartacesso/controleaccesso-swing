@@ -66,7 +66,7 @@ public class AboutScreen extends JFrame {
 		aboutLabel.setFont(boldFont);
 		aboutLabel.setForeground(Main.firstColor);
 		
-		JLabel versaoLabel = new JLabel("Versão " + Configurations.VERSION);
+		JLabel versaoLabel = new JLabel("Versao " + Configurations.VERSION);
 		versaoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		versaoLabel.setFont(boldFont);
 		versaoLabel.setForeground(Main.firstColor);
@@ -128,7 +128,7 @@ public class AboutScreen extends JFrame {
 			Integer responseCode = con.getResponseCode();
 			
 			if (responseCode != 200) {
-				JOptionPane.showMessageDialog(null, "não foi possível procurar atualizacoes. Verifique sua conexÃo e tente novamente.",
+				JOptionPane.showMessageDialog(null, "nï¿½o foi possï¿½vel procurar atualizacoes. Verifique sua conexï¿½o e tente novamente.",
 	            		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);
 				return;
 			}
@@ -137,7 +137,7 @@ public class AboutScreen extends JFrame {
 			Gson gson = new Gson();
 			VersionInfoTO versionInfo = gson.fromJson(bufferedReader, VersionInfoTO.class);
 			if (Double.valueOf(Configurations.VERSION).doubleValue() == versionInfo.getVersion().doubleValue()) {
-				JOptionPane.showMessageDialog(null, "VocÃª já possui a Ãºltima Versão instalada!",
+				JOptionPane.showMessageDialog(null, "VocÃª jï¿½ possui a Ãºltima Versao instalada!",
 	            		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 			
 			} else if (Double.valueOf(Configurations.VERSION).doubleValue() < versionInfo.getVersion().doubleValue()) {
@@ -145,14 +145,14 @@ public class AboutScreen extends JFrame {
 				JPanel panel = new JPanel();
 				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 				
-				JLabel label1= new JLabel("HÃ¡ uma nova Versão disponível!");
+				JLabel label1= new JLabel("HÃ¡ uma nova Versao disponï¿½vel!");
 				label1.setAlignmentX(Component.LEFT_ALIGNMENT);
 				
-				JLabel novaVersaoLabel = new JLabel("Versão " + versionInfo.getVersion().toString());
+				JLabel novaVersaoLabel = new JLabel("Versao " + versionInfo.getVersion().toString());
 				novaVersaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 				novaVersaoLabel.setFont(boldFont);
 				
-				JLabel descricaoLabel = new JLabel("Detalhes da Versão: ");
+				JLabel descricaoLabel = new JLabel("Detalhes da Versao: ");
 				descricaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 				
 				panel.add(label1);
@@ -178,7 +178,7 @@ public class AboutScreen extends JFrame {
 				panel.add(confirmacaoLabel);
 				panel.add(Box.createVerticalStrut(10));
 				
-				int option = JOptionPane.showConfirmDialog(null, panel, "Nova Versão disponível", 
+				int option = JOptionPane.showConfirmDialog(null, panel, "Nova Versao disponï¿½vel", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE); 
 				if (option == 0){
 					atualizar(versionInfo);
@@ -187,7 +187,7 @@ public class AboutScreen extends JFrame {
 				
 		} catch (Exception e){
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "não foi possível procurar atualizacoes. Verifique sua conexÃ£o e tente novamente.",
+			JOptionPane.showMessageDialog(null, "nï¿½o foi possï¿½vel procurar atualizacoes. Verifique sua conexÃ£o e tente novamente.",
             		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -215,7 +215,7 @@ public class AboutScreen extends JFrame {
 					downloadDialog.setPreferredSize(new Dimension(300, 180));
 					downloadDialog.setResizable(false);
 					
-					JLabel label = new JLabel("Baixando Versão " + versionInfo.getVersion().toString());
+					JLabel label = new JLabel("Baixando Versao " + versionInfo.getVersion().toString());
 					label.setAlignmentX(Component.CENTER_ALIGNMENT);
 					
 					JProgressBar progressBar = new JProgressBar(0, 100);
@@ -291,7 +291,7 @@ public class AboutScreen extends JFrame {
 			            		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 					}
 					else if (download.getStatus() == 4){
-						JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualização. Verifique sua conexÃ£o e tente novamente.",
+						JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualizaï¿½ï¿½o. Verifique sua conexÃ£o e tente novamente.",
 			            		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE);  
 					}
 			    }
@@ -299,7 +299,7 @@ public class AboutScreen extends JFrame {
 					e.printStackTrace();
 					if (downloadDialog != null && downloadDialog.isVisible())
 						downloadDialog.dispose();
-					JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualização. Verifique sua conexÃ£o e tente novamente.",
+					JOptionPane.showMessageDialog(null, "Ocorreu um erro durante a atualizaï¿½ï¿½o. Verifique sua conexÃ£o e tente novamente.",
 		            		"AtualizaÃ§Ã£o " + Main.nomeAplicacao, JOptionPane.PLAIN_MESSAGE); 
 				}
 		    	finally {
@@ -328,7 +328,7 @@ public class AboutScreen extends JFrame {
 				}
 				catch (Exception e) {
                     e.printStackTrace();
-                    Utils.createNotification("Erro durante a atualização: " + e.getMessage(), NotificationType.BAD);
+                    Utils.createNotification("Erro durante a atualizaï¿½ï¿½o: " + e.getMessage(), NotificationType.BAD);
                 }
 			}
 		});

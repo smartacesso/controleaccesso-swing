@@ -116,7 +116,7 @@ public class ProcessAccessRequestUseCase {
 			if (Objects.isNull(matchedPedestrianAccess)) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification) {
-					Utils.createNotification("Usu�rio de C�digo " + codigo + " n�o encontrado.", NotificationType.BAD, foto);					
+					Utils.createNotification("Usu�rio de Codigo " + codigo + " n�o encontrado.", NotificationType.BAD, foto);					
 				}
 
 				return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };

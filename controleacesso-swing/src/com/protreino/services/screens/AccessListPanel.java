@@ -50,7 +50,7 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Código", "Cartão", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
+	private String[] columns = {"Codigo", "Cartï¿½o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
 	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
@@ -82,7 +82,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroIdPanel= new JPanel();
 		filtroIdPanel.setLayout(new BoxLayout(filtroIdPanel, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("Código");
+		JLabel filtroIdLabel = new JLabel("Codigo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdPanel.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 8);
@@ -92,7 +92,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroCartaoPanel= new JPanel();
 		filtroCartaoPanel.setLayout(new BoxLayout(filtroCartaoPanel, BoxLayout.Y_AXIS));
-		JLabel filtroCartaoLabel = new JLabel("Cartão");
+		JLabel filtroCartaoLabel = new JLabel("Cartï¿½o");
 		filtroCartaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoLabel);
 		filtroCartaoTextField = new JTextField("", 8);
@@ -359,7 +359,7 @@ public class AccessListPanel extends PaginedListPanel {
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
 		//countLabel.setText("Total: " + numAcessos);
-		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("Pï¿½g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	
@@ -500,7 +500,7 @@ public class AccessListPanel extends PaginedListPanel {
 	            
 	            if(Main.getDefaultDevice() != null 
             		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
-            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saída"))) {
+            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saï¿½da"))) {
 	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
 
 	            } else {

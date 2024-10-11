@@ -42,7 +42,7 @@ public class CartaoComandaDialog extends JDialog {
 	public static boolean abertoPeloAtalho = false;
 	
 	public CartaoComandaDialog(CartaoComandaEntity cartaoComanda){
-		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cartão/comanda" : "Alterar cartão/comanda", true);
+		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cartï¿½o/comanda" : "Alterar cartï¿½o/comanda", true);
 		
 		setIconImage(Main.favicon);
 		setResizable(false);
@@ -57,7 +57,7 @@ public class CartaoComandaDialog extends JDialog {
 		    }
 		});
 		
-		numeroLabel = new JLabel("Número");
+		numeroLabel = new JLabel("Nï¿½mero");
 		numeroTextField = new JTextField();
 		numeroTextField.setColumns(20);
 		numeroTextField.setMaximumSize(numeroTextField.getPreferredSize());
@@ -78,7 +78,7 @@ public class CartaoComandaDialog extends JDialog {
 		removerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		removerButton.addActionListener(e -> {
 			
-			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartão/comanda?", "ConfirmaÃ§Ã£o", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartï¿½o/comanda?", "ConfirmaÃ§Ã£o", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				
@@ -131,7 +131,7 @@ public class CartaoComandaDialog extends JDialog {
 	    		boolean usaCadastroLote = false;
 	    		if(cartaoComanda.getId() == null) {
 	    			usaCadastroLote = true;	 
-	    			cartaoComanda.setStatus(StatusCard.AGUARDANDO);
+	    			cartaoComanda.setStatus(StatusCard.LIBERADO);
 	    		}
 		    	cartaoComanda.setNumeroReal(numeroTextField.getText());
 		    	cartaoComanda.setNumeroAlternativo(numeroAlternativoTextField.getText());
@@ -209,7 +209,7 @@ public class CartaoComandaDialog extends JDialog {
 				return true;
 		}
 		
-		//não tem cÃ³digo
+		//nï¿½o tem cÃ³digo
 		return false;
 	}
 

@@ -105,7 +105,7 @@ public class RegisterUserDialog extends JDialog{
 	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
 	
 	public RegisterUserDialog(Frame owner, Device device){
-		super(owner, "Cadastro de usuários " + (device.isCatraca() ? "na catraca " : (device.isLeitorBiometrico() ? "com o leitor " : "com a cÃ¢mera ")) + device.getName(), true);
+		super(owner, "Cadastro de usuï¿½rios " + (device.isCatraca() ? "na catraca " : (device.isLeitorBiometrico() ? "com o leitor " : "com a cÃ¢mera ")) + device.getName(), true);
 		this.device = device;
 		this.instance = this;
 		
@@ -122,7 +122,7 @@ public class RegisterUserDialog extends JDialog{
 				|| Manufacturer.TOP_DATA_ACESSO.equals(device.getManufacturer())
 				|| Manufacturer.LC_DEVICE.equals(device.getManufacturer())
 				|| Manufacturer.FACIAL.equals(device.getManufacturer())) {
-			columns = new String[] {"Código", 
+			columns = new String[] {"Codigo", 
 									"Nome", 
 									Manufacturer.FACIAL.equals(device.getManufacturer()) ? "Face coletada" : "Digitais coletadas", 
 											"Tipo",
@@ -130,7 +130,7 @@ public class RegisterUserDialog extends JDialog{
 			columnWidths = new Integer[] {50, 320, 80,80, 120};
 		
 		} else {
-			columns = new String[] {"Código", "Nome","Acesso Permitido"};
+			columns = new String[] {"Codigo", "Nome","Acesso Permitido"};
 			columnWidths = new Integer[] {80, 400, 130};
 		}
 		
@@ -139,7 +139,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		JPanel filtroIdContainer= new JPanel();
 		filtroIdContainer.setLayout(new BoxLayout(filtroIdContainer, BoxLayout.Y_AXIS));
-		JLabel filtroIdLabel = new JLabel("Código");
+		JLabel filtroIdLabel = new JLabel("Codigo");
 		filtroIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroIdContainer.add(filtroIdLabel);
 		filtroIdTextField = new JTextField("", 10);
@@ -231,9 +231,9 @@ public class RegisterUserDialog extends JDialog{
 		syncButton.setBorder(new EmptyBorder(10,10,10,10));
 		getUsersOnDeviceButton = new JButton("Buscar lista na catraca");
 		getUsersOnDeviceButton.setBorder(new EmptyBorder(10,10,10,10));
-		registerUserButton = new JButton(device.isCatraca() ? "Cadastrar usuário na catraca" : (device.isLeitorBiometrico() ? "Coletar biometria" : "Capturar face"));
+		registerUserButton = new JButton(device.isCatraca() ? "Cadastrar usuï¿½rio na catraca" : (device.isLeitorBiometrico() ? "Coletar biometria" : "Capturar face"));
 		registerUserButton.setBorder(new EmptyBorder(10,10,10,10));
-		removeUserButton = new JButton("Excluir usuário da catraca");
+		removeUserButton = new JButton("Excluir usuï¿½rio da catraca");
 		removeUserButton.setBorder(new EmptyBorder(10,10,10,10));
 		
 		JPanel buttonsContainer = new JPanel();
@@ -244,10 +244,10 @@ public class RegisterUserDialog extends JDialog{
 			buttonsContainer.add(getUsersOnDeviceButton);
 		buttonsContainer.add(Box.createHorizontalGlue());
 		if (device.isLeitorBiometrico() || !device.isRegistrationProcessStartedOnDevice()) {
-			removeUserButton.setText("Apagar todas digitais deste usuário");
+			removeUserButton.setText("Apagar todas digitais deste usuï¿½rio");
 		}
 		if (device.isCamera()) {
-			removeUserButton.setText("Apagar as faces deste usuário");
+			removeUserButton.setText("Apagar as faces deste usuï¿½rio");
 		}
 		buttonsContainer.add(removeUserButton);
 		buttonsContainer.add(Box.createHorizontalStrut(10));
@@ -603,9 +603,9 @@ public class RegisterUserDialog extends JDialog{
 	}
 	
 	/**
-	 * Recupera a lista dos usuários cadastrados na catraca. 
+	 * Recupera a lista dos usuï¿½rios cadastrados na catraca. 
 	 * Para catracas TOP DATA pode ser um processo lento. 
-	 * Para catracas RWTECH não Ã© possivel, ao inves disso Ã© feito uma busca no banco antigo.
+	 * Para catracas RWTECH nï¿½o Ã© possivel, ao inves disso Ã© feito uma busca no banco antigo.
 	 */
 	private void recuperarListaCadastradosNaCatraca() {
 		return;
@@ -641,7 +641,7 @@ public class RegisterUserDialog extends JDialog{
 			progressBar.setPreferredSize(new Dimension(150, 40));
 			progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
-			JLabel label = new JLabel("Buscando usuários na catraca...");
+			JLabel label = new JLabel("Buscando usuï¿½rios na catraca...");
 			label.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
 			JPanel dialogPanel = new JPanel();
@@ -662,7 +662,7 @@ public class RegisterUserDialog extends JDialog{
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Utils.createNotification("Não foi possível recuperar os usuários da catraca.", NotificationType.BAD);
+			Utils.createNotification("Nï¿½o foi possï¿½vel recuperar os usuï¿½rios da catraca.", NotificationType.BAD);
 		}
 		finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -715,7 +715,7 @@ public class RegisterUserDialog extends JDialog{
 		Integer index = accessListTable.getSelectedRow();
 		
 		if (index == -1 && pedestre == null) {
-			setMensagemErro("Selecione um usuário.");
+			setMensagemErro("Selecione um usuï¿½rio.");
 			return;
 		}
 		
@@ -734,22 +734,22 @@ public class RegisterUserDialog extends JDialog{
 					if(acessoSelecionado.getTemplates() != null 
 							&& !acessoSelecionado.getTemplates().isEmpty()
 							&& acessoSelecionado.getTemplates().size() >= l) {
-						setMensagemErro("Limite de digitais excedido para o usuário.");
+						setMensagemErro("Limite de digitais excedido para o usuï¿½rio.");
 						return;
 					}
 				}catch (Exception e) {
-					//suprime para não mostrar o erro
+					//suprime para nï¿½o mostrar o erro
 				}
 			}
 		}else if(Manufacturer.FACIAL.equals(device.getManufacturer())
 				&& acessoSelecionado.getLuxandIdentifier() != null 
 				&& !"".equals(acessoSelecionado.getLuxandIdentifier())  ){
-			setMensagemErro("Apague a face desse usuário antes de cadastrar uma nova.");
+			setMensagemErro("Apague a face desse usuï¿½rio antes de cadastrar uma nova.");
 			return;
 		}
 		
 		if (acessoSelecionado == null) {
-			setMensagemErro("Selecione um usuário.");
+			setMensagemErro("Selecione um usuï¿½rio.");
 			return;
 		}
 		if (acessoSelecionado.getCadastradoNoDesktop()) {
@@ -777,7 +777,7 @@ public class RegisterUserDialog extends JDialog{
 		cadastrarOuRemoverUsuario(tipoOperacao, null);
 	}
 	
-	// Metodo para cadastrar ou remover um usuário na catraca
+	// Metodo para cadastrar ou remover um usuï¿½rio na catraca
 	public void cadastrarOuRemoverUsuario(String tipoOperacao, PedestrianAccessEntity pedestre) { // tipoAlteracao = "CADASTRO" ou "EXCLUSAO"
 		if (!device.isConnected()) {
 			setMensagemErro("Dispositivo desconectado.");
@@ -786,7 +786,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		Integer index = accessListTable.getSelectedRow();
 		if (index == -1 && pedestre == null) {
-			setMensagemErro("Selecione um usuário.");
+			setMensagemErro("Selecione um usuï¿½rio.");
 			return;
 		}
 		boolean cadastroFeitoDiretamenteNaCatraca = device.isRegistrationProcessStartedOnDevice();
@@ -795,13 +795,13 @@ public class RegisterUserDialog extends JDialog{
 			if (device.isLeitorBiometrico() || device.isCamera()) {
 				cadastroFeitoDiretamenteNaCatraca = false;
 				int option = JOptionPane.showConfirmDialog(instance, "Deseja realmente excluir todas as " 
-						+ (device.isLeitorBiometrico() ? "digitais" : "faces") + " deste usuário?", 
+						+ (device.isLeitorBiometrico() ? "digitais" : "faces") + " deste usuï¿½rio?", 
 						"Confirmar exclusÃ£o", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (option != JOptionPane.OK_OPTION)
 					return;
 			
 			} else if (cadastroFeitoDiretamenteNaCatraca == false){
-				int option = JOptionPane.showConfirmDialog(instance, "Deseja realmente excluir este usuário da catraca?", 
+				int option = JOptionPane.showConfirmDialog(instance, "Deseja realmente excluir este usuï¿½rio da catraca?", 
 						"Confirmar exclusÃ£o", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (option != JOptionPane.OK_OPTION)
 					return;
@@ -822,7 +822,7 @@ public class RegisterUserDialog extends JDialog{
 				if(acessoSelecionado.getTemplates() != null 
 						&& !acessoSelecionado.getTemplates().isEmpty()
 						&& acessoSelecionado.getTemplates().size() >= l) {
-					setMensagemErro("Limite de digitais excedido para o usuário.");
+					setMensagemErro("Limite de digitais excedido para o usuï¿½rio.");
 					return;
 				}
 			}
@@ -833,20 +833,20 @@ public class RegisterUserDialog extends JDialog{
 		// Define as mensagens e informacoes que serao exibidas de acordo com o tipo de operacao
 		// e de acordo com a catraca, se o cadastro Ã© feito direto nela ou nao
 		Dimension dialogDimension = new Dimension(300, 150);
-		String tituloDialog = "CADASTRO".equals(tipoOperacao) ? "Cadastro de usuário" : "ExclusÃ£o de usuário";
-		String mensagemDialogSucesso = "CADASTRO".equals(tipoOperacao) ? "Usuário cadastrado com sucesso!" : 
+		String tituloDialog = "CADASTRO".equals(tipoOperacao) ? "Cadastro de usuï¿½rio" : "ExclusÃ£o de usuï¿½rio";
+		String mensagemDialogSucesso = "CADASTRO".equals(tipoOperacao) ? "Usuï¿½rio cadastrado com sucesso!" : 
 			(device.isLeitorBiometrico() ? "Digitais apagadas com sucesso!" 
-					: (device.isCamera() ? "Faces apagadas com sucesso!" : "Usuário removido com sucesso!"));
+					: (device.isCamera() ? "Faces apagadas com sucesso!" : "Usuï¿½rio removido com sucesso!"));
 		String tituloDialogSucesso = "CADASTRO".equals(tipoOperacao) ? "Novo cadastro realizado" : "ExclusÃ£o realizada";
-		String mensagemDialogFalha = "CADASTRO".equals(tipoOperacao) ? "Novo cadastro não realizado." : "ExclusÃ£o não realizada.";
+		String mensagemDialogFalha = "CADASTRO".equals(tipoOperacao) ? "Novo cadastro nï¿½o realizado." : "ExclusÃ£o nï¿½o realizada.";
 		String tituloDialogFalha = "CADASTRO".equals(tipoOperacao) ? "Erro no cadastro" : "Erro na exclusÃ£o";
 		String instrucoesDialog1 = "";
 		String instrucoesDialog2 = "";
 		
 		if (cadastroFeitoDiretamenteNaCatraca) {
 			instrucoesDialog1 = "CADASTRO".equals(tipoOperacao) 
-					? "Cadastre um novo usuário diretamente na catraca com o Código" 
-							: "Remova diretamente da catraca o usuário de Código";
+					? "Cadastre um novo usuï¿½rio diretamente na catraca com o Codigo" 
+							: "Remova diretamente da catraca o usuï¿½rio de Codigo";
 			instrucoesDialog2 = acessoSelecionado.getId().toString();
 			dialogDimension = new Dimension(480, 160);
 		
@@ -854,7 +854,7 @@ public class RegisterUserDialog extends JDialog{
 			instrucoesDialog1 = "CADASTRO".equals(tipoOperacao) ? "Siga os passos na catraca" : "Aguarde!";
 			instrucoesDialog2 = "CADASTRO".equals(tipoOperacao) ? "para realizar a coleta da digital" 
 					: (device.isLeitorBiometrico() ? "Apagando digitais..." 
-							: (device.isCamera() ? "Apagando faces..." : "Removendo usuário..."));
+							: (device.isCamera() ? "Apagando faces..." : "Removendo usuï¿½rio..."));
 		}
 		
 		alteradoComSucesso = false;
@@ -939,7 +939,7 @@ public class RegisterUserDialog extends JDialog{
 						} else {
 							mensagemErroRetorno = retorno;
 							if (retorno.contains("PRIMARY KEY")) {
-								mensagemErroRetorno = "Código já está cadastrado.";
+								mensagemErroRetorno = "Codigo jï¿½ estï¿½ cadastrado.";
 							}
 						}
 					} catch (Exception e) {
@@ -988,7 +988,7 @@ public class RegisterUserDialog extends JDialog{
 			progressBar.setPreferredSize(new Dimension(200, 30));
 			progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
-			// Adicionar um botao para cancelar a aÃ§Ã£o quando for possível
+			// Adicionar um botao para cancelar a aÃ§Ã£o quando for possï¿½vel
 			JButton cancelButton = new JButton("Cancelar");
 			cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 			cancelButton.setPreferredSize(new Dimension(100, 50));
@@ -1084,7 +1084,7 @@ public class RegisterUserDialog extends JDialog{
 				setForeground(Color.WHITE);
 			} else {
 				if (column == 2 || column == 3) {
-					if ("Não".equals(str)
+					if ("Nï¿½o".equals(str)
 							|| "0".equals(str)){
 						setForeground(Color.GRAY);
 						setFont(font);

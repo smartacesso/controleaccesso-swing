@@ -75,7 +75,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		
 		EasyInner.LigarLedVerde(inner.Numero);
 		EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
-		//relé 2
+		//rele 2
 		EasyInner.AcionarRele1(inner.Numero);
 		EasyInner.AcionarRele2(inner.Numero);
 		
@@ -243,8 +243,8 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(MODO_DE_TRABALHO, "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horário_clockwise", FieldType.COMBOBOX, 
-				"Horário_clockwise;AntiHorário_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horï¿½rio_clockwise", FieldType.COMBOBOX, 
+				"Horï¿½rio_clockwise;AntiHorï¿½rio_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(HABILITAR_TECLADO, "true", FieldType.CHECKBOX));
@@ -255,19 +255,19 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_PING, "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_ESPERA_PARA_CONECTAR, "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO(TIPO_LEITOR, "Proximidade Wiegand_3", FieldType.COMBOBOX,
-				"Código de barras_0;Magnético_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Codigo de barras_0;Magnï¿½tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
                         + "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		geralConfigurations.add(new ConfigurationTO(QUANTIDADE_DIGITOS_CARTAO, "5", FieldType.NUMERIC_LIST, "4;1;16"));
 		geralConfigurations.add(new ConfigurationTO(MODELO_BIOMETRICO, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(TIPO_BIOMETRICO, "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 		geralConfigurations.add(new ConfigurationTO(DOIS_LEITORES, "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
 		geralConfigurations.add(new ConfigurationTO(LEITOR_1, "Somente entrada_1", FieldType.COMBOBOX,
-				"Desativado_0;Somente entrada_1;Somente Saída_2"));
-		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Somente Saída_2", FieldType.COMBOBOX,
-				"Desativado_0;Somente entrada_1;Somente Saída_2"));
-		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Não_0", FieldType.COMBOBOX, "Sim_1;Não_0"));
-		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrão livre_1", FieldType.COMBOBOX, "Padrão livre_1;Padrão TopData_0"));
+				"Desativado_0;Somente entrada_1;Somente Saï¿½da_2"));
+		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Somente Saï¿½da_2", FieldType.COMBOBOX,
+				"Desativado_0;Somente entrada_1;Somente Saï¿½da_2"));
+		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Nï¿½o_0"));
+		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nï¿½o_0", FieldType.COMBOBOX, "Sim_1;Nï¿½o_0"));
+		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrï¿½o livre_1", FieldType.COMBOBOX, "Padrï¿½o livre_1;Padrï¿½o TopData_0"));
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(USA_TORNIQUETE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ACIONA_RELE_2, "false", FieldType.CHECKBOX));
@@ -289,7 +289,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-		configurationGroups.add(new ConfigurationGroupTO("Personalização", customConfigurations));
+		configurationGroups.add(new ConfigurationGroupTO("Personalizaï¿½ï¿½o", customConfigurations));
 	}
 
 }
