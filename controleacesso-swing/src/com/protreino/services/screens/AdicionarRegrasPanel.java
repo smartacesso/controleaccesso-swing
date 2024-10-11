@@ -54,6 +54,9 @@ public class AdicionarRegrasPanel extends JPanel {
 	private JFormattedTextField dataInicioPeriodoTextField;
 	private JFormattedTextField dataFimPeriodoTextField;
 
+	private JFormattedTextField dataInicioEscalaTextField;
+
+	
 	private JFormattedTextField validadePedestreRegraTextField;
 	
 	private DefaultTableModel dataModel;
@@ -64,6 +67,9 @@ public class AdicionarRegrasPanel extends JPanel {
 	private JPanel validadeCreditosPanel;
 	private JPanel dataInicioPeriodoPanel;
 	private JPanel dataFimPeriodoPanel;
+	
+	private JPanel dataInicioEscalaPanel;
+
 	
 	public AdicionarRegrasPanel(TipoPedestre tipoPedestre) {
 		if(this.pedestresRegras == null)
@@ -108,6 +114,8 @@ public class AdicionarRegrasPanel extends JPanel {
 			} else if(TipoRegra.ACESSO_PERIODO.equals(regra.getTipo())) {
 				dataInicioPeriodoPanel.setVisible(true);
 				dataFimPeriodoPanel.setVisible(true);
+			}else if(TipoRegra.ACESSO_ESCALA_3_3.equals(regra.getTipo())) {
+				dataInicioEscalaPanel.setVisible(true);
 			}
 		});
 		
@@ -165,7 +173,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		dataInicioPeriodoPanel = new JPanel();
 		dataInicioPeriodoPanel.setLayout(new BoxLayout(dataInicioPeriodoPanel, BoxLayout.Y_AXIS));
 		dataInicioPeriodoPanel.setVisible(false);
-		JLabel dataInicioPeriodoLabel = new JLabel("Data início período");
+		JLabel dataInicioPeriodoLabel = new JLabel("Data inicio periodo");
 		dataInicioPeriodoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		dataInicioPeriodoPanel.add(dataInicioPeriodoLabel);
 		dataInicioPeriodoPanel.add(Box.createVerticalStrut(2));
@@ -177,6 +185,22 @@ public class AdicionarRegrasPanel extends JPanel {
 		dataInicioPeriodoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		// <FIM DATA INICIO PERIODO>
 		
+		
+		dataInicioEscalaPanel = new JPanel();
+		dataInicioEscalaPanel.setLayout(new BoxLayout(dataInicioEscalaPanel, BoxLayout.Y_AXIS));
+		dataInicioEscalaPanel.setVisible(false);
+		JLabel dataInicioEscalaLabel = new JLabel("Data inicio Escala");
+		dataInicioEscalaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		dataInicioEscalaPanel.add(dataInicioEscalaLabel);
+		dataInicioEscalaPanel.add(Box.createVerticalStrut(2));
+		
+		dataInicioEscalaTextField = Utils.getNewJFormattedTextField(5);
+		mask = Utils.getNewMaskFormatter("##/##/####");
+		mask.install(dataInicioEscalaTextField);
+		dataInicioEscalaPanel.add(dataInicioEscalaTextField);
+		dataInicioEscalaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		// <INICIO DATA INICIO ESCALA>
+				
 		dataFimPeriodoPanel = new JPanel();
 		dataFimPeriodoPanel.setLayout(new BoxLayout(dataFimPeriodoPanel, BoxLayout.Y_AXIS));
 		dataFimPeriodoPanel.setVisible(false);
@@ -218,6 +242,8 @@ public class AdicionarRegrasPanel extends JPanel {
 		headerPanel.add(dataInicioPeriodoPanel);
 		headerPanel.add(Box.createHorizontalStrut(10));
 		headerPanel.add(dataFimPeriodoPanel);
+		headerPanel.add(Box.createHorizontalStrut(10));
+		headerPanel.add(dataInicioEscalaPanel);
 		headerPanel.add(Box.createHorizontalStrut(10));
 		headerPanel.add(addPedestreRegraPanel);
 		headerPanel.add(removePedestreRegraPanel);
@@ -296,6 +322,11 @@ public class AdicionarRegrasPanel extends JPanel {
 		try {
 			pedestreRegra.setDataFimPeriodo(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataFimPeriodoTextField.getText())));
 		} catch (Exception e) {}
+		
+		try {
+			pedestreRegra.setDataInicioEscala3_3(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioEscalaTextField.getText())));
+		} catch (Exception e) {}
+		
 		
 		pedestresRegras.add(pedestreRegra);
 		
