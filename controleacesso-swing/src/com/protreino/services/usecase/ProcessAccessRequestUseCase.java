@@ -2,6 +2,10 @@ package com.protreino.services.usecase;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -246,8 +250,49 @@ public class ProcessAccessRequestUseCase {
 							&& !isPermitidoPedestreRegra(matchedPedestrianAccess)
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
-				}else if(matchedPedestrianAccess.TemTipoEscala3x3()) {	
+				} else if(matchedPedestrianAccess.temTipoEscala3x3()) {
+					// Pegar a data do acesso e subtrair a diferença de dias com a data do inicio da escala
+					// Pegar o resultado e fazer uma divisão por 12 e pegar o resto da divisão
+					// Somar o resto da divisão mais 1 pra indicar qual é o dia que ele esta trabalhando
+					// se dias 1, 2 e 3 de 07:00 as 19:00 pode passar
+					// se dias 4, 5 e 6 não pode passar
+					// se dia 7 pode passar das 19:00 as 23:59:59
+					// se dia 8 e 9 pode passar das 00:00 as 07:00 e 19:00 as 23:59:59
+					// se dia 10 pode passar de 00:00 as 07:00
+					// se dia 11 e 12 não pode passar
+
+					LocalDateTime dataAcesso = LocalDateTime.now();
+					LocalDateTime dataInicioEscala = matchedPedestrianAccess.getRegraAtivaPedestre()
+								.get().getDataInicioEscala3_3().toInstant()
+						      .atZone(ZoneId.systemDefault())
+						      .toLocalDateTime();
+					
+					final int diaDaEscala = Period.between(dataAcesso.toLocalDate(), dataInicioEscala.toLocalDate()).getDays() + 1;
+
+					if(diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
+						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0));
+					
+					} else if(diaDaEscala == 7) {
+						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(19, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(23, 59, 59));
+					
+					} else if(diaDaEscala == 8 || diaDaEscala == 9) {
+						permitido = (dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0)))
+								|| (dataAcesso.toLocalTime().isAfter(LocalTime.of(19, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(23, 59, 59)));
+					
+					} else if(diaDaEscala == 10) {
+						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
+								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0));
+					
+					} else {
+						permitido = false;
+					}
+					
 					//Data do acesso
+					/*
 					Calendar dataAcesso = Calendar.getInstance();
 					
 					// Data base de início do turno
@@ -292,10 +337,9 @@ public class ProcessAccessRequestUseCase {
 					    // Está nos 3 dias de folga
 					    permitido = false;
 					}
+					*/
 	
-				}
-					
-				else if (matchedPedestrianAccess.temTipoTurno()) {
+				} else if (matchedPedestrianAccess.temTipoTurno()) {
 					TipoEscala tipo = TipoEscala.valueOf(matchedPedestrianAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
 							? Calendar.HOUR

@@ -1224,17 +1224,16 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	}
 	
 	
-	public Boolean TemTipoEscala3x3() {
+	public boolean temTipoEscala3x3() {
 		if (Objects.isNull(pedestreRegra)) {
 			return false;
 		}
 
 		final Optional<PedestreRegraEntity> regraAtiva = getRegraAtivaPedestre();
-		if(regraAtiva.get().getRegra().getTipo().equals(TipoRegra.ACESSO_ESCALA_3_3)) {
-			return true;
-		}else {
-			return false;
-		}
+		
+		return regraAtiva.isPresent() 
+				? TipoRegra.ACESSO_ESCALA_3_3.equals(regraAtiva.get().getRegra().getTipo())
+				: false;
 	}
 	
 	
