@@ -141,6 +141,7 @@ public class HikivisionUseCases {
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
 
 		devicesToSync.forEach(deviceId -> {
+			
 			try {
 				if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, pedestre.getCardNumber())) {
 					final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId,
@@ -194,6 +195,7 @@ public class HikivisionUseCases {
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
+		
 		});
 
 		pedestre.setDataCadastroFotoNaHikivision(new Date());

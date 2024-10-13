@@ -32,6 +32,7 @@ import org.hibernate.annotations.Type;
 
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
+import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
@@ -237,23 +238,27 @@ import com.protreino.services.utils.EncryptionUtils;
 	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistred",
 				query = "select count(obj) from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
+						"and obj.tipo = 'PEDESTRE' " + 						
 						"order by obj.id asc"),
 	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate",
 				query = "select count(obj) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null " +
 						"order by obj.id asc"),
@@ -1204,6 +1209,35 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return Optional.empty();
 	}
 	
+	public Optional<PedestreRegraEntity> getRegraAtivaPedestre() {
+		if (Objects.isNull(pedestreRegra)) {
+			return Optional.empty();
+		}
+
+		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
+			if (pedestreRegra.isNaoRemovidoNoDesktop()) {
+				return Optional.of(pedestreRegra);
+			}
+		}
+
+		return Optional.empty();
+	}
+	
+	
+	public Boolean TemTipoEscala() {
+		if (Objects.isNull(pedestreRegra)) {
+			return false;
+		}
+
+		final Optional<PedestreRegraEntity> regraAtiva = getRegraAtivaPedestre();
+		if(regraAtiva.get().getRegra().getTipo().equals(TipoRegra.ACESSO_ESCALA_3_3)) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	
 	public void apagarCartao() {
 		if(Objects.nonNull(dataCadastroFotoNaHikivision)) {
 			return;
@@ -1270,6 +1304,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	public boolean temTipoTurno() {
 		return Objects.nonNull(tipoTurno) && !tipoTurno.isEmpty();
 	}
+	
 	
 	public boolean isInativo() {
 		return "INATIVO".equals(status);

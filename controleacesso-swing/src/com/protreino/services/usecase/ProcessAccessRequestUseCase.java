@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
@@ -23,6 +24,7 @@ import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.TipoEscala;
+import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.exceptions.QrcodeVencidoException;
 import com.protreino.services.main.Main;
@@ -126,6 +128,9 @@ public class ProcessAccessRequestUseCase {
 
 			// achou o pedestre, pula regras e envia acesso liberado
 			// verifica somente se no for pra pular
+			
+
+			
 			if (!Boolean.TRUE.equals(ignoraRegras)) {
 				if (isObrigatorioPassagemViaLeitorFacial(matchedPedestrianAccess, origem)) {
 					if (createNotification) {
@@ -241,7 +246,52 @@ public class ProcessAccessRequestUseCase {
 							&& !isPermitidoPedestreRegra(matchedPedestrianAccess)
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
-				} else if (matchedPedestrianAccess.temTipoTurno()) {
+				}else if(matchedPedestrianAccess.TemTipoEscala()) {			
+					Calendar dataAcesso = Calendar.getInstance();
+					// Data base de início do turno
+					Calendar dataInicioTurno = Calendar.getInstance();
+					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Exemplo: 07/10/2024 às 07:00
+
+					// Calcular a diferença em milissegundos entre agora e o início do turno
+					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
+					long diffDays = diffMillis / (1000 * 60 * 60 * 24);  // Convertendo para dias
+
+					// Cada ciclo é de 6 dias: 3 dias de trabalho e 3 dias de folga
+					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 está
+
+					// Verificar se está nos 3 dias de trabalho
+					if (cicloAtual < 3) {
+					    // Alternar entre turno de 7h e 19h (dias 7,8,9) e turno de 19h e 7h (dias 13,14,15)
+					    long alternanciaTurno = (diffDays / 6) % 2;  // Alteração a cada 6 dias
+
+					    Calendar periodoPermitidoIni = Calendar.getInstance();
+					    Calendar periodoPermitidoFim = Calendar.getInstance();
+
+					    if (alternanciaTurno == 0) {
+					        // Turno de 7h às 19h
+					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 7);
+					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 19);
+					    } else {
+					        // Turno de 19h às 7h do dia seguinte
+					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 19);
+					        periodoPermitidoFim.add(Calendar.DATE, 1);  // Passa para o dia seguinte
+					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 7);
+					    }
+
+					    // Verificar se o acesso ocorre dentro do turno de trabalho
+					    if (dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim)) {
+					        permitido = true;  // Está dentro do turno de trabalho
+					    } else {
+					        permitido = false;  // Fora do turno de trabalho
+					    }
+					} else {
+					    // Está nos 3 dias de folga
+					    permitido = false;
+					}
+	
+				}
+					
+				else if (matchedPedestrianAccess.temTipoTurno()) {
 					TipoEscala tipo = TipoEscala.valueOf(matchedPedestrianAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
 							? Calendar.HOUR
@@ -628,6 +678,7 @@ public class ProcessAccessRequestUseCase {
 
 		Calendar h = Calendar.getInstance();
 		h.setTime(pedestre.getInicioTurno());
+
 
 
 		c.set(Calendar.HOUR_OF_DAY, h.get(Calendar.HOUR_OF_DAY));
