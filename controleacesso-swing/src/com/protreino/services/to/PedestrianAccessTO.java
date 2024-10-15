@@ -286,7 +286,16 @@ public class PedestrianAccessTO extends BaseEntity{
 	}
 
 	public Date getInicioTurno() {
-		return inicioTurno;
+	    if (inicioTurno == null) {
+	        return inicioTurno; // Retorna null se inicioTurno for nulo
+	    }
+
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(inicioTurno);
+	    // Ajuste a hora, por exemplo, subtraindo 3 horas
+	    calendar.add(Calendar.HOUR_OF_DAY, -3);
+	    return calendar.getTime();
+		
 	}
 
 	public void setInicioTurno(Date inicioTurno) {

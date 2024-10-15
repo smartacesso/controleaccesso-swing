@@ -50,7 +50,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 	
 	private JTable accessHistoryTable;
 	private List<LogPedestrianAccessEntity> historicoAcesso;
-	private String[] columns = {"Codigo", "Cart�o","Tipo", "Nome", "Data do acesso", "Tipo de acesso"};
+	private String[] columns = {"Codigo", "Cartao","Tipo", "Nome", "Data do acesso", "Tipo de acesso"};
 	private Integer[] columnWidths = {50, 60, 60, 270, 120, 130};
 	 
 	private JComboBox<SelectItem> filtroTipoJComboBox;

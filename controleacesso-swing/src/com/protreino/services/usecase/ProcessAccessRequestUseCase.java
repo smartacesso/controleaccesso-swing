@@ -261,6 +261,7 @@ public class ProcessAccessRequestUseCase {
 					// se dia 8 e 9 pode passar das 00:00 as 07:00 e 19:00 as 23:59:59
 					// se dia 10 pode passar de 00:00 as 07:00
 					// se dia 11 e 12 n�o pode passar
+					System.out.println("Tipo de regra - Escala 3x3");
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
 					LocalDate dataInicioEscala = new java.util.Date(matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3().getTime())
@@ -341,6 +342,7 @@ public class ProcessAccessRequestUseCase {
 					*/
 	
 				} else if (matchedPedestrianAccess.temTipoTurno()) {
+					System.out.println("Tipo escala - Turno ");
 					TipoEscala tipo = TipoEscala.valueOf(matchedPedestrianAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)
 							? Calendar.HOUR

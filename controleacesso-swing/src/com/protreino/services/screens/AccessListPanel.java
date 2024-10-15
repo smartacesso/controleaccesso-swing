@@ -50,7 +50,7 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Codigo", "Cart�o", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
+	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
 	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
@@ -92,7 +92,7 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		JPanel filtroCartaoPanel= new JPanel();
 		filtroCartaoPanel.setLayout(new BoxLayout(filtroCartaoPanel, BoxLayout.Y_AXIS));
-		JLabel filtroCartaoLabel = new JLabel("Cart�o");
+		JLabel filtroCartaoLabel = new JLabel("Cartao");
 		filtroCartaoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoLabel);
 		filtroCartaoTextField = new JTextField("", 8);
@@ -359,7 +359,7 @@ public class AccessListPanel extends PaginedListPanel {
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
 		//countLabel.setText("Total: " + numAcessos);
-		countLabel.setText("P�g. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
+		countLabel.setText("Pag. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
 	

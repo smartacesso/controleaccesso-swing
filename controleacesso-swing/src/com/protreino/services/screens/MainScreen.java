@@ -495,7 +495,7 @@ public class MainScreen extends JFrame {
 			});
 			menuOpcoes.add(liberarAcessoMenuItem);
 
-			preferenciasMenuItem = new JMenuItem("Preferências");
+			preferenciasMenuItem = new JMenuItem("Preferencias");
 			preferenciasMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -514,12 +514,12 @@ public class MainScreen extends JFrame {
 							buildUI();
 							tabbedPane.setSelectedIndex(index);
 						} else {
-							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissï¿½o",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
+						Utils.createNotification("Nï¿½o foi possï¿½vel abri as preferï¿½ncias", NotificationType.BAD);
 					}
 				}
 
@@ -544,12 +544,12 @@ public class MainScreen extends JFrame {
 							buildUI();
 							tabbedPane.setSelectedIndex(index);
 						} else {
-							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissï¿½o",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Não foi possível abri as preferências", NotificationType.BAD);
+						Utils.createNotification("Nï¿½o foi possï¿½vel abri as preferï¿½ncias", NotificationType.BAD);
 					}
 				}
 			);
@@ -572,12 +572,12 @@ public class MainScreen extends JFrame {
 						if (retornoAuthentication) {
 							syncUsers();
 						} else {
-							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissão",
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissï¿½o",
 									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
-						Utils.createNotification("Nao foi possível sincronizar os usuários", NotificationType.BAD);
+						Utils.createNotification("Nao foi possï¿½vel sincronizar os usuï¿½rios", NotificationType.BAD);
 					}
 				}
 			});
@@ -592,7 +592,7 @@ public class MainScreen extends JFrame {
 			});
 			menuConfiguracoes.add(logsMenuItem);
 			
-			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizações");
+			procurarAtualizacaoMenuItem = new JMenuItem("Procurar atualizaï¿½ï¿½es");
 			procurarAtualizacaoMenuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -676,11 +676,11 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-	    // Verifica se o usuário tem um perfil de acesso
+	    // Verifica se o usuï¿½rio tem um perfil de acesso
 	    if(Main.internoLoggedUser.getPerfilAcesso() != null) {
 	        // Se o perfil for PORTEIRO, exibe uma mensagem e retorna sem abrir o cadastro
 	        if(Main.internoLoggedUser.getPerfilAcesso().equals(PerfilAcesso.PORTEIRO)) {
-	            JOptionPane.showMessageDialog(null, "Usuário não possui acesso");
+	            JOptionPane.showMessageDialog(null, "Usuï¿½rio nï¿½o possui acesso");
 	            return;
 	        }
 	    }
@@ -692,7 +692,7 @@ public class MainScreen extends JFrame {
 	        pedestre.setTipo("PEDESTRE");
 	    }
 
-	    // Verifica se o cadastro já foi aberto pelo atalho
+	    // Verifica se o cadastro jï¿½ foi aberto pelo atalho
 	    if (!RegisterVisitorDialog.abertoPeloAtalho) {
 	        RegisterVisitorDialog.abertoPeloAtalho = true;
 	        cadastroPedestre = new RegisterVisitorDialog(pedestre);
@@ -918,8 +918,8 @@ public class MainScreen extends JFrame {
 		} else {
 			connectionStatusLabel.setLabelColor(Color.RED);
 			connectionStatusLabel.setText("Offline");
-			connectionStatusLabel.setToolTipText("<html>Sem conexÃ£o com servidor " + servidor + " os dados não estÃ£o sendo sincronizados."
-					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+			connectionStatusLabel.setToolTipText("<html>Sem conexÃ£o com servidor " + servidor + " os dados nï¿½o estÃ£o sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor estï¿½ ligado!</html>" );
 		}
 	}
 
@@ -941,8 +941,8 @@ public class MainScreen extends JFrame {
 		} else {
 			hikivisionConnectionStatusLabel.setLabelColor(Color.RED);
 			hikivisionConnectionStatusLabel.setText("Hikivision: Offline");
-			hikivisionConnectionStatusLabel.setToolTipText("<html>Sem conexão com servidor " + servidor + " os dados não estão sendo sincronizados."
-					+ "<br/>Verifique sua internet ou verifique se o servidor está ligado!</html>" );
+			hikivisionConnectionStatusLabel.setToolTipText("<html>Sem conexï¿½o com servidor " + servidor + " os dados nï¿½o estï¿½o sendo sincronizados."
+					+ "<br/>Verifique sua internet ou verifique se o servidor estï¿½ ligado!</html>" );
 		}
 	}
 	
@@ -1047,7 +1047,7 @@ public class MainScreen extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.mainScreen
-					.addEvento("Não foi possivel abrir a pasta de logs. Navegue atÃ© ela manualmente: " + Main.logPath);
+					.addEvento("Nï¿½o foi possivel abrir a pasta de logs. Navegue atÃ© ela manualmente: " + Main.logPath);
 		}
 	}
 

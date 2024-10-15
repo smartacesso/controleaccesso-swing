@@ -562,9 +562,9 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 HibernateAccessDataFacade.save(LogCartaoComandaEntity.class, log);
 		        	 
 		        	 
-		        	 Utils.createNotification("Cart�o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
+		        	 Utils.createNotification("Cartao " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
 		         } else {
-		        	 Utils.createNotification("Cart�o " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " j� est� liberado.", NotificationType.BAD);
+		        	 Utils.createNotification("Cartao " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " j� est� liberado.", NotificationType.BAD);
 		         }
 		         cleanFilter();
 	        }

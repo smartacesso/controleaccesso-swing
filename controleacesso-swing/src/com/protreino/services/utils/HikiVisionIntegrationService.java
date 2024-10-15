@@ -41,7 +41,7 @@ public class HikiVisionIntegrationService {
 
 			/*
 			if (Utils.isNullOrEmpty(url) || Utils.isNullOrEmpty(user)) {
-				throw new IllegalArgumentException("Url connection não pode ser nula");
+				throw new IllegalArgumentException("Url connection nï¿½o pode ser nula");
 			}
 			*/
 
@@ -125,7 +125,7 @@ public class HikiVisionIntegrationService {
 						HikivisionUserInfoTO.class);
 				final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Usuario %s já cadastrado no device %s: %b", idUser, deviceId,
+				System.out.println(String.format("Usuario %s jï¿½ cadastrado no device %s: %b", idUser, deviceId,
 						isUsuarioCadastrado));
 
 				return isUsuarioCadastrado;
@@ -164,7 +164,7 @@ public class HikiVisionIntegrationService {
 						FaceInfoSearchTO.class);
 				final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Foto do usuario %s já cadastrado no device %s: %b", idUser, deviceId,
+				System.out.println(String.format("Foto do usuario %s jï¿½ cadastrado no device %s: %b", idUser, deviceId,
 						isUsuarioCadastrado));
 
 				return isUsuarioCadastrado;
@@ -341,7 +341,7 @@ public class HikiVisionIntegrationService {
 					FaceDataRecordResponseTO.class);
 
 			if("Invalid Content".equalsIgnoreCase(responseBody.statusString)) {
-				System.out.println(String.format("Foto do usuario %s não foi aceita no device %s", idUser, deviceId));
+				System.out.println(String.format("Foto do usuario %s nï¿½o foi aceita no device %s", idUser, deviceId));
 				throw new InvalidPhotoException(responseBody.statusString);
 			}
 			
@@ -421,7 +421,7 @@ public class HikiVisionIntegrationService {
 			}
 
 			final boolean isCartaoJaCadastrado = "OK".equalsIgnoreCase(responseBody.CardInfoSearch.responseStatusStrg);
-			System.out.println(String.format("Cartão do usuario %s já cadastrado no device %s: %b", idUser, deviceId,
+			System.out.println(String.format("Cartao do usuario %s jï¿½ cadastrado no device %s: %b", idUser, deviceId,
 					isCartaoJaCadastrado));
 
 			return isCartaoJaCadastrado;

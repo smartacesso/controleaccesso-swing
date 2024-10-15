@@ -52,7 +52,7 @@ public class PreferencesDialog extends JDialog {
 	private Map<String, FieldTO> fieldMap;
 	
 	public PreferencesDialog() {
-		super(Main.mainScreen, "Preferências", true);
+		super(Main.mainScreen, "Preferencias", true);
 		
 		loadImages();
 		
@@ -196,7 +196,7 @@ public class PreferencesDialog extends JDialog {
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
 		
-		JButton resetarButton = new JButton("Valores padrão");
+		JButton resetarButton = new JButton("Valores padrï¿½o");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
 		salvarButton.setPreferredSize(new Dimension(80, 30));
@@ -239,7 +239,7 @@ public class PreferencesDialog extends JDialog {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//AmanhÃ£ fazer a configurações da funÃ§Ã£o e terminar de executar tanto a requisiÃ§Ã£o, quanto o procuramento Main 1896
+//AmanhÃ£ fazer a configuraï¿½ï¿½es da funÃ§Ã£o e terminar de executar tanto a requisiÃ§Ã£o, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
 		});
 
@@ -271,7 +271,7 @@ public class PreferencesDialog extends JDialog {
 	//			}
 				Utils.exportPreferences();
 				
-				JOptionPane.showMessageDialog(Main.mainScreen, "Preferências salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(Main.mainScreen, "Preferencias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
 				dispose();
 			}
 		});
@@ -296,7 +296,7 @@ public class PreferencesDialog extends JDialog {
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmação", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmaï¿½ï¿½o", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (dialogResult == JOptionPane.YES_OPTION){
 					SyncPedestrianAccessListUseCase.setLastSync(0l);
