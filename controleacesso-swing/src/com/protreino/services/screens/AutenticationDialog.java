@@ -102,11 +102,11 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Utils.isNullOrEmpty(loginField.getText())) {
-					invalidCredentialsLabel.setText("Login inválido!");
+					invalidCredentialsLabel.setText("Login invï¿½lido!");
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inválida!");
+					invalidCredentialsLabel.setText("Senha invï¿½lida!");
 					return;
 				}
 				
@@ -334,10 +334,12 @@ public class AutenticationDialog extends JDialog {
 			    		
 			    		long fimTimer =  new Date().getTime();
 			    		System.out.println("tempo com shortcut: "+ (fimTimer - inicioTimer));
-			    		if(user != null) {
-			    			System.out.println("Perfil : " + user.getPerfilAcesso());
-			    			if(!user.getPerfilAcesso().equals(PerfilAcesso.ADMINISTRADOR)) {
-			    				return false;
+			    		if(user != null ) {
+			    			if(user.getPerfilAcesso() != null) {
+			    				System.out.println("Perfil : " + user.getPerfilAcesso());
+			    				if(!user.getPerfilAcesso().equals(PerfilAcesso.ADMINISTRADOR)) {
+			    					return false;
+			    				}		    							    			
 			    			}
 			    			return true;			    			
 			    		}

@@ -122,7 +122,7 @@ public class CartaoComandaDialog extends JDialog {
 	    		redAndBoldFont(numeroLabel);
 				valido = false;
 	    	}
-	    	if (verificaNumeroDuplicado(cartaoComanda, numeroAlternativoTextField.getText().trim(), "numeroAlternativo")) {
+	    	if (verificaRotuloDuplicado(cartaoComanda, numeroAlternativoTextField.getText().trim(), "numeroAlternativo")) {
 	    		redAndBoldFont(numeroAlternativoLabel);
 				valido = false;
 	    	}
@@ -196,12 +196,46 @@ public class CartaoComandaDialog extends JDialog {
 
 	@SuppressWarnings("unchecked")
 	private boolean verificaNumeroDuplicado(CartaoComandaEntity cartao, String numero, String campo) {
+
+		HashMap<String, Object> args = new HashMap<>();
+		args.put(campo, numero);
+		args.put("removido", false);
+		List<CartaoComandaEntity> list = (List<CartaoComandaEntity>) HibernateAccessDataFacade
+				.getResultListWithDynamicParams(CartaoComandaEntity.class, null, args);
+		
+		if(list != null && !list.isEmpty()) {
+			for(CartaoComandaEntity cartaoEncontrado : list) {			
+				if(numero.equals(cartaoEncontrado.getNumeroReal())
+						&& cartao.getId().equals(cartaoEncontrado.getId())) {
+					return true;
+				}
+			}
+
+//			if(cartao.getId() == null
+//					|| !cartao.getId().equals(list.get(0).getId()))
+//				return true;
+		}
+		
+		//n�o tem código
+		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private boolean verificaRotuloDuplicado(CartaoComandaEntity cartao, String numero, String campo) {
 		
 		HashMap<String, Object> args = new HashMap<>();
 		args.put(campo, numero);
 		args.put("removido", false);
 		List<CartaoComandaEntity> list = (List<CartaoComandaEntity>) HibernateAccessDataFacade
 				.getResultListWithDynamicParams(CartaoComandaEntity.class, null, args);
+
+//		if(list != null && !list.isEmpty()) {
+//			for(CartaoComandaEntity cartaoEncontrado : list) {			
+//				if(numero.equals(cartaoEncontrado.getNumeroAlternativo())
+//						&& cartao.getId().equals(cartaoEncontrado.getId())) {
+//					return true;
+//				}
+//			}
 		
 		if(list != null && !list.isEmpty()) {
 			if(cartao.getId() == null
@@ -212,6 +246,7 @@ public class CartaoComandaDialog extends JDialog {
 		//n�o tem código
 		return false;
 	}
+
 
 
 	protected void limparTodosOsCampos() {

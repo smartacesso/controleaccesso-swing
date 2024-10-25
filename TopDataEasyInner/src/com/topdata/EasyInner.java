@@ -144,6 +144,7 @@ public class EasyInner {
      */
     public static native int EnviarDigitalUsuario(int Inner, String usuario, byte[] Template1, byte[] Template2);
 
+    public static native int DefinirPorcentagemRevista(int Porcentagem);
     /**
      * Solicita uma digital diretaqmente do leitor do Inner
      *

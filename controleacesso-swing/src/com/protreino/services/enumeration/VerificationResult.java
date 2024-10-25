@@ -16,6 +16,7 @@ public enum VerificationResult {
 	ALLOWED_ONLY_ONCE,
 	NOT_ALLOWED_ORIGEM,
 	NOT_ALLOWED_SENSOR,
+	REVISTA_REQUIRED,
 	NOT_ALLOWED_BOX;
 	
 	public String getMessage() {
@@ -45,6 +46,8 @@ public enum VerificationResult {
 			return Utils.getPreference("messageNotAllowedFaceRequired");
 		if(this.equals(NOT_ALLOWED_BOX))
 			return Utils.getPreference("messageNotAllowedBox");
+		if(this.equals(REVISTA_REQUIRED))
+			return Utils.getPreference("RevistaRequired");
 		
 		return "";
 	}

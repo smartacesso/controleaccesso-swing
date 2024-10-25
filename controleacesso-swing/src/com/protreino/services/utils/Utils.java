@@ -476,6 +476,8 @@ public class Utils {
 				"Mensagem SMS apÃ³s passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedBox",
 				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "RevistaRequired",
+				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenBackgroundImage",
 				"Imagem de fundo da tela do pedestre", FieldType.IMAGE, ""));
@@ -514,6 +516,8 @@ public class Utils {
 				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "porcentagemRevista",
+				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));	
 
 		
 		

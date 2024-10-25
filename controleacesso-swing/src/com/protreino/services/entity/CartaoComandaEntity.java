@@ -36,6 +36,11 @@ import com.protreino.services.enumeration.StatusCard;
 					  + "where obj.id = :ID"
 					  + "	   and (obj.removido is null or obj.removido = false) "
 					  + "order by obj.id asc"),
+	@NamedQuery(name  = "CartaoComandaEntity.findByNumeroAlternativo", 
+				query = "select obj from CartaoComandaEntity obj "
+					  + "where obj.numeroAlternativo = :NUMERO_ALTERNATIVO"
+					  + "	   and (obj.removido is null or obj.removido = false) "
+					  + "order by obj.id asc"),
 })
 @SuppressWarnings("serial")
 public class CartaoComandaEntity extends BaseEntity implements ObjectWithId {

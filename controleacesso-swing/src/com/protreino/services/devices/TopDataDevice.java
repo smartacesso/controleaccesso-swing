@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 
 import javax.swing.SwingWorker;
@@ -92,6 +93,7 @@ import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 import com.topdata.easyInner.enumeradores.Enumeradores.EstadosInner;
+import com.topdata.easyInner.utils.EasyInnerUtils;
 
 @SuppressWarnings("serial")
 public class TopDataDevice extends Device {
@@ -1942,7 +1944,9 @@ public class TopDataDevice extends Device {
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
+			System.out.println("   Chegou no validada acesso ");
 
+			
 			if (inner.BilheteInner.Origem == 1 
 					|| inner.BilheteInner.Origem == 2
 					|| inner.BilheteInner.Origem == 3
@@ -2302,8 +2306,8 @@ public class TopDataDevice extends Device {
 			} else {
 				EasyInner.ConfigurarInnerOnLine();
 			}
-
-			EasyInner.ConfigurarAcionamento1(tipoCatraca, tempoLiberacao);
+			
+			EasyInner.ConfigurarAcionamento1(5, tempoLiberacao);
 			EasyInner.ConfigurarAcionamento2(tipoCatraca, tempoLiberacao);
 			EasyInner.HabilitarTeclado(habilitaTeclado, ecoarAsteriscos);
 			EasyInner.DefinirFuncaoDefaultLeitoresProximidade(tipoLeitorProximidade);

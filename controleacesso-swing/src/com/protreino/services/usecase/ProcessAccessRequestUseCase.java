@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.protreino.services.constants.Origens;
@@ -44,6 +45,8 @@ import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class ProcessAccessRequestUseCase {
 
+	
+	
 	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 	
@@ -134,6 +137,23 @@ public class ProcessAccessRequestUseCase {
 			// achou o pedestre, pula regras e envia acesso liberado
 			// verifica somente se no for pra pular
 			
+			final LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(matchedPedestrianAccess.getId(),
+					matchedPedestrianAccess.getQtdAcessoAntesSinc());
+			if(!Objects.isNull(ultimoAcesso))
+			{
+			    if ("ENTRADA".equals(ultimoAcesso.getDirection())) {
+			        boolean revista = realizarRevista(); // Método fictício para aplicar a lógica de revista
+
+			        if (revista) {
+			            if (createNotification) {
+			                Utils.createNotification(userName + " não passou pela revista obrigatória.", NotificationType.BAD, foto);
+			            }
+			            
+
+			            return new Object[] { VerificationResult.REVISTA_REQUIRED, userName, matchedPedestrianAccess };
+			        }
+			    }
+			}
 
 			
 			if (!Boolean.TRUE.equals(ignoraRegras)) {
@@ -190,9 +210,8 @@ public class ProcessAccessRequestUseCase {
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
 			}
 
-			final LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(matchedPedestrianAccess.getId(),
-					matchedPedestrianAccess.getQtdAcessoAntesSinc());
 
+			
 			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
 					&& Boolean.FALSE.equals(matchedPedestrianAccess.getHabilitarTeclado())) {
 				permitido = false;
@@ -492,6 +511,32 @@ public class ProcessAccessRequestUseCase {
 		return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
 	}
 	
+	private boolean realizarRevista() {
+		int porcentagem = Utils.getPreferenceAsInteger("porcentagemRevista");
+		double porcentagemConvertida = porcentagem;
+		// TODO Auto-generated method stub
+		// Gerador de número aleatório
+		System.out.println("entrou na revista");
+		Random random = new Random();
+		double chance = random.nextDouble(); // Valor entre 0.0 e 1.0
+		System.out.println("porcentagem : " + porcentagem + "% ");
+
+		if (porcentagemConvertida != 0) {
+		    porcentagemConvertida = porcentagemConvertida / 100.00;
+		}
+
+		System.out.println("porcentagem calculada : " + porcentagemConvertida); // Corrigido para exibir porcentagemConvertida
+		System.out.println("chance gerada : " + chance);
+
+		// Verifica se a chance gerada é menor ou igual à porcentagem convertida
+		if (chance <= porcentagemConvertida) {
+		    return true;
+		}
+
+		return false;
+
+	}
+
 	private PedestrianAccessEntity trataPedestreQRCode(String codigo) throws ParseException {
 		String qrCode = "";
 		String tempo = null;
