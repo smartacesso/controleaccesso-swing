@@ -41,6 +41,7 @@ import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.utils.Utils;
+import com.topdata.EasyInner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class ProcessAccessRequestUseCase {
@@ -148,8 +149,8 @@ public class ProcessAccessRequestUseCase {
 			            if (createNotification) {
 			                Utils.createNotification(userName + " não passou pela revista obrigatória.", NotificationType.BAD, foto);
 			            }
-			            
-
+			            int numeroInner =  Integer.parseInt(equipament.replaceAll("[^0-9]", "")); 
+			            EasyInner.AcionarRele2(numeroInner);
 			            return new Object[] { VerificationResult.REVISTA_REQUIRED, userName, matchedPedestrianAccess };
 			        }
 			    }
