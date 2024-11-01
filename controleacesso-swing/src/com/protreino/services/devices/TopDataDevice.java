@@ -1398,9 +1398,9 @@ public class TopDataDevice extends Device {
 				}
 			}
 			EasyInner.InserirUsuarioListaAcesso(temp, 101);
-			System.out.println("quem est� sendo enviado   " + pedestre.getName());
+			System.out.println("quem esta sendo enviado   " + pedestre.getName());
 			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
-			System.out.println("qual cart�o   " + temp);
+			System.out.println("qual cartao   " + temp);
 		}
 		
 		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateAccessDataFacade.buscaPedestresAtivosComBiometria();
