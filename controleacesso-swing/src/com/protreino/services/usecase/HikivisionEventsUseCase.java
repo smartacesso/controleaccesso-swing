@@ -60,14 +60,12 @@ public class HikivisionEventsUseCase {
 		if (Objects.isNull(eventListnerTO) 
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent())
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
-			System.out.println("eventlistenre : ---- " + eventListnerTO);
-			System.out.println("EVENTLISTENER GETACCSS : ---- " + eventListnerTO.getAccessControllerEvent());
-			System.out.println("EVENTLISTENER GETACCSS NUMERO : ----" + eventListnerTO.getAccessControllerEvent().getCardNo());
-			System.out.println("Evento de pedestre não reconhecido pela camera");
+			System.out.println("Evento nulo? : ---- " + Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo()));
+			System.out.println("Evento de pedestre nao reconhecido pela camera :  " + hikivisionCameraId);
 			return;
 		}
 		
-		System.out.println(String.format("Evento do usuario com o cartão %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
+		System.out.println(String.format("Evento do usuario com o cartï¿½o %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
 
 		final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
@@ -156,7 +154,7 @@ public class HikivisionEventsUseCase {
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso) {
 		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED 
 				|| selectedDevice.getStatus() == DeviceStatus.ONLY_ENABLED) {
-			System.out.println("Evento online, catraca desconectada: " + cardNo + " | " + dataAcesso);
+			System.out.println("Evento online, catraca desconectada: " + cardNo + " | " + dataAcesso + " | " + selectedDevice.getName());
 			
 			if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED) {
 				tryReconectDevice(selectedDevice);
