@@ -804,10 +804,10 @@ public class RegisterVisitorDialog extends BaseDialog {
             	criarDialogoEscolherFoto();
 //            }
         });
-
+        
         GridBagConstraints c = getNewGridBag(0, 0, 20, 5);
         panelInternoLateral.add(openImageSelectButton, c);
-
+              
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new GridBagLayout());
         Vector<SelectItem> itens = new Vector<SelectItem>();
@@ -878,8 +878,28 @@ public class RegisterVisitorDialog extends BaseDialog {
 //			visitante.setSempreLiberado(e.getStateChange() == ItemEvent.SELECTED);
 //		});
         panelInternoLateral.add(sempreLiberado, getNewGridBag(0, 6, 20, 5));
-        panelExterno.add(panelInternoLateral, BorderLayout.NORTH);          
+        panelExterno.add(panelInternoLateral, BorderLayout.NORTH); 
+        
+        
+        
+        JButton geraCartaoAcesso = new JButton("Gerar cartao");
+        geraCartaoAcesso.setBorder(new EmptyBorder(20, 20, 20, 20));
+        geraCartaoAcesso.setPreferredSize(new Dimension(120,3));
+        geraCartaoAcesso.addActionListener(e -> {
+        	
+        	if(cartaoAcessoTextField.getText().isEmpty() 
+        			|| cartaoAcessoTextField.getText().replace("0", "").equals("")) {
+            	String card = geraCartaoAcessoAleatorio();
+            	System.out.println("gerado : " + card);
+            	 cartaoAcessoTextField.setText(card);
+        	}
+        });
+        
+        c = getNewGridBag(0, 1, 0, 0);
+        panelInternoLateral.add(geraCartaoAcesso, getNewGridBag(0, 7, 30, 5));
+        
         return panelExterno;
+
     }
 
     private boolean exibeBotaoSempreLiberado() {
@@ -2818,7 +2838,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     }
     
  
-    private String geraCartaoAcessoAleatorio() {
+    private String geraCartaoAcessoAleatorio2() {
     	String cardNumber = "";
     	do {
     		Long randomNumber = Utils.getRandomNumber();
@@ -2831,6 +2851,13 @@ public class RegisterVisitorDialog extends BaseDialog {
                 visitante.getId() != null ? visitante.getId() : 0l));
     	
     	return cardNumber;
+    }
+    
+    private String geraCartaoAcessoAleatorio() {
+        String cardNumber;
+        cardNumber = String.valueOf(System.currentTimeMillis()).substring(5, 13);
+       
+        return cardNumber;
     }
     
     @Override

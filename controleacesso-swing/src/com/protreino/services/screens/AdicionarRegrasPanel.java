@@ -29,8 +29,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
+import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.RegraEntity;
+import com.protreino.services.enumeration.TipoEscala;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
@@ -54,7 +56,7 @@ public class AdicionarRegrasPanel extends JPanel {
 	private JFormattedTextField dataInicioPeriodoTextField;
 	private JFormattedTextField dataFimPeriodoTextField;
 
-	private JFormattedTextField dataInicioEscalaTextField;
+//	private JFormattedTextField dataInicioEscalaTextField;
 
 	
 	private JFormattedTextField validadePedestreRegraTextField;
@@ -68,12 +70,13 @@ public class AdicionarRegrasPanel extends JPanel {
 	private JPanel dataInicioPeriodoPanel;
 	private JPanel dataFimPeriodoPanel;
 	
-	private JPanel dataInicioEscalaPanel;
+//	private JPanel dataInicioEscalaPanel;
 
 	
 	public AdicionarRegrasPanel(TipoPedestre tipoPedestre) {
-		if(this.pedestresRegras == null)
-			pedestresRegras = new ArrayList<>();
+		if(this.pedestresRegras == null) {
+			this.pedestresRegras = new ArrayList<>();
+		}
 		
 		JPanel pedestreRegraListTablePanel = new JPanel();
 		pedestreRegraListTablePanel.setLayout(new BoxLayout(pedestreRegraListTablePanel, BoxLayout.Y_AXIS));
@@ -114,9 +117,10 @@ public class AdicionarRegrasPanel extends JPanel {
 			} else if(TipoRegra.ACESSO_PERIODO.equals(regra.getTipo())) {
 				dataInicioPeriodoPanel.setVisible(true);
 				dataFimPeriodoPanel.setVisible(true);
-			}else if(TipoRegra.ACESSO_ESCALA_3_3.equals(regra.getTipo())) {
-				dataInicioEscalaPanel.setVisible(true);
 			}
+//			else if(TipoRegra.ACESSO_ESCALA_3_3.equals(regra.getTipo())) {
+//				dataInicioEscalaPanel.setVisible(true);
+//			}
 		});
 		
 		regrasPanel.add(regrasJComboBox);
@@ -186,19 +190,19 @@ public class AdicionarRegrasPanel extends JPanel {
 		// <FIM DATA INICIO PERIODO>
 		
 		
-		dataInicioEscalaPanel = new JPanel();
-		dataInicioEscalaPanel.setLayout(new BoxLayout(dataInicioEscalaPanel, BoxLayout.Y_AXIS));
-		dataInicioEscalaPanel.setVisible(false);
-		JLabel dataInicioEscalaLabel = new JLabel("Data inicio Escala");
-		dataInicioEscalaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		dataInicioEscalaPanel.add(dataInicioEscalaLabel);
-		dataInicioEscalaPanel.add(Box.createVerticalStrut(2));
+//		dataInicioEscalaPanel = new JPanel();
+//		dataInicioEscalaPanel.setLayout(new BoxLayout(dataInicioEscalaPanel, BoxLayout.Y_AXIS));
+//		dataInicioEscalaPanel.setVisible(false);
+//		JLabel dataInicioEscalaLabel = new JLabel("Data inicio Escala");
+//		dataInicioEscalaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+//		dataInicioEscalaPanel.add(dataInicioEscalaLabel);
+//		dataInicioEscalaPanel.add(Box.createVerticalStrut(2));
 		
-		dataInicioEscalaTextField = Utils.getNewJFormattedTextField(5);
-		mask = Utils.getNewMaskFormatter("##/##/####");
-		mask.install(dataInicioEscalaTextField);
-		dataInicioEscalaPanel.add(dataInicioEscalaTextField);
-		dataInicioEscalaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+//		dataInicioEscalaTextField = Utils.getNewJFormattedTextField(5);
+//		mask = Utils.getNewMaskFormatter("##/##/####");
+//		mask.install(dataInicioEscalaTextField);
+//		dataInicioEscalaPanel.add(dataInicioEscalaTextField);
+//		dataInicioEscalaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		// <INICIO DATA INICIO ESCALA>
 				
 		dataFimPeriodoPanel = new JPanel();
@@ -243,8 +247,8 @@ public class AdicionarRegrasPanel extends JPanel {
 		headerPanel.add(Box.createHorizontalStrut(10));
 		headerPanel.add(dataFimPeriodoPanel);
 		headerPanel.add(Box.createHorizontalStrut(10));
-		headerPanel.add(dataInicioEscalaPanel);
-		headerPanel.add(Box.createHorizontalStrut(10));
+//		headerPanel.add(dataInicioEscalaPanel);
+//		headerPanel.add(Box.createHorizontalStrut(10));
 		headerPanel.add(addPedestreRegraPanel);
 		headerPanel.add(removePedestreRegraPanel);
 		
@@ -323,9 +327,17 @@ public class AdicionarRegrasPanel extends JPanel {
 			pedestreRegra.setDataFimPeriodo(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataFimPeriodoTextField.getText())));
 		} catch (Exception e) {}
 		
-		try {
-			pedestreRegra.setDataInicioEscala3_3(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioEscalaTextField.getText())));
-		} catch (Exception e) {}
+		if(TipoRegra.ACESSO_ESCALA_3_3.equals(regraSelecionada.getTipo())) {
+			try {
+				pedestreRegra.setDataInicioEscala3_3(regraSelecionada.getDataInicioPeriodo());
+			} catch (Exception e) {}
+			
+		}
+
+		
+//		try {
+//			pedestreRegra.setDataInicioEscala3_3(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioEscalaTextField.getText())));
+//		} catch (Exception e) {}
 		
 		
 		pedestresRegras.add(pedestreRegra);

@@ -60,6 +60,7 @@ public class HikivisionEventsUseCase {
 		if (Objects.isNull(eventListnerTO) 
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent())
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
+
 			System.out.println("Evento nulo? : ---- " + Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo()));
 			System.out.println("Evento de pedestre nao reconhecido pela camera :  " + hikivisionCameraId);
 			return;

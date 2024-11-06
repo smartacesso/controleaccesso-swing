@@ -6,7 +6,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
@@ -1296,42 +1300,46 @@ public class HibernateLocalAccessData {
 	
 	@SuppressWarnings("rawtypes")
 	public static void buscaVisitantesComFoto() {
-	    System.out.println("Buscando visitantes com foto");
+	    System.out.println("Buscando visitantes do dia com foto");
 	    Session session = getSessionFactory().getCurrentSession();
 	    if (session.getTransaction() == null || !session.getTransaction().isActive())
 	        session.beginTransaction();
 
 	    try {
-	        // Consulta para selecionar os registros conforme os critérios do where
-	    	Query<PedestrianAccessEntity> q = session.createQuery(
-	    		    "from PedestrianAccessEntity p " +
-	    		    "where p.tipo = 'VISITANTE' " +
-	    		    "and p.cardNumber != null " +
-	    		    "and p.cardNumber != '' " +
-	    		    "and p.dataCadastroFotoNaHikivision is not null", 
-	    		    PedestrianAccessEntity.class
-	    		);
+	        LocalDate hoje = LocalDate.now();
 
+	        LocalDateTime dataInicio = hoje.atStartOfDay();
+	        LocalDateTime dataFim = hoje.plusDays(1).atStartOfDay();
 
-	        // Executa a consulta e obtém os resultados
+	        Query<PedestrianAccessEntity> q = session.createQuery(
+	            "from PedestrianAccessEntity p " +
+	            "where p.tipo = 'VISITANTE' and p.dataAlteracao >= :dataInicio and p.dataAlteracao < :dataFim",  
+	            PedestrianAccessEntity.class
+	        );
+	        q.setParameter("dataInicio", Timestamp.valueOf(dataInicio));
+	        q.setParameter("dataFim", Timestamp.valueOf(dataFim));
+
 	        List<PedestrianAccessEntity> visitantes = q.getResultList();
+	        System.out.println("Quantidade de visitantes hoje: " + visitantes.size());
 
-	        // Processa os resultados (por exemplo, exibindo no console)
 	        for (PedestrianAccessEntity visitante : visitantes) {
-	        	HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
-	        	hikivisionUseCases.removerUsuarioFromDevices(visitante);
+	            HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	            hikivisionUseCases.removerUsuarioFromDevices(visitante);
 	        }
 
 	        session.getTransaction().commit();
 	    } catch (Exception e) {
-	        session.getTransaction().rollback();
+	        if (session.getTransaction() != null && session.getTransaction().isActive()) {
+	            session.getTransaction().rollback();
+	        }
 	        e.printStackTrace();
 	    } finally {
-	        session.close();
+	        if (session != null && session.isOpen()) {
+	            session.close();
+	        }
 	    }
 	}
 
-	
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeUltimoSentido() {
 		System.out.println(" chegou no apaga logs do do pedestre ");

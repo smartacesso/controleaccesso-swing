@@ -118,7 +118,7 @@ import it.sauronsoftware.junique.MessageHandler;
 
 public class Main {
 	
-	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronização desabilitada: Máquina possui servidor";
+	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronizaï¿½ï¿½o desabilitada: Mï¿½quina possui servidor";
 
     public static MainScreen mainScreen;
     private static SplashScreen splash;
@@ -188,7 +188,7 @@ public class Main {
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
-    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integração Comtele";
+    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integraï¿½ï¿½o Comtele";
     
     private static final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
     private static final SmartAcessoClient smartAcessoClient = new SmartAcessoClient();
@@ -423,11 +423,11 @@ public class Main {
 
                                             mainScreen.refresh();
                                             String html = "<html><body width='%1s'>"
-                                                    + "<p>Não conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
+                                                    + "<p>Nï¿½o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
                                                     + "<br><br>"
-                                                    + "- A catraca e/ou leitor está ligado na tomada?"
+                                                    + "- A catraca e/ou leitor estï¿½ ligado na tomada?"
                                                     + "<br>"
-                                                    + "- Os cabos estão conectados de forma correta?"
+                                                    + "- Os cabos estï¿½o conectados de forma correta?"
                                                     + "<br><br>"
                                                     + "Se estiver tudo OK, clique em Conectar."
                                                     + "</p></html>";
@@ -596,18 +596,18 @@ public class Main {
 
         Boolean sessaoLimpa = HibernateLocalAccessData.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sessão de usuário encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sessï¿½o de usuï¿½rio encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
         } else
-            Utils.createNotification("Ocorreu um erro ao finalizar a sessão.", NotificationType.BAD);
+            Utils.createNotification("Ocorreu um erro ao finalizar a sessï¿½o.", NotificationType.BAD);
 
     }
 
     public static void exit(boolean exibirConfirmacao) {
         if (exibirConfirmacao) {
-            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serão  desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
+            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serï¿½o  desconectadas. Deseja realmente sair?", "Confirmaï¿½ï¿½o",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (dialogResult != JOptionPane.YES_OPTION)
                 return;
@@ -738,11 +738,12 @@ public class Main {
     public static void tasksOfDay(boolean timerCall) {
         if (timerCall) {
             limpaCartoesVisitantes();
-            HibernateLocalAccessData.buscaVisitantesComFoto();
+          
         }
         
         syncTemplatesInTopDataDevices.execute();
-
+        
+        HibernateLocalAccessData.buscaVisitantesComFoto();
         limpaSentidoTodos();
         limpaStatusCartoes();
         limpaTelas();
@@ -1124,7 +1125,7 @@ public class Main {
         }
 
         if (Main.servidor != null) {
-            System.out.println(sdf.format(new Date()) + " Sincronizaço Hikivision desabilitada: Máquina possui servidor");
+            System.out.println(sdf.format(new Date()) + " Sincronizaï¿½o Hikivision desabilitada: Mï¿½quina possui servidor");
             return;
         }
         
@@ -1143,7 +1144,7 @@ public class Main {
             @Override
             public Void doInBackground() {
                 try {
-                	System.out.println(sdf.format(new Date()) + " Iniciando reprocessamento de erros na integração com a Hikivision");
+                	System.out.println(sdf.format(new Date()) + " Iniciando reprocessamento de erros na integraï¿½ï¿½o com a Hikivision");
                 	executeSyncFromHikivisionIntegrationError();
                     //executeHikivisionAccessListSync();
 
@@ -1171,7 +1172,7 @@ public class Main {
             }
             
             private void executeSyncFromHikivisionIntegrationError() {
-            	final long maxRetries = 20; //TODO Mudar para configurações
+            	final long maxRetries = 20; //TODO Mudar para configuraï¿½ï¿½es
         		final List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(500);
         		
         		if(Objects.isNull(errors) || errors.isEmpty()) {
@@ -1216,14 +1217,14 @@ public class Main {
                 HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 
                 if (!hikivisionUseCases.getSystemInformation()) {
-                    System.out.println(sdf.format(new Date()) + "  Sincronização interrompida - Servidor offline");
+                    System.out.println(sdf.format(new Date()) + "  Sincronizaï¿½ï¿½o interrompida - Servidor offline");
                     return;
                 }
 
                 List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
 
                 if (Objects.isNull(devices)) {
-                    System.out.println(sdf.format(new Date()) + "  Sincronização interrompida - Sem dispositivos disponiveis");
+                    System.out.println(sdf.format(new Date()) + "  Sincronizaï¿½ï¿½o interrompida - Sem dispositivos disponiveis");
                     return;
                 }
 
@@ -1527,7 +1528,7 @@ public class Main {
             systemTray.add(trayIcon);
         } catch (AWTException e) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(mainScreen, "Não foi possível adicionar ícones na bandeja do sistema.", "Bandeja do sistema não suportada.",
+            JOptionPane.showOptionDialog(mainScreen, "Nï¿½o foi possï¿½vel adicionar ï¿½cones na bandeja do sistema.", "Bandeja do sistema nï¿½o suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);

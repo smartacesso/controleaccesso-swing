@@ -945,7 +945,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			boolean alterar = false;
 			if(templates != null && !templates.isEmpty()) {
 				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, já altera
+					//tamanhos diferentes, jï¿½ altera
 					alterar = true;
 					if(Main.desenvolvimento)
 						System.out.println("Digitais diferentes");
@@ -1110,7 +1110,20 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 				}
 			
 			} else {
-				List<PedestreRegraEntity> pedestreRegraAux = new ArrayList<PedestreRegraEntity>();
+				List<PedestreRegraEntity> naoEcontrados = new ArrayList<>();
+				
+				for(PedestreRegraEntity pedestreRegraExistente : this.pedestreRegra) {
+					Optional<PedestreRegraTO> first = athleteAccessTO.getPedestreRegras().stream()
+						.filter(pedestreRegraTo -> pedestreRegraTo.getId().equals(pedestreRegraExistente.getId()))
+						.findFirst();
+					
+					if(!first.isPresent()) {
+						naoEcontrados.add(pedestreRegraExistente);
+					}
+				}
+
+				this.pedestreRegra.removeAll(naoEcontrados);
+				
 				for(PedestreRegraTO newPr : athleteAccessTO.getPedestreRegras()) {
 					boolean pRJaExiste = false;
 					
@@ -1118,19 +1131,16 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 						if(pedestreRegraExistente.getId().equals(newPr.getId())) {
 							pedestreRegraExistente.setQtdeDeCreditos(newPr.getQtdeDeCreditos());
 							
-							pedestreRegraAux.add(pedestreRegraExistente);
 							pRJaExiste = true;
-							
 							break;
 						}
 					}
 					
 					if(!pRJaExiste) {
 						RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
-						pedestreRegraAux.add(new PedestreRegraEntity(this, newPr, regra));
+						this.pedestreRegra.add(new PedestreRegraEntity(this, newPr, regra));
 					}
 				}
-				this.pedestreRegra = pedestreRegraAux;
 			}
 		
 		} else {
