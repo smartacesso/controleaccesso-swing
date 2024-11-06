@@ -101,7 +101,7 @@ public class ProcessAccessRequestUseCase {
 					matchedPedestrianAccess = trataPedestreQRCode(codigo);
 				} catch (QrcodeVencidoException e) {
 					if (createNotification) {
-						Utils.createNotification("QRCode do usu�rio expirado.", NotificationType.BAD, foto);
+						Utils.createNotification("QRCode do usuario expirado.", NotificationType.BAD, foto);
 					}
 					
 					return new Object[] { VerificationResult.NOT_FOUND, userName, matchedPedestrianAccess };
@@ -120,7 +120,7 @@ public class ProcessAccessRequestUseCase {
 			if (Objects.isNull(matchedPedestrianAccess)) {
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification) {
-					Utils.createNotification("Usu�rio de Codigo " + codigo + " n�o encontrado.", NotificationType.BAD, foto);					
+					Utils.createNotification("Usuario de Codigo " + codigo + " nao encontrado.", NotificationType.BAD, foto);					
 				}
 
 				return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
@@ -168,7 +168,7 @@ public class ProcessAccessRequestUseCase {
 
 				if (isPedestreNaoPossuiRegras(matchedPedestrianAccess)) {
 					if (createNotification) {
-						Utils.createNotification(userName + " n�o possui regras.", NotificationType.BAD, foto);
+						Utils.createNotification(userName + " nao possui regras.", NotificationType.BAD, foto);
 					}
 					return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedPedestrianAccess };
 				}
@@ -178,13 +178,13 @@ public class ProcessAccessRequestUseCase {
 
 			if ("INATIVO".equals(matchedPedestrianAccess.getStatus())) {
 				Utils.createNotification(" Acesso Negado, usuario: " + userName + " Inativo", NotificationType.BAD, foto);
-				motivo = "Usu�rio inativo.";
+				motivo = "Usuario inativo.";
 				return new Object[] { VerificationResult.NOT_ALLOWED, userName, matchedPedestrianAccess };
 			}
 			
 			if(isNaoPermitidoEquipamentoRestrito(equipament, matchedPedestrianAccess.getEquipamentos())) {
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o permitido nesse equipamento restrito.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " nao permitido nesse equipamento restrito.", NotificationType.BAD, foto);
 				}
 
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
@@ -205,7 +205,7 @@ public class ProcessAccessRequestUseCase {
 			
 			if (isNaoPermitidoNoEquipamento(equipament, matchedPedestrianAccess.getEquipamentos())) {
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o permitido nesse equipamento.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " nao permitido nesse equipamento.", NotificationType.BAD, foto);
 				}
 
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
@@ -276,11 +276,11 @@ public class ProcessAccessRequestUseCase {
 					// Pegar o resultado e fazer uma divis�o por 12 e pegar o resto da divis�o
 					// Somar o resto da divis�o mais 1 pra indicar qual � o dia que ele esta trabalhando
 					// se dias 1, 2 e 3 de 07:00 as 19:00 pode passar
-					// se dias 4, 5 e 6 n�o pode passar
+					// se dias 4, 5 e 6 nao pode passar
 					// se dia 7 pode passar das 19:00 as 23:59:59
 					// se dia 8 e 9 pode passar das 00:00 as 07:00 e 19:00 as 23:59:59
 					// se dia 10 pode passar de 00:00 as 07:00
-					// se dia 11 e 12 n�o pode passar
+					// se dia 11 e 12 nao pode passar
 					System.out.println("Tipo de regra - Escala 3x3");
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
@@ -328,9 +328,9 @@ public class ProcessAccessRequestUseCase {
 					long diffDays = diffMillis / (1000 * 60 * 60 * 24);  // Convertendo para dias
 
 					// Cada ciclo � de 6 dias: 3 dias de trabalho e 3 dias de folga
-					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 est�
+					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 está
 
-					// Verificar se est� nos 3 dias de trabalho
+					// Verificar se está nos 3 dias de trabalho
 					if (cicloAtual < 3) {
 					    // Alternar entre turno de 7h e 19h (dias 7,8,9) e turno de 19h e 7h (dias 13,14,15)
 					    long alternanciaTurno = (diffDays / 6) % 2;  // Altera��o a cada 6 dias
@@ -397,7 +397,7 @@ public class ProcessAccessRequestUseCase {
 					// Cada ciclo tem 48 horas (12 horas de trabalho + 36 horas de folga)
 					long cicloAtual = diffHours % 48;
 
-					// Se est� nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo per�odo de trabalho)
+					// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo per�odo de trabalho)
 					if ((cicloAtual >= 0 && cicloAtual < 12) || (cicloAtual >= 24 && cicloAtual < 36)) {
 					    // Est� no per�odo de trabalho
 					    permitido = true;
@@ -435,27 +435,27 @@ public class ProcessAccessRequestUseCase {
 
 				if (createNotification) {
 					if (origem != Origens.ORIGEM_LEITOR_2) {
-						Utils.createNotification(userName + " deve depositar cart�o na urna.", NotificationType.BAD, foto);
-						motivo = "Deve depositar cart�o na urna.";
+						Utils.createNotification(userName + " deve depositar cartao na urna.", NotificationType.BAD, foto);
+						motivo = "Deve depositar cartao na urna.";
 
 					} else {
-						Utils.createNotification(userName + " n�o deve depositar na urna", NotificationType.BAD, foto);
-						motivo = "N�o deve depositar cart�o na urna.";
+						Utils.createNotification(userName + " nao deve depositar na urna", NotificationType.BAD, foto);
+						motivo = "Nao deve depositar cartao na urna.";
 					}
 				}
 
 			} else if (!permitido) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o permitido.", NotificationType.BAD, foto);
-					motivo = "N�o permitido.";
+					Utils.createNotification(userName + " nao permitido.", NotificationType.BAD, foto);
+					motivo = "Nao permitido.";
 				}
 
 			} else if (!permitidoRetornar) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				if (createNotification) {
-					Utils.createNotification(userName + " n�o pode retornar agora.", NotificationType.BAD, foto);
-					motivo = "N�o pode retornar agora.";
+					Utils.createNotification(userName + " nao pode retornar agora.", NotificationType.BAD, foto);
+					motivo = "Nao pode retornar agora.";
 				}
 
 			} else if (permitidoHoje) {
@@ -473,8 +473,8 @@ public class ProcessAccessRequestUseCase {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
 					if (createNotification) {
-						Utils.createNotification(userName + " n�o permitido.", NotificationType.BAD, foto);
-						motivo = "N�o permitido.";
+						Utils.createNotification(userName + " nao permitido.", NotificationType.BAD, foto);
+						motivo = "Nao permitido.";
 					}
 				}
 
@@ -496,7 +496,7 @@ public class ProcessAccessRequestUseCase {
 			} else {
 				resultadoVerificacao = VerificationResult.ALLOWED_ONLY_ONCE;
 				if (createNotification) {
-					Utils.createNotification(userName + " j� registrado hoje.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " ja registrado hoje.", NotificationType.BAD, foto);
 				}
 			}
 
@@ -654,7 +654,7 @@ public class ProcessAccessRequestUseCase {
 		}
 		*/
 
-		// n�o tem bloqueo por equipamento
+		// nao tem bloqueo por equipamento
 		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
 			return false;
 		}
@@ -797,7 +797,7 @@ public class ProcessAccessRequestUseCase {
 		
 		if (ultimoAcesso != null) {
 		    Calendar ajuste = Calendar.getInstance();
-		    ajuste.setTime(c.getTime());  // c j� cont�m o in�cio do turno
+		    ajuste.setTime(c.getTime());  // c ja cont�m o in�cio do turno
 		    ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));  // Adiciona 12 horas de trabalho
 
 		    Calendar agora = Calendar.getInstance();
@@ -842,7 +842,7 @@ public class ProcessAccessRequestUseCase {
 			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
 			logAccess.setStatus("INATIVO");
 			if (createNotification) {
-				Utils.createNotification(userName + " n�o permitido hoje.", NotificationType.BAD, foto);
+				Utils.createNotification(userName + " nao permitido hoje.", NotificationType.BAD, foto);
 			}
 		}
 

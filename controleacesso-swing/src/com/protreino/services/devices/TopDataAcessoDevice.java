@@ -262,11 +262,11 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(TIPO_BIOMETRICO, "LFD_lfd", FieldType.COMBOBOX, "LFD_lfd;LC_lc"));
 		geralConfigurations.add(new ConfigurationTO(DOIS_LEITORES, "true", FieldType.CHECKBOX, "(usa para catracas com urna)", true));
 		geralConfigurations.add(new ConfigurationTO(LEITOR_1, "Somente entrada_1", FieldType.COMBOBOX,
-				"Desativado_0;Somente entrada_1;Somente Sa�da_2"));
-		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Somente Sa�da_2", FieldType.COMBOBOX,
-				"Desativado_0;Somente entrada_1;Somente Sa�da_2"));
-		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;N�o_0"));
-		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "N�o_0", FieldType.COMBOBOX, "Sim_1;N�o_0"));
+				"Desativado_0;Somente entrada_1;Somente Saida_2"));
+		geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Somente Saida_2", FieldType.COMBOBOX,
+				"Desativado_0;Somente entrada_1;Somente Saida_2"));
+		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Nao_0"));
+		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nao_0", FieldType.COMBOBOX, "Sim_1;Nao_0"));
 		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(USA_TORNIQUETE, "false", FieldType.CHECKBOX));

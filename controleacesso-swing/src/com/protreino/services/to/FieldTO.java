@@ -256,12 +256,12 @@ public class FieldTO {
 		} else if (FieldType.YES_NO_COMBOBOX.equals(type)){
 			Vector<SelectItem> options = new Vector<>();
 			options.add(new SelectItem("Sim", "true"));
-			options.add(new SelectItem("Não", "false"));
+			options.add(new SelectItem("Nao", "false"));
 			comboBox = new JComboBox<SelectItem>(options);
 			comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 			if (!Utils.isNullOrEmpty(defaultValue)) {
 				if (!defaultValue.contains("_")) 
-					defaultValue = Boolean.valueOf(defaultValue) ? "Sim_true" : "Não_false";
+					defaultValue = Boolean.valueOf(defaultValue) ? "Sim_true" : "Nao_false";
 				comboBox.setSelectedItem(new SelectItem(defaultValue));
 			}
 			fieldPanel.add(comboBox);
@@ -484,7 +484,7 @@ public class FieldTO {
 		} else if (FieldType.YES_NO_COMBOBOX.equals(type)){
 			if (!Utils.isNullOrEmpty(value)) {
 				if (!value.contains("_")) 
-					value = Boolean.valueOf(value) ? "Sim_true" : "Não_false";
+					value = Boolean.valueOf(value) ? "Sim_true" : "Nao_false";
 				comboBox.setSelectedItem(new SelectItem(value));
 			}
 		
@@ -515,8 +515,8 @@ public class FieldTO {
 	
 	/**
 	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES estÃ¡ de acordo com as definiÃ§Ãµes, isto Ã©
-	 * o tamanho não excede os limites mÃ­nimo e máximo de caracteres, e caso seja obrigatÃ³rio, não pode ser nulo ou vazio.
-	 * Por padrão o campos Ã© obrigatÃ³rio, mas pode ser alterado para deixar de ser.
+	 * o tamanho nao excede os limites mÃ­nimo e mï¿½ximo de caracteres, e caso seja obrigatÃ³rio, nao pode ser nulo ou vazio.
+	 * Por padrao o campos Ã© obrigatÃ³rio, mas pode ser alterado para deixar de ser.
 	 * @return
 	 */
 	public String checkField(){
@@ -525,24 +525,24 @@ public class FieldTO {
 		
 		if (FieldType.TEXT.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " É obrigatário.";
+				return "O campo " + name.toUpperCase() + " ï¿½ obrigatï¿½rio.";
 			if (maxCharacteres != null && textField.getText().trim().length() > maxCharacteres)
-				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " ï¿½ maior que o limite. Limite: " + maxCharacteres;
 			if (minCharacteres != null && textField.getText().trim().length() < minCharacteres)
-				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " ï¿½ menor que o limite. Limite: " + minCharacteres;
 		
 		} else if (FieldType.MESSAGE_LINES.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " É obrigatário.";
+				return "O campo " + name.toUpperCase() + " ï¿½ obrigatï¿½rio.";
 			if (maxCharacteres != null 
 					&& (textField.getText().trim().length() > maxCharacteres 
 							|| textField2.getText().trim().length() > maxCharacteres)) {
-				return "O campo " + name.toUpperCase() + " É maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " ï¿½ maior que o limite. Limite: " + maxCharacteres;
 			}
 			if (minCharacteres != null 
 					&& (textField.getText().trim().length() < minCharacteres 
 							|| textField2.getText().trim().length() < minCharacteres)) {
-				return "O campo " + name.toUpperCase() + " É menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " ï¿½ menor que o limite. Limite: " + minCharacteres;
 			}
 		}
 		

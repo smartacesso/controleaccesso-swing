@@ -102,15 +102,15 @@ public class AutenticationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Utils.isNullOrEmpty(loginField.getText())) {
-					invalidCredentialsLabel.setText("Login inv�lido!");
+					invalidCredentialsLabel.setText("Login invalido!");
 					return;
 				}
 				if (passwordField.getPassword().length == 0) {
-					invalidCredentialsLabel.setText("Senha inv�lida!");
+					invalidCredentialsLabel.setText("Senha invalida!");
 					return;
 				}
 				
-				//IDENTIFICAR QUEM ESTÃ� CHAMANDO A TELA
+				//IDENTIFICAR QUEM ESTÃO CHAMANDO A TELA
 				if(loginInterno) {
 					PlanoEntity planoComMaiorVencimento = buscaPlanoAtivoComMaiorDataVencimento();
 					

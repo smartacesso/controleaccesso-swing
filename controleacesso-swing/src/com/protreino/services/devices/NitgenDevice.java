@@ -179,7 +179,7 @@ public class NitgenDevice extends Device {
 					getDeviceCard().openAthleteScreen();
 			}
 		} else
-			throw new Exception("N�o foi poss�vel conectar.");
+			throw new Exception("Nao foi possivel conectar.");
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class NitgenDevice extends Device {
 		
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configura��es: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configuracoes: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();
@@ -360,7 +360,7 @@ public class NitgenDevice extends Device {
 	@Override
 	public void processAccessRequest(Object obj) {
 		final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
-		// Primeiro é feito o processo de match para identificar o usu�rio.
+		// Primeiro é feito o processo de match para identificar o usuario.
 		// Após a identifica��o é verificado se o acesso é permitido.
 		try {
 			// digital coletada agora
@@ -382,7 +382,7 @@ public class NitgenDevice extends Device {
 				if (bsp.GetErrorCode() == NBioBSPJNI.ERROR.NBioAPIERROR_INDEXSEARCH_IDENTIFY_FAIL)  {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital N�o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital Nao encontrada.", NotificationType.BAD);
 				
 				} else {
 					verificationResult = VerificationResult.ERROR;
@@ -404,7 +404,7 @@ public class NitgenDevice extends Device {
 				else {
 					this.verificationResult = VerificationResult.NOT_FOUND;
 					if (createNotification)
-						Utils.createNotification("Digital N�o encontrada.", NotificationType.BAD);
+						Utils.createNotification("Digital Nao encontrada.", NotificationType.BAD);
 				}
 			}
 			

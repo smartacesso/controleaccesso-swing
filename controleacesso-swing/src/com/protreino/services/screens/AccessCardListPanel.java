@@ -55,7 +55,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<CartaoComandaEntity> listaAcesso;
-	private String[] columns = {"Codigo", "N�mero", "R�tulo", "Status", "Ac�es"};
+	private String[] columns = {"Codigo", "Numero", "Rotulo", "Status", "Acoes"};
 	private Integer[] columnWidths = {60, 100, 100, 80, 80};
 	
 	private JTextField filtroIdTextField;
@@ -95,7 +95,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		
 		JPanel filtroNumeroPanel= new JPanel();
 		filtroNumeroPanel.setLayout(new BoxLayout(filtroNumeroPanel, BoxLayout.Y_AXIS));
-		JLabel filtroNumeroLabel = new JLabel("N�mero");
+		JLabel filtroNumeroLabel = new JLabel("Numero");
 		filtroNumeroLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroNumeroPanel.add(filtroNumeroLabel);
 		filtroNumeroTextField = new JTextField("", 12);
@@ -177,12 +177,12 @@ public class AccessCardListPanel extends PaginedListPanel {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		accessListTablePanel.add(scrollPane);
 		
-		addButton = new JButton("Novo cart�o/comanda");
+		addButton = new JButton("Novo cartao/comanda");
 		addButton.setBorder(new EmptyBorder(10,15,10,15));
 		addButton.setPreferredSize(new Dimension(150, 40));
 		addButton.setVisible(Main.internoLoggedUser != null);
 		
-		clearCardStateButton = new JButton("Limpar estado cart�es");
+		clearCardStateButton = new JButton("Limpar estado cartoes");
 		clearCardStateButton.setBorder(new EmptyBorder(10,15,10,15));
 		clearCardStateButton.setPreferredSize(new Dimension(150, 40));
 		clearCardStateButton.setVisible(Main.internoLoggedUser != null
@@ -250,14 +250,14 @@ public class AccessCardListPanel extends PaginedListPanel {
 	
 	protected void clearCardState() {
 		
-		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa ação fará com que todos os cart�es/comandas voltem para o "
+		int dialogResult = JOptionPane.showConfirmDialog(null, "Essa ação fará com que todos os cartoes/comandas voltem para o "
 				+ "           de AGUARDANDO (dentro da urna expedidora). "
-				+ "Tem certeza que deseja continuar?", "Confirma��o", 
+				+ "Tem certeza que deseja continuar?", "Confirmacao", 
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (dialogResult == JOptionPane.YES_OPTION) {
-			//apaga tambem dados de giros anteriores n�o registrados
+			//apaga tambem dados de giros anteriores nao registrados
 			HibernateAccessDataFacade.resetStatusAllCards();
-			Utils.createNotification("Cart�es/Comandas atualizados com sucesso!", NotificationType.GOOD);
+			Utils.createNotification("Cartoes/Comandas atualizados com sucesso!", NotificationType.GOOD);
 			
 			cleanFilter();
 		}
@@ -386,7 +386,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		}
 		accessListTable.setModel(dataModel);
 		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
-		//countLabel.setText("N�mero de registros: " + numAcessos);
+		//countLabel.setText("Numero de registros: " + numAcessos);
 		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
@@ -553,7 +553,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 cartao.setDataAlteracao(new Date());
 		        	 HibernateAccessDataFacade.update(CartaoComandaEntity.class, cartao);
 		        	 
-		        	 //cria log de libera��o (sem sincronização com web)
+		        	 //cria log de liberacao (sem sincronização com web)
 		        	 LogCartaoComandaEntity log = new LogCartaoComandaEntity(cartao);
 		        	 log.setUsuario(Main.internoLoggedUser);
 		        	 log.setTipoLiberacao("MANUAL_"+cartao.getStatus().name());
@@ -564,7 +564,7 @@ public class AccessCardListPanel extends PaginedListPanel {
 		        	 
 		        	 Utils.createNotification("Cartao " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " liberado.", NotificationType.GOOD);
 		         } else {
-		        	 Utils.createNotification("Cartao " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " j� est� liberado.", NotificationType.BAD);
+		        	 Utils.createNotification("Cartao " + cartao.getNumeroReal() + "/" + cartao.getNumeroAlternativo() + " ja está liberado.", NotificationType.BAD);
 		         }
 		         cleanFilter();
 	        }

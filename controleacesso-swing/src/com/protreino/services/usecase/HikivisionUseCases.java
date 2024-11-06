@@ -179,7 +179,7 @@ public class HikivisionUseCases {
 					final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId,
 							pedestre.getCardNumber());
 					if (Boolean.FALSE.equals(isCartaoAdicionado)) {
-						final String message = String.format("Erro ao adicioar cartão do usuario %s na camera %s",
+						final String message = String.format("Erro ao adicioar cartao do usuario %s na camera %s",
 								pedestre.getCardNumber(), deviceId);
 						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 					}
@@ -264,7 +264,7 @@ public class HikivisionUseCases {
 		if (Objects.nonNull(device)) {
 			adicionarListnerParaCamera(device.getDevIndex());
 		} else {
-			System.out.println("Listener não adicionado para camera: " + deviceName);
+			System.out.println("Listener nao adicionado para camera: " + deviceName);
 		}
 	}
 
@@ -286,7 +286,7 @@ public class HikivisionUseCases {
 			final boolean vincularBiometria = vinculaDigitalUsuario(device.getDevIndex(), fingerNo, idUser, fingerData);
 			if(!vincularBiometria) {
 				HibernateAccessDataFacade.save(HikivisonFingerErrorEntity.class,
-						new HikivisonFingerErrorEntity(idUser, "Digital Não vinculada", device.getDevIndex(), fingerNo, hikivisionSaved));
+						new HikivisonFingerErrorEntity(idUser, "Digital Nao vinculada", device.getDevIndex(), fingerNo, hikivisionSaved));
 			}
 		});
 	}
@@ -296,7 +296,7 @@ public class HikivisionUseCases {
 				.capturaDigitalUsuario(deviceId, fingerNo);
 
 		if (!digitalCadastrada.isPresent()) {
-			System.out.println(String.format("Não foi possível cadastrar a digital cadastrada %s", fingerNo.name()));
+			System.out.println(String.format("Nao foi possivel cadastrar a digital cadastrada %s", fingerNo.name()));
 			return Optional.empty();
 		}
 
@@ -323,7 +323,7 @@ public class HikivisionUseCases {
 				//apagar biometria
 				HibernateAccessDataFacade.remove(biometric);
 			} else {
-				System.out.println(String.format("Não foi possível reprocessar a biometria do usuário %d",
+				System.out.println(String.format("Nao foi possivel reprocessar a biometria do usuario %d",
 						biometric.getIdUser(), null));
 			}
 		});

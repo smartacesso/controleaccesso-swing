@@ -244,7 +244,7 @@ public class ComputerIdDevice extends Device {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Main.mainScreen.addEvento("Erro ao salvar as configurações: " + e.getMessage());
+			Main.mainScreen.addEvento("Erro ao salvar as configuracoes: " + e.getMessage());
 		}
 		
 		super.saveConfigurations();
@@ -318,8 +318,8 @@ public class ComputerIdDevice extends Device {
 	@Override
 	public void processAccessRequest(Object obj) {
 		
-		// Primeiro Ã© feito o processo de match para identificar o usuário.
-		// ApÃ³s a identificação Ã© verificado se o acesso Ã© permitido.
+		// Primeiro Ã© feito o processo de match para identificar o usuario.
+		// ApÃ³s a identificaï¿½ï¿½o Ã© verificado se o acesso Ã© permitido.
 		
 		Long idEncontrado = null;
 		DPFPSample sample = (DPFPSample) obj;
@@ -329,7 +329,7 @@ public class ComputerIdDevice extends Device {
 			if (features == null) {
 				this.verificationResult = VerificationResult.ERROR;
 				if (createNotification)
-					Utils.createNotification("Erro na verificação", NotificationType.BAD);
+					Utils.createNotification("Erro na verificacao", NotificationType.BAD);
 				return;
 			}
 			
@@ -375,7 +375,7 @@ public class ComputerIdDevice extends Device {
 			} else {
 				verificationResult = VerificationResult.NOT_FOUND;
 				if (createNotification)
-					Utils.createNotification("Digital Não encontrada.", NotificationType.BAD);
+					Utils.createNotification("Digital Nao encontrada.", NotificationType.BAD);
 			}
 			
 		} catch (DPFPImageQualityException ex) {
@@ -387,7 +387,7 @@ public class ComputerIdDevice extends Device {
 			e.printStackTrace();
 			verificationResult = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Erro na verificação", NotificationType.BAD);
+				Utils.createNotification("Erro na verificacao", NotificationType.BAD);
 		}
 	}
 

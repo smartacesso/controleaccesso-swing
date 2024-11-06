@@ -13,6 +13,6 @@ public enum PerfilAcesso {
 		return Stream.of(values())
 				.filter(p -> p.name().equalsIgnoreCase(perfilAcesso))
 				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado!"));
+				.orElseThrow(() -> new IllegalArgumentException("Perfil nao encontrado!"));
 	}
 }

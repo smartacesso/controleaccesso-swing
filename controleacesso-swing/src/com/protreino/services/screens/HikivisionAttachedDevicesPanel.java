@@ -154,7 +154,7 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 	}
 	
 	private JButton getAddHikivisionCameraButton() {
-		JButton addHikivisionCameraButton = new JButton("Adicionar câmera");
+		JButton addHikivisionCameraButton = new JButton("Adicionar camera");
 		addHikivisionCameraButton.setBorder(new EmptyBorder(10,15,10,15));
 		addHikivisionCameraButton.setPreferredSize(new Dimension(150, 40));
 		
@@ -169,7 +169,7 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 	}
 	
 	private JButton getRemoveHikivisionCameraButton() {
-		JButton removeHikivisionCameraButton = new JButton("Remover câmera");
+		JButton removeHikivisionCameraButton = new JButton("Remover camera");
 		removeHikivisionCameraButton.setBorder(new EmptyBorder(10,15,10,15));
 		removeHikivisionCameraButton.setPreferredSize(new Dimension(150, 40));
 		

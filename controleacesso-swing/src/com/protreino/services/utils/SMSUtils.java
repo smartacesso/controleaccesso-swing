@@ -10,7 +10,7 @@ public class SMSUtils {
 	
 	private static final String URL_COMTELE 	  = "https://sms.comtele.com.br/api/v2/send";
 	private static final String URL_COMTELE_SALDO = "https://sms.comtele.com.br/api/v2/credits/Username";
-	private String key = "8cbd2b5b-358e-4de8-8a7c-a881bc023251"; //chave padrão do Pro-Trieno
+	private String key = "8cbd2b5b-358e-4de8-8a7c-a881bc023251"; //chave padrao do Pro-Trieno
 	
 	public SMSUtils() {
 		

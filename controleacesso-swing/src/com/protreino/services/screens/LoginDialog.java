@@ -88,7 +88,7 @@ public class LoginDialog extends JDialog {
 		unidadeTextField.setMaximumSize(unidadeTextField.getPreferredSize());
 		unidadeTextField.setHorizontalAlignment(JTextField.CENTER);
 		
-		JLabel usernameLabel = new JLabel("Usuário");
+		JLabel usernameLabel = new JLabel("Usuario");
 		usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
 		usernameTextField = new JTextField();
@@ -188,7 +188,7 @@ public class LoginDialog extends JDialog {
 										Main.releaseTicketGateMenuItem.setEnabled(true);
 										Main.updateAccessListMenuItem.setEnabled(true);
 										
-										loginMessageLabel.setText("Coletando configurações e pedestres...");
+										loginMessageLabel.setText("Coletando configuracoes e pedestres...");
 										//tras dados gerais antes de abrir
 										Main.syncUsersAccessList();
 										syncPedestrianAccessListUseCase.syncPedestrianAccessList();
@@ -217,16 +217,16 @@ public class LoginDialog extends JDialog {
 										}
 										
 										Main.mainScreen.buildUI();
-										Utils.createNotification("Usuário logado com sucesso!", NotificationType.GOOD);
+										Utils.createNotification("Usuario logado com sucesso!", NotificationType.GOOD);
 										dispose();
 									
 									} else {
-										setMessageErrorLogin("Usuário não autorizado!");
+										setMessageErrorLogin("Usuario nao autorizado!");
 										Main.loggedUser = null;
 									}
 								
 								} else {
-									setMessageErrorLogin("Usuário inativo!");
+									setMessageErrorLogin("Usuario inativo!");
 									Main.loggedUser = null;
 								}
 							
@@ -237,7 +237,7 @@ public class LoginDialog extends JDialog {
 									setMessageErrorLogin("Senha incorreta!");
 								
 								} else{
-									setMessageErrorLogin("Usuário não encontrado!");
+									setMessageErrorLogin("Usuario nao encontrado!");
 								}
 							} else {
 								setMessageErrorLogin("Sem conexÃ£o!");

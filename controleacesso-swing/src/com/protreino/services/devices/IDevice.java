@@ -22,12 +22,12 @@ public interface IDevice extends Serializable {
 	public void disconnect(String... args) throws Exception;
 	
 	/**
-	 * Cria configurações
+	 * Cria configuracoes
 	 */
 	public void createDefaultConfiguration();
 	
 	/**
-	 * Envia configurações
+	 * Envia configuracoes
 	 * @throws Exception
 	 */
 	public void sendConfiguration() throws Exception;
@@ -38,7 +38,7 @@ public interface IDevice extends Serializable {
 	public void allowAccess();
 	
 	/**
-	 * Acesso Não permitido
+	 * Acesso Nao permitido
 	 */
 	public void denyAccess();
 	
@@ -61,7 +61,7 @@ public interface IDevice extends Serializable {
 	public void switchMode(DeviceMode mode);
 	
 	/**
-	 * Retorna um set com os ids dos usuários cadastrados ou retorna nulo caso nao seja possivel obter essa lista
+	 * Retorna um set com os ids dos usuarios cadastrados ou retorna nulo caso nao seja possivel obter essa lista
 	 * @return
 	 * @throws Exception
 	 */

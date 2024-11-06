@@ -114,21 +114,21 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		deviceListTablePanel.add(scrollPane);
 
-		syncAll = new JButton("Sincronização Total");
+		syncAll = new JButton("Sincronizacao Total");
 		syncAll.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncAll.setPreferredSize(new Dimension(180, 40));
 		syncAll.addActionListener(e -> {
 			syncDevices(null, null);
 		});
 
-		syncByDate = new JButton("Sincronização por data");
+		syncByDate = new JButton("Sincronizacao por data");
 		syncByDate.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncByDate.setPreferredSize(new Dimension(180, 40));
 		syncByDate.addActionListener(e -> {
 			criarDialogoDeSincronizacaoPorData();
 		});
 
-		addDevice = new JButton("Adicionar Câmera");
+		addDevice = new JButton("Adicionar Camera");
 		addDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
 		addDevice.setPreferredSize(new Dimension(120, 40));
 		addDevice.addActionListener(e -> {
@@ -177,7 +177,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-		JLabel addressLabel = new JLabel("Ip Da Câmera");
+		JLabel addressLabel = new JLabel("Ip Da Camera");
 		addressLabel.setPreferredSize(new Dimension(120, 25));
 		addressLabel.setForeground(Main.firstColor);
 		addressLabel.setFont(tabHeaderFont);
@@ -185,7 +185,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		addressTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		JPanel addressPanel = getNewMiniPanel(addressLabel, addressTextField);
 
-		JLabel portLabel = new JLabel("Porta da Câmera");
+		JLabel portLabel = new JLabel("Porta da Camera");
 		portLabel.setPreferredSize(new Dimension(120, 25));
 		portLabel.setForeground(Main.firstColor);
 		portLabel.setFont(tabHeaderFont);
@@ -193,7 +193,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		portTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		JPanel portPanel = getNewMiniPanel(portLabel, portTextField);
 
-		JLabel userLabel = new JLabel("Usuário da Câmera");
+		JLabel userLabel = new JLabel("Usuario da Camera");
 		userLabel.setPreferredSize(new Dimension(120, 25));
 		userLabel.setForeground(Main.firstColor);
 		userLabel.setFont(tabHeaderFont);
@@ -201,7 +201,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		userTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		JPanel userPanel = getNewMiniPanel(userLabel, userTextField);
 
-		JLabel passwordLabel = new JLabel("Senha da Câmera");
+		JLabel passwordLabel = new JLabel("Senha da Camera");
 		passwordLabel.setPreferredSize(new Dimension(120, 25));
 		passwordLabel.setForeground(Main.firstColor);
 		passwordLabel.setFont(tabHeaderFont);
@@ -209,7 +209,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		passwordTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		JPanel passwordPanel = getNewMiniPanel(passwordLabel, passwordTextField);
 
-		JLabel deviceNameLabel = new JLabel("Nome da Câmera");
+		JLabel deviceNameLabel = new JLabel("Nome da Camera");
 		deviceNameLabel.setPreferredSize(new Dimension(120, 25));
 		deviceNameLabel.setForeground(Main.firstColor);
 		deviceNameLabel.setFont(tabHeaderFont);
@@ -338,7 +338,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-		JLabel dataInicioLabel = new JLabel("Data de Início");
+		JLabel dataInicioLabel = new JLabel("Data de Inicio");
 		JFormattedTextField dataInicioTextField = Utils.getNewJFormattedTextField(12);
 		dataInicioTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		MaskFormatter mask = Utils.getNewMaskFormatter("##/##/#### ##:##");
@@ -384,7 +384,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	}
 
 	private void syncDevices(final Date inicio, final Date fim) {
-		// fazer uma query de connt para contar quantos pedestres vão ser sincronizados.
+		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
 		// fazer a busca paginada
 		List<String> devicesToSync = getDevicesToSync();
 		if (devicesToSync.isEmpty()) {
@@ -450,7 +450,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 				
 				if(errors.isEmpty()) {
 					progressBarDialog.dispose();
-					//exibir botão de ok e mensagem que sincronização acabou e fechar o dialogo quando clicar em ok
+					//exibir botao de ok e mensagem que sincronizacao acabou e fechar o dialogo quando clicar em ok
 				} else {
 					progressBar.setVisible(false);
 					String[] columns = { "Erros"};

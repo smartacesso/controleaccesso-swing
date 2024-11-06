@@ -42,7 +42,7 @@ public class SelectItem {
 	
 	@Override
 	public boolean equals(Object o) {
-	    /* Comentado para não ter que sobreescrever tambem o hashcode
+	    /* Comentado para nao ter que sobreescrever tambem o hashcode
 	     * if (o == this) {
 	      return true;
 	    }*/

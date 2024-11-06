@@ -206,7 +206,7 @@ public class DeviceCard extends JPanel {
 					@Override
 				    public Void doInBackground() {
 						try {
-				    		//N�o faz nada caso esteja recuperando dados
+				    		//Nao faz nada caso esteja recuperando dados
 				    		if(device.coletandoDadosOffLine) {
 				    			return null;
 				    		}
@@ -238,7 +238,7 @@ public class DeviceCard extends JPanel {
 				    	} catch (Throwable t) {
 							t.printStackTrace();
 							device.setDesiredStatus(DeviceStatus.DISCONNECTED);
-							setMensagem("N�o foi poss�vel conectar", MessageType.ERROR);
+							setMensagem("Nao foi possivel conectar", MessageType.ERROR);
 							Main.mainScreen.addEvento(device.getName() + ": " + t.getMessage());
 							//connectButton.setEnabled(true);
 							//connectButton.setVisible(true);
@@ -288,7 +288,7 @@ public class DeviceCard extends JPanel {
 						
 				    	} catch (Exception e) {
 							e.printStackTrace();
-							setMensagem("N�o foi poss�vel desconectar", MessageType.ERROR);
+							setMensagem("Nao foi possivel desconectar", MessageType.ERROR);
 							Main.mainScreen.addEvento("Erro ao desconectar " + device.getName() + ": " + e.getMessage());
 							//disconnectButton.setEnabled(true);
 							//disconnectButton.setVisible(true);
@@ -368,7 +368,7 @@ public class DeviceCard extends JPanel {
 				logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), null, 
 						"LIBERADO PELO SISTEMA", device.getLocation(), motivoLiberacao);
 				
-				if(device.getConfigurationValueAsBoolean("Bloquear Sa�da")) {
+				if(device.getConfigurationValueAsBoolean("Bloquear Saida")) {
 					new EscolherSentidoLiberarAcessoDialog(device, motivoLiberacao, null);
 				}
 				else
@@ -405,7 +405,7 @@ public class DeviceCard extends JPanel {
 		
 		add(actionPanel);
 		
-		JMenuItem defaultDeviceMenuItem = new JMenuItem("Definir como padr�o");
+		JMenuItem defaultDeviceMenuItem = new JMenuItem("Definir como padrao");
 		JCheckBoxMenuItem mirrorMenuItem = new JCheckBoxMenuItem("Catraca espelhada");
 		JCheckBoxMenuItem syncUsersMenuItem = new JCheckBoxMenuItem("Sincronizar pedestres");
 		JMenuItem syncUsersNowMenuItem = new JMenuItem("Sincronizar digitais agora");
@@ -661,7 +661,7 @@ public class DeviceCard extends JPanel {
 									public void action(ItemEvent e) {
 										SelectItem leitorSelecionado = (SelectItem) e.getItem();
 										for (FieldTO f : mapaFieldConfiguration.keySet()) {
-											if(f.getName().equals("Quantidade d�gitos cart�o")) {
+											if(f.getName().equals("Quantidade d�gitos cartao")) {
 												Vector<SelectItem> options = getOptions(leitorSelecionado.getLabel());
 												if(!options.isEmpty()) 
 													f.setOptions(options);
@@ -706,7 +706,7 @@ public class DeviceCard extends JPanel {
 										if(check.isSelected()) {
 											for (FieldTO f : mapaFieldConfiguration.keySet()) {
 												if(f.getName().equals("Leitor 2")) {
-													f.setValue("Entrada e Sa�da_3");
+													f.setValue("Entrada e Saida_3");
 													innerPanel.updateUI();
 													break;
 												}
@@ -718,7 +718,7 @@ public class DeviceCard extends JPanel {
 							} 
 							
 							JPanel fieldPanel = field.getPanel();
-							if(field.getName().equals("Quantidade d�gitos cart�o")) {
+							if(field.getName().equals("Quantidade d�gitos cartao")) {
 								for (FieldTO f : mapaFieldConfiguration.keySet()) {
 									if(f.getName().equals("Tipo de leitor")) {
 										Vector<SelectItem> options;
@@ -810,7 +810,7 @@ public class DeviceCard extends JPanel {
 			erroConfigurationLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 10, 0);
 			erroConfigurationLabel.setLabelColor(Color.RED);
 			
-			JButton resetarButton = new JButton("Valores padr�o");
+			JButton resetarButton = new JButton("Valores padrao");
 			resetarButton.setPreferredSize(new Dimension(120, 30));
 			JButton salvarButton = new JButton(device.isConnected() ? "Salvar e enviar" : "Salvar");
 			salvarButton.setPreferredSize(new Dimension(device.isConnected() ? 120 : 80, 30));
@@ -897,7 +897,7 @@ public class DeviceCard extends JPanel {
 	private void showConfirmRemove(){
 		Object[] options = { DeviceStatus.CONNECTED.equals(device.getStatus()) ? "Desconectar e remover" : "Remover", "Cancelar"};
 		int result = JOptionPane.showOptionDialog(null, "Deseja realmente remover este dispositivo?",
-				"Confirma��o", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
+				"Confirmacao", 0, JOptionPane.PLAIN_MESSAGE, null, options, null);
 		if (result == JOptionPane.OK_OPTION) {
 			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 				@Override
@@ -919,7 +919,7 @@ public class DeviceCard extends JPanel {
 					}
 					catch (Exception e) {
 						e.printStackTrace();
-						setMensagem("N�o foi poss�vel remover.", MessageType.ERROR);
+						setMensagem("Nao foi possivel remover.", MessageType.ERROR);
 						Main.mainScreen.addEvento("Erro ao remover " + device.getName() + ": " + e.getMessage());
 					}
 					finally {

@@ -104,7 +104,7 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 				Utils.sleep(50);
 			}
 			if (ret != Enumeradores.RET_COMANDO_OK) {
-				throw new Exception("N�o foi poss�vel conectar.");
+				throw new Exception("Nao foi possivel conectar.");
 			}
 
 			sendConfiguration();
@@ -387,13 +387,13 @@ public class TopDataExpedidoraDevice extends TopDataDevice {
 			geralConfigurations.add(new ConfigurationTO(DOIS_LEITORES, "true", FieldType.CHECKBOX,
 					"(usa para catracas com urna)", true));
 			geralConfigurations.add(new ConfigurationTO(LEITOR_1, "Somente entrada_1", FieldType.COMBOBOX,
-					"Desativado_0;Somente entrada_1;Somente sa�da_2;Entrada e sa�da_3;Sa�da e entrada_4"));
+					"Desativado_0;Somente entrada_1;Somente saida_2;Entrada e saida_3;Saida e entrada_4"));
 			geralConfigurations.add(new ConfigurationTO(LEITOR_2, "Desativado_0", FieldType.COMBOBOX,
-					"Desativado_0;Somente entrada_1;Somente sa�da_2;Entrada e sa�da_3;Sa�da e entrada_4"));
+					"Desativado_0;Somente entrada_1;Somente saida_2;Entrada e saida_3;Saida e entrada_4"));
 			geralConfigurations
-					.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "N�o_1", FieldType.COMBOBOX, "Sim_1;N�o_0"));
+					.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Nao_1", FieldType.COMBOBOX, "Sim_1;Nao_0"));
 			geralConfigurations
-					.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "N�o_0", FieldType.COMBOBOX, "Sim_1;N�o_0"));
+					.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nao_0", FieldType.COMBOBOX, "Sim_1;Nao_0"));
 			geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padr�o livre_1", FieldType.COMBOBOX,
 					"Padr�o livre_1;Padr�o TopData_0"));
 			geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "false", FieldType.CHECKBOX));

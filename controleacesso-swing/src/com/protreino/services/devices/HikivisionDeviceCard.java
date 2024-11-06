@@ -98,11 +98,11 @@ public class HikivisionDeviceCard extends JPanel {
 		mensagemPanel.add(Box.createHorizontalGlue());
 		add(mensagemPanel);
 		
-		   // Adicionar botão "Conectar"
+		   // Adicionar botï¿½o "Conectar"
 		Dimension buttonSize = new Dimension(180,35);
         JButton liberaButton = new JButton("Liberar");
         liberaButton.setPreferredSize(buttonSize);
-        liberaButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centralizar o botão
+        liberaButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centralizar o botï¿½o
         add(liberaButton);
         
         liberaButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -116,11 +116,11 @@ public class HikivisionDeviceCard extends JPanel {
 		    }
 		});
         
-        // Adicionar listener de ação para o botão
+        // Adicionar listener de aï¿½ï¿½o para o botï¿½o
         liberaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {            	            	
-                // Lógica de conexão aqui          	           	
+                // Lï¿½gica de conexao aqui          	           	
                 if(Objects.nonNull(hikivisionUseCases)) {
                 	hikivisionUseCases.liberaCameraRemoto(device.getDevIndex());
                 }

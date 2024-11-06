@@ -339,7 +339,7 @@ public class AccessHistoryPanel extends PaginedListPanel {
 		}
 		accessHistoryTable.setModel(dataModel);
 		//int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
-		//countLabel.setText("N�mero de registros: " + numAcessos);
+		//countLabel.setText("Numero de registros: " + numAcessos);
 		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}

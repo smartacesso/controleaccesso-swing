@@ -41,7 +41,7 @@ public class HikiVisionIntegrationService {
 
 			/*
 			if (Utils.isNullOrEmpty(url) || Utils.isNullOrEmpty(user)) {
-				throw new IllegalArgumentException("Url connection n�o pode ser nula");
+				throw new IllegalArgumentException("Url connection nao pode ser nula");
 			}
 			*/
 
@@ -125,7 +125,7 @@ public class HikiVisionIntegrationService {
 						HikivisionUserInfoTO.class);
 				final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Usuario %s j� cadastrado no device %s: %b", idUser, deviceId,
+				System.out.println(String.format("Usuario %s ja cadastrado no device %s: %b", idUser, deviceId,
 						isUsuarioCadastrado));
 
 				return isUsuarioCadastrado;
@@ -164,7 +164,7 @@ public class HikiVisionIntegrationService {
 						FaceInfoSearchTO.class);
 				final boolean isUsuarioCadastrado = responseBody.FaceInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Foto do usuario %s j� cadastrado no device %s: %b", idUser, deviceId,
+				System.out.println(String.format("Foto do usuario %s ja cadastrado no device %s: %b", idUser, deviceId,
 						isUsuarioCadastrado));
 
 				return isUsuarioCadastrado;
@@ -341,7 +341,7 @@ public class HikiVisionIntegrationService {
 					FaceDataRecordResponseTO.class);
 
 			if("Invalid Content".equalsIgnoreCase(responseBody.statusString)) {
-				System.out.println(String.format("Foto do usuario %s n�o foi aceita no device %s", idUser, deviceId));
+				System.out.println(String.format("Foto do usuario %s nao foi aceita no device %s", idUser, deviceId));
 				throw new InvalidPhotoException(responseBody.statusString);
 			}
 			
@@ -421,7 +421,7 @@ public class HikiVisionIntegrationService {
 			}
 
 			final boolean isCartaoJaCadastrado = "OK".equalsIgnoreCase(responseBody.CardInfoSearch.responseStatusStrg);
-			System.out.println(String.format("Cartao do usuario %s j� cadastrado no device %s: %b", idUser, deviceId,
+			System.out.println(String.format("Cartao do usuario %s ja cadastrado no device %s: %b", idUser, deviceId,
 					isCartaoJaCadastrado));
 
 			return isCartaoJaCadastrado;

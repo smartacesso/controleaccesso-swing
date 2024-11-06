@@ -196,7 +196,7 @@ public class PreferencesDialog extends JDialog {
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
 		
-		JButton resetarButton = new JButton("Valores padr�o");
+		JButton resetarButton = new JButton("Valores padrao");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
 		salvarButton.setPreferredSize(new Dimension(80, 30));
@@ -239,7 +239,7 @@ public class PreferencesDialog extends JDialog {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-//Amanhã fazer a configura��es da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
+//Amanhã fazer a configuracoes da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
 		});
 
@@ -296,7 +296,7 @@ public class PreferencesDialog extends JDialog {
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirma��o", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmacao", 
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 				if (dialogResult == JOptionPane.YES_OPTION){
 					SyncPedestrianAccessListUseCase.setLastSync(0l);

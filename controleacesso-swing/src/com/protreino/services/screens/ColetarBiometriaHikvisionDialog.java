@@ -99,7 +99,7 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		Font font = new JLabel().getFont();
 		Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
 		
-		JLabel label1 = new JLabel("Usuário: ");
+		JLabel label1 = new JLabel("Usuario: ");
 		userLabel = new JLabel(visitante.getName());
 		userLabel.setFont(boldFont);
 		userLabel.setForeground(Main.firstColor);
@@ -274,7 +274,7 @@ public class ColetarBiometriaHikvisionDialog extends JDialog {
 		//TODO Exibir dialogo progressbar
 		
 		if (!digitalCadastrada.isPresent()) {
-			System.out.println(String.format("Não foi possível cadastrar a digital cadastrada %d", finger.ordinal()));
+			System.out.println(String.format("Nao foi possivel cadastrar a digital cadastrada %d", finger.ordinal()));
 			//TODO Exibir dialogo
 			return;
 		}

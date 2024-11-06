@@ -54,7 +54,7 @@ public class SyncPedestrianAccessListUseCase {
 
 	private static boolean updatingPedestrianAccessList = false;
 	private static Long lastSync = 0L;
-	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronização desabilitada: Máquina possui servidor";
+	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronizacao desabilitada: Maquina possui servidor";
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 	private static Gson gson  = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
         public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -203,7 +203,7 @@ public class SyncPedestrianAccessListUseCase {
                 JsonArray responseArray = new JsonArray();
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
                     // se foi criado, envia os dados para o servidor
-                    // porque estï¿½ sem o ID
+                    // porque estÃ¡ sem o ID
                     if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
                         visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
 
@@ -416,7 +416,7 @@ public class SyncPedestrianAccessListUseCase {
                     	break;
                     }
 
-                    // TODO : criar novo mï¿½todo para pegar pedestre removido ou nï¿½o
+                    // TODO : criar novo mï¿½todo para pegar pedestre removido ou nao
                     //        isso pode resolver vï¿½rios bugs
                     // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
                     //		  aqui ou ne
@@ -437,7 +437,7 @@ public class SyncPedestrianAccessListUseCase {
                             existentAthleteAccess.setDesatualizadoNaCatracaRWTech(true);
                         }
 
-                        //verifica se usuï¿½rio foi apagado e se tem facial para apagar tambï¿½m no servidor facial
+                        //verifica se usuario foi apagado e se tem facial para apagar tambï¿½m no servidor facial
                         String idFacial = null;
                         if ((Boolean.TRUE.equals(athleteAccessTO.getRemovido())
                                 || !"ATIVO".equals(athleteAccessTO.getStatus()))
@@ -527,7 +527,7 @@ public class SyncPedestrianAccessListUseCase {
                         }
                     }
                 } else {
-                    System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem alteraï¿½ï¿½es de templates para catracas");
+                    System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem alteracoes de templates para catracas");
                 }
 
                 Utils.sleep(1000);

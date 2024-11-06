@@ -304,41 +304,41 @@ public enum Manufacturer {
 			return null;
 		
 		} else if (this.equals(TOP_DATA) || this.equals(TOP_DATA_ACESSO) || this.equals(TOP_DATA_EXPEDIDORA)){
-			fields.add(new FieldTO("N�mero do inner", FieldType.TEXT, "1"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "3570"));
+			fields.add(new FieldTO("Numero do inner", FieldType.TEXT, "1"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "3570"));
 			if(this.equals(TOP_DATA_EXPEDIDORA)) {
 				String[] opcoes = {"ENTRADA", "SAIDA"};
 				fields.add(new FieldTO("Selecione o tipo", FieldType.COMBOBOX, null, opcoes));
 			}
 		
 		} else if (this.equals(HENRY_8X) || this.equals(HENRY_7X)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.0.200"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "3000"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.200"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "3000"));
 		
 		} else if (this.equals(TECNIBRA)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.10.145"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "2051"));
-			fields.add(new FieldTO("N�mero do terminal", FieldType.TEXT, "01"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.10.145"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "2051"));
+			fields.add(new FieldTO("Numero do terminal", FieldType.TEXT, "01"));
 		
 		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.100.200"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.100.200"));
 			fields.add(new FieldTO("Ip deste computador", FieldType.COMBOBOX, null, Utils.getAllLocalIps()));
-			fields.add(new FieldTO("N�mero da porta deste computador", FieldType.TEXT, "2050"));
+			fields.add(new FieldTO("Numero da porta deste computador", FieldType.TEXT, "2050"));
 		
 		} else if (this.equals(RWTECH)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.0.20"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "1001"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.20"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "1001"));
 		
 		} else if (this.equals(TOLETUS)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.0.125"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "1001"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.125"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "1001"));
 		
 		} else if (this.equals(SYSTEMTEC)){
-			fields.add(new FieldTO("N�mero IP do dispositivo", FieldType.TEXT, "192.168.0.125"));
-			fields.add(new FieldTO("N�mero da porta", FieldType.TEXT, "1001"));
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.125"));
+			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "1001"));
 		
 		} else if (this.equals(SERVER)){
-			fields.add(new FieldTO("N�mero IP do servidor", FieldType.TEXT, "192.168.0.100"));
+			fields.add(new FieldTO("Numero IP do servidor", FieldType.TEXT, "192.168.0.100"));
 			fields.add(new FieldTO("Porta do servidor", FieldType.TEXT, "2020"));
 		
 		} else if (this.equals(FACIAL)) {
@@ -364,7 +364,7 @@ public enum Manufacturer {
 			
 		} else if("IP".equals(tipoCamera)) {
 			fields.add(new FieldTO("URL da camêra", FieldType.TEXT, "http://192.168.2.148:4747/"));
-			fields.add(new FieldTO("Usu�rio (se necessario)", FieldType.TEXT, ""));
+			fields.add(new FieldTO("Usuario (se necessario)", FieldType.TEXT, ""));
 			fields.add(new FieldTO("Senha (se necessário)", FieldType.TEXT, ""));
 		}
 		
@@ -372,7 +372,7 @@ public enum Manufacturer {
 	}
 	
 	/**
-	 * Indica se é poss�vel obter uma lista com os usu�rios cadastrados na catraca
+	 * Indica se é possivel obter uma lista com os usuarios cadastrados na catraca
 	 * @return
 	 */
 	public Boolean giveListRegisteredUsers(){
@@ -387,7 +387,7 @@ public enum Manufacturer {
 	
 	
 	/**
-	 * Indica se o cadastro de usu�rios é iniciado diretamente pela catraca usando o id do usu�rio
+	 * Indica se o cadastro de usuarios é iniciado diretamente pela catraca usando o id do usuario
 	 * @return
 	 */
 	public Boolean isRegistrationProcessStartedOnDevice(){

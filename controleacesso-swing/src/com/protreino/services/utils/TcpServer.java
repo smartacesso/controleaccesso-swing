@@ -629,7 +629,7 @@ public class TcpServer {
 					response.setSuccess(true);
 					response.setUser(new SimpleUser(usuario.getId(), usuario.getName(), usuario.getIdClient()));
 				} else {
-					response.setErrorMessage("Dados inv�lidos!");
+					response.setErrorMessage("Dados invalidos!");
 				}
 
 			} catch (Exception e) {
@@ -773,7 +773,7 @@ public class TcpServer {
 		}
 
 		private String processaCartaoComanda(String receivedData, String responseData) {
-			// para libera��o de cart�es
+			// para liberacao de cartoes
 			if (receivedData != null) {
 
 				if (receivedData.startsWith("SIER;STCSI;2")) {
@@ -800,7 +800,7 @@ public class TcpServer {
 					// encontrado
 					response = receivedData + (StatusCard.LIBERADO.equals(cartao.getStatus()) ? ";1" : ";2");
 				} else {
-					// n�o encontrado
+					// nao encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {
@@ -825,7 +825,7 @@ public class TcpServer {
 						response = receivedData + ";102";
 					}
 				} else {
-					// n�o encontrado
+					// nao encontrado
 					response = receivedData + ";101";
 				}
 			} catch (Exception e) {

@@ -122,7 +122,7 @@ public class ReleaseAccessUseCase {
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.",
-                                    "Erro na validação", JOptionPane.PLAIN_MESSAGE);
+                                    "Erro na validacao", JOptionPane.PLAIN_MESSAGE);
                             return null;
                         }
 
@@ -131,8 +131,8 @@ public class ReleaseAccessUseCase {
                         }
 
                         if (Boolean.FALSE.equals(retornoAuthentication)) {
-                            JOptionPane.showMessageDialog(null, "Não foi possssivel validar a senha, ou senha inválida",
-                                    "Erro na validação", JOptionPane.PLAIN_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "Nao foi possssivel validar a senha, ou senha invalida",
+                                    "Erro na validacao", JOptionPane.PLAIN_MESSAGE);
                             return null;
                         }
                     }
@@ -155,7 +155,7 @@ public class ReleaseAccessUseCase {
                         newMotivo = releaseReasonDialog.getReason();
 
                         if (Utils.isNullOrEmpty(newMotivo)) {
-                            Utils.createNotification("É necessário informar um motivo.", NotificationType.BAD);
+                            Utils.createNotification("E necessario informar um motivo.", NotificationType.BAD);
                             Utils.sleep(1000);
                             apertouF9 = false;
                             apertouF10 = false;
@@ -190,7 +190,7 @@ public class ReleaseAccessUseCase {
 
                             } else {
                                 Utils.createNotification(
-                                        "Usuário " + athleteAccess.getFirstName() + " liberado pelo sistema.",
+                                        "Usuario " + athleteAccess.getFirstName() + " liberado pelo sistema.",
                                         NotificationType.GOOD);
                                 HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
                                 if (Main.broadcastServer != null) {
@@ -254,7 +254,7 @@ public class ReleaseAccessUseCase {
                     
                     final LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
                             matchedPedestre.getId(), "SYSTEM", null, motivoLiberacao);
-                    Utils.createNotification("Usuário " + matchedPedestre.getFirstName() + " liberado pelo sistema.", NotificationType.GOOD);
+                    Utils.createNotification("Usuario " + matchedPedestre.getFirstName() + " liberado pelo sistema.", NotificationType.GOOD);
                     HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
                     Thread.sleep(1000);
 

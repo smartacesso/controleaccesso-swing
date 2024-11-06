@@ -39,7 +39,7 @@ public class ReleaseReasonDialog extends JDialog {
 	private JButton okButton;
 	
 	public ReleaseReasonDialog(Frame owner, String motivos) {
-		super(owner, "Motivo da liberação", true);
+		super(owner, "Motivo da liberacao", true);
 		
 		String[] options = motivos.split(",");
 		
@@ -53,7 +53,7 @@ public class ReleaseReasonDialog extends JDialog {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
-		JLabel label = new JLabel("Selecione o motivo da liberação");
+		JLabel label = new JLabel("Selecione o motivo da liberacao");
 		label.setAlignmentX(Component.CENTER_ALIGNMENT);
 		label.setFont(boldFont);
 		

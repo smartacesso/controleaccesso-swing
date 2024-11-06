@@ -267,7 +267,7 @@ public class PedestrianScreen extends JFrame {
 		codigoTextField.setForeground(Main.firstColor);
 		codigoTextField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroCodigoLabel = new JLabel("Codigo n�o encontrado");
+		messageErroCodigoLabel = new JLabel("Codigo nao encontrado");
 		messageErroCodigoLabel.setFont(normalFont);
 		messageErroCodigoLabel.setForeground(Color.RED);
 		messageErroCodigoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -280,7 +280,7 @@ public class PedestrianScreen extends JFrame {
 		sampleLabel = new JLabel(semDigitalImageIcon);
 		sampleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
-		messageErroDigitalLabel = new JLabel("Digital n�o encontrada");
+		messageErroDigitalLabel = new JLabel("Digital nao encontrada");
 		messageErroDigitalLabel.setFont(normalFont);
 		messageErroDigitalLabel.setForeground(Color.RED);
 		messageErroDigitalLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -437,7 +437,7 @@ public class PedestrianScreen extends JFrame {
 			bottomContainer.add(lbl1);
 			bottomContainer.add(catracasCombobox);
 			bottomContainer.add(Box.createHorizontalStrut(30));
-			JLabel lbl2 = new JLabel("Leitor biom�trico: ");
+			JLabel lbl2 = new JLabel("Leitor biometrico: ");
 			lbl2.setForeground(firstColor);
 			bottomContainer.add(lbl2);
 			bottomContainer.add(leitorLabel);
@@ -940,13 +940,13 @@ public class PedestrianScreen extends JFrame {
 	    		case NOT_FOUND:
 	    			if (!"FACIAL".equals(tipoAcesso)) {
 		    			if ("CODIGO".equals(tipoAcesso))
-		    				messageErroCodigoLabel.setText("Codigo n�o encontrado.");
+		    				messageErroCodigoLabel.setText("Codigo nao encontrado.");
 		    			else {
-		    				messageErroDigitalLabel.setText("Digital n�o encontrada.");
+		    				messageErroDigitalLabel.setText("Digital nao encontrada.");
 		    				sampleLabel.setIcon(digitalGenericaNegadaImageIcon);
 		    			}
 	    			} else if("FACIAL".equals(tipoAcesso)) {
-	    				messageErroDigitalLabel.setText("Face n�o reconhecida ou mal posicionada.");
+	    				messageErroDigitalLabel.setText("Face nao reconhecida ou mal posicionada.");
 	    			}
 	    			break;
 	    		case NOT_ALLOWED:

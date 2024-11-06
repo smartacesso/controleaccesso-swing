@@ -423,11 +423,11 @@ public class Main {
 
                                             mainScreen.refresh();
                                             String html = "<html><body width='%1s'>"
-                                                    + "<p>N�o conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
+                                                    + "<p>Nao conseguimos reconectar a catraca e/ou leitor, verifique os itens abaixo:"
                                                     + "<br><br>"
-                                                    + "- A catraca e/ou leitor est� ligado na tomada?"
+                                                    + "- A catraca e/ou leitor está ligado na tomada?"
                                                     + "<br>"
-                                                    + "- Os cabos est�o conectados de forma correta?"
+                                                    + "- Os cabos estáo conectados de forma correta?"
                                                     + "<br><br>"
                                                     + "Se estiver tudo OK, clique em Conectar."
                                                     + "</p></html>";
@@ -596,7 +596,7 @@ public class Main {
 
         Boolean sessaoLimpa = HibernateLocalAccessData.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sess�o de usu�rio encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sess�o de usuario encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
@@ -607,7 +607,7 @@ public class Main {
 
     public static void exit(boolean exibirConfirmacao) {
         if (exibirConfirmacao) {
-            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser�o  desconectadas. Deseja realmente sair?", "Confirma��o",
+            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser�o  desconectadas. Deseja realmente sair?", "Confirmacao",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (dialogResult != JOptionPane.YES_OPTION)
                 return;
@@ -798,7 +798,7 @@ public class Main {
         loggedUser.setDateNewAccess(new Date());
         HibernateAccessDataFacade.save(UserEntity.class, loggedUser);
 
-        //apaga tamb�m dados de giros anteriores n�o registrados
+        //apaga tamb�m dados de giros anteriores nao registrados
         HibernateAccessDataFacade.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 
         System.out.println("Saiu limpaSentidoTodos");
@@ -814,7 +814,7 @@ public class Main {
         	return;
         }
 
-        //pesquisa todos os pedestres que est�o com cart�o ativado
+        //pesquisa todos os pedestres que estáo com cartao ativado
         //e que tenham um cr�dito
         HibernateAccessDataFacade.apagaDadosCartao();
         HibernateAccessDataFacade.apagaDadosDeUltimoSentido();
@@ -910,7 +910,7 @@ public class Main {
                     requestAllPlanos();
 
                 } catch (ConnectException e) {
-                    System.err.println("N�o foi poss�vel comunicar com o servidor.");
+                    System.err.println("Nao foi possivel comunicar com o servidor.");
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1172,7 +1172,7 @@ public class Main {
             }
             
             private void executeSyncFromHikivisionIntegrationError() {
-            	final long maxRetries = 20; //TODO Mudar para configura��es
+            	final long maxRetries = 20; //TODO Mudar para configuracoes
         		final List<HikivisionIntegrationErrorEntity> errors = hikivisionIntegrationErrorRepository.findFirts(500);
         		
         		if(Objects.isNull(errors) || errors.isEmpty()) {
@@ -1335,7 +1335,7 @@ public class Main {
                     Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
 
                 } catch (ConnectException e) {
-                    System.err.println("N�o foi poss�vel comunicar com o servidor.");
+                    System.err.println("Nao foi possivel comunicar com o servidor.");
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1473,7 +1473,7 @@ public class Main {
     private void setSystemTrayIcon() {
         if (!SystemTray.isSupported()) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(null, "N�o � poss�vel adicionar �cones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
+            JOptionPane.showOptionDialog(null, "Nao � possivel adicionar �cones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);
@@ -1528,7 +1528,7 @@ public class Main {
             systemTray.add(trayIcon);
         } catch (AWTException e) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(mainScreen, "N�o foi poss�vel adicionar �cones na bandeja do sistema.", "Bandeja do sistema n�o suportada.",
+            JOptionPane.showOptionDialog(mainScreen, "Nao foi possivel adicionar �cones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);

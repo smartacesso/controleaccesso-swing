@@ -42,7 +42,7 @@ public class CartaoComandaDialog extends JDialog {
 	public static boolean abertoPeloAtalho = false;
 	
 	public CartaoComandaDialog(CartaoComandaEntity cartaoComanda){
-		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cart�o/comanda" : "Alterar cart�o/comanda", true);
+		super(Main.mainScreen, cartaoComanda.getId() == null ? "Adicionar cartao/comanda" : "Alterar cartao/comanda", true);
 		
 		setIconImage(Main.favicon);
 		setResizable(false);
@@ -57,7 +57,7 @@ public class CartaoComandaDialog extends JDialog {
 		    }
 		});
 		
-		numeroLabel = new JLabel("N�mero");
+		numeroLabel = new JLabel("Numero");
 		numeroTextField = new JTextField();
 		numeroTextField.setColumns(20);
 		numeroTextField.setMaximumSize(numeroTextField.getPreferredSize());
@@ -78,7 +78,7 @@ public class CartaoComandaDialog extends JDialog {
 		removerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		removerButton.addActionListener(e -> {
 			
-			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cart�o/comanda?", "Confirmação", 
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esse cartao/comanda?", "Confirmação", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				
@@ -216,7 +216,7 @@ public class CartaoComandaDialog extends JDialog {
 //				return true;
 		}
 		
-		//n�o tem código
+		//nao tem código
 		return false;
 	}
 	
@@ -243,7 +243,7 @@ public class CartaoComandaDialog extends JDialog {
 				return true;
 		}
 		
-		//n�o tem código
+		//nao tem código
 		return false;
 	}
 

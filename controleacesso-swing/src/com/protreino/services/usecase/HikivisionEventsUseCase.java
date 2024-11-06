@@ -66,7 +66,7 @@ public class HikivisionEventsUseCase {
 			return;
 		}
 		
-		System.out.println(String.format("Evento do usuario com o cart�o %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
+		System.out.println(String.format("Evento do usuario com o cartao %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
 
 		final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
