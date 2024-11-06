@@ -284,7 +284,7 @@ public class ProcessAccessRequestUseCase {
 					System.out.println("Tipo de regra - Escala 3x3");
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
-					LocalDate dataInicioEscala = new java.util.Date(matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3().getTime())
+					LocalDate dataInicioEscala = new java.util.Date(matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime())
 							.toInstant()
 						      .atZone(ZoneId.systemDefault())
 						      .toLocalDate();
