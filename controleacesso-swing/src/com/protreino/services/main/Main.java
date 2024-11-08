@@ -668,15 +668,13 @@ public class Main {
             if(Utils.getPreferenceAsBoolean("hikiVisionFingerRegistration")) {
             	timerFingerProcessingHikivision = new Timer(Integer.valueOf(Utils.getPreference("hikivisionTimeProcessing"))* 60000, new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
-                    	 hikivisionUseCases = new HikivisionUseCases();
+                    	hikivisionUseCases = new HikivisionUseCases();
                     	hikivisionUseCases.processarBiometriasComErros();
                      }
                  });
             	
             }
             
-            
-
             timerSyncUsersAccessList.stop();
             if(!Objects.isNull(timerFingerProcessingHikivision)) {
             	 timerFingerProcessingHikivision.stop();
@@ -738,12 +736,11 @@ public class Main {
     public static void tasksOfDay(boolean timerCall) {
         if (timerCall) {
             limpaCartoesVisitantes();
-          
+            buscaVisitantesFotoAlterada();
         }
         
         syncTemplatesInTopDataDevices.execute();
         
-        HibernateLocalAccessData.buscaVisitantesComFoto();
         limpaSentidoTodos();
         limpaStatusCartoes();
         limpaTelas();
@@ -803,6 +800,41 @@ public class Main {
 
         System.out.println("Saiu limpaSentidoTodos");
 
+    }
+    
+    @SuppressWarnings("unchecked")
+	private static void buscaVisitantesFotoAlterada() {
+    	System.out.println("Buscando visitantes do dia com foto");
+    	HashMap<String, Object> args = new HashMap<String, Object>();
+    	
+    	final int resultListCount = HibernateAccessDataFacade
+    			.getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllVisitantesWhitDataCadastroFotoNaHikivision");
+    	System.out.println("Quantidade de visitantes hoje: " + resultListCount);
+    	
+    	if(resultListCount == 0) {
+    		return;
+    	}
+    	
+    	int pageSize = 500;
+    	int offset = 0;
+    	
+    	HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+    	
+    	do {
+    		List<PedestrianAccessEntity> visitantes = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
+    				.getResultListWithParams(PedestrianAccessEntity.class, 
+    						"PedestrianAccessEntity.findAllVisitantesWhitDataCadastroFotoNaHikivision", args, offset, pageSize);
+    		
+    		visitantes.forEach(visitante -> {
+    			hikivisionUseCases.removerUsuarioFromDevices(visitante);
+    			HibernateLocalAccessData.update(PedestrianAccessEntity.class, visitante);
+    		});
+    		
+    		offset = offset + pageSize;
+    		System.out.println("quantidade : " + offset);
+    	} while(offset < resultListCount);
+    	
+    	//HibernateLocalAccessData.buscaVisitantesComFoto();
     }
 
     private static void limpaCartoesVisitantes() {

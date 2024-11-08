@@ -223,18 +223,19 @@ public class PreferencesDialog extends JDialog {
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(resetarButton);
 		buttonsPanel.add(Box.createHorizontalStrut(5));
+		buttonsPanel.add(sincLog);
+		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(salvarButton);
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(cancelarButton);
-		buttonsPanel.add(Box.createHorizontalStrut(5));
-		buttonsPanel.add(sincLog);
+
 		
 		logoutButton.addActionListener(e -> {
 			Main.mainScreen.doLogout(this);
 		});
 		
 		executarButton.addActionListener(e -> {
-			Main.tasksOfDay(false);
+			Main.tasksOfDay(true);
 		});
 		
 		sincLog.addActionListener(e -> {

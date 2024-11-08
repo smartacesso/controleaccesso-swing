@@ -255,7 +255,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             @Override
             public void windowClosed(WindowEvent e) {
                 if((isFotoModificada || novoCadastroDeFoto)  && Objects.nonNull(hikivisionUseCases)) {
-                	salvarFotoVisitanteHikivision();
+//                	salvarFotoVisitanteHikivision();
                 }
             }
         });
@@ -2127,7 +2127,7 @@ public class RegisterVisitorDialog extends BaseDialog {
     	try {
             new Thread() {
                 public void run() {
-                	hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+                	hikivisionUseCases.cadastrarUsuarioInDevices(visitante);          	
                 }
             }.start();
     		

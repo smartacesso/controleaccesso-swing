@@ -268,6 +268,16 @@ import com.protreino.services.utils.EncryptionUtils;
 						"where lastAccessHikiVision != null " +
 						"and obj.cardNumber != null " + 
 						"order by obj.id asc"),
+	@NamedQuery(name = "PedestrianAccessEntity.countAllVisitantesWhitDataCadastroFotoNaHikivision",
+				query = "select count(obj) from PedestrianAccessEntity obj " +
+						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.tipo = 'VISITANTE' " + 
+						"and obj.cardNumber != null "),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllVisitantesWhitDataCadastroFotoNaHikivision",
+				query = "select obj from PedestrianAccessEntity obj " +
+						"where obj.dataCadastroFotoNaHikivision != null " +
+						"and obj.tipo = 'VISITANTE' " + 
+						"and obj.cardNumber != null ")
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
@@ -499,11 +509,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="DATA_CADASTRO_FOTO_HIKIVISION", nullable=true, length=30)
 	private Date dataCadastroFotoNaHikivision;
 	
-	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="ULTIMO_ACESSO_HIKIVISION", nullable=true, length=30)
 	private Date lastAccessHikiVision;
-	
+		
 	@Transient
 	private Integer origemCatraca;
 	

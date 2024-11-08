@@ -24,6 +24,7 @@ import javax.persistence.TypedQuery;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
@@ -48,8 +49,6 @@ public class HibernateLocalAccessData {
 
 	private static SessionFactory sessionFactory;
 
-	
-	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	static {
@@ -1299,51 +1298,93 @@ public class HibernateLocalAccessData {
 
 	}
 	
+//	@SuppressWarnings("rawtypes")
+//	public static void buscaVisitantesComFoto() {
+//	    Session session = getSessionFactory().getCurrentSession();
+//	    if (session.getTransaction() == null || !session.getTransaction().isActive())
+//	        session.beginTransaction();
+//
+//	    try {
+////	        LocalDate hoje = LocalDate.now();
+////
+////	        LocalDateTime dataInicio = hoje.atStartOfDay();
+////	        LocalDateTime dataFim = hoje.plusDays(1).atStartOfDay();
+//
+//	        Query<PedestrianAccessEntity> q = session.createQuery(
+//	            "from PedestrianAccessEntity p " +
+//	            "where p.tipo = 'VISITANTE' and p.fotoEnviadaHiki =  true",  
+//	            PedestrianAccessEntity.class
+//	        );
+////	        q.setParameter("dataInicio", Timestamp.valueOf(dataInicio));
+////	        q.setParameter("dataFim", Timestamp.valueOf(dataFim));
+//
+//	        List<PedestrianAccessEntity> visitantes = q.getResultList();
+//	        System.out.println("Quantidade de visitantes hoje: " + visitantes.size());
+//
+//	        for (PedestrianAccessEntity visitante : visitantes) {
+//	            HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+//	            hikivisionUseCases.removerUsuarioFromDevices(visitante);
+//	        }
+//
+//	        session.getTransaction().commit();
+//	    } catch (Exception e) {
+//	        if (session.getTransaction() != null && session.getTransaction().isActive()) {
+//	            session.getTransaction().rollback();
+//	        }
+//	        e.printStackTrace();
+//	    } finally {
+//	        if (session != null && session.isOpen()) {
+//	            session.close();
+//	        }
+//	    }
+//	}
+	
 	@SuppressWarnings("rawtypes")
 	public static void buscaVisitantesComFoto() {
-	    System.out.println("Buscando visitantes do dia com foto");
-	    Session session = getSessionFactory().getCurrentSession();
-	    if (session.getTransaction() == null || !session.getTransaction().isActive())
-	        session.beginTransaction();
+	    Session session = getSessionFactory().openSession(); // Abre uma nova sessão manualmente
+	    Transaction transaction = null; // Inicializa a transação
 
 	    try {
-	        LocalDate hoje = LocalDate.now();
-
-	        LocalDateTime dataInicio = hoje.atStartOfDay();
-	        LocalDateTime dataFim = hoje.plusDays(1).atStartOfDay();
+	        transaction = session.beginTransaction(); // Inicia a transação
 
 	        Query<PedestrianAccessEntity> q = session.createQuery(
 	            "from PedestrianAccessEntity p " +
-	            "where p.tipo = 'VISITANTE' and p.dataAlteracao >= :dataInicio and p.dataAlteracao < :dataFim",  
+	            "where p.tipo = 'VISITANTE' and p.fotoEnviadaHiki = true",  
 	            PedestrianAccessEntity.class
 	        );
-	        q.setParameter("dataInicio", Timestamp.valueOf(dataInicio));
-	        q.setParameter("dataFim", Timestamp.valueOf(dataFim));
 
 	        List<PedestrianAccessEntity> visitantes = q.getResultList();
 	        System.out.println("Quantidade de visitantes hoje: " + visitantes.size());
 
+	        HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+
 	        for (PedestrianAccessEntity visitante : visitantes) {
-	            HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	            hikivisionUseCases.removerUsuarioFromDevices(visitante);
+	            update(PedestrianAccessEntity.class, visitante);
+	            //visitante.setFotoEnviadaHiki(false);
+	            //session.update(visitante); 
 	        }
 
-	        session.getTransaction().commit();
+	        transaction.commit(); // Confirma a transação
+
 	    } catch (Exception e) {
-	        if (session.getTransaction() != null && session.getTransaction().isActive()) {
-	            session.getTransaction().rollback();
+	        if (transaction != null && transaction.isActive()) {
+	            transaction.rollback(); // Reverte a transação em caso de erro
 	        }
 	        e.printStackTrace();
+
 	    } finally {
 	        if (session != null && session.isOpen()) {
-	            session.close();
+	            session.close(); // Fecha a sessão no final
 	        }
 	    }
 	}
 
+
 	@SuppressWarnings("rawtypes")
 	public static void apagaDadosDeUltimoSentido() {
-		System.out.println(" chegou no apaga logs do do pedestre ");
+		System.out.println("chegou no apaga logs do do pedestre ");
+		
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive())
 			session.beginTransaction();

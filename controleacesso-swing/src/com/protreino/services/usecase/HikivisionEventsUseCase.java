@@ -105,6 +105,8 @@ public class HikivisionEventsUseCase {
 		}
 		
 		final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffiline(pedestre, device, dataAcesso);
+		System.out.println("Log de evento off do acesso : " + logEventoOffline.getDirection()
+		+ " | Equipamento :" + logEventoOffline.getEquipament() + " | Pedestre : " + logEventoOffline.getIdPedestrian());
 		decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline);
 	}
 	
@@ -134,18 +136,22 @@ public class HikivisionEventsUseCase {
 		final boolean bloquearSaida = device.getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 		final Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean("removeVisitanteCameraSaida");
 
+		System.out.println("PEDESTRE QUANTIDADE DE CRED ANTES " + pedestre.getQuantidadeCreditos());
 		if(logEventoOffline.isSaida() || !bloquearSaida) {
+			 System.out.println("decrementou");
 			 pedestre.decrementaCreditos();
 		}
+		System.out.println("PEDESTRE QUANTIDADE DE CRED DEPOIS " + pedestre.getQuantidadeCreditos());
 		
-		if(pedestre.temCreditos() || !pedestre.isVisitante()) {
-			return;
-		}
-		
-		if(Utils.isHikivisionConfigValid() 
-				&& Objects.nonNull(pedestre.getFoto()) 
-				&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())
-				&& removeVisitanteCamera) {
+		if ((pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) || 
+			    !pedestre.isVisitante()) {
+			    System.out.println("Pedestre ou quantidade de créditos > 0");
+			    return;
+			}
+
+		System.out.println("Removendo visitante");
+		if(removeVisitanteCamera) {
+			
 			hikivisionUseCases.removerUsuarioFromDevices(pedestre);
 			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 		}
