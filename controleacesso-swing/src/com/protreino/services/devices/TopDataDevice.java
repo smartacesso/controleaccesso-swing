@@ -1376,12 +1376,17 @@ public class TopDataDevice extends Device {
 			EasyInner.DefinirTipoListaAcesso(2);
 			EasyInner.DefinirPadraoCartao(1);
 			EasyInner.DefinirQuantidadeDigitosCartao(8);
+			//para gasmig abatrack
+			//EasyInner.DefinirQuantidadeDigitosCartao(10);
 			EasyInner.InserirUsuarioListaAcesso("0", 102);
 			return;
 		}
 		EasyInner.DefinirTipoListaAcesso(1);
 		EasyInner.DefinirPadraoCartao(1);
+		
 		EasyInner.DefinirQuantidadeDigitosCartao(8);
+		//para gasmig abatrack
+		//EasyInner.DefinirQuantidadeDigitosCartao(10);
 		
 		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
 		

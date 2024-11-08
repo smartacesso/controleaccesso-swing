@@ -503,7 +503,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="ULTIMO_ACESSO_HIKIVISION", nullable=true, length=30)
 	private Date lastAccessHikiVision;
-
+	
 	@Transient
 	private Integer origemCatraca;
 	

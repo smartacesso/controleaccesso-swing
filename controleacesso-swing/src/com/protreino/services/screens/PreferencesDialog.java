@@ -27,9 +27,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.protreino.services.constants.Configurations;
+import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.PreferenceTO;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
@@ -50,6 +52,7 @@ public class PreferencesDialog extends JDialog {
 	private Image configImage;
 	private PanelWithLabel errosLabel;
 	private Map<String, FieldTO> fieldMap;
+	private UserEntity user = Utils.userLogado();
 	
 	public PreferencesDialog() {
 		super(Main.mainScreen, "Preferencias", true);
@@ -196,6 +199,10 @@ public class PreferencesDialog extends JDialog {
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
 		
+		//novo
+		JButton sincLog = new JButton("Forçar Sinc");
+		sincLog.setPreferredSize(new Dimension(120, 30));
+		
 		JButton resetarButton = new JButton("Valores padrao");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
@@ -219,6 +226,8 @@ public class PreferencesDialog extends JDialog {
 		buttonsPanel.add(salvarButton);
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(cancelarButton);
+		buttonsPanel.add(Box.createHorizontalStrut(5));
+		buttonsPanel.add(sincLog);
 		
 		logoutButton.addActionListener(e -> {
 			Main.mainScreen.doLogout(this);
@@ -228,6 +237,9 @@ public class PreferencesDialog extends JDialog {
 			Main.tasksOfDay(false);
 		});
 		
+		sincLog.addActionListener(e -> {
+			HibernateLocalAccessData.forcaSinc(user.getLoginName());
+		});
 
 		syncButton.addActionListener(e -> {
 			  JFrame jFrame = new JFrame();

@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -1441,6 +1442,41 @@ public class HibernateLocalAccessData {
 		}
 
 	}
+	
+
+	@SuppressWarnings("unchecked") // Tipagem mais específica
+	public static void forcaSinc(String loginName) {
+		System.out.println("LastSync atualizando");
+		System.out.println("lgin : " + loginName);
+	    Session session = getSessionFactory().getCurrentSession();
+	    if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+	        session.beginTransaction();
+	    }
+
+	 // Converte LocalDateTime para java.util.Date para incluir data e hora atual
+	    Date agora = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+
+	    System.out.println("Data : " + agora);
+
+	    try {
+	        Query q = session.createQuery("update UserEntity u "
+	                + "set u.lastSyncLog = :DATA "
+	                + "where u.loginName = :LOGIN_NAME");
+	        q.setParameter("DATA", agora);
+	        q.setParameter("LOGIN_NAME", loginName);
+	        q.executeUpdate();
+	        session.getTransaction().commit();
+	    } catch (Exception e) {
+	        session.getTransaction().rollback();
+	        e.printStackTrace();
+	    } finally {
+	        if (session.isOpen()) {
+	            session.close();
+	        }
+	    }
+	}
+
+
 
 	@SuppressWarnings("unchecked")
 	public static synchronized void sendLogs(Integer qtdeTotalLogos, String namedQuery, HashMap<String, Object> args,
