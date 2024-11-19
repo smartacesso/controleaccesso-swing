@@ -2127,7 +2127,11 @@ public class RegisterVisitorDialog extends BaseDialog {
     	try {
             new Thread() {
                 public void run() {
-                	hikivisionUseCases.cadastrarUsuarioInDevices(visitante);          	
+                	if("ATIVO".equals(visitante.getStatus())) {
+                		hikivisionUseCases.cadastrarUsuarioInDevices(visitante);              		
+                	}else {               		
+                		hikivisionUseCases.removerUsuarioFromDevices(visitante); 
+                	}
                 }
             }.start();
     		
