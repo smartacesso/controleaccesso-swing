@@ -518,6 +518,8 @@ public class Utils {
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "porcentagemRevista",
 				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaSemVerificar",
+				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
 
 		
 		

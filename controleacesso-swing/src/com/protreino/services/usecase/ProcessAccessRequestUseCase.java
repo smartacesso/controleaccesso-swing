@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public class ProcessAccessRequestUseCase {
 		String motivo = "";
 		byte[] foto = null;
 		PedestrianAccessEntity matchedPedestrianAccess = null;
-
+		
 		try {
 			if (Utils.isNullOrEmpty(codigo)) {
 				return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
@@ -142,8 +143,10 @@ public class ProcessAccessRequestUseCase {
 					matchedPedestrianAccess.getQtdAcessoAntesSinc());
 			if(!Objects.isNull(ultimoAcesso))
 			{
-			    if ("ENTRADA".equals(ultimoAcesso.getDirection())) {
-			        boolean revista = realizarRevista(); // Método fictício para aplicar a lógica de revista
+				System.out.println("ULTIMO ACESSO : " + ultimoAcesso.getDirection());
+			    if (ultimoAcesso.isEntrada()) {
+			    	
+			        boolean revista = realizarRevista(); // Método para aplicar a lógica de revista
 
 			        if (revista) {
 			            if (createNotification) {
@@ -153,9 +156,16 @@ public class ProcessAccessRequestUseCase {
 			            EasyInner.AcionarRele2(numeroInner);
 			            return new Object[] { VerificationResult.REVISTA_REQUIRED, userName, matchedPedestrianAccess };
 			        }
+			        
+			        
+			        boolean saidaSemVerificacao =  Utils.getPreferenceAsBoolean("saidaSemVerificar");
+					if(saidaSemVerificacao) {
+						System.out.println("SAIDA LIBERADO - TRUE: ");
+						permitido = true;
+			        	return new Object[] { VerificationResult.ALLOWED, userName, matchedPedestrianAccess };
+			        }
 			    }
 			}
-
 			
 			if (!Boolean.TRUE.equals(ignoraRegras)) {
 				if (isObrigatorioPassagemViaLeitorFacial(matchedPedestrianAccess, origem)) {
@@ -272,96 +282,117 @@ public class ProcessAccessRequestUseCase {
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
 				} else if(matchedPedestrianAccess.temTipoEscala3x3()) {
-					// Pegar a data do acesso e subtrair a diferen�a de dias com a data do inicio da escala
-					// Pegar o resultado e fazer uma divis�o por 12 e pegar o resto da divis�o
-					// Somar o resto da divis�o mais 1 pra indicar qual � o dia que ele esta trabalhando
-					// se dias 1, 2 e 3 de 07:00 as 19:00 pode passar
-					// se dias 4, 5 e 6 nao pode passar
-					// se dia 7 pode passar das 19:00 as 23:59:59
-					// se dia 8 e 9 pode passar das 00:00 as 07:00 e 19:00 as 23:59:59
-					// se dia 10 pode passar de 00:00 as 07:00
-					// se dia 11 e 12 nao pode passar
+//					System.out.println("Tipo de regra - Escala 3x3");
+//					
+//					LocalDateTime dataAcesso = LocalDateTime.now();
+//					LocalDate dataInicioEscala = new java.util.Date(
+//					    matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()
+//					).toInstant()
+//					 .atZone(ZoneId.systemDefault())
+//					 .toLocalDate();
+//
+//					// Obter o horário de início do turno (horário de início dinâmico)
+//					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
+//					                        .atZone(ZoneId.systemDefault())
+//					                        .toLocalTime();
+//
+//					final int diaDaEscala = (Period.between(dataInicioEscala, dataAcesso.toLocalDate()).getDays() % 12) + 1;
+//
+//					// Ajuste os intervalos com base no horário de início dinâmico
+//					LocalTime fimDia = horarioInicio.plusHours(12); // 12 horas após o horário de início
+//					LocalTime fimNoite = LocalTime.of(23, 59, 59);
+//
+//					LocalTime horarioAtual = dataAcesso.toLocalTime();
+//					
+//					System.out.println("hora passagem : " + horarioAtual);
+//					System.out.println("diaDaEscala : " + diaDaEscala);
+//					System.out.println("horario inicio : " + horarioInicio);
+//					System.out.println("fim do dia : " + fimDia);
+//					System.out.println("fim da noite : " + fimNoite);
+//					
+//					if(diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
+//					    // Turno de 12 horas durante o dia
+//					    permitido = !horarioAtual.isBefore(horarioInicio) && horarioAtual.isBefore(fimDia);
+//
+//					} else if(diaDaEscala == 7) {
+//					    // Turno especial noturno
+//					    permitido = !horarioAtual.isBefore(fimDia) && horarioAtual.isBefore(fimNoite);
+//
+//					} else if(diaDaEscala == 8 || diaDaEscala == 9) {
+//					    // Cobertura para períodos combinados de dia e noite
+//					    permitido = (!horarioAtual.isBefore(horarioInicio) && horarioAtual.isBefore(fimDia)) 
+//					                || (!horarioAtual.isBefore(fimDia) && horarioAtual.isBefore(fimNoite));
+//
+//					} else if(diaDaEscala == 10) {
+//					    // Período após meia-noite até o início do turno
+//					    permitido = !horarioAtual.isBefore(LocalTime.MIDNIGHT) && horarioAtual.isBefore(horarioInicio);
+//
+//					} else {
+//					    permitido = false;
+//					}
 					System.out.println("Tipo de regra - Escala 3x3");
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
-					LocalDate dataInicioEscala = new java.util.Date(matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime())
-							.toInstant()
-						      .atZone(ZoneId.systemDefault())
-						      .toLocalDate();
-					
-					final int diaDaEscala = (Period.between(dataInicioEscala, dataAcesso.toLocalDate()).getDays() % 12) + 1;
+					LocalDate dataInicioEscala = new java.util.Date(
+					    matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()
+					).toInstant()
+					 .atZone(ZoneId.systemDefault())
+					 .toLocalDate();
+
+					// Obter o horário de início do turno
+					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
+					                        .atZone(ZoneId.systemDefault())
+					                        .toLocalTime();
+
+					// Calcular o número de dias entre a data de início da escala e a data de acesso
+					long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
+
+					// Aplicar o ciclo de 12 dias
+					int diaDaEscala = (int) (diasEntre % 12) + 1; // +1 para garantir que o ciclo comece do 1
+
+
+					// Ajustar os intervalos com base no horário de início dinâmico
+					LocalTime fimDia = horarioInicio.plusHours(12);
+					// 12 horas após o início
+					LocalTime fimNoite = LocalTime.of(23, 59, 59);
+
+					// Caso o horário de fim do turno passe para o dia seguinte
+					boolean atravessaMeiaNoite = fimDia.isBefore(horarioInicio);
+					System.out.println("Data inicio escala : " + dataInicioEscala);
+					System.out.println("hora passagem : " + dataAcesso);
+					System.out.println("diaDaEscala : " + diaDaEscala);
+					System.out.println("horario inicio : " + horarioInicio);
+					System.out.println("fim do dia : " + fimDia);
+					System.out.println("fim da noite : " + fimNoite);
 
 					if(diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
-						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0));
-					
+					    if (atravessaMeiaNoite) {
+					        permitido = dataAcesso.toLocalTime().isAfter(horarioInicio) || dataAcesso.toLocalTime().isBefore(fimDia);
+					    } else {
+					        permitido = dataAcesso.toLocalTime().isAfter(horarioInicio) && dataAcesso.toLocalTime().isBefore(fimDia);
+					    }
+
 					} else if(diaDaEscala == 7) {
-						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(19, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(23, 59, 59));
-					
+					    permitido = dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite);
+
 					} else if(diaDaEscala == 8 || diaDaEscala == 9) {
-						permitido = (dataAcesso.toLocalTime().isAfter(LocalTime.of(7, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(19, 0, 0)))
-								|| (dataAcesso.toLocalTime().isAfter(LocalTime.of(19, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(23, 59, 59)));
-					
+					    if (atravessaMeiaNoite) {
+					        permitido = (dataAcesso.toLocalTime().isAfter(horarioInicio) || dataAcesso.toLocalTime().isBefore(fimDia))
+					                    || (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
+					    } else {
+					        permitido = (dataAcesso.toLocalTime().isAfter(horarioInicio) && dataAcesso.toLocalTime().isBefore(fimDia))
+					                    || (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
+					    }
+
 					} else if(diaDaEscala == 10) {
-						permitido = dataAcesso.toLocalTime().isAfter(LocalTime.of(0, 0, 0))
-								&& dataAcesso.toLocalTime().isBefore(LocalTime.of(7, 0, 0));
-					
+					    permitido = dataAcesso.toLocalTime().isAfter(LocalTime.MIDNIGHT) && dataAcesso.toLocalTime().isBefore(horarioInicio);
+
 					} else {
-						permitido = false;
-					}
-					
-					//Data do acesso
-					/*
-					Calendar dataAcesso = Calendar.getInstance();
-					
-					// Data base de in�cio do turno
-					Calendar dataInicioTurno = Calendar.getInstance();
-					Date DataInicioEscala3_3 = matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioEscala3_3();
-					
-					dataInicioTurno.setTime(DataInicioEscala3_3);  // Exemplo: 07/10/2024
-
-					//diferen�a em milissegundos entre agora e o in�cio do turno
-					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
-					long diffDays = diffMillis / (1000 * 60 * 60 * 24);  // Convertendo para dias
-
-					// Cada ciclo � de 6 dias: 3 dias de trabalho e 3 dias de folga
-					long cicloAtual = diffDays % 6;  // Descobrir em que parte do ciclo 3x3 está
-
-					// Verificar se está nos 3 dias de trabalho
-					if (cicloAtual < 3) {
-					    // Alternar entre turno de 7h e 19h (dias 7,8,9) e turno de 19h e 7h (dias 13,14,15)
-					    long alternanciaTurno = (diffDays / 6) % 2;  // Altera��o a cada 6 dias
-
-					    Calendar periodoPermitidoIni = Calendar.getInstance();
-					    Calendar periodoPermitidoFim = Calendar.getInstance();
-
-					    if (alternanciaTurno == 0) {
-					        // Turno de 7h �s 19h
-					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 7);
-					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 19);
-					    } else {
-					        // Turno de 19h �s 7h do dia seguinte
-					        periodoPermitidoIni.set(Calendar.HOUR_OF_DAY, 19);
-					        periodoPermitidoFim.add(Calendar.DATE, 1);  // Passa para o dia seguinte
-					        periodoPermitidoFim.set(Calendar.HOUR_OF_DAY, 7);
-					    }
-
-					    // Verificar se o acesso ocorre dentro do turno de trabalho
-					    if (dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim)) {
-					        permitido = true;  // Est� dentro do turno de trabalho
-					    } else {
-					        permitido = false;  // Fora do turno de trabalho
-					    }
-					} else {
-					    // Est� nos 3 dias de folga
 					    permitido = false;
 					}
-					*/
-	
-				} else if (matchedPedestrianAccess.temTipoTurno()) {
+
+   
+				}else if (matchedPedestrianAccess.temTipoTurno()) {
 					System.out.println("Tipo escala - Turno ");
 					TipoEscala tipo = TipoEscala.valueOf(matchedPedestrianAccess.getTipoTurno());
 					int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo)

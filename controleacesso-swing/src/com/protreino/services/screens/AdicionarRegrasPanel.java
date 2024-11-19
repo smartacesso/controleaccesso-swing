@@ -329,7 +329,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		
 		if(TipoRegra.ACESSO_ESCALA_3_3.equals(regraSelecionada.getTipo())) {
 			try {
-				pedestreRegra.setDataInicioEscala3_3(regraSelecionada.getDataInicioPeriodo());
+				pedestreRegra.setDataInicioPeriodo(regraSelecionada.getDataInicioPeriodo());
 			} catch (Exception e) {}
 			
 		}

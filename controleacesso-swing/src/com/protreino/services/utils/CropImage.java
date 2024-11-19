@@ -62,21 +62,52 @@ public class CropImage extends JPanel implements MouseListener, MouseInputListen
 		}
 	}
 	
+//	public void draggedScreen() throws Exception {
+//		int width = t1 - t3;
+//		int height = t2 - t4;
+//		width = width * -1;
+//		height = width;
+//		Robot robot = new Robot();
+//		bufferedImage = robot.createScreenCapture(new Rectangle(t1, t2, width, height));
+//		
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		ImageIO.write(bufferedImage, "JPG", baos);
+//		
+//		cropedImage = baos.toByteArray();
+//		
+//		baos.close();
+//	}
+	
 	public void draggedScreen() throws Exception {
-		int width = t1 - t3;
-		int height = t2 - t4;
-		width = width * -1;
-		height = width;
-		Robot robot = new Robot();
-		bufferedImage = robot.createScreenCapture(new Rectangle(t1, t2, width, height));
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(bufferedImage, "JPG", baos);
-		
-		cropedImage = baos.toByteArray();
-		
-		baos.close();
+	    // Calcular a largura e altura do corte
+	    int width = Math.abs(c3 - c1);
+	    int height = Math.abs(c4 - c2);
+	    
+	    // Certificar-se de que as coordenadas iniciais sejam menores que as finais
+	    int x = Math.min(c1, c3);
+	    int y = Math.min(c2, c4);
+	    
+	    // Garantir que o corte seja apenas da imagem exibida
+	    ImagePanel imagePanel = (ImagePanel) getComponent(0); // Assumindo que é o primeiro componente
+	    BufferedImage originalImage = imagePanel.getBufferedImage();
+	    
+	    if (x + width > originalImage.getWidth()) {
+	        width = originalImage.getWidth() - x;
+	    }
+	    if (y + height > originalImage.getHeight()) {
+	        height = originalImage.getHeight() - y;
+	    }
+	    
+	    // Realizar o corte da imagem original
+	    bufferedImage = originalImage.getSubimage(x, y, width, height);
+	    
+	    // Converter para byte array
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    ImageIO.write(bufferedImage, "JPG", baos);
+	    cropedImage = baos.toByteArray();
+	    baos.close();
 	}
+
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
@@ -144,4 +175,18 @@ class ImagePanel extends JPanel {
 	public void paintComponent(Graphics graphic) { 
 		graphic.drawImage(img, 0, 0, null);
 	}
+	
+	public BufferedImage getBufferedImage() {
+	    // Converte a imagem carregada em BufferedImage
+	    if (img instanceof BufferedImage) {
+	        return (BufferedImage) img;
+	    }
+	    // Caso não seja BufferedImage, converte manualmente
+	    BufferedImage bufferedImg = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
+	    Graphics g = bufferedImg.createGraphics();
+	    g.drawImage(img, 0, 0, null);
+	    g.dispose();
+	    return bufferedImg;
+	}
+
 }

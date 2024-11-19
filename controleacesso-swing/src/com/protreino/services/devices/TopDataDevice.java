@@ -1245,8 +1245,8 @@ public class TopDataDevice extends Device {
 
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
-											? formatMessage(sair + espacoSair + "->" + ";" /*+ allowedUserName*/)
-											: formatMessage("<-" + espacoSair + sair + ";" /*+ allowedUserName*/);
+											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
+											: formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
 				}
 				
 				return ret;
@@ -1284,8 +1284,8 @@ public class TopDataDevice extends Device {
 				
 				if(messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
 					mensagemPermitido = "anticlockwise".equals(sentidoCatraca) 
-											? formatMessage(sair + espacoSair + "->" + ";" /*+ allowedUserName*/)
-											: formatMessage("<-" + espacoSair + sair + ";" /*+ allowedUserName*/);
+											? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
+											: formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
 				}
 			}
 			
@@ -2312,7 +2312,7 @@ public class TopDataDevice extends Device {
 				EasyInner.ConfigurarInnerOnLine();
 			}
 			
-			EasyInner.ConfigurarAcionamento1(5, tempoLiberacao);
+			EasyInner.ConfigurarAcionamento1(tipoCatraca, tempoLiberacao);
 			EasyInner.ConfigurarAcionamento2(tipoCatraca, tempoLiberacao);
 			EasyInner.HabilitarTeclado(habilitaTeclado, ecoarAsteriscos);
 			EasyInner.DefinirFuncaoDefaultLeitoresProximidade(tipoLeitorProximidade);
