@@ -361,13 +361,13 @@ public class NitgenDevice extends Device {
 	public void processAccessRequest(Object obj) {
 		final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 		// Primeiro é feito o processo de match para identificar o usuario.
-		// Após a identifica��o é verificado se o acesso é permitido.
+		// Após a identificacao é verificado se o acesso é permitido.
 		try {
 			// digital coletada agora
 			INPUT_FIR capturedInputFIR = bsp.new INPUT_FIR();
 			capturedInputFIR.SetFIRHandle(capturedFIRHandle);
 			
-			Integer nivelSeguranca = getConfigurationValueAsInteger("N�vel de seguran�a do reconhecimento");
+			Integer nivelSeguranca = getConfigurationValueAsInteger("Nivel de seguranca do reconhecimento");
 			if (nivelSeguranca == 0) {
 				nivelSeguranca = 6;
 			}
@@ -387,7 +387,7 @@ public class NitgenDevice extends Device {
 				} else {
 					verificationResult = VerificationResult.ERROR;
 					if (createNotification)
-						Utils.createNotification("Erro na verifica��o. Codigo: " + bsp.GetErrorCode(), NotificationType.BAD);
+						Utils.createNotification("Erro na verificacao. Codigo: " + bsp.GetErrorCode(), NotificationType.BAD);
 				}
 				
 			} else {
@@ -412,7 +412,7 @@ public class NitgenDevice extends Device {
 			e.printStackTrace();
 			verificationResult = VerificationResult.ERROR;
 			if (createNotification)
-				Utils.createNotification("Erro na verifica��o", NotificationType.BAD);
+				Utils.createNotification("Erro na verificacao", NotificationType.BAD);
 		}
 	}
 

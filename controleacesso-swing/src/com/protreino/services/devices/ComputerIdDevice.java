@@ -319,7 +319,7 @@ public class ComputerIdDevice extends Device {
 	public void processAccessRequest(Object obj) {
 		
 		// Primeiro é feito o processo de match para identificar o usuario.
-		// Após a identifica��o é verificado se o acesso é permitido.
+		// Após a identificacao é verificado se o acesso é permitido.
 		
 		Long idEncontrado = null;
 		DPFPSample sample = (DPFPSample) obj;

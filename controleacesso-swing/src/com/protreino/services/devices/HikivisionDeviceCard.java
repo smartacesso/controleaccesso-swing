@@ -102,7 +102,7 @@ public class HikivisionDeviceCard extends JPanel {
 		Dimension buttonSize = new Dimension(180,35);
         JButton liberaButton = new JButton("Liberar");
         liberaButton.setPreferredSize(buttonSize);
-        liberaButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centralizar o bot�o
+        liberaButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centralizar o botao
         add(liberaButton);
         
         liberaButton.addMouseListener(new java.awt.event.MouseAdapter() {

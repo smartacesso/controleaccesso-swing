@@ -175,7 +175,7 @@ public class DeviceCard extends JPanel {
 		mensagemLabel.setFont(boldFont);
 		mensagemLabel.setForeground(Main.secondColor);
 		mensagemPanel.add(mensagemLabel);
-		defaultDeviceLabel = new JLabel("Padr�o");
+		defaultDeviceLabel = new JLabel("Padrao");
 		defaultDeviceLabel.setFont(boldFont);
 		defaultDeviceLabel.setForeground(Color.WHITE);
 		if (!device.isDefaultDevice())
@@ -336,15 +336,15 @@ public class DeviceCard extends JPanel {
 					catch (Exception ex){
 						ex.printStackTrace();
 						JOptionPane.showMessageDialog(null, "Ocorreu uma falha ao validar a senha.", 
-								"Erro na valida��o", JOptionPane.PLAIN_MESSAGE);
+								"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 					
 					if (retornoAuthentication == null)
 						return;
 					if (!retornoAuthentication) {
-						JOptionPane.showMessageDialog(null, "Senha invalida ou sem permiss�o",
-								"Erro na valida��o", JOptionPane.PLAIN_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao",
+								"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
 				}
@@ -360,7 +360,7 @@ public class DeviceCard extends JPanel {
 						return;
 					motivoLiberacao = releaseReasonDialog.getReason();
 					if (Utils.isNullOrEmpty(motivoLiberacao)) {
-						Utils.createNotification("� necess�rio informar um motivo.", NotificationType.BAD);
+						Utils.createNotification("necessario informar um motivo.", NotificationType.BAD);
 						return;
 					}
 				}
@@ -410,7 +410,7 @@ public class DeviceCard extends JPanel {
 		JCheckBoxMenuItem syncUsersMenuItem = new JCheckBoxMenuItem("Sincronizar pedestres");
 		JMenuItem syncUsersNowMenuItem = new JMenuItem("Sincronizar digitais agora");
 		JMenuItem athleteScreenMenuItem = new JMenuItem("Abrir tela do pedestre");
-		JMenuItem configMenuItem = new JMenuItem("Configura��es");
+		JMenuItem configMenuItem = new JMenuItem("Configuracoes");
 		JMenuItem removeMenuItem = new JMenuItem("Remover dispositivo");
 		JMenuItem syncMenuItem = new JMenuItem("Sincronizar catraca");
 		
@@ -626,7 +626,7 @@ public class DeviceCard extends JPanel {
 		
 		if (retornoAuthentication) {
 		
-			final JDialog dialog = new JDialog(Main.mainScreen, "Configura��es " + device.getName(), true);
+			final JDialog dialog = new JDialog(Main.mainScreen, "Configuracoes " + device.getName(), true);
 			dialog.setIconImage(configImage);
 			dialog.setResizable(true);
 			dialog.setLayout(new BorderLayout());
@@ -661,7 +661,7 @@ public class DeviceCard extends JPanel {
 									public void action(ItemEvent e) {
 										SelectItem leitorSelecionado = (SelectItem) e.getItem();
 										for (FieldTO f : mapaFieldConfiguration.keySet()) {
-											if(f.getName().equals("Quantidade d�gitos cartao")) {
+											if(f.getName().equals("Quantidade digitos cartao")) {
 												Vector<SelectItem> options = getOptions(leitorSelecionado.getLabel());
 												if(!options.isEmpty()) 
 													f.setOptions(options);
@@ -718,7 +718,7 @@ public class DeviceCard extends JPanel {
 							} 
 							
 							JPanel fieldPanel = field.getPanel();
-							if(field.getName().equals("Quantidade d�gitos cartao")) {
+							if(field.getName().equals("Quantidade digitos cartao")) {
 								for (FieldTO f : mapaFieldConfiguration.keySet()) {
 									if(f.getName().equals("Tipo de leitor")) {
 										Vector<SelectItem> options;
@@ -756,7 +756,7 @@ public class DeviceCard extends JPanel {
 			FieldTO nameField = new FieldTO(this, "Nome", FieldType.TEXT, device.getName());
 			deviceInfoPanel.add(nameField.getPanel());
 			deviceInfoPanel.add(Box.createVerticalStrut(5));
-			FieldTO locationField = new FieldTO(this, "Localiza��o", FieldType.TEXT, device.getLocation());
+			FieldTO locationField = new FieldTO(this, "Localizacao", FieldType.TEXT, device.getLocation());
 			deviceInfoPanel.add(locationField.getPanel());
 			deviceInfoPanel.add(Box.createVerticalStrut(5));
 			if (device.getManufacturer().getFields() != null) {
@@ -774,7 +774,7 @@ public class DeviceCard extends JPanel {
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
 					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
-			tabbedPane.addTab("Informa��es do dispositivo", scrollPane);
+			tabbedPane.addTab("Informacoes do dispositivo", scrollPane);
 			
 			boolean exibeAbaCatracaVinculada = !(device instanceof FacialDevice)
 													&& !(device instanceof ServerDevice);
@@ -846,7 +846,7 @@ public class DeviceCard extends JPanel {
 							device.sendConfiguration();
 						device.saveConfigurations();
 						Utils.exportDevices();
-						JOptionPane.showMessageDialog(Main.mainScreen, device.isConnected() ? "Configura��es enviadas!" : "Configura��es salvas!", 
+						JOptionPane.showMessageDialog(Main.mainScreen, device.isConnected() ? "Configuracoes enviadas!" : "Configuracoes salvas!", 
 								"Sucesso!", JOptionPane.PLAIN_MESSAGE);
 						dialog.dispose();
 						nameLabel.setText(device.getName());
@@ -857,7 +857,7 @@ public class DeviceCard extends JPanel {
 					}
 					catch (Exception e){
 						e.printStackTrace();
-						erroConfigurationLabel.setText("Erro ao " + (device.isConnected() ? "enviar" : "salvar") + " as Configura��es. " + e.getMessage());
+						erroConfigurationLabel.setText("Erro ao " + (device.isConnected() ? "enviar" : "salvar") + " as Configuracoes. " + e.getMessage());
 					}
 					finally {
 						dialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -889,7 +889,7 @@ public class DeviceCard extends JPanel {
 			dialog.setVisible(true);
 		
 		} else {
-			JOptionPane.showMessageDialog(null, "Senha invalida ou sem permiss�o",
+			JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao",
 					"Erro na validação", JOptionPane.PLAIN_MESSAGE);
 		}
 	}
@@ -936,7 +936,7 @@ public class DeviceCard extends JPanel {
 		TopDataDevice topData = (TopDataDevice) device;
 		if(topData.isConnected()) {
 			JOptionPane.showMessageDialog(Main.mainScreen, 
-					"A sincroniza��o de todas as digitais s� pode ser feita com o dispositivo desconectado.",
+					"A sincronizacao de todas as digitais so pode ser feita com o dispositivo desconectado.",
 					"Desconecte o dispositivo!",
 					JOptionPane.PLAIN_MESSAGE);
 			return;

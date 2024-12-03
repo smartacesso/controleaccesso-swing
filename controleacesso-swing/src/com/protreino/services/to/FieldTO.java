@@ -515,7 +515,7 @@ public class FieldTO {
 	
 	/**
 	 * Verifica se um campos do tipo TEXT e MESSAGE_LINES está de acordo com as definições, isto é
-	 * o tamanho nao excede os limites mínimo e m�ximo de caracteres, e caso seja obrigatório, nao pode ser nulo ou vazio.
+	 * o tamanho nao excede os limites mínimo e maximo de caracteres, e caso seja obrigatório, nao pode ser nulo ou vazio.
 	 * Por padrao o campos é obrigatório, mas pode ser alterado para deixar de ser.
 	 * @return
 	 */
@@ -525,24 +525,24 @@ public class FieldTO {
 		
 		if (FieldType.TEXT.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " � obrigat�rio.";
+				return "O campo " + name.toUpperCase() + "  obrigatorio.";
 			if (maxCharacteres != null && textField.getText().trim().length() > maxCharacteres)
-				return "O campo " + name.toUpperCase() + " � maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + "  maior que o limite. Limite: " + maxCharacteres;
 			if (minCharacteres != null && textField.getText().trim().length() < minCharacteres)
-				return "O campo " + name.toUpperCase() + " � menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + "  menor que o limite. Limite: " + minCharacteres;
 		
 		} else if (FieldType.MESSAGE_LINES.equals(type)) {
 			if (Utils.isNullOrEmpty(textField.getText()))
-				return "O campo " + name.toUpperCase() + " � obrigat�rio.";
+				return "O campo " + name.toUpperCase() + " obrigatorio.";
 			if (maxCharacteres != null 
 					&& (textField.getText().trim().length() > maxCharacteres 
 							|| textField2.getText().trim().length() > maxCharacteres)) {
-				return "O campo " + name.toUpperCase() + " � maior que o limite. Limite: " + maxCharacteres;
+				return "O campo " + name.toUpperCase() + " maior que o limite. Limite: " + maxCharacteres;
 			}
 			if (minCharacteres != null 
 					&& (textField.getText().trim().length() < minCharacteres 
 							|| textField2.getText().trim().length() < minCharacteres)) {
-				return "O campo " + name.toUpperCase() + " � menor que o limite. Limite: " + minCharacteres;
+				return "O campo " + name.toUpperCase() + " menor que o limite. Limite: " + minCharacteres;
 			}
 		}
 		

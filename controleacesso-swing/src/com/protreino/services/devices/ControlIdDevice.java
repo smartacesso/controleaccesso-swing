@@ -483,7 +483,7 @@ public class ControlIdDevice extends Device {
 		
 		Configuration configuration = new Configuration(serverIp, serverPort, serverId, 
 			getConfigurationValueAsBoolean("Habilita beep"), getConfigurationValue("Tempo de giro"), 
-			getConfigurationValue("Tempo da requisi��o"));
+			getConfigurationValue("Tempo da requisicao"));
 		Object[] retorno = send("http://" + ip + "/set_configuration.fcgi?session=" + session, configuration);
 		String erro = (String) retorno[0];
 		if (erro != null)

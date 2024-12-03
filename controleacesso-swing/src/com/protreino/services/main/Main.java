@@ -118,7 +118,7 @@ import it.sauronsoftware.junique.MessageHandler;
 
 public class Main {
 	
-	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincroniza��o desabilitada: M�quina possui servidor";
+	private static final String MAQUINA_TEM_SERVER_MESSAGE = "Sincronizacao desabilitada: Maquina possui servidor";
 
     public static MainScreen mainScreen;
     private static SplashScreen splash;
@@ -188,7 +188,7 @@ public class Main {
     public static boolean desenvolvimento;
     public static boolean possuiLeitorLcAdd;
     public static boolean validandoAcesso = false;
-    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integra��o Comtele";
+    public static final String CHAVE_DE_INTEGRACAO_COMTELE = "Chave de integracao Comtele";
     
     private static final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
     private static final SmartAcessoClient smartAcessoClient = new SmartAcessoClient();
@@ -203,7 +203,7 @@ public class Main {
 //		String jvmArchitecture = Utils.getJvmArchitecture();
 //		if ("64".equals(jvmArchitecture)) {
 //			Object[] options = {"OK"};
-//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada.  necess�rio uma JVM de 32 bits.","JVM 32 bits necess�ria",
+//		    JOptionPane.showOptionDialog(null, "JVM de 64 bits detectada.  necessario uma JVM de 32 bits.","JVM 32 bits necessoria",
 //		                   JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 //		    System.exit(0);
 //		}
@@ -243,7 +243,7 @@ public class Main {
                 }
             });
         } catch (AlreadyLockedException e) {
-            JUnique.sendMessage(nomeAplicacao + "_Controle_Acesso_lockInstance", "Ol�!");
+            JUnique.sendMessage(nomeAplicacao + "_Controle_Acesso_lockInstance", "Ola!");
             alreadyRunning = true;
         }
 
@@ -407,7 +407,7 @@ public class Main {
                                             if (DeviceStatus.DISCONNECTED.equals(device.getStatus())
                                                     && DeviceStatus.CONNECTED.equals(device.getDesiredStatus())) {
 
-                                                //verifica se � topdata e se esta sincronizando
+                                                //verifica se e topdata e se esta sincronizando
 //												if(device instanceof TopDataDevice) {
 //													TopDataDevice
 //												}
@@ -596,18 +596,18 @@ public class Main {
 
         Boolean sessaoLimpa = HibernateLocalAccessData.cleanUserSession();
         if (sessaoLimpa) {
-            Utils.createNotification("Sess�o de usuario encerrada!", NotificationType.GOOD);
+            Utils.createNotification("Sessoo de usuario encerrada!", NotificationType.GOOD);
             releaseTicketGateMenuItem.setEnabled(false);
             updateAccessListMenuItem.setEnabled(false);
 
         } else
-            Utils.createNotification("Ocorreu um erro ao finalizar a sess�o.", NotificationType.BAD);
+            Utils.createNotification("Ocorreu um erro ao finalizar a sessoo.", NotificationType.BAD);
 
     }
 
     public static void exit(boolean exibirConfirmacao) {
         if (exibirConfirmacao) {
-            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas ser�o  desconectadas. Deseja realmente sair?", "Confirmacao",
+            int dialogResult = JOptionPane.showConfirmDialog(null, "As catracas serao  desconectadas. Deseja realmente sair?", "Confirmacao",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (dialogResult != JOptionPane.YES_OPTION)
                 return;
@@ -795,7 +795,7 @@ public class Main {
         loggedUser.setDateNewAccess(new Date());
         HibernateAccessDataFacade.save(UserEntity.class, loggedUser);
 
-        //apaga tamb�m dados de giros anteriores nao registrados
+        //apaga tambem dados de giros anteriores nao registrados
         HibernateAccessDataFacade.apagaDadosDeGiro(loggedUser.getDateNewAccess());
 
         System.out.println("Saiu limpaSentidoTodos");
@@ -847,7 +847,7 @@ public class Main {
         }
 
         //pesquisa todos os pedestres que estáo com cartao ativado
-        //e que tenham um cr�dito
+        //e que tenham um credito
         HibernateAccessDataFacade.apagaDadosCartao();
         HibernateAccessDataFacade.apagaDadosDeUltimoSentido();
         HibernateAccessDataFacade.apagaQuantidadeAcessosAsinc();
@@ -1157,7 +1157,7 @@ public class Main {
         }
 
         if (Main.servidor != null) {
-            System.out.println(sdf.format(new Date()) + " Sincroniza�o Hikivision desabilitada: M�quina possui servidor");
+            System.out.println(sdf.format(new Date()) + " Sincronizacao Hikivision desabilitada: Maquina possui servidor");
             return;
         }
         
@@ -1176,7 +1176,7 @@ public class Main {
             @Override
             public Void doInBackground() {
                 try {
-                	System.out.println(sdf.format(new Date()) + " Iniciando reprocessamento de erros na integra��o com a Hikivision");
+                	System.out.println(sdf.format(new Date()) + " Iniciando reprocessamento de erros na integracao com a Hikivision");
                 	executeSyncFromHikivisionIntegrationError();
                     //executeHikivisionAccessListSync();
 
@@ -1249,14 +1249,14 @@ public class Main {
                 HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 
                 if (!hikivisionUseCases.getSystemInformation()) {
-                    System.out.println(sdf.format(new Date()) + "  Sincroniza��o interrompida - Servidor offline");
+                    System.out.println(sdf.format(new Date()) + "  Sincronizacao interrompida - Servidor offline");
                     return;
                 }
 
                 List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
 
                 if (Objects.isNull(devices)) {
-                    System.out.println(sdf.format(new Date()) + "  Sincroniza��o interrompida - Sem dispositivos disponiveis");
+                    System.out.println(sdf.format(new Date()) + "  Sincronizacao interrompida - Sem dispositivos disponiveis");
                     return;
                 }
 
@@ -1505,7 +1505,7 @@ public class Main {
     private void setSystemTrayIcon() {
         if (!SystemTray.isSupported()) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(null, "Nao � possivel adicionar �cones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
+            JOptionPane.showOptionDialog(null, "Nao e possivel adicionar icones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);
@@ -1560,7 +1560,7 @@ public class Main {
             systemTray.add(trayIcon);
         } catch (AWTException e) {
             Object[] options = {"OK"};
-            JOptionPane.showOptionDialog(mainScreen, "Nao foi possivel adicionar �cones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
+            JOptionPane.showOptionDialog(mainScreen, "Nao foi possivel adicionar icones na bandeja do sistema.", "Bandeja do sistema nao suportada.",
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
             HibernateAccessDataFacade.shutdown();
             System.exit(0);

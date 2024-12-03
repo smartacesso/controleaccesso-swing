@@ -28,11 +28,11 @@ public enum Finger {
 		else if(this.equals(RIGHT_THUMB))
 			return "Polegar direito";
 		else if(this.equals(RIGHT_MIDDLE))
-			return "Médio direito";
+			return "Medio direito";
 		else if(this.equals(RIGHT_RING))
 			return "Anelar direito";
 		else if(this.equals(RIGHT_LITTLE))
-			return "Mínimo direito";
+			return "Minimo direito";
 		else if(this.equals(LEFT_INDEX))
 			return "Indicador esquerdo";
 		else if(this.equals(LEFT_THUMB))

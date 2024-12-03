@@ -16,7 +16,7 @@ public class TopDataDeviceConstants {
 	public static final String TEMPO_DE_PING = "Tempo de ping";
 	public static final String TEMPO_ESPERA_PARA_CONECTAR = "Tempo de espera para conectar";
 	public static final String TIPO_LEITOR = "Tipo de leitor";
-	public static final String QUANTIDADE_DIGITOS_CARTAO = "Quantidade d�gitos cartao";
+	public static final String QUANTIDADE_DIGITOS_CARTAO = "Quantidade digitos cartao";
 	public static final String MODELO_BIOMETRICO = "Modelo biometrico";
 	public static final String TIPO_BIOMETRICO = "Tipo biometrico";
 	public static final String DOIS_LEITORES = "Dois leitores";

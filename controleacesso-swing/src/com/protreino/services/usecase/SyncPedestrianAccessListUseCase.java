@@ -252,7 +252,7 @@ public class SyncPedestrianAccessListUseCase {
                     return;
                 }
 
-                //antes de alterar dados, verifica se existe valida��o de acesso em andamento
+                //antes de alterar dados, verifica se existe validacao de acesso em andamento
                 Main.verificaValidandoAcesso();
 
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
@@ -294,7 +294,7 @@ public class SyncPedestrianAccessListUseCase {
             }
 
             private void apagaDadosNovos(List<PedestrianAccessEntity> visitantesLocais) {
-                //antes de alterar dados, verifica se existe valida��o de acesso em andamento
+                //antes de alterar dados, verifica se existe validacao de acesso em andamento
                 Main.verificaValidandoAcesso();
 
                 final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();

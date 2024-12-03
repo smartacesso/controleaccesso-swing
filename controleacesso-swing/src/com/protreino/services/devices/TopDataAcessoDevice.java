@@ -243,8 +243,8 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(MODO_DE_TRABALHO, "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Hor�rio_clockwise", FieldType.COMBOBOX, 
-				"Hor�rio_clockwise;AntiHor�rio_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horario_clockwise", FieldType.COMBOBOX, 
+				"Horario_clockwise;AntiHorario_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(HABILITAR_TECLADO, "true", FieldType.CHECKBOX));
@@ -255,7 +255,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_PING, "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_ESPERA_PARA_CONECTAR, "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO(TIPO_LEITOR, "Proximidade Wiegand_3", FieldType.COMBOBOX,
-				"Codigo de barras_0;Magn�tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Codigo de barras_0;Magnetico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
                         + "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		geralConfigurations.add(new ConfigurationTO(QUANTIDADE_DIGITOS_CARTAO, "5", FieldType.NUMERIC_LIST, "4;1;16"));
 		geralConfigurations.add(new ConfigurationTO(MODELO_BIOMETRICO, "true", FieldType.CHECKBOX));
@@ -267,7 +267,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 				"Desativado_0;Somente entrada_1;Somente Saida_2"));
 		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Nao_0"));
 		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nao_0", FieldType.COMBOBOX, "Sim_1;Nao_0"));
-		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
+		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrao livre_1", FieldType.COMBOBOX, "Padrao livre_1;Padrao TopData_0"));
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(USA_TORNIQUETE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ACIONA_RELE_2, "false", FieldType.CHECKBOX));
@@ -289,7 +289,7 @@ public class TopDataAcessoDevice extends TopDataDevice {
 
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
-		configurationGroups.add(new ConfigurationGroupTO("Personaliza��o", customConfigurations));
+		configurationGroups.add(new ConfigurationGroupTO("Personalizacao", customConfigurations));
 	}
 
 }

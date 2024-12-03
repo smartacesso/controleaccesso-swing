@@ -412,14 +412,14 @@ public class ProcessAccessRequestUseCase {
 					periodoPermitidoFim.setTime(dataInicial);
 					periodoPermitidoFim.add(tipoAdicao, Integer.parseInt(escala[0]));
 
-					System.out.println("Periodo Permitido In�cio: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
+					System.out.println("Periodo Permitido Inicio: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
 					System.out.println("Periodo Permitido Fim: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoFim.getTime()));
 					System.out.println("Data Acesso: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dataAcesso.getTime()));
 
 //					permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
 					
 					Calendar dataInicioTurno = Calendar.getInstance();
-					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Data base do in�cio do turno, ex.: 04/10/2024 �s 10:00
+					dataInicioTurno.setTime(matchedPedestrianAccess.getInicioTurno());  // Data base do inicio do turno, ex.: 04/10/2024 �s 10:00
 
 					// Calcular a diferen�a em milissegundos entre agora e o in�cio do turno
 					long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
@@ -428,12 +428,12 @@ public class ProcessAccessRequestUseCase {
 					// Cada ciclo tem 48 horas (12 horas de trabalho + 36 horas de folga)
 					long cicloAtual = diffHours % 48;
 
-					// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo per�odo de trabalho)
+					// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo periodo de trabalho)
 					if ((cicloAtual >= 0 && cicloAtual < 12) || (cicloAtual >= 24 && cicloAtual < 36)) {
-					    // Est� no per�odo de trabalho
+					    // Est� no periodo de trabalho
 					    permitido = true;
 					} else {
-					    // Est� no per�odo de folga
+					    // Est� no periodo de folga
 					    permitido = false;
 					}
 
@@ -865,7 +865,7 @@ public class ProcessAccessRequestUseCase {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification) {
-					Utils.createNotification(userName + " fora do hor�rio.", NotificationType.BAD, foto);
+					Utils.createNotification(userName + " fora do horario.", NotificationType.BAD, foto);
 				}
 			}
 

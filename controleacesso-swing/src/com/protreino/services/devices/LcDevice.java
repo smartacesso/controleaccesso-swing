@@ -99,7 +99,7 @@ public class LcDevice extends Device {
 			workerEnabled = true;
 			setMode(DeviceMode.VERIFICATION);
 			
-			nivelConfianca = getConfigurationValueAsInteger("N�vel de confian�a");
+			nivelConfianca = getConfigurationValueAsInteger("Nivel de confianca");
 			
 			worker = new SwingWorker<Void, Void>(){
 				@Override
@@ -154,7 +154,7 @@ public class LcDevice extends Device {
 	public void createDefaultConfiguration() {
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
 		geralConfigurations.add(new ConfigurationTO("Catraca vinculada", "Nenhuma_NULL", FieldType.COMBOBOX, "Nenhuma_NULL;COMM_COMM;USB_USB"));
-		geralConfigurations.add(new ConfigurationTO("N�vel de confian�a", "1", FieldType.NUMERIC_LIST, "1;1;10"));
+		geralConfigurations.add(new ConfigurationTO("Nivel de confianca", "1", FieldType.NUMERIC_LIST, "1;1;10"));
 		
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));

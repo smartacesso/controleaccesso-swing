@@ -771,7 +771,7 @@ public class FacialDevice extends Device {
 	}
 
 	private FSDK_VideoFormatInfo.ByValue getVideoFormatFromConfiguration() throws Exception {
-		String resolucao = getConfigurationValue("Resolu��o");
+		String resolucao = getConfigurationValue("Resolucao");
 		if (resolucao == null)
 			throw new Exception("Não foi possível encontrar a configuração de resolução da câmera " + name);
 

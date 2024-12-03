@@ -203,7 +203,7 @@ public class TopDataDevice extends Device {
 	        EasyInner.LigarLedVerde(1);
 	        if (ret != Enumeradores.RET_COMANDO_OK 
 	        		&& ret != Enumeradores.RET_PORTA_JAABERTA) {
-	        	throw new Exception("Erro ao abrir a porta de comunica��o: " + ret);
+	        	throw new Exception("Erro ao abrir a porta de comunicacao: " + ret);
 	        }
 	        
 	        portaAberta = true;
@@ -329,11 +329,11 @@ public class TopDataDevice extends Device {
 							
 							if (ret == Enumeradores.RET_COMANDO_OK) {
 								System.out.println("Origem: " + iArrBCartaoRb[0]);
-								System.out.println(" o Pedestre/Visitante passou na catraca: " +inner.Numero);
+								System.out.println("O Pedestre/Visitante passou na catraca: " +inner.Numero);
 								
 								try {
 									if(CARTAO_MASTER.equals(Cartao)) {
-										System.out.printf("Habilitou o cartao Master, com o n�mero: ", CARTAO_MASTER);
+										System.out.printf("Habilitou o cartao Master, com o numero: ", CARTAO_MASTER);
 										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
 										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 									}
@@ -481,7 +481,7 @@ public class TopDataDevice extends Device {
 //							new Thread() {
 //								public void run() {
 							try {
-								System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar at� 5 segundos");
+								System.out.println(Main.sdf.format(new Date()) + " Desconectando catraca, pode levar ate 5 segundos");
 								disconnect();
 								Utils.sleep(5000);
 								System.out.println(Main.sdf.format(new Date()) + " Tentando reconectar catraca...");
@@ -490,7 +490,7 @@ public class TopDataDevice extends Device {
 								System.out.println(Main.sdf.format(new Date()) + " Erro ao reconectar a catraca, veja abaixo: ");
 								e.printStackTrace();
 								if(watchDog != null && !watchDogEnabled) {
-									System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexão autom�tica... ");
+									System.out.println(Main.sdf.format(new Date()) + " Reiniciando processo de reconexão automatica... ");
 									watchDogEnabled = true;
 									watchDog.execute();
 								}
@@ -600,7 +600,7 @@ public class TopDataDevice extends Device {
 			
 			System.out.println("Qtd encontradas: " + (Objects.isNull(pedestres) ? 0 : pedestres.size()));
 			if(Objects.isNull(pedestres) || pedestres.isEmpty()) {
-				System.out.println("Nenhuma altera��o em pedestres para envio.");
+				System.out.println("Nenhuma alteracao em pedestres para envio.");
 				return;
 			}
 			
@@ -1043,11 +1043,13 @@ public class TopDataDevice extends Device {
             final int[] bilhetes = { 0 };
             int Ret = EasyInner.ReceberQuantidadeBilhetes(this.inner.Numero, bilhetes);
             if (Ret == 0) {
-                if (bilhetes != null && bilhetes[0] > 0) {
+//            	bilhetes != null && bilhetes[0] > 0
+                if (true) {
                 	coletandoDadosOffLine = true;
                 	
                 	deviceCard.setMensagem("Recuperando dados...", MessageType.NORMAL);
                     System.out.println("---- " + bilhetes[0] + " passaram com catraca desconectada.");
+                    
                     int qtdPermitido = 0;
                     int qtdNaoPermitido = 0;
                     for (int i = 0; i < bilhetes[0]; ++i) {
@@ -1372,21 +1374,22 @@ public class TopDataDevice extends Device {
 	}
 	
 	public void enviaCartaoCatracaOffline() throws Exception {
+		Integer quantidadeDeDigitos = inner.QtdDigitos;
 		if (!Utils.getPreferenceAsBoolean("enableOfflineCard")) {
 			EasyInner.DefinirTipoListaAcesso(2);
 			EasyInner.DefinirPadraoCartao(1);
-			EasyInner.DefinirQuantidadeDigitosCartao(8);
+//			EasyInner.DefinirQuantidadeDigitosCartao(8);
 			//para gasmig abatrack
-			//EasyInner.DefinirQuantidadeDigitosCartao(10);
+			EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
 			EasyInner.InserirUsuarioListaAcesso("0", 102);
 			return;
 		}
 		EasyInner.DefinirTipoListaAcesso(1);
 		EasyInner.DefinirPadraoCartao(1);
 		
-		EasyInner.DefinirQuantidadeDigitosCartao(8);
+//		EasyInner.DefinirQuantidadeDigitosCartao(8);
 		//para gasmig abatrack
-		//EasyInner.DefinirQuantidadeDigitosCartao(10);
+		EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
 		
 		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
 		
@@ -1822,8 +1825,8 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(MODO_DE_TRABALHO, "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Hor�rio_clockwise", FieldType.COMBOBOX, 
-				"Hor�rio_clockwise;Antihor�rio_anticlockwise"));
+		geralConfigurations.add(new ConfigurationTO(SENTIDO_DA_CATRACA, "Horario_clockwise", FieldType.COMBOBOX, 
+				"Horario_clockwise;Antihorario_anticlockwise"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_LIBERADO, "7", FieldType.NUMERIC_LIST, "5;1;15"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_MENSAGEM_NEGADO, "1", FieldType.NUMERIC_LIST, "1;1;15"));
 		geralConfigurations.add(new ConfigurationTO(BLOQUEAR_SAIDA, "true", FieldType.CHECKBOX));
@@ -1835,7 +1838,7 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(TEMPO_DE_PING, "5", FieldType.NUMERIC_LIST, "2;1;10"));
 		geralConfigurations.add(new ConfigurationTO(TEMPO_ESPERA_PARA_CONECTAR, "10", FieldType.NUMERIC_LIST, "5;1;20"));
 		geralConfigurations.add(new ConfigurationTO(TIPO_LEITOR, "Proximidade Wiegand_3", FieldType.COMBOBOX, 
-				"Codigo de barras_0;Magn�tico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
+				"Codigo de barras_0;Magnetico_1;Proximidade AbaTrack2_2;Proximidade Wiegand_3;Proximidade Wiegand FC_33;"
 				+ "Proximidade Wiegand FC Sem Separador_6;Proximidade Smart Card_4;QRCode_7;", 240));
 		geralConfigurations.add(new ConfigurationTO(QUANTIDADE_DIGITOS_CARTAO, "5", FieldType.NUMERIC_LIST, "4;1;16"));
 
@@ -1848,7 +1851,7 @@ public class TopDataDevice extends Device {
 				"Desativado_0;Somente entrada_1;Somente saida_2;Entrada e saida_3;saida e entrada_4"));
 		geralConfigurations.add(new ConfigurationTO(IDENTIFICACAO_BIOMETRICA, "Sim_1", FieldType.COMBOBOX, "Sim_1;Nao_0"));
 		geralConfigurations.add(new ConfigurationTO(VERIFICACAO_BIOMETRICA, "Nao_0", FieldType.COMBOBOX, "Sim_1;Nao_0"));
-		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padr�o livre_1", FieldType.COMBOBOX, "Padr�o livre_1;Padr�o TopData_0"));
+		geralConfigurations.add(new ConfigurationTO(PADRAO_DE_CARTAO, "Padrao livre_1", FieldType.COMBOBOX, "Padrao livre_1;Padrao TopData_0"));
 		geralConfigurations.add(new ConfigurationTO(LOGICA_DE_CATRACA_COM_URNA, "true", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(COLETA_CARTOES_OFFLINE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
@@ -1949,7 +1952,7 @@ public class TopDataDevice extends Device {
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
-			System.out.println("   Chegou no validada acesso ");
+			System.out.println("Chegou no validada acesso ");
 
 			
 			if (inner.BilheteInner.Origem == 1 
@@ -2174,9 +2177,9 @@ public class TopDataDevice extends Device {
         }
        
         if (ret != easyInner.RET_COMANDO_OK) {
-        	Main.mainScreen.addEvento(name + ": Nao foi possivel enviar configuracoes de mudan�a online/offline");
+        	Main.mainScreen.addEvento(name + ": Nao foi possivel enviar configuracoes de mudanca online/offline");
         	setStatus(DeviceStatus.DISCONNECTED);
-        	throw new Exception(name + ": Nao foi possivel enviar configuracoes de mudan�a online/offline");
+        	throw new Exception(name + ": Nao foi possivel enviar configuracoes de mudanca online/offline");
         }
 	}
 	
@@ -2235,13 +2238,13 @@ public class TopDataDevice extends Device {
 				return true;
 			
 			} else {
-				Main.mainScreen.addEvento(name + ": Nao foi possivel enviar mensagens Padr�o");
+				Main.mainScreen.addEvento(name + ": Nao foi possivel enviar mensagens Padrao");
 				setStatus(DeviceStatus.DISCONNECTED);
 			}
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Main.mainScreen.addEvento(name + ": Nao foi possivel enviar mensagens Padr�o. " + ex.getMessage());
+			Main.mainScreen.addEvento(name + ": Nao foi possivel enviar mensagens Padrao. " + ex.getMessage());
 			setStatus(DeviceStatus.DISCONNECTED);
 		}
 		return false;
@@ -2382,7 +2385,7 @@ public class TopDataDevice extends Device {
 	
 	        configuracao = "0" + //Bit Fixo
 	                "1" + //Habilitado
-	                inner.Identificacao + //identifica��o
+	                inner.Identificacao + //identificacao
 	                inner.Verificacao + //Verifica��o
 	                "0" + //Bit fixo
 	                (inner.DoisLeitores ? "11" : "10") + // 11 -> habilita leitor 1 e 2, 10 -> habilita apenas leitor 1
@@ -2392,7 +2395,7 @@ public class TopDataDevice extends Device {
 	         ------------------------------------------------------------------------------------------------------------------------
 	         |    7     |       6       |       5       |       4       |      3       |       2      |      1       |      0       |
 	         ------------------------------------------------------------------------------------------------------------------------
-	         | Bit fixo | Seta/Reseta   | identifica��o |  Verifica��o  |   Bit fixo   |   Leitor 1   | Leitor 2     |  Teclado     |
+	         | Bit fixo | Seta/Reseta   | identificacao |  Verifica��o  |   Bit fixo   |   Leitor 1   | Leitor 2     |  Teclado     |
 	         |   '0'    |    config.    |      Bio      |      Bio      |     '0'      |              |              |              |
 	         |          | bit-a-bit bio |               |               |              |              |              |              |
 	         ------------------------------------------------------------------------------------------------------------------------

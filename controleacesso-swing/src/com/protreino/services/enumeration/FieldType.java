@@ -4,7 +4,7 @@ public enum FieldType {
 	
 	/**
 	 * Um JTextField simples. 
-	 * Podem ser definidos m�ximo e minimo de caracteres. Pode ser definido como campo numerico.
+	 * Podem ser definidos mAximo e minimo de caracteres. Pode ser definido como campo numerico.
 	 * O valor padrao pode ser uma string qualquer.
 	 * Por padrao, é um campo obrigatório e portanto nao pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
 	 */
@@ -34,13 +34,13 @@ public enum FieldType {
 	
 	/**
 	 * Um campo composto por dois JTextField.
-	 * Podem ser definidos m�ximo e minimo de caracteres.
+	 * Podem ser definidos mAximo e minimo de caracteres.
 	 * O retorno e o valor padrao seguem o formato "TEXTO1;TEXTO2".
 	 */
 	MESSAGE_LINES,
 	
 	/**
-	 * Um JComboBox com uma sequência numérica, apenas para n�meros INTEIROS.
+	 * Um JComboBox com uma sequência numérica, apenas para numeros INTEIROS.
 	 * Os valores da lista devem ser definidos no formato "INICIO;PASSO;FIM". Por exemplo, a string "1;1;9" resulta na lista 1 2 3 4 5 6 7 8 9. 
 	 * O valor padrao pode ser definido apenas como "VALOR".
 	 * Por padrao, é um campo obrigatório e portanto nao pode ser nulo ou vazio. Pode ser alterado para deixar de ser obrigatório.
