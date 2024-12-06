@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.protreino.services.entity.BiometricEntity;
+import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
@@ -522,6 +523,10 @@ public class HibernateAccessDataFacade {
 	
 	public static synchronized List<PedestrianAccessEntity> buscaPedestresAtivosComCartao() {
 		return HibernateLocalAccessData.buscaPedestresAtivosComCartao();
+	}
+	
+	public static synchronized CartaoComandaEntity buscaComandaNumeroReal(String comanda) {
+		return HibernateLocalAccessData.buscaComandaNumeroReal(comanda);
 	}
 	
 }

@@ -36,6 +36,7 @@ import org.hibernate.tool.schema.TargetType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.protreino.services.constants.Tipo;
+import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -1617,5 +1618,35 @@ public class HibernateLocalAccessData {
 		session.getTransaction().commit();
 		session.close();
 	}
+
+	@SuppressWarnings("unchecked")
+	public static CartaoComandaEntity buscaComandaNumeroReal(String numeroReal) {
+	    Session session = getSessionFactory().getCurrentSession();
+	    if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+	        session.beginTransaction();
+	    }
+
+	    CartaoComandaEntity cartaoEncontrado = null;
+
+	    try {
+	        Query<CartaoComandaEntity> query = session.createNamedQuery("CartaoComandaEntity.findByNumeroReal", CartaoComandaEntity.class);
+	        query.setParameter("NUMERO_REAL", numeroReal);
+
+	        List<CartaoComandaEntity> resultList = query.getResultList();
+	        if (!resultList.isEmpty()) {
+	            cartaoEncontrado = resultList.get(0); // Retorna o primeiro resultado
+	        }
+
+	        session.getTransaction().commit();
+	    } catch (Exception e) {
+	        session.getTransaction().rollback();
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return cartaoEncontrado;
+	}
+
 
 }
