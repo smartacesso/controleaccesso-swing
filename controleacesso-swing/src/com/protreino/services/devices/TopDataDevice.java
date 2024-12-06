@@ -291,158 +291,346 @@ public class TopDataDevice extends Device {
 		}
 	}
 	
-	private SwingWorker<Void, Void> getDeviceProccessWorker() {
-		return new SwingWorker<Void, Void>() {
-
-			@Override
-			protected Void doInBackground() throws Exception {
-				while (workerEnabled) {
-					try {
-						while (sendingConfiguration) {
-							Utils.sleep(50);
-						}
-						
-						if (DeviceMode.VERIFICATION.equals(mode)) {
-							StringBuffer Cartao = new StringBuffer();
-							Cartao.delete(0, Cartao.length());
-							int[] iArrBCartaoRb = new int[8];
-							
-							int ret = -1;
-							
-							if (inner.TipoLeitor == Enumeradores.QRCODE 
-											|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE) {
-								ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
-
-								if(iArrBCartaoRb[0] == 18) {
-									Cartao = new StringBuffer("0000000000");
-								}
-
-								if(ret == Enumeradores.RET_COMANDO_OK && !Cartao.toString().contains("_")) {
-									if((Cartao != null && Cartao.length() != 0 || iArrBCartaoRb[0] == 2 || iArrBCartaoRb[0] == 3)) {
-										Cartao = new StringBuffer(Utils.toHEX(Cartao.toString().replaceAll("[^a-zA-Z0-9]+","")));
-									}
-								}
-								
-							} else {
-								ret = EasyInner.ReceberDadosOnLine(inner.Numero, iArrBCartaoRb, Cartao);
-							}
-							
-							if (ret == Enumeradores.RET_COMANDO_OK) {
-								System.out.println("Origem: " + iArrBCartaoRb[0]);
-								System.out.println("O Pedestre/Visitante passou na catraca: " +inner.Numero);
-								
-								try {
-									if(CARTAO_MASTER.equals(Cartao)) {
-										System.out.printf("Habilitou o cartao Master, com o numero: ", CARTAO_MASTER);
-										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
-										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-									}
-									
-									Main.validandoAcesso = true;
-									if(Main.temServidor()) {
-										HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
-									}
-									
-									inner.CountTentativasEnvioComando = 0;
-									if(iArrBCartaoRb[0] == Enumeradores.GIRO_DA_CATRACA_TOPDATA) {
-										registraGiro(iArrBCartaoRb[1], null);
-										
-										enviarMensagemPadrao();
-										configurarEntradasOnline();
-									
-									} else if(iArrBCartaoRb[0] == Enumeradores.ORIGEM_URNA) {
-										inner.BilheteInner.Origem = iArrBCartaoRb[0];
-										allowAccess();
-										
-									} else if (iArrBCartaoRb[0] == Enumeradores.FIM_TEMPO_ACIONAMENTO
-											|| iArrBCartaoRb[0] == Enumeradores.TECLA_FUNCAO
-											|| iArrBCartaoRb[0] == Enumeradores.TECLA_ANULA
-											|| ((Cartao.length() == 0)
-													&& !(inner.EstadoTeclado == Enumeradores.EstadosTeclado.AGUARDANDO_TECLADO))) {
-										enviarMensagemPadrao();
-										configurarEntradasOnline();
+//	private SwingWorker<Void, Void> getDeviceProccessWorker() {
+//		return new SwingWorker<Void, Void>() {
+//
+//			@Override
+//			protected Void doInBackground() throws Exception {
+//				while (workerEnabled) {
+//					try {
+//						while (sendingConfiguration) {
+//							Utils.sleep(50);
+//						}
+//						
+//						if (DeviceMode.VERIFICATION.equals(mode)) {
+//							StringBuffer Cartao = new StringBuffer();
+//							Cartao.delete(0, Cartao.length());
+//							int[] iArrBCartaoRb = new int[8];
+//							
+//							int ret = -1;
+//							
+//							if (inner.TipoLeitor == Enumeradores.QRCODE 
+//											|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE) {
+//								ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
+//
+//								if(iArrBCartaoRb[0] == 18) {
+//									Cartao = new StringBuffer("0000000000");
+//								}
+//
+//								if(ret == Enumeradores.RET_COMANDO_OK && !Cartao.toString().contains("_")) {
+//									if((Cartao != null && Cartao.length() != 0 || iArrBCartaoRb[0] == 2 || iArrBCartaoRb[0] == 3)) {
+//										Cartao = new StringBuffer(Utils.toHEX(Cartao.toString().replaceAll("[^a-zA-Z0-9]+","")));
+//									}
+//								}
+//								
+//							} else {
+//								ret = EasyInner.ReceberDadosOnLine(inner.Numero, iArrBCartaoRb, Cartao);
+//							}
+//							
+//							if (ret == Enumeradores.RET_COMANDO_OK) {
+//								System.out.println("Origem: " + iArrBCartaoRb[0]);
+//								System.out.println("O Pedestre/Visitante passou na catraca: " +inner.Numero);
+//								
+//								try {
+//									if(CARTAO_MASTER.equals(Cartao)) {
+//										System.out.printf("Habilitou o cartao Master, com o numero: ", CARTAO_MASTER);
+//										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
+//										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+//									}
+//									
+//									Main.validandoAcesso = true;
+//									if(Main.temServidor()) {
+//										HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
+//									}
+//									
+//									inner.CountTentativasEnvioComando = 0;
+//									if(iArrBCartaoRb[0] == Enumeradores.GIRO_DA_CATRACA_TOPDATA) {
+//										registraGiro(iArrBCartaoRb[1], null);
+//										
+//										enviarMensagemPadrao();
+//										configurarEntradasOnline();
+//									
+//									} else if(iArrBCartaoRb[0] == Enumeradores.ORIGEM_URNA) {
+//										inner.BilheteInner.Origem = iArrBCartaoRb[0];
+//										allowAccess();
+//										
+//									} else if (iArrBCartaoRb[0] == Enumeradores.FIM_TEMPO_ACIONAMENTO
+//											|| iArrBCartaoRb[0] == Enumeradores.TECLA_FUNCAO
+//											|| iArrBCartaoRb[0] == Enumeradores.TECLA_ANULA
+//											|| ((Cartao.length() == 0)
+//													&& !(inner.EstadoTeclado == Enumeradores.EstadosTeclado.AGUARDANDO_TECLADO))) {
+//										enviarMensagemPadrao();
+//										configurarEntradasOnline();
+//	
+//									} else {
+//										inner.BilheteInner.Origem = iArrBCartaoRb[0];
+//										inner.BilheteInner.Complemento = iArrBCartaoRb[1];
+//										inner.BilheteInner.Cartao.setLength(0);
+//										inner.BilheteInner.Cartao = new StringBuilder(Cartao.toString());
+//										if (inner.BilheteInner.Origem != 13) {
+//											validarAcesso();
+//										}
+//									}
+//								
+//								} catch (Throwable e) {
+//									e.printStackTrace();
+//								} finally {
+//									Main.validandoAcesso = false;
+//									if(Main.temServidor()) {
+//										HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
+//									}
+//								}
+//								
+//							}
+//							
+//						} else if (DeviceMode.ENROLLMENT.equals(mode)) {
+//							if(modeloLC) {
+//								templateTemp = new byte[502];
+//								
+//								//solicita template
+//								int ret = EasyInner.RequisitarReceberTemplateLeitorInnerBio(inner.Numero, 1);
+//								
+//								do {
+//									ret = EasyInner.RespostaReceberTemplateLeitorInnerBio(inner.Numero, new int[] {502});
+//									Thread.sleep(500);
+//								} while (ret != Enumeradores.RET_COMANDO_OK
+//										&& DeviceMode.ENROLLMENT.equals(mode));
+//								
+//								if(ret == Enumeradores.RET_COMANDO_OK) {
+//									Long inicio = System.currentTimeMillis();
+//									do {
+//										ret = EasyInner.ReceberTemplateLeitorInnerBio(inner.Numero,templateTemp, 502);
+//										Thread.sleep(500);
+//									} while (ret != Enumeradores.RET_COMANDO_OK 
+//											&& templateTemp != null
+//											&& (System.currentTimeMillis() - inicio) < 5000 
+//											&& DeviceMode.ENROLLMENT.equals(mode));
+//									
+//									if (ret == Enumeradores.RET_COMANDO_OK) {
+//										processSampleForEnrollmentLC(null);
+//									}
+//								}
+//								
+//							} else {
+//						
+//								templateTemp = new byte[404];
+//								int ret = EasyInner.SolicitarTemplateLeitor(inner.Numero);
+//								Long inicio = System.currentTimeMillis();
+//								
+//								do {
+//									ret = EasyInner.ReceberTemplateLeitor(inner.Numero, 1, templateTemp);
+//									Thread.sleep(50);
+//								
+//								} while (ret == Enumeradores.RET_BIO_PROCESSANDO 
+//											&& (System.currentTimeMillis() - inicio) < 5000 
+//												&& DeviceMode.ENROLLMENT.equals(mode));
+//								
+//								if (ret == Enumeradores.RET_BIO_OK) {
+//									processSampleForEnrollment(null);
+//								}
+//							}
+//						}
+//	                } catch (Exception e) {
+//	                    e.printStackTrace();
+//	                
+//	                } finally {
+//						Utils.sleep(50l);
+//					}
+//				}
+//				return null;
+//			}
+//			
+//		};
+//	}
 	
-									} else {
-										inner.BilheteInner.Origem = iArrBCartaoRb[0];
-										inner.BilheteInner.Complemento = iArrBCartaoRb[1];
-										inner.BilheteInner.Cartao.setLength(0);
-										inner.BilheteInner.Cartao = new StringBuilder(Cartao.toString());
-										if (inner.BilheteInner.Origem != 13) {
-											validarAcesso();
-										}
-									}
-								
-								} catch (Throwable e) {
-									e.printStackTrace();
-								} finally {
-									Main.validandoAcesso = false;
-									if(Main.temServidor()) {
-										HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
-									}
-								}
-								
-							}
-							
-						} else if (DeviceMode.ENROLLMENT.equals(mode)) {
-							if(modeloLC) {
-								templateTemp = new byte[502];
-								
-								//solicita template
-								int ret = EasyInner.RequisitarReceberTemplateLeitorInnerBio(inner.Numero, 1);
-								
-								do {
-									ret = EasyInner.RespostaReceberTemplateLeitorInnerBio(inner.Numero, new int[] {502});
-									Thread.sleep(500);
-								} while (ret != Enumeradores.RET_COMANDO_OK
-										&& DeviceMode.ENROLLMENT.equals(mode));
-								
-								if(ret == Enumeradores.RET_COMANDO_OK) {
-									Long inicio = System.currentTimeMillis();
-									do {
-										ret = EasyInner.ReceberTemplateLeitorInnerBio(inner.Numero,templateTemp, 502);
-										Thread.sleep(500);
-									} while (ret != Enumeradores.RET_COMANDO_OK 
-											&& templateTemp != null
-											&& (System.currentTimeMillis() - inicio) < 5000 
-											&& DeviceMode.ENROLLMENT.equals(mode));
-									
-									if (ret == Enumeradores.RET_COMANDO_OK) {
-										processSampleForEnrollmentLC(null);
-									}
-								}
-								
-							} else {
-						
-								templateTemp = new byte[404];
-								int ret = EasyInner.SolicitarTemplateLeitor(inner.Numero);
-								Long inicio = System.currentTimeMillis();
-								
-								do {
-									ret = EasyInner.ReceberTemplateLeitor(inner.Numero, 1, templateTemp);
-									Thread.sleep(50);
-								
-								} while (ret == Enumeradores.RET_BIO_PROCESSANDO 
-											&& (System.currentTimeMillis() - inicio) < 5000 
-												&& DeviceMode.ENROLLMENT.equals(mode));
-								
-								if (ret == Enumeradores.RET_BIO_OK) {
-									processSampleForEnrollment(null);
-								}
-							}
-						}
+	private long lastResponseTime = System.currentTimeMillis(); //Tempo da última resposta
+	private final long MAX_TIME_WITHOUT_RESPONSE = 8000; //Tempo máximo sem resposta (30 segundos)
+	private long lastRestartTime = 0;  // Tempo da última reinicialização
+	private final long RESTART_COOLDOWN = 60000; // 1 minuto de cooldown entre reinicializações
+
+	private SwingWorker<Void, Void> getDeviceProccessWorker() {
+	    return new SwingWorker<Void, Void>() {
+
+	        @Override
+	        protected Void doInBackground() throws Exception {
+	            while (workerEnabled) {
+	                try {
+	                    while (sendingConfiguration) {
+	                        Utils.sleep(50);
+	                    }
+
+	                    if (DeviceMode.VERIFICATION.equals(mode)) {
+	                        StringBuffer Cartao = new StringBuffer();
+	                        Cartao.delete(0, Cartao.length());
+	                        int[] iArrBCartaoRb = new int[8];
+	                        
+	                        if (Cartao.toString().startsWith("05000") 
+	                        		|| Cartao.toString().startsWith("005000")
+	                        		|| Cartao.toString().startsWith("00100")) {
+	                            // Remover "05000" usando substring
+	                            Cartao = new StringBuffer(Cartao.substring(5));
+	                        }
+	                        
+	                        int ret = -1;
+
+	                        if (inner.TipoLeitor == Enumeradores.QRCODE
+	                                || inner.TipoLeitor == Enumeradores.BARRAS_PROX_QRCODE) {
+	                            ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
+
+	                            if (iArrBCartaoRb[0] == 18) {
+	                                Cartao = new StringBuffer("0000000000");
+	                            }
+
+	                            if (ret == Enumeradores.RET_COMANDO_OK && !Cartao.toString().contains("_")) {
+	                                if ((Cartao != null && Cartao.length() != 0) || iArrBCartaoRb[0] == 2 || iArrBCartaoRb[0] == 3) {
+	                                    Cartao = new StringBuffer(Utils.toHEX(Cartao.toString().replaceAll("[^a-zA-Z0-9]+", "")));
+	                                }
+	                            }
+
+	                        } else {
+	                            ret = EasyInner.ReceberDadosOnLine(inner.Numero, iArrBCartaoRb, Cartao);
+	                        }
+
+	                        if (ret == Enumeradores.RET_COMANDO_OK) {
+	                            lastResponseTime = System.currentTimeMillis(); // Atualiza o tempo da última resposta
+	                            System.out.println("Origem: " + iArrBCartaoRb[0]);
+	                            System.out.println("O Pedestre/Visitante passou na catraca: " + inner.Numero);
+
+	                            try {
+	                                if (CARTAO_MASTER.equals(Cartao)) {
+	                                    System.out.printf("Habilitou o cartão Master, com o número: ", CARTAO_MASTER);
+	                                    EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
+	                                    EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+	                                }
+
+	                                Main.validandoAcesso = true;
+	                                if (Main.temServidor()) {
+	                                    HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
+	                                }
+
+	                                inner.CountTentativasEnvioComando = 0;
+	                                if (iArrBCartaoRb[0] == Enumeradores.GIRO_DA_CATRACA_TOPDATA) {
+	                                    registraGiro(iArrBCartaoRb[1], null);
+
+	                                    enviarMensagemPadrao();
+	                                    configurarEntradasOnline();
+
+	                                } else if (iArrBCartaoRb[0] == Enumeradores.ORIGEM_URNA) {
+	                                    inner.BilheteInner.Origem = iArrBCartaoRb[0];
+	                                    allowAccess();
+
+	                                } else if (iArrBCartaoRb[0] == Enumeradores.FIM_TEMPO_ACIONAMENTO
+	                                        || iArrBCartaoRb[0] == Enumeradores.TECLA_FUNCAO
+	                                        || iArrBCartaoRb[0] == Enumeradores.TECLA_ANULA
+	                                        || ((Cartao.length() == 0)
+	                                                && !(inner.EstadoTeclado == Enumeradores.EstadosTeclado.AGUARDANDO_TECLADO))) {
+	                                    enviarMensagemPadrao();
+	                                    configurarEntradasOnline();
+
+	                                } else {
+	                                    inner.BilheteInner.Origem = iArrBCartaoRb[0];
+	                                    inner.BilheteInner.Complemento = iArrBCartaoRb[1];
+	                                    inner.BilheteInner.Cartao.setLength(0);
+	                                    inner.BilheteInner.Cartao = new StringBuilder(Cartao.toString());
+	                                    if (inner.BilheteInner.Origem != 13) {
+	                                        validarAcesso();
+	                                    }
+	                                }
+
+	                            } catch (Throwable e) {
+	                                e.printStackTrace();
+	                            } finally {
+	                                Main.validandoAcesso = false;
+	                                if (Main.temServidor()) {
+	                                    HibernateAccessDataFacade.enviaFimVerificandoAcesso();
+	                                }
+	                            }
+	                        }
+
+	                    } else if (DeviceMode.ENROLLMENT.equals(mode)) {
+	                        if (modeloLC) {
+	                            templateTemp = new byte[502];
+
+	                            // Solicita template
+	                            int ret = EasyInner.RequisitarReceberTemplateLeitorInnerBio(inner.Numero, 1);
+
+	                            do {
+	                                ret = EasyInner.RespostaReceberTemplateLeitorInnerBio(inner.Numero, new int[] { 502 });
+	                                Thread.sleep(500);
+	                            } while (ret != Enumeradores.RET_COMANDO_OK
+	                                    && DeviceMode.ENROLLMENT.equals(mode));
+
+	                            if (ret == Enumeradores.RET_COMANDO_OK) {
+	                                Long inicio = System.currentTimeMillis();
+	                                do {
+	                                    ret = EasyInner.ReceberTemplateLeitorInnerBio(inner.Numero, templateTemp, 502);
+	                                    Thread.sleep(500);
+	                                } while (ret != Enumeradores.RET_COMANDO_OK
+	                                        && templateTemp != null
+	                                        && (System.currentTimeMillis() - inicio) < 5000
+	                                        && DeviceMode.ENROLLMENT.equals(mode));
+
+	                                if (ret == Enumeradores.RET_COMANDO_OK) {
+	                                    processSampleForEnrollmentLC(null);
+	                                }
+	                            }
+
+	                        } else {
+	                            templateTemp = new byte[404];
+	                            int ret = EasyInner.SolicitarTemplateLeitor(inner.Numero);
+	                            Long inicio = System.currentTimeMillis();
+
+	                            do {
+	                                ret = EasyInner.ReceberTemplateLeitor(inner.Numero, 1, templateTemp);
+	                                Thread.sleep(50);
+
+	                            } while (ret == Enumeradores.RET_BIO_PROCESSANDO
+	                                    && (System.currentTimeMillis() - inicio) < 5000
+	                                    && DeviceMode.ENROLLMENT.equals(mode));
+
+	                            if (ret == Enumeradores.RET_BIO_OK) {
+	                                processSampleForEnrollment(null);
+	                            }
+	                        }
+	                    }
+
+	                    // Lógica para verificar o tempo sem resposta
+	                    if (System.currentTimeMillis() - lastResponseTime > MAX_TIME_WITHOUT_RESPONSE) {
+	                        // Se o tempo sem resposta for maior que o limite, verifica o cooldown de reinicialização
+	                        if (System.currentTimeMillis() - lastRestartTime > RESTART_COOLDOWN) {
+	                            System.out.println("Tempo sem resposta excedido. Reiniciando conexão...");
+	                            enviarMensagemPadrao(); // Reenviar mensagem padrão
+	                            configurarEntradasOnline(); // Configurar novamente as entradas
+	                            lastResponseTime = System.currentTimeMillis(); // Atualizar o tempo da última resposta
+	                            continue; // Reinicia o loop sem desconectar
+	                        }
+	                    }
+
 	                } catch (Exception e) {
 	                    e.printStackTrace();
-	                
+
 	                } finally {
-						Utils.sleep(50l);
-					}
-				}
-				return null;
-			}
-			
-		};
+	                    Utils.sleep(50L);
+	                }
+	            }
+	            return null;
+	        }
+	    };
 	}
-	
+
+    // Método para reiniciar a conexão
+    private void restartConnection() {
+        try {
+        	disconnectTime();
+            Utils.sleep(6000); // Espera para garantir que a desconexão seja completa
+            connect();
+            lastResponseTime = System.currentTimeMillis(); // Reseta o tempo da última resposta
+        } catch (Exception e) {
+            System.out.println("Erro ao reiniciar a conexão: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
 	private SwingWorker<Void, Void> getPingWorker() {
 		return new SwingWorker<Void, Void>() {
 			@Override
@@ -551,6 +739,7 @@ public class TopDataDevice extends Device {
 			}
 		};
 	}
+	
 	
 	public void atualizaDigitaisLFD(boolean online, boolean todas, Date data) {
 		if(!isSyncUsers()) {
@@ -872,7 +1061,13 @@ public class TopDataDevice extends Device {
 		args.put("EQUIPAMENTO", getFullIdentifier());
 
 		if(Objects.nonNull(inner.BilheteInner.Cartao)) {
-			final String cartaoStr = inner.BilheteInner.Cartao.toString();
+			String cartaoStr = inner.BilheteInner.Cartao.toString();
+	        if (cartaoStr.startsWith("05000")
+	        		|| cartaoStr.startsWith("005000")
+	        		|| cartaoStr.startsWith("00100")) {
+	            // Remover "05000" usando substring
+	        	cartaoStr = cartaoStr.substring(5);
+	        }
 			
 			if(!cartaoStr.isEmpty()
 					&& !"".equals(cartaoStr.replace("0",""))) {
@@ -1148,6 +1343,27 @@ public class TopDataDevice extends Device {
         }
 
 		enviaCartaoCatracaOffline();
+
+		setStatus(DeviceStatus.DISCONNECTED);
+	}
+	
+	public void disconnectTime(String... args) throws Exception {
+		super.disconnect();
+		
+		if(onlyEnabledPingWorker != null) {
+			onlyEnabledPingWorker.cancel(true);
+		}
+		
+		isOnlyEnabledPingWorkerExecuting = false;
+
+		if (easyInner != null) {
+			encerrarConexao(args != null && args.length > 0 && "SAIR".equals(args[0]));
+		}
+
+		if (indexSearchEngine != null)  {
+			indexSearchEngine.dispose();
+			indexSearchEngine = null;
+        }
 
 		setStatus(DeviceStatus.DISCONNECTED);
 	}
@@ -1949,17 +2165,25 @@ public class TopDataDevice extends Device {
 	protected void validarAcesso(){
 		try {
 			validandoAcesso = true;
+			
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
 			System.out.println("Chegou no validada acesso ");
 
-			
+		       
 			if (inner.BilheteInner.Origem == 1 
 					|| inner.BilheteInner.Origem == 2
 					|| inner.BilheteInner.Origem == 3
 					|| inner.BilheteInner.Origem == 12) {
-				processAccessRequest(inner.BilheteInner.Cartao.toString());
+				String cartao = inner.BilheteInner.Cartao.toString();
+		        if (cartao.startsWith("05000")
+		        		|| cartao.startsWith("005000")
+		        		|| cartao.startsWith("00100")) {
+		            // Remover "05000" usando substring
+		        	cartao = cartao.substring(5);
+		        }
+				processAccessRequest(cartao);
 				
 			} else if (inner.BilheteInner.Origem == 18) { // Leitor biometrico(template)
 				templateTemp = new byte[404];
