@@ -289,62 +289,145 @@ public class AlmitecDevice extends Device{
 	}
 
 
+//	@Override
+//	public void processAccessRequest(Object obj) {
+//		// TODO Auto-generated method stub
+//		
+//		    // Converte o objeto para string
+//		    String cartao = obj.toString();
+//
+//		    // Verifica se o cartão é diferente de "0000000000000000"
+//		    if (!Objects.equals(cartao, "0000000000000000")) {
+//		        // Remove caracteres não alfanuméricos e zeros à esquerda
+//		        cartao = cartao.replaceAll("[^a-zA-Z0-9]+", "");  // Remove caracteres não alfanuméricos
+//		        cartao = cartao.replaceFirst("^0+(?!$)", "");  // Remove zeros à esquerda
+//
+//		        System.out.println("Número do cartão processado: " + cartao);
+//		    }
+//		
+//		@SuppressWarnings("unchecked")
+//		CartaoComandaEntity cartaoReal = HibernateAccessDataFacade.buscaComandaNumeroReal(cartao);
+//		System.out.println("Cartao real encontrado : " + cartaoReal.getNumeroReal());
+//		
+//		if (cartaoReal != null && cartaoReal.getNumeroReal() != null) {
+//		    // Remove caracteres não alfanuméricos e zeros à esquerda de ambos os valores
+//		    String cartaoProcessado = cartao.replaceAll("[^a-zA-Z0-9]+", "").replaceFirst("^0+(?!$)", "");
+//		    String numeroRealProcessado = cartaoReal.getNumeroReal().replaceAll("[^a-zA-Z0-9]+", "").replaceFirst("^0+(?!$)", "");
+//
+//		    // Comparação após normalização
+//		    if (cartaoProcessado.equalsIgnoreCase(numeroRealProcessado)) {
+//		        CartaoRecebido = cartaoReal;
+//		        System.out.println("Cartao recebido num alt: " + CartaoRecebido.getNumeroAlternativo() +
+//		                           " | Num real: " + CartaoRecebido.getNumeroReal());
+//		    } else {
+//		        System.out.println("Cartão processado não corresponde ao cartão real.");
+//		    }
+//		} else {
+//		    System.out.println("Cartão real não encontrado ou número real nulo.");
+//		}
+//
+//			
+//			if (CartaoRecebido != null) {  
+//				allowedUserName = CartaoRecebido.getNumeroAlternativo();
+//				if (StatusCard.LIBERADO.equals(CartaoRecebido.getStatus())) {
+//						verificationResult = VerificationResult.ALLOWED;
+//						recolherComanda();
+//						CartaoRecebido.setDataAlteracao(new Date());
+//						CartaoRecebido.setStatus(StatusCard.LIBERADO);
+//
+//						System.out.println("status do cartao: " + CartaoRecebido.getStatus());
+//
+//						HibernateAccessDataFacade.save(CartaoComandaEntity.class, CartaoRecebido);
+//						CartaoRecebido = null;
+//						allowedUserName = null;
+//						
+//					} else {
+//						verificationResult = VerificationResult.NOT_ALLOWED;
+////						devolverComanda();
+//					}
+//				}else {
+//			// cartão nÃ£o encontrado
+//					System.out.println("Cartao nao encontrado");
+//			verificationResult = VerificationResult.NOT_FOUND;
+////			devolverComanda();
+//		}
+//	}
+	
 	@Override
 	public void processAccessRequest(Object obj) {
-		// TODO Auto-generated method stub
-		
-		    // Converte o objeto para string
-		    String cartao = obj.toString();
+	    // Verifica se o objeto é válido e o converte para String
+	    if (obj == null) {
+	        System.out.println("Objeto recebido é nulo.");
+	        verificationResult = VerificationResult.NOT_FOUND;
+	        return;
+	    }
 
-		    // Verifica se o cartão é diferente de "0000000000000000"
-		    if (!Objects.equals(cartao, "0000000000000000")) {
-		        // Remove caracteres não alfanuméricos e zeros à esquerda
-		        cartao = cartao.replaceAll("[^a-zA-Z0-9]+", "");  // Remove caracteres não alfanuméricos
-		        cartao = cartao.replaceFirst("^0+(?!$)", "");  // Remove zeros à esquerda
+	    // Converte o objeto para string e processa o número do cartão
+	    String cartao = obj.toString().replaceAll("[^a-zA-Z0-9]+", "").replaceFirst("^0+(?!$)", "");
+	    
+	    if (cartao.isEmpty() || "0000000000000000".equals(cartao)) {
+	        System.out.println("Número do cartão inválido ou zerado.");
+	        verificationResult = VerificationResult.NOT_FOUND;
+	        return;
+	    }
 
-		        System.out.println("Número do cartão processado: " + cartao);
-		    }
-		
-		@SuppressWarnings("unchecked")
-		List<CartaoComandaEntity> cartoes = (List<CartaoComandaEntity>) HibernateAccessDataFacade.
-				getResultList(CartaoComandaEntity.class, 
-						"CartaoComandaEntity.findAllNaoRemovidosOrdered");
-		
+	    System.out.println("Número do cartão processado: " + cartao);
 
-		if (cartoes != null && !cartoes.isEmpty()) {
-			
-			for(CartaoComandaEntity cartaoEncontrado : cartoes) {
-				if(cartao.equals(cartaoEncontrado.getNumeroReal())) {
-					CartaoRecebido = cartaoEncontrado;
-					break;
-				}					
-			}
-			
-		if (CartaoRecebido != null) {  
-			allowedUserName = CartaoRecebido.getNumeroAlternativo();
-			if (StatusCard.LIBERADO.equals(CartaoRecebido.getStatus())) {
-						verificationResult = VerificationResult.ALLOWED;
-						recolherComanda();
-						CartaoRecebido.setDataAlteracao(new Date());
-//						CartaoRecebido.setStatus(StatusCard.AGUARDANDO);
+	    // Busca o cartão no banco de dados
+	    CartaoComandaEntity cartaoReal = HibernateAccessDataFacade.buscaComandaNumeroReal(cartao);
 
-						System.out.println("status do cartao: " + CartaoRecebido.getStatus());
+	    if (cartaoReal == null || cartaoReal.getNumeroReal() == null) {
+	        System.out.println("Cartão real não encontrado ou número real nulo.");
+	        verificationResult = VerificationResult.NOT_FOUND;
+	        return;
+	    }
 
-						HibernateAccessDataFacade.save(CartaoComandaEntity.class, CartaoRecebido);
-						CartaoRecebido = null;
-						allowedUserName = null;
-						
-					} else {
-						verificationResult = VerificationResult.NOT_ALLOWED;
-//						devolverComanda();
-					}
-				}else {
-			// cartão nÃ£o encontrado
-			verificationResult = VerificationResult.NOT_FOUND;
-//			devolverComanda();
-		}
+	    // Normaliza o número real para comparação
+	    String numeroRealProcessado = cartaoReal.getNumeroReal().replaceAll("[^a-zA-Z0-9]+", "").replaceFirst("^0+(?!$)", "");
+
+	    if (cartao.equalsIgnoreCase(numeroRealProcessado)) {
+	        CartaoRecebido = cartaoReal;
+	        System.out.println("Cartão recebido - Número alternativo: " + CartaoRecebido.getNumeroAlternativo() +
+	                           " | Número real: " + CartaoRecebido.getNumeroReal());
+	    } else {
+	        System.out.println("Cartão processado não corresponde ao cartão real.");
+	        verificationResult = VerificationResult.NOT_FOUND;
+	        return;
+	    }
+
+	    // Verifica o status do cartão
+	    if (CartaoRecebido != null) {
+	        allowedUserName = CartaoRecebido.getNumeroAlternativo();
+	        if (StatusCard.LIBERADO.equals(CartaoRecebido.getStatus())) {
+	            verificationResult = VerificationResult.ALLOWED;
+	            recolherComanda();
+	            atualizarCartaoComoLiberado(CartaoRecebido);
+	        } else {
+	        	System.out.println("Comanda não liberada, status : " + CartaoRecebido.getStatus());
+	            verificationResult = VerificationResult.NOT_ALLOWED;
+//	          devolverComanda();
+	        }
+	    } else {
+	        System.out.println("Cartão não encontrado.");
+	        verificationResult = VerificationResult.NOT_FOUND;
+//	      devolverComanda();
+	    }
 	}
-}
+
+	// Método auxiliar para atualizar o cartão como liberado
+	private void atualizarCartaoComoLiberado(CartaoComandaEntity cartao) {
+	    cartao.setDataAlteracao(new Date());
+	    cartao.setStatus(StatusCard.LIBERADO);
+
+	    System.out.println("Status do cartão atualizado para: " + cartao.getStatus());
+	    HibernateAccessDataFacade.save(CartaoComandaEntity.class, cartao);
+
+	    // Limpa os estados após salvar
+	    CartaoRecebido = null;
+	    allowedUserName = null;
+	}
+
+
 
 	@Override
 	public Set<Integer> getRegisteredUserList() throws Exception {
