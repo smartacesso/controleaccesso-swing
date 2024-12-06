@@ -162,7 +162,7 @@ public class ProcessAccessRequestUseCase {
 					if(saidaSemVerificacao) {
 						System.out.println("SAIDA LIBERADO - TRUE: ");
 						permitido = true;
-			        	return new Object[] { VerificationResult.ALLOWED, userName, matchedPedestrianAccess };
+			        
 			        }
 			    }
 			}
