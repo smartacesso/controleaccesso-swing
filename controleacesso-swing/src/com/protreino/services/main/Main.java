@@ -1,7 +1,7 @@
 package com.protreino.services.main;
 
-import java.awt.AWTException;
-import java.awt.Color;
+import java.awt.AWTException; 
+import java.awt.Color; 
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.SystemTray;
@@ -65,6 +65,13 @@ import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
+import com.protreino.services.exceptions.HikivisionIntegrationException; // Sincroniza o sistema com o facial da Hikivision
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity; //Hikivision
+import com.protreino.services.enumeration.HikivisionAction; //Hikivision
+import com.protreino.services.repository.HikivisionIntegrationErrorRepository; //Hikivision
+import com.protreino.services.to.hikivision.HikivisionDeviceTO; //Hikivision
+import com.protreino.services.usecase.HikivisionUseCases; //Hikivision
+import com.protreino.services.utils.HikivisionTcpServer; //Hikivision
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.protreino.services.client.SmartAcessoClient;
@@ -77,7 +84,6 @@ import com.protreino.services.devices.LcDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.EmpresaEntity;
-import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ParametroEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -85,13 +91,10 @@ import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.DeviceStatus;
-import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
-import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
-import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
@@ -101,17 +104,14 @@ import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.RegraTO;
-import com.protreino.services.to.hikivision.HikivisionDeviceTO;
-import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.usecase.SyncTemplatesInTopDataDevices;
 import com.protreino.services.utils.BroadcastServer;
-import com.protreino.services.utils.HikivisionTcpServer;
+import com.protreino.services.utils.FacialTopDataIntegrationService;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.TcpServer;
 import com.protreino.services.utils.Utils;
-
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 import it.sauronsoftware.junique.MessageHandler;
@@ -183,6 +183,7 @@ public class Main {
     public static TcpServer tcpServer;
     public static AlmitecDevice almTCP;
     public static HikivisionTcpServer hikivisionTcpServer;
+    public static FacialTopDataIntegrationService facialTopDataIntegrationService;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
     public static SimpleDateFormat sdfWithoutTIme = new SimpleDateFormat("dd/MM/yyyy");
     public static boolean desenvolvimento;
@@ -316,9 +317,13 @@ public class Main {
                     	tcpServer = new TcpServer();                    	
                     }
                     hikivisionTcpServer = new HikivisionTcpServer();
-                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableAlmitecTCPServer"))) {
-                    	//almTCP = new AlmTCP();                    	
+                    
+                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTopDataFacial"))) {
+                    	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
+                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("0.0.0.0", porta);   
+                    	facialTopDataIntegrationService.conectarPorta();
                     }
+                    
                     mainScreen = new MainScreen();
                     splash.dispose();
                     decideSeMostraTelaPrincipal();
@@ -1267,6 +1272,8 @@ public class Main {
 				final List<PedestrianAccessEntity> pedestres = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
                         .getResultListWithDynamicParams(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllWithPhotoByLastSync", args);
 
+                //Sincroniza os pedestre com o sistema, então se esse codigo for comentado ele não manda para o facial da hikivision
+                
                 for (PedestrianAccessEntity pedestre : pedestres) {
                 	try {
                 		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre);

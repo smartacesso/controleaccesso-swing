@@ -1,3 +1,6 @@
+
+// Aqui é a tela de castro de pedestre e visitantes 
+
 package com.protreino.services.screens;
 
 import com.protreino.services.client.SmartAcessoFotoServiceClient;
@@ -157,7 +160,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private HikivisionUseCases hikivisionUseCases;
 
 	private JButton syncInHikivisionButton;
-
+	
+	// Tela de cadastro de pedestre
+	
     public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
         loadImages();
 
@@ -180,6 +185,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 
         tabbedPane = new JTabbedPane();
 
+        //campo de Dados Basicos
+        
         JPanel dadosBasicosPanel = montarPanelDadosBasicos();
         tabbedPane.add("Dados basicos", dadosBasicosPanel);
         JLabel label = new JLabel("Dados basicos");
@@ -188,6 +195,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(0, label);
 
+        //campo de Endereço
+        
         JPanel enderecoPanel = montarPanelEndereco();
         tabbedPane.add("Endereco", enderecoPanel);
         label = new JLabel("Endereco");
@@ -196,6 +205,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(1, label);
 
+        //campo de Regras de acesso
+        
         JPanel regrasPanel = montaPainelAdicionarRegra();
         tabbedPane.add("Regras de acesso", regrasPanel);
         label = new JLabel("Regras de acesso");
@@ -204,6 +215,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(2, label);
 
+        //campo de Equipamentos
+        
         JPanel equipamentosPanel = montaPainelEquipamentos();
         tabbedPane.add("Equipamentos", equipamentosPanel);
         label = new JLabel("Equipamentos");
@@ -212,6 +225,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(3, label);
 
+        //campo de Documentos 
+        
         JPanel documentosPanel = montaPainelAdicionarDocumento();
         tabbedPane.add("Documentos", documentosPanel);
         label = new JLabel("Documentos");
@@ -220,6 +235,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         label.setFont(tabHeaderFont);
         tabbedPane.setTabComponentAt(4, label);
 
+        //campo de Mensagens 
+        
         JPanel mensagensPanel = montaPainelMensagemPersonalizadas();
         tabbedPane.add("Mensagens", mensagensPanel);
         label = new JLabel("Mensagens");
@@ -614,6 +631,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         return panelAdicionarRegras;
     }
 
+    //Campo de Empresa dentro dos cadastros de pedestre ou visitante
+    
     private void criaPanelDadosEmpresa(JPanel panel) {
         empresaLabel = new JLabel("Empresa");
         empresaJComboBox = new JComboBox<SelectItem>(getAllEmpresasSelectItens());
@@ -646,16 +665,22 @@ public class RegisterVisitorDialog extends BaseDialog {
             panel.repaint();
         });
 
+      //Campo de Departamento dentro dos cadastros de pedestre ou visitante
+        
         departamentoLabel = new JLabel("Departamento");
         if (departamentoJComboBox == null)
             departamentoJComboBox = new JComboBox<SelectItem>();
         criaPainelComboBox(departamentoLabel, departamentoJComboBox, panel, 1, 4);
 
+      //Campo de Centro de Custo dentro dos cadastros de pedestre ou visitante
+        
         centroCustoLabel = new JLabel("Centro de Custo");
         if (centroCustoJComboBox == null)
             centroCustoJComboBox = new JComboBox<SelectItem>();
         criaPainelComboBox(centroCustoLabel, centroCustoJComboBox, panel, 0, 5);
 
+      //Campo de Cargo dentro dos cadastros de pedestre ou visitante
+        
         cargoLabel = new JLabel("Cargo");
         if (cargoJComboBox == null)
             cargoJComboBox = new JComboBox<SelectItem>();
@@ -718,6 +743,8 @@ public class RegisterVisitorDialog extends BaseDialog {
         }
     }
 
+    //Campo de Endereço dentro dos cadastros de pedestre ou visitante
+    
     private JPanel montarPanelEndereco() {
         JPanel panelExterno = new JPanel();
         panelExterno.setLayout(new BorderLayout());
@@ -1498,7 +1525,33 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
              
         }
+        
+        if("ATIVO".equals(visitante.getStatus())) {
+        	if(!Objects.isNull(visitante.getFoto())) {
+        		try {
+        			boolean IsCadastradoComsucesso = Main.facialTopDataIntegrationService
+                      		.cadastrarPedestre(Long.valueOf(visitante.getCardNumber()), visitante.getName(), Base64.getEncoder().encodeToString(visitante.getFoto()));
+          		  //popup foto valida
+          		  if(IsCadastradoComsucesso) {
+          			criarDialogoFotoTopDataValida();   
+          		  }else {
+          			criarDialogoFotoTopDataInvalida();
+          		  }
+				} catch (Exception e) {
+					criarDialogoFotoFacialOff();
+					// TODO: handle exception
+				}
+        		
 
+        	}
+          }else {
+        	  if(!Objects.isNull(visitante.getFoto())) {
+        		  Main.facialTopDataIntegrationService.
+          	 	DeletePedestre(Long.valueOf(visitante.getCardNumber()));
+        	  }
+        	 
+        }
+      
         visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
@@ -1533,7 +1586,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             if (cartaoAcessoTextField.getText().length() < qtdeDigitosCartao) {
                 cartaoAcessoTextField.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
             }
-        }
+        } 
 
         habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
         sempreLiberado.setSelected(visitante.getSempreLiberado());
@@ -2153,6 +2206,19 @@ public class RegisterVisitorDialog extends BaseDialog {
     private void criarDialogoFotoInvalida() {
     	new SimpleMessageDialog("Foto invalida", "Foto invalida. Tente novamente!", "Ok");
     }
+    
+    private void criarDialogoFotoTopDataValida() {
+    	new SimpleMessageDialog("Foto enviada", "Foto enviada com Sucesso!", "Ok");
+    }
+    
+    private void criarDialogoFotoTopDataInvalida() {
+    	new SimpleMessageDialog("Foto invalida", "Foto invalida. Tente novamente!", "Ok");
+    }
+    
+    private void criarDialogoFotoFacialOff() {
+    	new SimpleMessageDialog("Foto offline", "Facial Offline. verifique novamente!", "Ok");
+    }
+    
     
     private void criarDialogoPedestreAtualizadoNaHikivision() {
     	new SimpleMessageDialog("Pedestre sincronizado", "Pedestre sincronizado nas cameras com sucesso!", "Ok");

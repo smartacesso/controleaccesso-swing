@@ -339,9 +339,14 @@ public class Utils {
 			e.printStackTrace();
 		}
 	}
-
+	
+		//Preferencias
+	
 	public static void defineDefaultPreferences() {
 		defaultPreferencesList = new ArrayList<PreferenceTO>();
+		
+		//Campo "Geral"
+		
 		defaultPreferencesList.add(
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "disableNotifications",
@@ -370,24 +375,20 @@ public class Utils {
 				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
 				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));	
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableAlmitecTCPServer",
-				"Habilitar servidor Almitec TCP", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "catracaAlmitecURL",
-				"URL do servidor catraca almitec", FieldType.TEXT, "192.168.0.201", false, 15));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerAlmitecSocketPort",
-				"Porta do servidor almitec TCP", FieldType.TEXT, "5000", true, 10));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerAlmitecUdpSocketPort",
-				"Porta do servidor almitec UPD", FieldType.TEXT, "5001", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
 				"Habilitar servidor TCP", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerSocketPort",
 				"Porta do servidor TCP", FieldType.TEXT, "2020", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTopDataFacial",
+				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "topDataSocketPort",
+				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableBroadcastServer",
 				"Habilitar servidor broadcast", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRemoveHVFacesForDate",
-				"Data para Remoção de faces Hikivison", FieldType.TEXT, "01/06/2024", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "broadcastServerSocketPort",
 				"Porta do servidor de broadcast", FieldType.TEXT, "2019", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRemoveHVFacesForDate",
+				"Data para Remoção de faces Hikivison", FieldType.TEXT, "01/06/2024", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "warningPaymentDueDate",
 				"Dias para avisar sobre vencimento do pagamento", FieldType.TEXT, "0", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "importExportDevices",
@@ -419,6 +420,8 @@ public class Utils {
 
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
 
+		//Campo "Mensagens"
+
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageEnrollment",
 				"Mensagem de cadastro de digital", FieldType.MESSAGE_LINES, "POSICIONE O DEDO;NO LEITOR"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageEnrollmentFinished",
@@ -444,12 +447,12 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedToday",
 				"Mensagem de pedestre fora do dia permitido", FieldType.MESSAGE_LINES, "PEDESTRE NAO;PERMITIDO HOJE"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNow",
-				"Mensagem de pedestre fora do horÃ¡rio permitido", FieldType.MESSAGE_LINES,
+				"Mensagem de pedestre fora do horário permitido", FieldType.MESSAGE_LINES,
 				"PEDESTRE NAO;PERMITIDO AGORA"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageError",
 				"Mensagem de erro na verificação", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageTolerancePeriod",
-				"Mensagem de pedestre no perÃ­odo de tolerÃ¢ncia", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
+				"Mensagem de pedestre no período de tolerância", FieldType.MESSAGE_LINES, "BEM-VINDO;PLANO VENCIDO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageAllowedAthleteScreen",
 				"(Tela do pedestre) Mensagem de acesso permitido", FieldType.TEXT, "Liberado!"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedAthleteScreen",
@@ -464,7 +467,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedTodayAthleteScreen",
 				"(Tela do pedestre) Mensagem fora do dia permitido", FieldType.TEXT, "Fora do dia permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNowAthleteScreen",
-				"(Tela do pedestre) Mensagem fora do horÃ¡rio permitido", FieldType.TEXT,
+				"(Tela do pedestre) Mensagem fora do horário permitido", FieldType.TEXT,
 				"Fora do horÃ¡rio permitido."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedOrigem",
 				"Mensagem para pedestre não permitido nesse equipamento", FieldType.TEXT,
@@ -473,11 +476,13 @@ public class Utils {
 				"Mensagem para pedestre que não depositou cartão na urna", FieldType.TEXT,
 				"Deposite;o cartao na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageSMSAfterPassInDevice",
-				"Mensagem SMS apÃ³s passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
+				"Mensagem SMS após passagem na catraca", FieldType.TEXT, "Acabou de passar na catraca"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedBox",
 				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "RevistaRequired",
 				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
+
+		//Campo "Tela de pedestre"
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenBackgroundImage",
 				"Imagem de fundo da tela do pedestre", FieldType.IMAGE, ""));
@@ -488,8 +493,10 @@ public class Utils {
 				"Cor secundária da tela do pedestre", FieldType.COLOR_CHOOSER,
 				(Main.secondColor.getRed() + ";" + Main.secondColor.getGreen() + ";" + Main.secondColor.getBlue())));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenTimeout",
-				"Tempo limite para apresentaÃ§Ã£o dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
+				"Tempo limite para apresentação dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
 
+		//Campo "Reconhecimento facial"
+		
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "samplesNumberForTraining",
 				"Número de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER,
@@ -499,7 +506,7 @@ public class Utils {
 				"intervalBetweenCapturesForRecognition", "Intervalo entre capturas para reconhecimento (em ms)",
 				FieldType.NUMERIC_LIST, "50", "30;10;200"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "waitTimeAfterRecognizer",
-				"Tempo de espera apÃ³s reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
+				"Tempo de espera após reconhecimento (em ms)", FieldType.NUMERIC_LIST, "4000", "1000;500;10000"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "maxTimeForFaceCapturing",
 				"Tempo máximo para captura de faces (em seg)", FieldType.NUMERIC_LIST, "20", "1;1;40"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "serverRecognizerIP",
@@ -521,9 +528,8 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaSemVerificar",
 				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
 
-		
-		
-		// Preferencias do nova Integração HIKIVISION
+		//Campo "Reconhecimento Facial 
+
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",

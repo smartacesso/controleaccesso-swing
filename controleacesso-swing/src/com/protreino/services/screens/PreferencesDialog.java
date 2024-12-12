@@ -158,6 +158,17 @@ public class PreferencesDialog extends JDialog {
 					}
 				});
 			}
+			if ("topDataSocketPort".equals(preference.getKey())) {
+				field.setVisible("true".equals(fieldMap.get("enableTopDataFacial").getValue()));
+			}
+			if ("enableTopDataFacial".equals(preference.getKey())) {
+				field.setActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						fieldMap.get("topDataSocketPort").setVisible("true".equals(fieldMap.get("enableTopDataFacial").getValue()));
+					}
+				});
+			}
 			if ("broadcastServerSocketPort".equals(preference.getKey())) {
 				field.setVisible("true".equals(fieldMap.get("enableBroadcastServer").getValue()));
 			}

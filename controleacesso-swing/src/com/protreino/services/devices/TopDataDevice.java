@@ -598,6 +598,7 @@ public class TopDataDevice extends Device {
 	                    if (System.currentTimeMillis() - lastResponseTime > MAX_TIME_WITHOUT_RESPONSE) {
 	                        // Se o tempo sem resposta for maior que o limite, verifica o cooldown de reinicialização
 	                        if (System.currentTimeMillis() - lastRestartTime > RESTART_COOLDOWN) {
+	                        	//precisa printar?
 	                            System.out.println("Tempo sem resposta excedido. Reiniciando conexão...");
 	                            enviarMensagemPadrao(); // Reenviar mensagem padrão
 	                            configurarEntradasOnline(); // Configurar novamente as entradas

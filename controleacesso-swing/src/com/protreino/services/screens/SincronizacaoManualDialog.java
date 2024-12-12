@@ -48,56 +48,63 @@ import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
 
-@SuppressWarnings("serial")
+//Classe para exibir o diálogo de sincronização manual de dispositivos
+@SuppressWarnings("serial") // Ignora avisos de serialização
 public class SincronizacaoManualDialog extends BaseDialog {
 
-	private Font font;
-	private Font tabHeaderFont;
-	private Container mainContentPane;
-	private final HikivisionUseCases hikivisionUseCases;
-	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
-	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" };
-	private Integer[] columnWidths = { 280, 200, 150, 80 };
-	private JTable deviceListTable;
+	private Font font; //fonte padrão 
+	private Font tabHeaderFont; //fonte do cabeçalho
+	private Container mainContentPane; //container principal
+	private final HikivisionUseCases hikivisionUseCases; //integração com hikivison
+	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository(); // repositorio com erro
+	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" }; // colunas da tabela
+	private Integer[] columnWidths = { 280, 200, 150, 80 }; // largura das colunas
+	private JTable deviceListTable; //tabela de dispositivos
 
-	private JButton syncAll;
+	private JButton syncAll; //botao de sincronização total
 
-	private JButton syncByDate;
+	private JButton syncByDate; //botao de sincronização por data
 
-	private JButton addDevice;
-	private JButton syncCameraListners;
+	private JButton addDevice; // botao de adicionar dispositivos
+	private JButton syncCameraListners; // botao de sincronizar camera
 
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); //formato por data
 
-	private static final int CHECKBOX_COLUMN = 3;
+	private static final int CHECKBOX_COLUMN = 3; //indice de colunas com checkbox
 
+	//Opção de sincronismo manual de dispositivos
+	
 	public SincronizacaoManualDialog() {
-		setIconImage(Main.favicon);
+		setIconImage(Main.favicon); //define icone da janela 
 		setModal(true);
-		setTitle("Sincronismo manual de dispositivos");
+		setTitle("Sincronismo manual de dispositivos"); // decrição de qual janela esta
 		setResizable(false);
 		setLayout(new BorderLayout());
-		setPreferredSize(new Dimension(920, 718));
+		setPreferredSize(new Dimension(920, 718)); // define o tamanho da janela
 		setMinimumSize(getPreferredSize());
 
 		this.hikivisionUseCases = new HikivisionUseCases();
 
+		//configura fontes 
 		font = new JLabel().getFont();
 		Font font2 = font;
 		tabHeaderFont = new Font(font2.getFontName(), Font.BOLD, font2.getSize() + 1);
 
+		//tela principal
 		mainContentPane = new Container();
 		mainContentPane.setLayout(new BorderLayout());
 
 		Font font = new JLabel().getFont();
 		Font headerFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
 
+		// painel e configuração de tabela
 		JPanel deviceListTablePanel = new JPanel();
 		deviceListTablePanel.setLayout(new BoxLayout(deviceListTablePanel, BoxLayout.Y_AXIS));
 		deviceListTablePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		deviceListTable = new JTable(new DefaultTableModel(columns, 0));
+		
+		deviceListTable = new JTable(new DefaultTableModel(columns, 0)); // inicia a tabela
 		formatTable();
-		deviceListTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		deviceListTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //redimenciona automaticamente 
 		deviceListTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		deviceListTable.getTableHeader().setReorderingAllowed(false);
 		deviceListTable.getTableHeader().setOpaque(false);
@@ -114,6 +121,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 		deviceListTablePanel.add(scrollPane);
 
+		//configuraçoes de botoes
 		syncAll = new JButton("Sincronizacao Total");
 		syncAll.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncAll.setPreferredSize(new Dimension(180, 40));
@@ -143,6 +151,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 			syncCameraListners();
 		});
 
+		//ação dos botoes 
 		JPanel actionsPanel = new JPanel();
 		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
 		actionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -157,14 +166,19 @@ public class SincronizacaoManualDialog extends BaseDialog {
 
 		populateTable();
 
-		mainContentPane.add(deviceListTablePanel, BorderLayout.CENTER);
-		mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
-		getContentPane().add(mainContentPane, BorderLayout.CENTER);
+		// Parte visual do "Sincronismo manual de dispositivos"
+		
+		mainContentPane.add(deviceListTablePanel, BorderLayout.CENTER); // Campos da parte superior da tela
+		mainContentPane.add(actionsPanel, BorderLayout.SOUTH); // Botões da parte de baixo da janela
+		
+		// adiciona container da janela
+		getContentPane().add(mainContentPane, BorderLayout.CENTER); 
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
 
+	// janela adicionar camera dentro de sincronismo manual de dispositivos
 	private void adicionarDevice() {
 		JDialog adicionarDeviceDialog = new JDialog();
 		adicionarDeviceDialog.setIconImage(Main.favicon);
@@ -281,6 +295,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		adicionarDeviceDialog.setVisible(true);
 	}
 
+	//campo sincronizar listeners dentro de sincronismo manual de dispositivos
 	private void syncCameraListners() {
 		List<String> devicesToSync = getDevicesToSync();
 		if (devicesToSync.isEmpty()) {
@@ -325,6 +340,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		setFirstColorFont(deviceNameLabel);
 	}
 
+	//campo de sincroziação por data dentro de sincronismo manual de dispositivos
 	private void criarDialogoDeSincronizacaoPorData() {
 		JDialog sincronizacaoPorDataDialog = new JDialog();
 		sincronizacaoPorDataDialog.setIconImage(Main.favicon);
@@ -383,6 +399,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		sincronizacaoPorDataDialog.setVisible(true);
 	}
 
+	//campo de sincronização de devices dentro de sincronismo manual de dispositivos
 	private void syncDevices(final Date inicio, final Date fim) {
 		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
 		// fazer a busca paginada
@@ -500,6 +517,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		thread.start();
 		progressBarDialog.setVisible(true);
 	}
+	
+	//toda parte de sincronização usada na sincronização total entre outros
 	
 	private Integer countPesdestresParaSincronizar(final Date inicio, final Date fim) {
 		if(Objects.isNull(inicio) && Objects.isNull(fim)) {

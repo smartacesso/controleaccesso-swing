@@ -1450,9 +1450,9 @@ public class EasyInner {
     
     public static native int EnviarAjustesBio(int Inner);
 
-    public static native int DefinirMensagemApresentacaoEntrada(int ExibirData, String msg);
+//    public static native int DefinirMensagemApresentacaoEntrada(int ExibirData, String msg);
     
-    public static native int DefinirMensagemApresentacaoSaida(int ExibirData, String msg);
+//    public static native int DefinirMensagemApresentacaoSaida(int ExibirData, String msg);
 
     public static native int InserirHorarioMudancaEntrada(byte Hora1, byte Minuto1, byte Hora2, byte Minuto2, byte Hora3, byte Minuto3);
     
