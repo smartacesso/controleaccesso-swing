@@ -36,8 +36,6 @@ public class FacialTopWebSocketServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         System.out.println("Mensagem recebida de " + conn.getRemoteSocketAddress());
-        System.out.println("Conteúdo da mensagem: " + message);
-        
         try {
             Gson gson = new Gson();
             CommandResponse response = gson.fromJson(message, CommandResponse.class);
