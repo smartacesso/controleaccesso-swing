@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import com.protreino.services.constants.Origens;
 import com.protreino.services.constants.Tipo;
@@ -31,7 +29,6 @@ import com.protreino.services.entity.PedestrianEquipamentEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.TipoEscala;
-import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.exceptions.QrcodeVencidoException;
 import com.protreino.services.main.Main;
@@ -340,10 +337,17 @@ public class ProcessAccessRequestUseCase {
 					 .toLocalDate();
 
 					// Obter o horário de início do turno
-					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
-					                        .atZone(ZoneId.systemDefault())
-					                        .toLocalTime();
-
+//					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
+//					                        .atZone(ZoneId.systemDefault())
+//					                        .toLocalTime();
+//					
+					LocalTime horarioInicio = matchedPedestrianAccess.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
+	                        .atZone(ZoneId.systemDefault())
+	                        .toLocalTime();
+					
+					horarioInicio = horarioInicio.minusHours(3);
+					System.out.println("Horario inicio turno : " + horarioInicio);
+					
 					// Calcular o número de dias entre a data de início da escala e a data de acesso
 					long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
 
