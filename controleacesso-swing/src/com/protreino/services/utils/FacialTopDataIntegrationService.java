@@ -78,7 +78,7 @@ public class FacialTopDataIntegrationService {
     	sendCommand(gson.toJson(commandFoto));
     	
     	 try {
-             Thread.sleep(500); // Aguarda a resposta
+             Thread.sleep(1000); // Aguarda a resposta
          } catch (InterruptedException e) {
             e.printStackTrace();
          }
