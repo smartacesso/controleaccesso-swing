@@ -1156,8 +1156,20 @@ public class TopDataDevice extends Device {
 				pedestre.decrementaMensagens();
 			}
 			
-			if(ultimoAcesso.isSaida() || !bloquearSaida) {
-				 pedestre.decrementaCreditos();
+			//adicionar uma configuracao para decremetar na saida
+			final Boolean decrementaEntrada = Utils.getPreferenceAsBoolean("decrementaEntrada");
+
+			// Verifica se deve decrementar na entrada ou na saída
+			if (decrementaEntrada) {
+			    // Configuração ativa: decrementar na entrada
+			    if (!ultimoAcesso.isSaida()) {
+			        pedestre.decrementaCreditos();
+			    }
+			} else {
+			    // Configuração inativa: decrementar na saída
+			    if (ultimoAcesso.isSaida() || !bloquearSaida) {
+			        pedestre.decrementaCreditos();
+			    }
 			}
 			
 			if(!pedestre.temCreditos() && pedestre.isVisitante()) {
