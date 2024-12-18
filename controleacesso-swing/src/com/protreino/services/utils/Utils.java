@@ -512,7 +512,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "serverRecognizerIP",
 				"Ip do servidor de reconhecimento", FieldType.TEXT, "localhost:8080", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
-				"Definir número do cartão Master", FieldType.TEXT, "", true, 12));
+				"Definir número do cartão Master", FieldType.TEXT, "99999", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
 				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));	
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "bloquearCartaoZero",
@@ -527,6 +527,8 @@ public class Utils {
 				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));	
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaSemVerificar",
 				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "decrementaEntrada",
+				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
 
 		//Campo "Reconhecimento Facial 
 
