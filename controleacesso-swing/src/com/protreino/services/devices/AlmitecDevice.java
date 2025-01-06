@@ -29,10 +29,8 @@ public class AlmitecDevice extends Device{
 	private static final long serialVersionUID = 1L;
 	private static  String equipamentoIP;
     private int portaTCP1;
-    private int portaTCP2;
     private static int udpPorta;
     private Socket tcp1;
-    private Socket tcp2;
     private static DatagramSocket udpSocket;
     private boolean conectado = false;
     private CartaoComandaEntity CartaoRecebido;
@@ -68,7 +66,6 @@ public class AlmitecDevice extends Device{
 		String partes[] = identifier.split(";");
 		this.equipamentoIP = partes[0];
 		this.portaTCP1 = Integer.parseInt(partes[1]);
-//		this.portaTCP2 = Integer.parseInt(partes[2]);
 		this.udpPorta = Integer.parseInt(partes[2]);
 		
 
@@ -116,7 +113,6 @@ public class AlmitecDevice extends Device{
 	                leituraAtiva = true;
 
 	                new Thread(() -> receberDadosTCP(tcp1, "Leitor 1")).start();
-//	                new Thread(() -> receberDadosTCP(tcp2, "Leitor 2")).start();
 
 	                setStatus(DeviceStatus.CONNECTED);
 	                break; // Conexão bem-sucedida
