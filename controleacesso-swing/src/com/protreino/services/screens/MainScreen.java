@@ -87,6 +87,7 @@ public class MainScreen extends JFrame {
 	private JMenuItem liberarAcessoMenuItem;
 	private JMenuItem preferenciasMenuItem;
 	private JMenuItem hikivisionManualSyncMenuItem;
+	private JMenuItem TopDataFacialMenuItem;
 	private JMenuItem syncUsersMenuItem;
 	private JMenuItem logsMenuItem;
 	private JMenuItem procurarAtualizacaoMenuItem;
@@ -557,6 +558,40 @@ public class MainScreen extends JFrame {
 			if(Utils.isHikivisionConfigValid()) {
 				menuConfiguracoes.add(hikivisionManualSyncMenuItem);
 			}
+			
+			//
+			TopDataFacialMenuItem = new JMenuItem("Sincronismo facial topdata");
+			TopDataFacialMenuItem.addActionListener(
+				e -> {
+					try {
+	//					AutenticationDialog autenticationDialog = new AutenticationDialog(null,
+//								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true, true, true);
+						Boolean retornoAuthentication = autenticationDialog.authenticate();
+						if (retornoAuthentication == null) {
+							return;
+						}
+						if (retornoAuthentication) {
+							new TopDataFacialDialog();
+							int index = tabbedPane.getSelectedIndex();
+							buildUI();
+							tabbedPane.setSelectedIndex(index);
+						} else {
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao",
+									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						Utils.createNotification("Nao foi possivel abri as preferencias", NotificationType.BAD);
+					}
+				}
+			);
+
+			if(Utils.isTopDataFacialEnable()) {
+				menuConfiguracoes.add(TopDataFacialMenuItem);
+			}
+			
+			//
 			
 			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
 			syncUsersMenuItem.addActionListener(new ActionListener() {

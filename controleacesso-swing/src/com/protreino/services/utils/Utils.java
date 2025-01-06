@@ -125,6 +125,10 @@ public class Utils {
 
 		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
 	}
+	
+	public static boolean isTopDataFacialEnable() {
+		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
+	}
 
 	public static void sleep(long tempo) {
 		try {

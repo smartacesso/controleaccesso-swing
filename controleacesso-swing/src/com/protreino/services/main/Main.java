@@ -311,16 +311,16 @@ public class Main {
                     registerNativeHook();
                     recoverLoggedUser();
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableBroadcastServer"))) {
-                    	broadcastServer = new BroadcastServer();                    	
+                    	broadcastServer = new BroadcastServer();
                     }
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer"))) {
-                    	tcpServer = new TcpServer();                    	
+                    	tcpServer = new TcpServer();
                     }
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTopDataFacial"))) {
                     	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
-                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("0.0.0.0", porta);   
+                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("0.0.0.0", porta);
                     	facialTopDataIntegrationService.conectarPorta();
                     }
                     
