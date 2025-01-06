@@ -40,7 +40,7 @@ public class FacialTopDataIntegrationService {
     public void conectarPorta() {
         // Inicia o servidor
         this.webSocketServer.start();
-        System.out.println("Servidor WebSocket iniciado na porta ");
+        System.out.println("Servidor WebSocket iniciado");
     }
     
  //////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ public class FacialTopDataIntegrationService {
 //       service.enviaComandoDeleteUser(6);
        
        //Coleta informações do cadstro no facial "numero do Id (cartão do pedestre) , Cartão registrado no facial topdata"
-        service.enviarComandoGetUserInfo(2345,50);
+//        service.enviarComandoGetUserInfo(2345,50);
 
     }
 }
