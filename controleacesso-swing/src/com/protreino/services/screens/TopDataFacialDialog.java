@@ -34,6 +34,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
+import org.java_websocket.WebSocket;
+
 import com.protreino.services.entity.TopdataFacialEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
@@ -47,8 +49,8 @@ public class TopDataFacialDialog extends BaseDialog{
 	private Font font; //fonte padrão 
 	private Font tabHeaderFont; //fonte do cabeçalho
 	private Container mainContentPane; //container principal
-	private String[] columns = { "Device IP", "Device Name", "porta", "Sincronizar" }; // colunas da tabela
-	private Integer[] columnWidths = { 280, 200, 150, 80, 40, 40 }; // largura das colunas
+	private String[] columns = { "Device IP", "porta", "Sincronizar" }; // colunas da tabela
+	private Integer[] columnWidths = { 280, 150, 80}; // largura das colunas
 	private JTable deviceListTable; //tabela de dispositivos
 
 	private JButton syncAll; //botao de sincronização total
@@ -70,7 +72,7 @@ public class TopDataFacialDialog extends BaseDialog{
 
 	private List<TopdataFacialEntity> devices;
 	
-	private static final int CHECKBOX_COLUMN = 3; //indice de colunas com checkbox
+	private static final int CHECKBOX_COLUMN = 2; //indice de colunas com checkbox
 	
 	public TopDataFacialDialog() {
 		setIconImage(Main.favicon); //define icone da janela 
@@ -514,15 +516,16 @@ public class TopDataFacialDialog extends BaseDialog{
 	    // Obtém a lista de dispositivos do banco
 	    devices = (List<TopdataFacialEntity>) HibernateAccessDataFacade
 	            .getResultList(TopdataFacialEntity.class, "TopdataFacialEntity.findAllNaoRemovidosOrdered");
+	    
+	    List<WebSocket> allTopDataFacialDevicesConnected = Main.facialTopDataIntegrationService.getAllTopDataFacialDevicesConnected();
 
 	    // Preenche a tabela com os dispositivos encontrados
-	    if (devices != null && !devices.isEmpty()) {
-	        for (TopdataFacialEntity device : devices) {
-	            Object[] item = new Object[4];
-	            item[0] = device.getIpFacial();   // IP do dispositivo
-	            item[1] = device.getNomeFacial(); // Nome do dispositivo
-	            item[2] = device.getPortaFacial(); // Porta do dispositivo
-	            item[3] = false;                  // Checkbox desmarcado inicialmente
+	    if (allTopDataFacialDevicesConnected != null && !allTopDataFacialDevicesConnected.isEmpty()) {
+	        for (WebSocket device : allTopDataFacialDevicesConnected) {
+	            Object[] item = new Object[3];
+	            item[0] = device.getRemoteSocketAddress().getHostString();   // IP do dispositivo
+	            item[1] = device.getRemoteSocketAddress().getPort(); // Porta do dispositivo
+	            item[2] = false;                  // Checkbox desmarcado inicialmente
 
 	            dataModel.addRow(item);
 	        }
@@ -531,7 +534,5 @@ public class TopDataFacialDialog extends BaseDialog{
 	    // Atualiza o modelo da tabela com o novo conteúdo
 	    deviceListTable.setModel(dataModel);
 	}
-
-
 
 }

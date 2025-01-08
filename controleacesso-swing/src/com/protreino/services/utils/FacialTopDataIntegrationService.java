@@ -1,7 +1,10 @@
 package com.protreino.services.utils;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 import org.java_websocket.WebSocket;
 
@@ -54,21 +57,21 @@ public class FacialTopDataIntegrationService {
             enrollid, backupnum
         );
 
-        sendCommand(comando);
+        sendCommandAllDevices(comando);
     }
     
     //Parte logica do cadastro do nome para o facial topdata
     public void enviaComandoCadastrarInfoBasica(final long enrollid, final String nome) {
     	final CommandInfoBasica commandInfoBasica  = new CommandInfoBasica(enrollid, nome);
     	
-    	sendCommand(gson.toJson(commandInfoBasica));
+    	sendCommandAllDevices(gson.toJson(commandInfoBasica));
     }
     
     //Parte logica do cadastro do cartão para o facial topdata
     public void enviaComandoCadastrarCartao(final long enrollid, final long cartao) {
     	final CommandCard commandCard = new CommandCard(enrollid, cartao);
     	
-    	sendCommand(gson.toJson(commandCard));
+    	sendCommandAllDevices(gson.toJson(commandCard));
     }
     
     //Parte logica do cadastro da foto para o facial topdata (decodifica para foto para base 64)
@@ -76,7 +79,7 @@ public class FacialTopDataIntegrationService {
     	
     	webSocketServer.resetResultadoCadastro();
     	final CommandFoto commandFoto = new CommandFoto(enrollid, fotoBase64);
-    	sendCommand(gson.toJson(commandFoto));
+    	sendCommandAllDevices(gson.toJson(commandFoto));
     	
     	 try {
              Thread.sleep(1000); // Aguarda a resposta
@@ -101,7 +104,7 @@ public class FacialTopDataIntegrationService {
     public void enviaComandoDeleteUser(final long enrollid) {
     	final CommandDeleteUser commandDeleteUser = new CommandDeleteUser(enrollid);
     	
-    	sendCommand(gson.toJson(commandDeleteUser));
+    	sendCommandAllDevices(gson.toJson(commandDeleteUser));
     }
       
     //Parte logica do envio para o WebSocket
@@ -117,7 +120,7 @@ public class FacialTopDataIntegrationService {
     }
     
   //Parte logica do envio para o WebSocket
-    private void sendCommand(final String command) {
+    private void sendCommandAllDevices(final String command) {
     	// Envia o comando para o servidor WebSocket
     	final Iterator<WebSocket> iterator = this.webSocketServer.getConnections().iterator();
     	
@@ -130,6 +133,45 @@ public class FacialTopDataIntegrationService {
     			System.err.println("WebSocket não está conectado.");
     		}
     	}
+    }
+    
+    private void sendCommandToDevice(final String ipAddress, final String command) {
+    	WebSocket webSocketByIpAddress = getWebSocketByIpAddress(ipAddress);
+    	
+    	if(Objects.isNull(webSocketByIpAddress)) {
+    		System.out.println("Device não encontrado!!");
+    		return;
+    	}
+    	
+    	webSocketByIpAddress.send(command); // Envia o comando de getuserinfo
+		System.out.println("Comando enviado: " + command);
+    }
+    
+    private WebSocket getWebSocketByIpAddress(final String ipAddress) {
+    	final Iterator<WebSocket> iterator = this.webSocketServer.getConnections().iterator();
+    	
+    	while(iterator.hasNext()) {
+    		final WebSocket socket = iterator.next();
+    		
+    		if(socket.getRemoteSocketAddress().toString().contains(ipAddress)) {
+    			return socket;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public List<WebSocket> getAllTopDataFacialDevicesConnected() {
+    	final List<WebSocket> devicesConnected = new ArrayList<>();
+    	
+    	final Iterator<WebSocket> iterator = this.webSocketServer.getConnections().iterator();
+    	
+    	while(iterator.hasNext()) {
+    		final WebSocket socket = iterator.next();
+    		devicesConnected.add(socket);
+    	}
+    	
+    	return devicesConnected;
     }
 
 //////////////////////////////////////////

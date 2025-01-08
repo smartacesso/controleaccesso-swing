@@ -245,7 +245,7 @@ import com.protreino.services.utils.EncryptionUtils;
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
-						"and obj.tipo = 'PEDESTRE' " + 						
+						"and obj.tipo = 'PEDESTRE' " +
 						"order by obj.id asc"),
 	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate",
 				query = "select count(obj) " +
@@ -512,7 +512,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="ULTIMO_ACESSO_HIKIVISION", nullable=true, length=30)
 	private Date lastAccessHikiVision;
-		
+	
 	@Transient
 	private Integer origemCatraca;
 	
