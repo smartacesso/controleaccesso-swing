@@ -383,10 +383,6 @@ public class Utils {
 				"Habilitar servidor TCP", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerSocketPort",
 				"Porta do servidor TCP", FieldType.TEXT, "2020", true, 10));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTopDataFacial",
-				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "topDataSocketPort",
-				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableBroadcastServer",
 				"Habilitar servidor broadcast", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "broadcastServerSocketPort",
@@ -534,7 +530,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "decrementaEntrada",
 				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
 
-		//Campo "Reconhecimento Facial 
+		//Campo Reconhecimento Facial HIKI
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
@@ -558,6 +554,14 @@ public class Utils {
 				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
 				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
+		
+		//Campo Reconhecimento Facial TOPDATA
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",
+				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
+				"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "localhost", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "topDataSocketPort",
+				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {

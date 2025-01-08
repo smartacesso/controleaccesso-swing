@@ -6,7 +6,8 @@ public enum PreferenceGroup {
 	MESSAGES,
 	ATHLETE_SCREEN,
 	FACE_RECOGNIZER,
-	HIKIVISION_FACE_RECOGONIZER;
+	HIKIVISION_FACE_RECOGONIZER,
+	TOPDATA_FACE_RECOGONIZER;
 	
 
 	public String getName(){
@@ -24,6 +25,9 @@ public enum PreferenceGroup {
 		}
 		if(this.equals(HIKIVISION_FACE_RECOGONIZER)) {
 			return "Reconhecimento Facial HikiVision";
+		}
+		if(this.equals(TOPDATA_FACE_RECOGONIZER)) {
+			return "Reconhecimento Facial Topdata";
 		}
 		return "";
 	}

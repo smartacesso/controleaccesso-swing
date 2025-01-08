@@ -38,7 +38,6 @@ public class FacialTopWebSocketServer extends WebSocketServer {
         try {
             Gson gson = new Gson();
             CommandResponse response = gson.fromJson(message, CommandResponse.class);
-            System.out.println(response.isResult());
             // Verifica se a mensagem é relevante (backupnum == 50)
             if (response.getBackupnum() == 50) {
                 resultadoCadastro = response.isResult();

@@ -105,8 +105,9 @@ public class FacialTopDataIntegrationService {
     }
       
     //Parte logica do envio para o WebSocket
-    private void sendCommand11(final String command) {
+    private void sendCommand1(final String command) {
     	// Envia o comando para o servidor WebSocket
+    	System.out.println("Total de conexões: " + webSocketServer.getConnections().size());
         WebSocket socket = this.webSocketServer.getConnections().iterator().next(); // Envia para o primeiro cliente conectado
         if (socket != null && socket.isOpen()) {
             socket.send(command); // Envia o comando de getuserinfo
@@ -119,6 +120,7 @@ public class FacialTopDataIntegrationService {
   //Parte logica do envio para o WebSocket
     private void sendCommand(final String command) {
     	// Envia o comando para o servidor WebSocket
+    	System.out.println("Total de conexões: " + webSocketServer.getConnections().size());
     	final Iterator<WebSocket> iterator = this.webSocketServer.getConnections().iterator();
     	
     	while(iterator.hasNext()) {

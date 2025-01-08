@@ -319,8 +319,9 @@ public class Main {
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTopDataFacial"))) {
+                    	String ipServidor = Utils.getPreference("TopdataServerRecognizerURL");
                     	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
-                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("192.168.15.99", porta);
+                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService(ipServidor, porta);
                     	facialTopDataIntegrationService.conectarPorta();
                     }
                     
