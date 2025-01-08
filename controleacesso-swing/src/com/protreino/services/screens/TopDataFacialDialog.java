@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -46,7 +47,7 @@ public class TopDataFacialDialog extends BaseDialog{
 	private Font font; //fonte padrão 
 	private Font tabHeaderFont; //fonte do cabeçalho
 	private Container mainContentPane; //container principal
-	private String[] columns = { "Device IP", "Device Name", "porta", "Sincronizar", "Editar", "Remover" }; // colunas da tabela
+	private String[] columns = { "Device IP", "Device Name", "porta", "Sincronizar" }; // colunas da tabela
 	private Integer[] columnWidths = { 280, 200, 150, 80, 40, 40 }; // largura das colunas
 	private JTable deviceListTable; //tabela de dispositivos
 
@@ -55,6 +56,10 @@ public class TopDataFacialDialog extends BaseDialog{
 	private JButton syncByDate; //botao de sincronização por data
 
 	private JButton addDevice; // botao de adicionar dispositivos
+	
+	private JButton editDevice;
+	
+	private JButton removeDevice;
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); //formato por data
 	private DefaultTableModel dataModel;
@@ -63,6 +68,8 @@ public class TopDataFacialDialog extends BaseDialog{
 	private JFormattedTextField portTextField;
 	private JFormattedTextField deviceNameTextField;
 
+	private List<TopdataFacialEntity> devices;
+	
 	private static final int CHECKBOX_COLUMN = 3; //indice de colunas com checkbox
 	
 	public TopDataFacialDialog() {
@@ -133,6 +140,20 @@ public class TopDataFacialDialog extends BaseDialog{
 		addDevice.addActionListener(e -> {
 			adicionarDevice();
 		});
+		
+		editDevice = new JButton("Editar camera");
+		editDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
+		editDevice.setPreferredSize(new Dimension(120, 40));
+		editDevice.addActionListener(e -> {
+			editarDevide();
+		});
+		
+		removeDevice = new JButton("remover camera");
+		removeDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
+		removeDevice.setPreferredSize(new Dimension(120, 40));
+		removeDevice.addActionListener(e -> {
+			removeDevice();
+		});
 
 		//ação dos botoes 
 		JPanel actionsPanel = new JPanel();
@@ -141,9 +162,14 @@ public class TopDataFacialDialog extends BaseDialog{
 		actionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
 		actionsPanel.add(addDevice);
 		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(editDevice);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(removeDevice);	
+		actionsPanel.add(Box.createHorizontalStrut(200));
 		actionsPanel.add(syncAll);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncByDate);
+
 
 		populateTable();
 
@@ -159,6 +185,157 @@ public class TopDataFacialDialog extends BaseDialog{
 		setVisible(true);
 	}
 	
+	private void editarDevide() {
+	    // Obtém a linha selecionada na tabela
+	    int selectedRow = deviceListTable.getSelectedRow();
+
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(null, "Nenhum dispositivo selecionado.");
+	        return;
+	    }
+
+	    // Obtém os valores da linha selecionada
+	    String ipFacial = (String) dataModel.getValueAt(selectedRow, 0);
+	    String nomeFacial = (String) dataModel.getValueAt(selectedRow, 1);
+	    String portaFacial = (String) dataModel.getValueAt(selectedRow, 2);
+
+	    JDialog EditarDeviceDialog = new JDialog();
+	    EditarDeviceDialog.setIconImage(Main.favicon);
+	    EditarDeviceDialog.setModal(true);
+	    EditarDeviceDialog.setTitle("Editar Device");
+	    EditarDeviceDialog.setResizable(false);
+	    EditarDeviceDialog.setLayout(new BorderLayout());
+
+	    JPanel mainPanel = new JPanel();
+	    mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
+	    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+	    JLabel addressLabel = new JLabel("Ip Da Camera");
+	    addressLabel.setPreferredSize(new Dimension(120, 25));
+	    addressLabel.setForeground(Main.firstColor);
+	    addressLabel.setFont(tabHeaderFont);
+	    addressTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
+	    addressTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+	    JPanel addressPanel = getNewMiniPanel(addressLabel, addressTextField);
+
+	    JLabel portLabel = new JLabel("Porta da Camera");
+	    portLabel.setPreferredSize(new Dimension(120, 25));
+	    portLabel.setForeground(Main.firstColor);
+	    portLabel.setFont(tabHeaderFont);
+	    portTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
+	    portTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+	    JPanel portPanel = getNewMiniPanel(portLabel, portTextField);
+
+	    JLabel deviceNameLabel = new JLabel("Nome da Camera");
+	    deviceNameLabel.setPreferredSize(new Dimension(120, 25));
+	    deviceNameLabel.setForeground(Main.firstColor);
+	    deviceNameLabel.setFont(tabHeaderFont);
+	    deviceNameTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
+	    deviceNameTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+	    JPanel deviceNamedPanel = getNewMiniPanel(deviceNameLabel, deviceNameTextField);
+
+	    JButton confirmarButton = new JButton("Confirmar");
+	    confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+	    confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+	    confirmarButton.addActionListener(e -> {
+	        restauraFontLabel(addressLabel, portLabel, deviceNameLabel);
+
+	        boolean valido = true;
+
+	        if (!isValidIpAddress(addressTextField.getText())) {
+	            redAndBoldFont(addressLabel);
+	            valido = false;
+	        }
+
+	        if (!isValidPort(portTextField.getText())) {
+	            redAndBoldFont(portLabel);
+	            valido = false;
+	        }
+
+	        if ("".equals(deviceNameTextField.getText())) {
+	            redAndBoldFont(deviceNameLabel);
+	            valido = false;
+	        }
+
+	        if (!valido) {
+	            return;
+	        }
+
+	        //editar o dispositivo
+	        TopdataFacialEntity dispositivo = devices.get(selectedRow);
+	        dispositivo.setIpFacial(addressTextField.getText());
+	        dispositivo.setPortaFacial(portTextField.getText());
+	        dispositivo.setNomeFacial(deviceNameTextField.getText());
+
+	        HibernateAccessDataFacade.update(TopdataFacialEntity.class, dispositivo);
+	        
+	        populateTable(); // Chama o método para atualizar a tabela
+	        EditarDeviceDialog.dispose();
+	    });
+	    
+	    
+	    mainPanel.add(addressPanel);
+	    mainPanel.add(Box.createVerticalStrut(10));
+	    mainPanel.add(portPanel);
+	    mainPanel.add(Box.createVerticalStrut(10));
+	    mainPanel.add(deviceNamedPanel);
+	    mainPanel.add(Box.createVerticalStrut(70));
+	    mainPanel.add(confirmarButton);
+
+	    EditarDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+	    EditarDeviceDialog.pack();
+	    EditarDeviceDialog.setLocationRelativeTo(null);
+	    EditarDeviceDialog.setVisible(true);
+	    
+	}
+	
+	private void removeDevice() {
+	    // Obtém a linha selecionada na tabela
+	    int selectedRow = deviceListTable.getSelectedRow();
+
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(null, "Nenhum dispositivo selecionado.");
+	        return;
+	    }
+	    
+	    JDialog removerDeviceDialog = new JDialog();
+	    removerDeviceDialog.setIconImage(Main.favicon);
+	    removerDeviceDialog.setModal(true);
+	    removerDeviceDialog.setTitle("Remover Device");
+	    removerDeviceDialog.setResizable(false);
+	    removerDeviceDialog.setLayout(new BorderLayout());
+
+	    JPanel mainPanel = new JPanel();
+	    mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
+	    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+	    
+	    JButton confirmarButton = new JButton("Confirmar");
+	    confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+	    confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+	    confirmarButton.addActionListener(e -> {
+	        //remover o dispositivo
+	        TopdataFacialEntity dispositivo = devices.get(selectedRow);
+	        dispositivo.setRemoved(true);
+
+	        HibernateAccessDataFacade.update(TopdataFacialEntity.class, dispositivo);
+	        
+	        populateTable(); // Chama o método para atualizar a tabela
+	        removerDeviceDialog.dispose();
+	    });
+	    
+	    mainPanel.add(Box.createVerticalStrut(10));
+	    mainPanel.add(confirmarButton);
+
+	    removerDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+	    removerDeviceDialog.pack();
+	    removerDeviceDialog.setLocationRelativeTo(null);
+	    removerDeviceDialog.setVisible(true);
+	    
+	}
+
+
 	private void adicionarDevice() {
 	    JDialog adicionarDeviceDialog = new JDialog();
 	    adicionarDeviceDialog.setIconImage(Main.favicon);
@@ -312,7 +489,7 @@ public class TopDataFacialDialog extends BaseDialog{
 	@SuppressWarnings("unchecked")
 	public void populateTable() {
 	    // Criação de um modelo de tabela que permite checkbox na coluna 3
-	    DefaultTableModel dataModel = new DefaultTableModel(columns, 0) {
+	    dataModel = new DefaultTableModel(columns, 0) {
 
 	        @Override
 	        public Class<?> getColumnClass(int columnIndex) {
@@ -335,8 +512,8 @@ public class TopDataFacialDialog extends BaseDialog{
 	    };
 
 	    // Obtém a lista de dispositivos do banco
-	    List<TopdataFacialEntity> devices = (List<TopdataFacialEntity>) HibernateAccessDataFacade
-	            .getResultList(TopdataFacialEntity.class, "TopdataFacialEntity.findAll");
+	    devices = (List<TopdataFacialEntity>) HibernateAccessDataFacade
+	            .getResultList(TopdataFacialEntity.class, "TopdataFacialEntity.findAllNaoRemovidosOrdered");
 
 	    // Preenche a tabela com os dispositivos encontrados
 	    if (devices != null && !devices.isEmpty()) {

@@ -1011,6 +1011,10 @@ public class RegisterVisitorDialog extends BaseDialog {
                 	salvarFotoVisitanteHikivision();
                 }
                 
+                if(Utils.getPreferenceAsBoolean("sendPhotoToTopDataFacialDevice")) {
+                	
+                }
+                
                 limparTodosOsCampos();
                 this.dispose();
 

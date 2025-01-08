@@ -320,7 +320,7 @@ public class Main {
                     
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTopDataFacial"))) {
                     	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
-                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("0.0.0.0", porta);
+                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService("192.168.15.99", porta);
                     	facialTopDataIntegrationService.conectarPorta();
                     }
                     
@@ -936,6 +936,9 @@ public class Main {
                             .setInitialDelay(Integer.valueOf(Utils.getPreference("timeUserAccessList")) * 60000);
                     trayIcon.setImage(trayIconImageLoading);
 
+                    // send all top data facial
+                    // get all top data facial
+                    
                     requestAllUsers();
 
                     requestAllEmpresas();

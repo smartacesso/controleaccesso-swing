@@ -1,6 +1,7 @@
 package com.protreino.services.utils;
 
 import java.net.InetSocketAddress;
+import java.util.Iterator;
 
 import org.java_websocket.WebSocket;
 
@@ -104,7 +105,7 @@ public class FacialTopDataIntegrationService {
     }
       
     //Parte logica do envio para o WebSocket
-    private void sendCommand(final String command) {
+    private void sendCommand11(final String command) {
     	// Envia o comando para o servidor WebSocket
         WebSocket socket = this.webSocketServer.getConnections().iterator().next(); // Envia para o primeiro cliente conectado
         if (socket != null && socket.isOpen()) {
@@ -113,6 +114,22 @@ public class FacialTopDataIntegrationService {
         } else {
             System.err.println("WebSocket não está conectado.");
         }
+    }
+    
+  //Parte logica do envio para o WebSocket
+    private void sendCommand(final String command) {
+    	// Envia o comando para o servidor WebSocket
+    	final Iterator<WebSocket> iterator = this.webSocketServer.getConnections().iterator();
+    	
+    	while(iterator.hasNext()) {
+    		final WebSocket socket = iterator.next();
+    		if (socket != null && socket.isOpen()) {
+    			socket.send(command); // Envia o comando de getuserinfo
+    			System.out.println("Comando enviado: " + command);
+    		} else {
+    			System.err.println("WebSocket não está conectado.");
+    		}
+    	}
     }
 
 //////////////////////////////////////////
