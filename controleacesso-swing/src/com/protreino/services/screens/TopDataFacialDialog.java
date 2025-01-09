@@ -38,6 +38,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
 import org.java_websocket.WebSocket;
@@ -147,10 +148,9 @@ public class TopDataFacialDialog extends BaseDialog{
 	private void syncDevices() {
 		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
 		// fazer a busca paginada
-		List<String> devicesToSync = Main.facialTopDataIntegrationService.getAllTopDataFacialDevicesConnected()
-				.stream()
-				.map(webSocket -> webSocket.toString())
-				.collect(Collectors.toList());
+		
+	
+		List<String> devicesToSync = getDevicesToSync();
 		
 		if (devicesToSync.isEmpty()) {
 			return;
@@ -199,7 +199,7 @@ public class TopDataFacialDialog extends BaseDialog{
 							String nome =  pedestre.getName();
 							String foto =   Base64.getEncoder().encodeToString(pedestre.getFoto());
 							
-							Main.facialTopDataIntegrationService.cadastrarPedestre(id, nome, foto);
+							Main.facialTopDataIntegrationService.cadastrarPedestreBySync(id, nome, foto, devicesToSync);
 							
 						} catch(Exception ex) {
 							System.out.println(ex.getMessage());
@@ -210,12 +210,28 @@ public class TopDataFacialDialog extends BaseDialog{
 					
 					offset += pageSize;
 				} while (offset < countPedestresParaSincronizar);	
+				progressBarDialog.dispose();
 			}
+			
+			
 		});
 		thread.setDaemon(true);
-		thread.start();
-		progressBarDialog.setVisible(true);
+		thread.start();		
+		progressBarDialog.setVisible(true);	
 	}
+	
+	private List<String> getDevicesToSync() {
+		TableModel model = deviceListTable.getModel();
+		List<String> devicesToSync = new ArrayList<>();
+		for (int i = 0; i < model.getRowCount(); i++) {
+			if (Boolean.valueOf(model.getValueAt(i, 2).toString())) {
+				devicesToSync.add(model.getValueAt(i, 0).toString());
+			}
+		}
+
+		return devicesToSync;
+	}
+	
 	private Integer countPesdestresParaSincronizar() {
 		return HibernateAccessDataFacade.
 	           getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllSyncTopData", null);
@@ -268,6 +284,10 @@ public class TopDataFacialDialog extends BaseDialog{
 	    };
     
 	    List<WebSocket> allTopDataFacialDevicesConnected = Main.facialTopDataIntegrationService.getAllTopDataFacialDevicesConnected();
+	    if(Objects.isNull(allTopDataFacialDevicesConnected) || allTopDataFacialDevicesConnected.isEmpty()) {
+			deviceListTable.setModel(dataModel);
+			return;
+	    }
 
 	    // Preenche a tabela com os dispositivos encontrados
 	    if (allTopDataFacialDevicesConnected != null && !allTopDataFacialDevicesConnected.isEmpty()) {

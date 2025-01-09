@@ -32,8 +32,14 @@ public class FacialTopDataIntegrationService {
 	}
     
     public boolean cadastrarPedestre(final long enrollid, final String nome, final String fotoBase64) {
-    	enviaComandoCadastrarInfoBasica(enrollid, nome);
-    	boolean FotoEnviadoComSucesso = enviaComandoCadastrarFoto(enrollid, fotoBase64);
+    	enviaComandoCadastrarInfoBasica(enrollid, nome, null);
+    	boolean FotoEnviadoComSucesso = enviaComandoCadastrarFoto(enrollid, fotoBase64, null);
+    	return FotoEnviadoComSucesso;
+    }
+    
+    public boolean cadastrarPedestreBySync(final long enrollid, final String nome, final String fotoBase64, List<String> devices) {
+    	enviaComandoCadastrarInfoBasica(enrollid, nome, devices);
+    	boolean FotoEnviadoComSucesso = enviaComandoCadastrarFoto(enrollid, fotoBase64, devices);
     	return FotoEnviadoComSucesso;
     }
     
@@ -56,30 +62,59 @@ public class FacialTopDataIntegrationService {
             "{\"cmd\":\"getuserinfo\",\"enrollid\":%d,\"backupnum\":%d}",
             enrollid, backupnum
         );
-
-        sendCommandAllDevices(comando);
+        	sendCommandAllDevices(comando);
     }
     
     //Parte logica do cadastro do nome para o facial topdata
-    public void enviaComandoCadastrarInfoBasica(final long enrollid, final String nome) {
+    public void enviaComandoCadastrarInfoBasica(final long enrollid, final String nome, List<String> devices) {
+    	System.out.println("enviando info basica");
     	final CommandInfoBasica commandInfoBasica  = new CommandInfoBasica(enrollid, nome);
+    	final String comando = gson.toJson(commandInfoBasica);
     	
-    	sendCommandAllDevices(gson.toJson(commandInfoBasica));
+    	if(Objects.isNull(devices) || devices.isEmpty()) {
+    		System.out.println("Enviando para todos devices da rede");
+    		sendCommandAllDevices(comando);    
+    		return;
+    	}
+    	
+    	for(String device : devices) {
+    		sendCommandToDevice(device, comando);
+    	}
     }
     
     //Parte logica do cadastro do cartão para o facial topdata
-    public void enviaComandoCadastrarCartao(final long enrollid, final long cartao) {
+    public void enviaComandoCadastrarCartao(final long enrollid, final long cartao, List<String> devices) {
+    	System.out.println("enviando cartao");
     	final CommandCard commandCard = new CommandCard(enrollid, cartao);
+    	final String comando = gson.toJson(commandCard);
     	
-    	sendCommandAllDevices(gson.toJson(commandCard));
+    	if(Objects.isNull(devices) || devices.isEmpty()) {
+    		System.out.println("Enviando para todos devices da rede");
+    		sendCommandAllDevices(comando);   
+    		return;
+    	}
+    	
+    	for(String device : devices) {
+    		sendCommandToDevice(device, comando);
+    	}
     }
     
     //Parte logica do cadastro da foto para o facial topdata (decodifica para foto para base 64)
-    public boolean enviaComandoCadastrarFoto(final long enrollid,final String fotoBase64) {
-    	
+    public boolean enviaComandoCadastrarFoto(final long enrollid, final String fotoBase64, List<String> devices) {
+    	System.out.println("enviando foto");
     	webSocketServer.resetResultadoCadastro();
     	final CommandFoto commandFoto = new CommandFoto(enrollid, fotoBase64);
-    	sendCommandAllDevices(gson.toJson(commandFoto));
+    	final String comando = gson.toJson(commandFoto);
+    	
+    	if(Objects.isNull(devices) || devices.isEmpty()) {
+    		System.out.println("Enviando para todos devices da rede");
+    		sendCommandAllDevices(comando);   
+    		return true;
+    	}
+    	
+    	for(String device : devices) {
+    		sendCommandToDevice(device, comando);
+    	}
     	
     	 try {
              Thread.sleep(1000); // Aguarda a resposta
@@ -107,19 +142,6 @@ public class FacialTopDataIntegrationService {
     	sendCommandAllDevices(gson.toJson(commandDeleteUser));
     }
       
-    //Parte logica do envio para o WebSocket
-    private void sendCommand1(final String command) {
-    	// Envia o comando para o servidor WebSocket
-    	System.out.println("Total de conexões: " + webSocketServer.getConnections().size());
-        WebSocket socket = this.webSocketServer.getConnections().iterator().next(); // Envia para o primeiro cliente conectado
-        if (socket != null && socket.isOpen()) {
-            socket.send(command); // Envia o comando de getuserinfo
-            System.out.println("Comando enviado: " + command);
-        } else {
-            System.err.println("WebSocket não está conectado.");
-        }
-    }
-    
   //Parte logica do envio para o WebSocket
     private void sendCommandAllDevices(final String command) {
     	// Envia o comando para o servidor WebSocket
@@ -155,7 +177,7 @@ public class FacialTopDataIntegrationService {
     	while(iterator.hasNext()) {
     		final WebSocket socket = iterator.next();
     		
-    		if(socket.getRemoteSocketAddress().toString().contains(ipAddress)) {
+    		if(ipAddress.equals(socket.getRemoteSocketAddress().getHostString())) {
     			return socket;
     		}
     	}

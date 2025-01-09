@@ -711,10 +711,10 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
+		PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
 	    // Verifica se o usuario tem um perfil de acesso
-	    if(Main.internoLoggedUser.getPerfilAcesso() != null) {
-	        // Se o perfil for PORTEIRO, exibe uma mensagem e retorna sem abrir o cadastro
-	        if(Main.internoLoggedUser.getPerfilAcesso().equals(PerfilAcesso.PORTEIRO)) {
+	    if(Objects.nonNull(perfil)) {	
+	        if(perfil.equals(PerfilAcesso.PORTEIRO)) {
 	            JOptionPane.showMessageDialog(null, "Usuario nao possui acesso");
 	            return;
 	        }

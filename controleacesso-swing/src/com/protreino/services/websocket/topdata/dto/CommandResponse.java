@@ -6,6 +6,7 @@ public class CommandResponse {
     private String sn;
     private boolean result;
     private int backupnum;
+    private int reason;
 
     // Getters e Setters
     public String getRet() {
@@ -47,4 +48,12 @@ public class CommandResponse {
     public void setBackupnum(int backupnum) {
         this.backupnum = backupnum;
     }
+
+	public int getReason() {
+		return reason;
+	}
+
+	public void setReason(int reason) {
+		this.reason = reason;
+	}
 }

@@ -286,12 +286,16 @@ public class RegisterVisitorDialog extends BaseDialog {
         habilitaBuscaCPF =  Utils.getPreferenceAsBoolean("habilitaBuscaCpf");
         habilitaBuscaRG =  Utils.getPreferenceAsBoolean("habilitaBuscaRg");;
 
-        String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
-        if (camposObrigatorios.contains("cpf"))
-            habilitaBuscaCPF = true;
+       
+        
+       String camposObrigatorios = buscaParametroPeloNome("Campos obrigatórios para cadastro de pedestres");
+       if(Objects.nonNull(camposObrigatorios)) {
+           if (camposObrigatorios.contains("cpf"))
+               habilitaBuscaCPF = true;
 
-        if (camposObrigatorios.contains("rg"))
-            habilitaBuscaRG = true;
+           if (camposObrigatorios.contains("rg"))
+               habilitaBuscaRG = true;
+       }
 
         String qrCode = buscaParametroPeloNome("Permitir acesso via QR Code");
         if (qrCode != null && !"".equals(qrCode)) {
@@ -1529,33 +1533,7 @@ public class RegisterVisitorDialog extends BaseDialog {
             visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
              
         }
-        
-        if("ATIVO".equals(visitante.getStatus())) {
-        	if(!Objects.isNull(visitante.getFoto())) {
-        		try {
-        			boolean IsCadastradoComsucesso = Main.facialTopDataIntegrationService
-                      		.cadastrarPedestre(Long.valueOf(visitante.getCardNumber()), visitante.getName(), Base64.getEncoder().encodeToString(visitante.getFoto()));
-          		  //popup foto valida
-          		  if(IsCadastradoComsucesso) {
-          			criarDialogoFotoTopDataValida();   
-          		  }else {
-          			criarDialogoFotoTopDataInvalida();
-          		  }
-				} catch (Exception e) {
-					criarDialogoFotoFacialOff();
-					// TODO: handle exception
-				}
-        		
 
-        	}
-          }else {
-        	  if(!Objects.isNull(visitante.getFoto())) {
-        		  Main.facialTopDataIntegrationService.
-          	 	DeletePedestre(Long.valueOf(visitante.getCardNumber()));
-        	  }
-        	 
-        }
-      
         visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
     }
 
@@ -1646,102 +1624,104 @@ public class RegisterVisitorDialog extends BaseDialog {
             redAndBoldFont(nomeLabel);
             valido = false;
         }
+        if(Objects.nonNull(camposObrigatorios)) {
+        	 if (camposObrigatorios.contains("data.nascimento")
+                     && dataNascimentoTextField.getText()
+                     .replace("/", "").replace(" ", "")
+                     .equals("")) {
+                 redAndBoldFont(dataNascimentoLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("data.nascimento")
-                && dataNascimentoTextField.getText()
-                .replace("/", "").replace(" ", "")
-                .equals("")) {
-            redAndBoldFont(dataNascimentoLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("email")
+                     && emailTextField.getText().equals("")) {
+                 redAndBoldFont(emailLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("email")
-                && emailTextField.getText().equals("")) {
-            redAndBoldFont(emailLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("cpf")
+                     && cpfTextField.getText()
+                     .replace(".", "").replace("-", "").replace(" ", "")
+                     .equals("")) {
+                 redAndBoldFont(cpfLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("cpf")
-                && cpfTextField.getText()
-                .replace(".", "").replace("-", "").replace(" ", "")
-                .equals("")) {
-            redAndBoldFont(cpfLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("rg")
+                     && rgTextField.getText().equals("")) {
+                 redAndBoldFont(rgLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("rg")
-                && rgTextField.getText().equals("")) {
-            redAndBoldFont(rgLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("telefone")
+                     && telefoneTextField.getText()
+                     .replace("(", "").replace(")", "")
+                     .replace("-", "").replace(" ", "")
+                     .equals("")) {
+                 redAndBoldFont(telefoneLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("telefone")
-                && telefoneTextField.getText()
-                .replace("(", "").replace(")", "")
-                .replace("-", "").replace(" ", "")
-                .equals("")) {
-            redAndBoldFont(telefoneLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("celular")
+                     && celularTextField.getText()
+                     .replace("(", "").replace(")", "")
+                     .replace("-", "").replace(" ", "")
+                     .equals("")) {
+                 redAndBoldFont(celularLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("celular")
-                && celularTextField.getText()
-                .replace("(", "").replace(")", "")
-                .replace("-", "").replace(" ", "")
-                .equals("")) {
-            redAndBoldFont(celularLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("responsavel")
+                     && responsavelTextField.getText().equals("")) {
+                 redAndBoldFont(responsavelLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("responsavel")
-                && responsavelTextField.getText().equals("")) {
-            redAndBoldFont(responsavelLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("observacoes")
+                     && obsTextArea.getText().equals("")) {
+                 redAndBoldFont(obsLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("observacoes")
-                && obsTextArea.getText().equals("")) {
-            redAndBoldFont(obsLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("empresa")
+                     && empresaJComboBox.getSelectedIndex() < 0) {
+                 redAndBoldFont(empresaLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("empresa")
-                && empresaJComboBox.getSelectedIndex() < 0) {
-            redAndBoldFont(empresaLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("departamento")
+                     && departamentoJComboBox.getSelectedIndex() < 0) {
+                 redAndBoldFont(departamentoLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("departamento")
-                && departamentoJComboBox.getSelectedIndex() < 0) {
-            redAndBoldFont(departamentoLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("centro.custo")
+                     && centroCustoJComboBox.getSelectedIndex() < 0) {
+                 redAndBoldFont(centroCustoLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("centro.custo")
-                && centroCustoJComboBox.getSelectedIndex() < 0) {
-            redAndBoldFont(centroCustoLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("cargo")
+                     && cargoJComboBox.getSelectedIndex() < 0) {
+                 redAndBoldFont(cargoLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("cargo")
-                && cargoJComboBox.getSelectedIndex() < 0) {
-            redAndBoldFont(cargoLabel);
-            valido = false;
-        }
+             if (camposObrigatorios.contains("endereco")
+                     && cepTextField.getText()
+                     .replace("-", "").replace(" ", "")
+                     .equals("")) {
+                 redAndBoldFont(cepLabel);
+                 valido = false;
+             }
 
-        if (camposObrigatorios.contains("endereco")
-                && cepTextField.getText()
-                .replace("-", "").replace(" ", "")
-                .equals("")) {
-            redAndBoldFont(cepLabel);
-            valido = false;
+             if (camposObrigatorios.contains("cartao.acesso")
+                     && cartaoAcessoTextField.getText().replace("0", "").equals("")) {
+                 redAndBoldFont(cartaoAcessoLabel);
+                 valido = false;
+             }
         }
-
-        if (camposObrigatorios.contains("cartao.acesso")
-                && cartaoAcessoTextField.getText().replace("0", "").equals("")) {
-            redAndBoldFont(cartaoAcessoLabel);
-            valido = false;
-        }
+       
 
         if ("PEDESTRE".equals(visitante.getTipo())
                 && (panelAdicionarRegras.getPedestresRegras() == null

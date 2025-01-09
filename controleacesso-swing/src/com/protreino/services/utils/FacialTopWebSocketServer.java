@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 
 public class FacialTopWebSocketServer extends WebSocketServer {
 
+	private final Gson gson = new Gson();
 	private Boolean resultadoCadastro;
 
     public FacialTopWebSocketServer(InetSocketAddress address, ServerRetorno svRet) {
@@ -36,10 +37,13 @@ public class FacialTopWebSocketServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         System.out.println("Mensagem recebida de " + conn.getRemoteSocketAddress());
         try {
-            Gson gson = new Gson();
             CommandResponse response = gson.fromJson(message, CommandResponse.class);
+            
             // Verifica se a mensagem é relevante (backupnum == 50)
             if (response.getBackupnum() == 50) {
+            	conn.getRemoteSocketAddress().getHostString(); // ip da camera
+            	response.getEnrollid(); // id do pedestre
+            	response.getReason(); // 5 = no face in picture
                 resultadoCadastro = response.isResult();
             }
         } catch (Exception e) {
