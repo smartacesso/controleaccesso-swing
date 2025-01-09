@@ -82,11 +82,11 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="DESCRICAO", nullable=true, length=255)
 	private String descricao;
 	
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_INICIO_PERIODO", nullable=true, length=11)
 	private Date dataInicioPeriodo;
 	
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_FIM_PERIODO", nullable=true, length=11)
 	private Date dataFimPeriodo;
 	

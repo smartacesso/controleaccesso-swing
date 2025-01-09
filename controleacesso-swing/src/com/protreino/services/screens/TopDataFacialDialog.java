@@ -10,10 +10,15 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -24,6 +29,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -36,6 +42,8 @@ import javax.swing.text.JTextComponent;
 
 import org.java_websocket.WebSocket;
 
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.TopdataFacialEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
@@ -54,23 +62,8 @@ public class TopDataFacialDialog extends BaseDialog{
 	private JTable deviceListTable; //tabela de dispositivos
 
 	private JButton syncAll; //botao de sincronização total
-
-	private JButton syncByDate; //botao de sincronização por data
-
-	private JButton addDevice; // botao de adicionar dispositivos
 	
-	private JButton editDevice;
-	
-	private JButton removeDevice;
-
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); //formato por data
 	private DefaultTableModel dataModel;
-	
-	private JFormattedTextField addressTextField;
-	private JFormattedTextField portTextField;
-	private JFormattedTextField deviceNameTextField;
-
-	private List<TopdataFacialEntity> devices;
 	
 	private static final int CHECKBOX_COLUMN = 2; //indice de colunas com checkbox
 	
@@ -126,35 +119,7 @@ public class TopDataFacialDialog extends BaseDialog{
 		syncAll.setBorder(new EmptyBorder(10, 15, 10, 15));
 		syncAll.setPreferredSize(new Dimension(180, 40));
 		syncAll.addActionListener(e -> {
-			//syncDevices(null, null);
-		});
-
-		syncByDate = new JButton("Sincronizacao por data");
-		syncByDate.setBorder(new EmptyBorder(10, 15, 10, 15));
-		syncByDate.setPreferredSize(new Dimension(180, 40));
-		syncByDate.addActionListener(e -> {
-			//criarDialogoDeSincronizacaoPorData();
-		});
-
-		addDevice = new JButton("Adicionar Camera");
-		addDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
-		addDevice.setPreferredSize(new Dimension(120, 40));
-		addDevice.addActionListener(e -> {
-			adicionarDevice();
-		});
-		
-		editDevice = new JButton("Editar camera");
-		editDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
-		editDevice.setPreferredSize(new Dimension(120, 40));
-		editDevice.addActionListener(e -> {
-			editarDevide();
-		});
-		
-		removeDevice = new JButton("remover camera");
-		removeDevice.setBorder(new EmptyBorder(10, 15, 10, 15));
-		removeDevice.setPreferredSize(new Dimension(120, 40));
-		removeDevice.addActionListener(e -> {
-			removeDevice();
+			syncDevices();
 		});
 
 		//ação dos botoes 
@@ -162,17 +127,9 @@ public class TopDataFacialDialog extends BaseDialog{
 		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
 		actionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		actionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-		actionsPanel.add(addDevice);
-		actionsPanel.add(Box.createHorizontalStrut(10));
-		actionsPanel.add(editDevice);
-		actionsPanel.add(Box.createHorizontalStrut(10));
-		actionsPanel.add(removeDevice);	
-		actionsPanel.add(Box.createHorizontalStrut(200));
+		actionsPanel.add(Box.createHorizontalStrut(725));
 		actionsPanel.add(syncAll);
-		actionsPanel.add(Box.createHorizontalStrut(10));
-		actionsPanel.add(syncByDate);
-
-
+		
 		populateTable();
 
 		// Parte visual do "Sincronismo manual de dispositivos"
@@ -187,272 +144,92 @@ public class TopDataFacialDialog extends BaseDialog{
 		setVisible(true);
 	}
 	
-	private void editarDevide() {
-	    // Obtém a linha selecionada na tabela
-	    int selectedRow = deviceListTable.getSelectedRow();
+	private void syncDevices() {
+		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
+		// fazer a busca paginada
+		List<String> devicesToSync = Main.facialTopDataIntegrationService.getAllTopDataFacialDevicesConnected()
+				.stream()
+				.map(webSocket -> webSocket.toString())
+				.collect(Collectors.toList());
+		
+		if (devicesToSync.isEmpty()) {
+			return;
+		}
+		
+		final int pageSize = 500;
+		
+		final Integer countPedestresParaSincronizar = countPesdestresParaSincronizar();
+		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
+		
+		if(Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
+			return;
+		}
 
-	    if (selectedRow == -1) {
-	        JOptionPane.showMessageDialog(null, "Nenhum dispositivo selecionado.");
-	        return;
-	    }
+		JDialog progressBarDialog = new JDialog();
+		progressBarDialog.setIconImage(Main.favicon);
 
-	    // Obtém os valores da linha selecionada
-	    String ipFacial = (String) dataModel.getValueAt(selectedRow, 0);
-	    String nomeFacial = (String) dataModel.getValueAt(selectedRow, 1);
-	    String portaFacial = (String) dataModel.getValueAt(selectedRow, 2);
+		progressBarDialog.setTitle("Sincronizando");
+		progressBarDialog.setResizable(false);
+		progressBarDialog.setLayout(new BorderLayout());
 
-	    JDialog EditarDeviceDialog = new JDialog();
-	    EditarDeviceDialog.setIconImage(Main.favicon);
-	    EditarDeviceDialog.setModal(true);
-	    EditarDeviceDialog.setTitle("Editar Device");
-	    EditarDeviceDialog.setResizable(false);
-	    EditarDeviceDialog.setLayout(new BorderLayout());
+		JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, countPedestresParaSincronizar);
 
-	    JPanel mainPanel = new JPanel();
-	    mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
-	    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		JPanel mainPanel = new JPanel();
+		mainPanel.add(progressBar);
 
-	    JLabel addressLabel = new JLabel("Ip Da Camera");
-	    addressLabel.setPreferredSize(new Dimension(120, 25));
-	    addressLabel.setForeground(Main.firstColor);
-	    addressLabel.setFont(tabHeaderFont);
-	    addressTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    addressTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel addressPanel = getNewMiniPanel(addressLabel, addressTextField);
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-	    JLabel portLabel = new JLabel("Porta da Camera");
-	    portLabel.setPreferredSize(new Dimension(120, 25));
-	    portLabel.setForeground(Main.firstColor);
-	    portLabel.setFont(tabHeaderFont);
-	    portTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    portTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel portPanel = getNewMiniPanel(portLabel, portTextField);
+		progressBarDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		progressBarDialog.pack();
+		progressBarDialog.setSize(500, 100);
+		progressBarDialog.setLocationRelativeTo(null);
+		progressBarDialog.setModal(true);
 
-	    JLabel deviceNameLabel = new JLabel("Nome da Camera");
-	    deviceNameLabel.setPreferredSize(new Dimension(120, 25));
-	    deviceNameLabel.setForeground(Main.firstColor);
-	    deviceNameLabel.setFont(tabHeaderFont);
-	    deviceNameTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    deviceNameTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel deviceNamedPanel = getNewMiniPanel(deviceNameLabel, deviceNameTextField);
-
-	    JButton confirmarButton = new JButton("Confirmar");
-	    confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
-	    confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	    confirmarButton.addActionListener(e -> {
-	        restauraFontLabel(addressLabel, portLabel, deviceNameLabel);
-
-	        boolean valido = true;
-
-	        if (!isValidIpAddress(addressTextField.getText())) {
-	            redAndBoldFont(addressLabel);
-	            valido = false;
-	        }
-
-	        if (!isValidPort(portTextField.getText())) {
-	            redAndBoldFont(portLabel);
-	            valido = false;
-	        }
-
-	        if ("".equals(deviceNameTextField.getText())) {
-	            redAndBoldFont(deviceNameLabel);
-	            valido = false;
-	        }
-
-	        if (!valido) {
-	            return;
-	        }
-
-	        //editar o dispositivo
-	        TopdataFacialEntity dispositivo = devices.get(selectedRow);
-	        dispositivo.setIpFacial(addressTextField.getText());
-	        dispositivo.setPortaFacial(portTextField.getText());
-	        dispositivo.setNomeFacial(deviceNameTextField.getText());
-
-	        HibernateAccessDataFacade.update(TopdataFacialEntity.class, dispositivo);
-	        
-	        populateTable(); // Chama o método para atualizar a tabela
-	        EditarDeviceDialog.dispose();
-	    });
-	    
-	    
-	    mainPanel.add(addressPanel);
-	    mainPanel.add(Box.createVerticalStrut(10));
-	    mainPanel.add(portPanel);
-	    mainPanel.add(Box.createVerticalStrut(10));
-	    mainPanel.add(deviceNamedPanel);
-	    mainPanel.add(Box.createVerticalStrut(70));
-	    mainPanel.add(confirmarButton);
-
-	    EditarDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
-	    EditarDeviceDialog.pack();
-	    EditarDeviceDialog.setLocationRelativeTo(null);
-	    EditarDeviceDialog.setVisible(true);
-	    
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				int offset = 0;
+				do {
+					List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(offset, pageSize);
+					
+					pedestresParaSicronizar.forEach(pedestre -> {
+						try {
+							Long id = Long.valueOf(pedestre.getCardNumber());
+							String nome =  pedestre.getName();
+							String foto =   Base64.getEncoder().encodeToString(pedestre.getFoto());
+							
+							Main.facialTopDataIntegrationService.cadastrarPedestre(id, nome, foto);
+							
+						} catch(Exception ex) {
+							System.out.println(ex.getMessage());
+						}
+						
+						progressBar.setValue(progressBar.getValue() + 1);
+					});
+					
+					offset += pageSize;
+				} while (offset < countPedestresParaSincronizar);	
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+		progressBarDialog.setVisible(true);
 	}
+	private Integer countPesdestresParaSincronizar() {
+		return HibernateAccessDataFacade.
+	           getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllSyncTopData", null);
+	}	
 	
-	private void removeDevice() {
-	    // Obtém a linha selecionada na tabela
-	    int selectedRow = deviceListTable.getSelectedRow();
-
-	    if (selectedRow == -1) {
-	        JOptionPane.showMessageDialog(null, "Nenhum dispositivo selecionado.");
-	        return;
-	    }
-	    
-	    JDialog removerDeviceDialog = new JDialog();
-	    removerDeviceDialog.setIconImage(Main.favicon);
-	    removerDeviceDialog.setModal(true);
-	    removerDeviceDialog.setTitle("Remover Device");
-	    removerDeviceDialog.setResizable(false);
-	    removerDeviceDialog.setLayout(new BorderLayout());
-
-	    JPanel mainPanel = new JPanel();
-	    mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
-	    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-	    
-	    JButton confirmarButton = new JButton("Confirmar");
-	    confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
-	    confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	    confirmarButton.addActionListener(e -> {
-	        //remover o dispositivo
-	        TopdataFacialEntity dispositivo = devices.get(selectedRow);
-	        dispositivo.setRemoved(true);
-
-	        HibernateAccessDataFacade.update(TopdataFacialEntity.class, dispositivo);
-	        
-	        populateTable(); // Chama o método para atualizar a tabela
-	        removerDeviceDialog.dispose();
-	    });
-	    
-	    mainPanel.add(Box.createVerticalStrut(10));
-	    mainPanel.add(confirmarButton);
-
-	    removerDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
-	    removerDeviceDialog.pack();
-	    removerDeviceDialog.setLocationRelativeTo(null);
-	    removerDeviceDialog.setVisible(true);
-	    
-	}
-
-
-	private void adicionarDevice() {
-	    JDialog adicionarDeviceDialog = new JDialog();
-	    adicionarDeviceDialog.setIconImage(Main.favicon);
-	    adicionarDeviceDialog.setModal(true);
-	    adicionarDeviceDialog.setTitle("Adicionar Device");
-	    adicionarDeviceDialog.setResizable(false);
-	    adicionarDeviceDialog.setLayout(new BorderLayout());
-
-	    JPanel mainPanel = new JPanel();
-	    mainPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
-	    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
-	    JLabel addressLabel = new JLabel("Ip Da Camera");
-	    addressLabel.setPreferredSize(new Dimension(120, 25));
-	    addressLabel.setForeground(Main.firstColor);
-	    addressLabel.setFont(tabHeaderFont);
-	    addressTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    addressTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel addressPanel = getNewMiniPanel(addressLabel, addressTextField);
-
-	    JLabel portLabel = new JLabel("Porta da Camera");
-	    portLabel.setPreferredSize(new Dimension(120, 25));
-	    portLabel.setForeground(Main.firstColor);
-	    portLabel.setFont(tabHeaderFont);
-	    portTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    portTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel portPanel = getNewMiniPanel(portLabel, portTextField);
-
-	    JLabel deviceNameLabel = new JLabel("Nome da Camera");
-	    deviceNameLabel.setPreferredSize(new Dimension(120, 25));
-	    deviceNameLabel.setForeground(Main.firstColor);
-	    deviceNameLabel.setFont(tabHeaderFont);
-	    deviceNameTextField = Utils.getNewJFormattedTextField(12); // Use o atributo da classe
-	    deviceNameTextField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-	    JPanel deviceNamedPanel = getNewMiniPanel(deviceNameLabel, deviceNameTextField);
-
-	    JButton confirmarButton = new JButton("Confirmar");
-	    confirmarButton.setBorder(new EmptyBorder(10, 20, 10, 20));
-	    confirmarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	    confirmarButton.addActionListener(e -> {
-	        restauraFontLabel(addressLabel, portLabel, deviceNameLabel);
-
-	        boolean valido = true;
-
-	        if (!isValidIpAddress(addressTextField.getText())) {
-	            redAndBoldFont(addressLabel);
-	            valido = false;
-	        }
-
-	        if (!isValidPort(portTextField.getText())) {
-	            redAndBoldFont(portLabel);
-	            valido = false;
-	        }
-
-	        if ("".equals(deviceNameTextField.getText())) {
-	            redAndBoldFont(deviceNameLabel);
-	            valido = false;
-	        }
-
-	        if (!valido) {
-	            return;
-	        }
-
-	        // Adiciona o novo dispositivo ao banco de dados e à tabela
-	        TopdataFacialEntity newDevice = new TopdataFacialEntity();
-	        newDevice.setIpFacial(addressTextField.getText());
-	        newDevice.setPortaFacial(portTextField.getText());
-	        newDevice.setNomeFacial(deviceNameTextField.getText());
-
-	        HibernateAccessDataFacade.saveUser(TopdataFacialEntity.class, newDevice);
-	        
-	        populateTable(); // Chama o método para atualizar a tabela
-	        adicionarDeviceDialog.dispose();
-	    });
-
-	    mainPanel.add(addressPanel);
-	    mainPanel.add(Box.createVerticalStrut(10));
-	    mainPanel.add(portPanel);
-	    mainPanel.add(Box.createVerticalStrut(10));
-	    mainPanel.add(deviceNamedPanel);
-	    mainPanel.add(Box.createVerticalStrut(70));
-	    mainPanel.add(confirmarButton);
-
-	    adicionarDeviceDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
-	    adicionarDeviceDialog.pack();
-	    adicionarDeviceDialog.setLocationRelativeTo(null);
-	    adicionarDeviceDialog.setVisible(true);
-	}
-	
-	private void restauraFontLabel(JLabel addressLabel, JLabel portLabel,JLabel deviceNameLabel) {
-		setFirstColorFont(addressLabel);
-		setFirstColorFont(portLabel);
-		setFirstColorFont(deviceNameLabel);
+	@SuppressWarnings("unchecked")
+	private List<PedestrianAccessEntity> buscaPedestresParaSicronizar(Integer offset, Integer pageSize) {
+		
+		return (List<PedestrianAccessEntity>) HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class,
+				"PedestrianAccessEntity.findAllSyncTopData", null, offset, pageSize);
 	}
 	
 	
-	private JPanel getNewMiniPanel(JLabel label, JTextComponent text) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-
-		GridBagConstraints c = new GridBagConstraints();
-
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = 0;
-		panel.add(label, c);
-
-		c.gridx = 0;
-		c.gridy = 1;
-		panel.add(text, c);
-
-		return panel;
-	}
-
+	
 	private void formatTable() {
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -464,29 +241,6 @@ public class TopDataFacialDialog extends BaseDialog{
 		}
 	}
 	
-	private boolean isValidPort(String port) {
-		if (port == null || port.isEmpty()) {
-			return false;
-		}
-
-		final String regex = "^([0-9]){1,5}$";
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(port);
-
-		return m.matches();
-	}
-
-	private boolean isValidIpAddress(String ipAddress) {
-		if (ipAddress == null || ipAddress.isEmpty()) {
-			return false;
-		}
-
-		final String regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(ipAddress);
-
-		return m.matches();
-	}
 	
 	@SuppressWarnings("unchecked")
 	public void populateTable() {
@@ -512,11 +266,7 @@ public class TopDataFacialDialog extends BaseDialog{
 	            }
 	        }
 	    };
-
-	    // Obtém a lista de dispositivos do banco
-	    devices = (List<TopdataFacialEntity>) HibernateAccessDataFacade
-	            .getResultList(TopdataFacialEntity.class, "TopdataFacialEntity.findAllNaoRemovidosOrdered");
-	    
+    
 	    List<WebSocket> allTopDataFacialDevicesConnected = Main.facialTopDataIntegrationService.getAllTopDataFacialDevicesConnected();
 
 	    // Preenche a tabela com os dispositivos encontrados

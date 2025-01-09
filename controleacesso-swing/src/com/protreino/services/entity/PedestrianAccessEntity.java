@@ -262,6 +262,19 @@ import com.protreino.services.utils.EncryptionUtils;
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null " +
 						"order by obj.id asc"),
+	@NamedQuery(name = "PedestrianAccessEntity.countAllSyncTopData",
+				query = "select count(obj) from PedestrianAccessEntity obj " +
+						"where obj.tipo = 'PEDESTRE' " +
+						"and obj.status = 'ATIVO' " + 
+						"and obj.foto != null " + 
+						"and obj.cardNumber != null "),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllSyncTopData",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+						"from PedestrianAccessEntity obj " +
+						"where obj.tipo = 'PEDESTRE' " +
+						"and obj.status = 'ATIVO' " + 
+						"and obj.foto != null " +
+						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWhitLastAccessHikivision",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name) " +
 						"from PedestrianAccessEntity obj " +
