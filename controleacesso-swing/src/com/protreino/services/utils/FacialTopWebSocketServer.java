@@ -5,9 +5,12 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import com.google.gson.Gson;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.websocket.topdata.dto.CommandResponse;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 
 
 public class FacialTopWebSocketServer extends WebSocketServer {
@@ -41,9 +44,14 @@ public class FacialTopWebSocketServer extends WebSocketServer {
             
             // Verifica se a mensagem é relevante (backupnum == 50)
             if (response.getBackupnum() == 50) {
-            	conn.getRemoteSocketAddress().getHostString(); // ip da camera
-            	response.getEnrollid(); // id do pedestre
-            	response.getReason(); // 5 = no face in picture
+            	if(!response.isResult()) {
+            		final TopdataFacialErrorEntity topdataFacialErrorEntity = 
+            				new TopdataFacialErrorEntity(conn.getRemoteSocketAddress().getHostString(), String.valueOf(response.getEnrollid()), 
+            												response.getReason(), new Date());
+            		
+            		HibernateAccessDataFacade.save(TopdataFacialErrorEntity.class, topdataFacialErrorEntity);
+            	}
+            	
                 resultadoCadastro = response.isResult();
             }
         } catch (Exception e) {

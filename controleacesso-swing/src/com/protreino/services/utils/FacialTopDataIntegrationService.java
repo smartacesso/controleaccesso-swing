@@ -2,6 +2,7 @@ package com.protreino.services.utils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,8 @@ public class FacialTopDataIntegrationService {
         this.webSocketServer = new FacialTopWebSocketServer(address);
 	}
     
-    public void cadastrarPedestre(final long enrollid, final String nome, final String fotoBase64) {
+    public void cadastrarPedestre(final long enrollid, final String nome, final byte[] foto) {
+    	final String fotoBase64 = Base64.getEncoder().encodeToString(foto);
     	enviaComandoCadastrarInfoBasica(enrollid, nome, null);
     	enviaComandoCadastrarFoto(enrollid, fotoBase64, null);
     }
@@ -107,7 +109,8 @@ public class FacialTopDataIntegrationService {
     	
     	if(Objects.isNull(devices) || devices.isEmpty()) {
     		System.out.println("Enviando para todos devices da rede");
-    		sendCommandAllDevices(comando);   
+    		sendCommandAllDevices(comando);  
+    		return;
     	}
     	
     	for(String device : devices) {

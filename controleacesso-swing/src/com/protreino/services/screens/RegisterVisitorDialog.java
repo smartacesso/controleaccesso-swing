@@ -14,6 +14,7 @@ import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.TopDataFacialErrorRepository;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
@@ -1032,8 +1033,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 					salvarFotoVisitanteHikivision();
 				}
 
-				if (Utils.getPreferenceAsBoolean("sendPhotoToTopDataFacialDevice")) {
-
+				if (isTopDataEnable()) {
+					salvarFotoVisitanteTopData();
 				}
 
 				limparTodosOsCampos();
@@ -1117,6 +1118,31 @@ public class RegisterVisitorDialog extends BaseDialog {
 		panel.add(panelInterno, BorderLayout.EAST);
 
 		return panel;
+	}
+
+	private void salvarFotoVisitanteTopData() {
+		final List<TopdataFacialErrorEntity> errors =  buscaErrorsVisitanteByCardNumber(visitante.getCardNumber());
+		
+		if(Objects.nonNull(errors) && !errors.isEmpty()) {
+			errors.forEach(error -> HibernateAccessDataFacade.remove(error));
+		}
+		
+		if ("ATIVO".equals(visitante.getStatus())) {
+			if (Objects.nonNull(visitante.getFoto())) {
+					Main.facialTopDataIntegrationService.cadastrarPedestre(
+							Long.valueOf(visitante.getCardNumber()), visitante.getName(), visitante.getFoto());
+			}
+		} else {
+			if (Objects.nonNull(visitante.getFoto())) {
+				Main.facialTopDataIntegrationService.DeletePedestre(Long.valueOf(visitante.getCardNumber()));
+			}
+		}
+		// chamar pra cadastar a foto em todos os devices
+	}
+
+	private List<TopdataFacialErrorEntity> buscaErrorsVisitanteByCardNumber(String cardNumber) {
+		final TopDataFacialErrorRepository topDataFacialErrorRepository = new TopDataFacialErrorRepository();
+		return topDataFacialErrorRepository.findAllByCardNumber(cardNumber);
 	}
 
 	private void syncronizarUsuarioInDevicesHkivision() {
@@ -1547,27 +1573,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setQuantidadeCreditos(visitante.getPedestreRegra().get(0).getQtdeDeCreditos());
 			visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
 
-		}
-		if(isTopDataEnable()) {
-			if ("ATIVO".equals(visitante.getStatus())) {
-				if (!Objects.isNull(visitante.getFoto())) {
-					try {						 
-						Main.facialTopDataIntegrationService.cadastrarPedestre(
-								Long.valueOf(visitante.getCardNumber()), visitante.getName(),
-								Base64.getEncoder().encodeToString(visitante.getFoto()));					
-						
-					} catch (Exception e) {
-						criarDialogoFotoFacialOff();
-						// TODO: handle exception
-					}
-
-				}
-			} else {
-				if (!Objects.isNull(visitante.getFoto())) {
-					Main.facialTopDataIntegrationService.DeletePedestre(Long.valueOf(visitante.getCardNumber()));
-				}
-
-			}
 		}
 		
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
