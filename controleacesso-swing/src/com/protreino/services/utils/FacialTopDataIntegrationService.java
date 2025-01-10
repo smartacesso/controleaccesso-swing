@@ -31,16 +31,15 @@ public class FacialTopDataIntegrationService {
         this.webSocketServer = new FacialTopWebSocketServer(address);
 	}
     
-    public boolean cadastrarPedestre(final long enrollid, final String nome, final String fotoBase64) {
+    public void cadastrarPedestre(final long enrollid, final String nome, final String fotoBase64) {
     	enviaComandoCadastrarInfoBasica(enrollid, nome, null);
-    	boolean FotoEnviadoComSucesso = enviaComandoCadastrarFoto(enrollid, fotoBase64, null);
-    	return FotoEnviadoComSucesso;
+    	enviaComandoCadastrarFoto(enrollid, fotoBase64, null);
     }
     
-    public boolean cadastrarPedestreBySync(final long enrollid, final String nome, final String fotoBase64, List<String> devices) {
+    public void cadastrarPedestreBySync(final long enrollid, final String nome, final String fotoBase64, List<String> devices) {
     	enviaComandoCadastrarInfoBasica(enrollid, nome, devices);
-    	boolean FotoEnviadoComSucesso = enviaComandoCadastrarFoto(enrollid, fotoBase64, devices);
-    	return FotoEnviadoComSucesso;
+    	enviaComandoCadastrarFoto(enrollid, fotoBase64, devices);
+    	
     }
     
     public void DeletePedestre(final long enrollid) {
@@ -100,7 +99,7 @@ public class FacialTopDataIntegrationService {
     }
     
     //Parte logica do cadastro da foto para o facial topdata (decodifica para foto para base 64)
-    public boolean enviaComandoCadastrarFoto(final long enrollid, final String fotoBase64, List<String> devices) {
+    public void enviaComandoCadastrarFoto(final long enrollid, final String fotoBase64, List<String> devices) {
     	System.out.println("enviando foto");
     	webSocketServer.resetResultadoCadastro();
     	final CommandFoto commandFoto = new CommandFoto(enrollid, fotoBase64);
@@ -109,30 +108,11 @@ public class FacialTopDataIntegrationService {
     	if(Objects.isNull(devices) || devices.isEmpty()) {
     		System.out.println("Enviando para todos devices da rede");
     		sendCommandAllDevices(comando);   
-    		return true;
     	}
     	
     	for(String device : devices) {
     		sendCommandToDevice(device, comando);
     	}
-    	
-    	 try {
-             Thread.sleep(1000); // Aguarda a resposta
-         } catch (InterruptedException e) {
-            e.printStackTrace();
-         }
-    	 
-    	Boolean sucesso = webSocketServer.getResultadoCadastro();
-    	System.out.println("sucesso :" + sucesso);
-        if (sucesso != null) {
-            if (sucesso) {
-               return sucesso;
-            } else {
-               return sucesso;
-            }
-        } else {
-            return false;
-        }
     }
         
     //Parte logica para deletar o cadastro completo no facial topdata
