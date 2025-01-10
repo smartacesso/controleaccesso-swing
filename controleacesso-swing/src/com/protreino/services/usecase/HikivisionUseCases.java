@@ -106,6 +106,7 @@ public class HikivisionUseCases {
 		});
 
 		pedestre.setDataCadastroFotoNaHikivision(null);
+		pedestre.setFotoEnviada(null);
 		pedestre.setLastAccessHikiVision(null);
 
 		if (!integrationErrors.isEmpty()) {

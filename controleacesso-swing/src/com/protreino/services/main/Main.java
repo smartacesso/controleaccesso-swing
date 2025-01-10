@@ -814,7 +814,7 @@ public class Main {
     	HashMap<String, Object> args = new HashMap<String, Object>();
     	
     	final int resultListCount = HibernateAccessDataFacade
-    			.getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllVisitantesWhitDataCadastroFotoNaHikivision");
+    			.getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllVisitantesWhithPassagemHikivision");
     	System.out.println("Quantidade de visitantes hoje: " + resultListCount);
     	
     	if(resultListCount == 0) {
@@ -829,18 +829,17 @@ public class Main {
     	do {
     		List<PedestrianAccessEntity> visitantes = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
     				.getResultListWithParams(PedestrianAccessEntity.class, 
-    						"PedestrianAccessEntity.findAllVisitantesWhitDataCadastroFotoNaHikivision", args, offset, pageSize);
+    						"PedestrianAccessEntity.findAllVisitantesWhithWhithPassagemHikivision", args, offset, pageSize);
     		
     		visitantes.forEach(visitante -> {
     			hikivisionUseCases.removerUsuarioFromDevices(visitante);
+    			visitante.setFotoEnviada(null);
     			HibernateLocalAccessData.update(PedestrianAccessEntity.class, visitante);
     		});
     		
     		offset = offset + pageSize;
     		System.out.println("quantidade : " + offset);
     	} while(offset < resultListCount);
-    	
-    	//HibernateLocalAccessData.buscaVisitantesComFoto();
     }
 
     private static void limpaCartoesVisitantes() {

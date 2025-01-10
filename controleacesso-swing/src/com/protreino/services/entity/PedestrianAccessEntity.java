@@ -281,14 +281,14 @@ import com.protreino.services.utils.EncryptionUtils;
 						"where lastAccessHikiVision != null " +
 						"and obj.cardNumber != null " + 
 						"order by obj.id asc"),
-	@NamedQuery(name = "PedestrianAccessEntity.countAllVisitantesWhitDataCadastroFotoNaHikivision",
+	@NamedQuery(name = "PedestrianAccessEntity.countAllVisitantesWhithPassagemHikivision",
 				query = "select count(obj) from PedestrianAccessEntity obj " +
-						"where obj.dataCadastroFotoNaHikivision != null " +
+						"where obj.fotoEnviada != null " +
 						"and obj.tipo = 'VISITANTE' " + 
 						"and obj.cardNumber != null "),
-	@NamedQuery(name = "PedestrianAccessEntity.findAllVisitantesWhitDataCadastroFotoNaHikivision",
+	@NamedQuery(name = "PedestrianAccessEntity.findAllVisitantesWhithWhithPassagemHikivision",
 				query = "select obj from PedestrianAccessEntity obj " +
-						"where obj.dataCadastroFotoNaHikivision != null " +
+						"where obj.fotoEnviada != null " +
 						"and obj.tipo = 'VISITANTE' " + 
 						"and obj.cardNumber != null ")
 })
@@ -445,6 +445,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	@Column(name="SENHA", nullable=true, length=255)
 	private String senha;
+	
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name="FOTOS_ENVIADA", nullable=true, length=11)
+	private Boolean fotoEnviada;
 	
 	@Transient
 	private String senhaLivre;
@@ -1363,6 +1367,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return false;
 	}
 	
+	public Boolean getFotoEnviada() {
+		return fotoEnviada;
+	}
+
+	public void setFotoEnviada(Boolean fotoEnviada) {
+		this.fotoEnviada = fotoEnviada;
+	}
+
 	public Long getId() {
 		return id;
 	}

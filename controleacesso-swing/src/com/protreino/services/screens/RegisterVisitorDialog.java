@@ -2178,6 +2178,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
 						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+						visitante.setFotoEnviada(true);
 					} else {
 						hikivisionUseCases.removerUsuarioFromDevices(visitante);
 					}
