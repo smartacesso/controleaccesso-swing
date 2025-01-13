@@ -263,8 +263,8 @@ public class MainScreen extends JFrame {
 		}
 		
 		listaErrosPanel = new TopDataErrorsScreen();
-		tabbedPane.addTab("Lista faces erradas topdata", listaErrosPanel);
-		label = new JLabel("Lista faces erradas TopData");
+		tabbedPane.addTab("Faces erradas topdata", listaErrosPanel);
+		label = new JLabel("Faces erradas TopData");
 		label.setPreferredSize(new Dimension(150, 25));
 		label.setForeground(Main.firstColor);
 		tabbedPane.setTabComponentAt(position, label);
