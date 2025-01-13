@@ -15,4 +15,17 @@ public class TopDataFacialErrorRepository {
 		return (List<TopdataFacialErrorEntity>) HibernateAccessDataFacade
 				.getResultListWithParams(TopdataFacialErrorEntity.class, "TopdataFacialErrorEntity.findAllByCardNumber", args);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public List<TopdataFacialErrorEntity> findAll() {
+		return (List<TopdataFacialErrorEntity>) HibernateAccessDataFacade
+				.getResultList(TopdataFacialErrorEntity.class, "TopdataFacialErrorEntity.findAllOrderByErrorDate");
+	}
+	
+	
+	public Integer countFindAll() {
+		int resultListCount = HibernateAccessDataFacade
+				.getResultListCount(TopdataFacialErrorEntity.class, "TopdataFacialErrorEntity.countAllOrderByErrorDate");
+		return resultListCount;
+	}
 }

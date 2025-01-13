@@ -110,6 +110,7 @@ public class MainScreen extends JFrame {
 	private AccessHistoryPanel historicoAcessoPanel;
 	private DevicefromServerPanel devicefromServerPanel;
 	private AccessCardListPanel listaCartoesPanel;
+	private TopDataErrorsScreen listaErrosPanel;
 	private ImageIcon adicionarIcon;
 	private ImageIcon liberarAcessoIcon;
 	private ImageIcon atualizarListaAcessoIcon;
@@ -260,6 +261,14 @@ public class MainScreen extends JFrame {
 			tabbedPane.setTabComponentAt(position, label);
 			position++;
 		}
+		
+		listaErrosPanel = new TopDataErrorsScreen();
+		tabbedPane.addTab("Lista faces erradas topdata", listaErrosPanel);
+		label = new JLabel("Lista faces erradas TopData");
+		label.setPreferredSize(new Dimension(150, 25));
+		label.setForeground(Main.firstColor);
+		tabbedPane.setTabComponentAt(position, label);
+		position++;
 
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {

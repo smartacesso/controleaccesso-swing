@@ -5,18 +5,22 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import com.google.gson.Gson;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.TopdataFacialErrorEntity;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.websocket.topdata.dto.CommandResponse;
 
 import java.net.InetSocketAddress;
 import java.util.Date;
+import java.util.Optional;
 
 
 public class FacialTopWebSocketServer extends WebSocketServer {
 
 	private final Gson gson = new Gson();
 	private Boolean resultadoCadastro;
+	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
 
     public FacialTopWebSocketServer(InetSocketAddress address, ServerRetorno svRet) {
         super(address);
@@ -45,9 +49,10 @@ public class FacialTopWebSocketServer extends WebSocketServer {
             // Verifica se a mensagem é relevante (backupnum == 50)
             if (response.getBackupnum() == 50) {
             	if(!response.isResult()) {
+            		Optional<PedestrianAccessEntity> pedestre = buscaPedestreByCardNumber(response.getEnrollid());
             		final TopdataFacialErrorEntity topdataFacialErrorEntity = 
             				new TopdataFacialErrorEntity(conn.getRemoteSocketAddress().getHostString(), String.valueOf(response.getEnrollid()), 
-            												response.getReason(), new Date());
+            												response.getReason(), new Date(), pedestre.orElse(null));
             		
             		HibernateAccessDataFacade.save(TopdataFacialErrorEntity.class, topdataFacialErrorEntity);
             	}
@@ -60,7 +65,11 @@ public class FacialTopWebSocketServer extends WebSocketServer {
         }
     }
 
-    @Override
+    private Optional<PedestrianAccessEntity> buscaPedestreByCardNumber(long enrollid) {
+    	return pedestrianAccessRepository.findByCardNumber(String.valueOf(enrollid));
+	}
+
+	@Override
     public void onError(WebSocket conn, Exception ex) {
         System.err.println("Erro na conexão: " + (conn != null ? conn.getRemoteSocketAddress() : "Server"));
         ex.printStackTrace();
