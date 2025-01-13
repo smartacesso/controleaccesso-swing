@@ -2177,13 +2177,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 			criarDialogoServidorHikivisionNaoConectado();
 			return;
 		}
-
+		visitante.setFotoEnviada(true);
 		try {
 			new Thread() {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
-						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
-						visitante.setFotoEnviada(true);
+						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);						
 					} else {
 						hikivisionUseCases.removerUsuarioFromDevices(visitante);
 					}
@@ -2196,7 +2195,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 

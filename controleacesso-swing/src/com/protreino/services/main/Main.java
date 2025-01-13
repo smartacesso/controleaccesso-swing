@@ -496,8 +496,9 @@ public class Main {
         Calendar inicio = Calendar.getInstance();
         System.out.println(" hora para reset " + hora);
 
-        inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
-        inicio.set(Calendar.MINUTE, 0);
+        //inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
+        inicio.set(Calendar.HOUR_OF_DAY, 11);
+        inicio.set(Calendar.MINUTE, 11);
         inicio.set(Calendar.SECOND, 0);
         if (new Date().getTime() > inicio.getTimeInMillis()) {
             inicio.add(Calendar.DATE, 1);
