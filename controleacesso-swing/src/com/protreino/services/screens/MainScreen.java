@@ -262,13 +262,16 @@ public class MainScreen extends JFrame {
 			position++;
 		}
 		
-		listaErrosPanel = new TopDataErrorsScreen();
-		tabbedPane.addTab("Faces erradas topdata", listaErrosPanel);
-		label = new JLabel("Faces erradas TopData");
-		label.setPreferredSize(new Dimension(150, 25));
-		label.setForeground(Main.firstColor);
-		tabbedPane.setTabComponentAt(position, label);
-		position++;
+		if(Utils.isTopDataFacialEnable()) {
+			listaErrosPanel = new TopDataErrorsScreen();
+			tabbedPane.addTab("Faces erradas topdata", listaErrosPanel);
+			label = new JLabel("Faces erradas TopData");
+			label.setPreferredSize(new Dimension(180, 25));
+			label.setForeground(Main.firstColor);
+			tabbedPane.setTabComponentAt(position, label);
+			position++;
+		}
+
 
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {

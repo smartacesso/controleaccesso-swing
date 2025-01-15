@@ -80,9 +80,8 @@ public class TopDataErrorsScreen extends PaginedListPanel {
 		searchButtonPanel.add(new JLabel(" "));
 		searchButtonPanel.add(searchButton);
 		
-		JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		filterPanel.setMaximumSize(new Dimension(10000, 150));
-		filterPanel.add(Box.createHorizontalStrut(690));
 		filterPanel.add(cleanButtonPanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
 		filterPanel.add(searchButtonPanel);
@@ -175,6 +174,7 @@ public class TopDataErrorsScreen extends PaginedListPanel {
 
 		//buscar total de erros
 		totalRegistros = buscaQuantidadeErrors();
+		System.out.println("total :" + totalRegistros);
 		calculaTamanhoPaginas();
 		
 		//buscar erros paginados
