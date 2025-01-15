@@ -29,10 +29,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
-import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.RegraEntity;
-import com.protreino.services.enumeration.TipoEscala;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
