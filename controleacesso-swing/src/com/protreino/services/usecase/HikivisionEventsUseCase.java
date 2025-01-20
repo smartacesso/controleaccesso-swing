@@ -180,7 +180,9 @@ public class HikivisionEventsUseCase {
 	    System.out.println("Quantidade de créditos antes: " + pedestre.getQuantidadeCreditos());
 
 	    // Decrementa créditos se for saída ou se saída não está bloqueada
-	    if (logEventoOffline.isSaida() || !bloquearSaida) {
+	    if (logEventoOffline.isSaida()) {
+	    	System.out.println("direcao :" +  logEventoOffline.getDirection() + " is saida : " + logEventoOffline.isSaida());
+	    	System.out.println("saida librada :" + !bloquearSaida);
 	        System.out.println("Decrementando créditos...");
 	        pedestre.decrementaCreditos();
 	    }
