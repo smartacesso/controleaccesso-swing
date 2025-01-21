@@ -272,18 +272,28 @@ public class TcpServer {
 						} else if (TcpMessageType.GET_DEVICES_FROM_SERVER.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevices();
 							responseTcpMessage.getParans().put("list", list);
+							
 						} else if (TcpMessageType.LIBERAR_ACESSO_DEVICE_NO_SERVIDOR
 								.equals(receivedTcpMessage.getType())) {
 							liberarDevice(receivedTcpMessage);
-
+							
 						} else if (TcpMessageType.GET_ALL_DEVICES_FROM_SERVER
 								.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevicesListServer(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
+							
 						} else if (TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS
 								.equals(receivedTcpMessage.getType())) {
 							List<LogPedestrianAccessEntity> list = buscaLogsPaginados(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
+							
+						}else if (TcpMessageType.SEND_COMMAND_TO_DEVICES
+								.equals(receivedTcpMessage.getType())) {
+						    // Envia o comando para os dispositivos conectados
+						    enviarComandoTopData(receivedTcpMessage);
+						    
+					        responseTcpMessage.setType(TcpMessageType.SEND_COMMAND_TO_DEVICES_RESPONSE);
+					        responseTcpMessage.getParans().put("status", "Comando enviado para os dispositivos.");
 						}
 						else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
@@ -313,6 +323,16 @@ public class TcpServer {
 				} catch (Exception e) {
 				}
 			}
+		}
+
+		private void enviarComandoTopData(TcpMessageTO receivedTcpMessage) {
+			//Enviar um comando para topdata
+			String cartao = (String) receivedTcpMessage.getParans().get("cardNumber");
+			String nome = (String) receivedTcpMessage.getParans().get("name");
+			byte[] foto = (byte[]) receivedTcpMessage.getParans().get("foto");
+			
+			Main.facialTopDataIntegrationService.cadastrarPedestre(Long.valueOf(cartao), nome, foto);
+			
 		}
 
 		private void liberarDevice(TcpMessageTO receivedTcpMessage) {

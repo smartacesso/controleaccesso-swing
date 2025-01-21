@@ -887,6 +887,27 @@ public class HibernateServerAccessData {
 		return null;
 	}
 	
+	public static synchronized void EnviaComandoCadastroFotoTopDataServidor(String card, String nome, byte[] foto) {
+
+		verificaExecucaoDePing();
+		try {
+
+			TcpMessageTO req = new TcpMessageTO(TcpMessageType.SEND_COMMAND_TO_DEVICES);
+			req.getParans().put("cardNumber", card);
+			req.getParans().put("name", nome);
+			req.getParans().put("foto", foto);
+
+			executando = true;
+			outToServer.writeObject(req);
+			outToServer.flush();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			executando = false;
+		}
+	}
+	
 	public static void resetStatusAllCards() {
 		verificaExecucaoDePing();
 		try {
