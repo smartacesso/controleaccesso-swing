@@ -7,6 +7,7 @@ import com.protreino.services.devices.AlmitecDevice;
 import com.protreino.services.devices.ComputerIdDevice;
 import com.protreino.services.devices.ControlIDUHFDevice;
 import com.protreino.services.devices.ControlIdDevice;
+import com.protreino.services.devices.ControlIdFacial;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.LcDevice;
@@ -33,6 +34,7 @@ public enum Manufacturer {
 	TECNIBRA,
 	CONTROL_ID,
 	CONTROL_ID_UHF,
+	CONTROL_ID_FACIAL,
 	RWTECH,
 	COMM,
 	USB,
@@ -67,6 +69,8 @@ public enum Manufacturer {
 			return "Control ID";
 		if (this.equals(CONTROL_ID_UHF))
 			return "Control ID Antena UHF";
+		if (this.equals(CONTROL_ID_FACIAL))
+			return "Facial Control ID";
 		if (this.equals(RWTECH))
 			return "RWTech";
 		if (this.equals(COMM))
@@ -111,6 +115,8 @@ public enum Manufacturer {
 			return Manufacturer.CONTROL_ID;
 		if ("Control ID Antena UHF".equals(string))
 			return Manufacturer.CONTROL_ID_UHF;
+		if ("Facial Control ID".equals(string))
+			return Manufacturer.CONTROL_ID_FACIAL;
 		if ("RWTech".equals(string))
 			return Manufacturer.RWTECH;
 		if ("COMM".equals(string))
@@ -135,7 +141,7 @@ public enum Manufacturer {
 	}
 	
 	public Boolean useLogin(){
-		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF) || this.equals(CONTROL_ID_FACIAL))
 			return true;
 		else
 			return false;
@@ -143,7 +149,7 @@ public enum Manufacturer {
 	
 	public Boolean usePassword(){
 		// A senha da Proveu é definida nas configuracoes da catraca
-		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF) || this.equals(CONTROL_ID_FACIAL))
 			return true;
 		else
 			return false;
@@ -183,6 +189,8 @@ public enum Manufacturer {
 			return "catraca_control_id.png";
 		if (this.equals(CONTROL_ID_UHF))
 			return "antena_control_id_uhf.png";
+		if (this.equals(CONTROL_ID_FACIAL))
+			return "facial_controlid.png";
 		if (this.equals(RWTECH))
 			return "catraca_rwtech.png";
 		if (this.equals(NITGEN))
@@ -226,6 +234,8 @@ public enum Manufacturer {
 			return new ControlIdDevice(deviceEntity);
 		if (this.equals(CONTROL_ID_UHF))
 			return new ControlIDUHFDevice(deviceEntity);
+		if (this.equals(CONTROL_ID_FACIAL))
+			return new ControlIdFacial(deviceEntity);
 		//if (this.equals(RWTECH))
 		//	return new RWTechDevice(deviceEntity);
 		//if (this.equals(COMM))
@@ -270,6 +280,8 @@ public enum Manufacturer {
 			return new ControlIdDevice(identifier);
 		if (this.equals(CONTROL_ID_UHF))
 			return new ControlIDUHFDevice(identifier);
+		if (this.equals(CONTROL_ID_FACIAL))
+			return new ControlIdFacial(identifier);
 		//if (this.equals(RWTECH))
 		//	return new RWTechDevice(identifier);
 		//if (this.equals(COMM))
@@ -320,11 +332,11 @@ public enum Manufacturer {
 			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "2051"));
 			fields.add(new FieldTO("Numero do terminal", FieldType.TEXT, "01"));
 		
-		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF)){
+		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF) || this.equals(CONTROL_ID_FACIAL)){
 			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.100.200"));
 			fields.add(new FieldTO("Ip deste computador", FieldType.COMBOBOX, null, Utils.getAllLocalIps()));
 			fields.add(new FieldTO("Numero da porta deste computador", FieldType.TEXT, "2050"));
-		
+			
 		} else if (this.equals(RWTECH)){
 			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.20"));
 			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "1001"));
@@ -391,7 +403,7 @@ public enum Manufacturer {
 	 * @return
 	 */
 	public Boolean isRegistrationProcessStartedOnDevice(){
-		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF))
+		if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF) || this.equals(CONTROL_ID_FACIAL))
 			return false;
 		if (this.equals(RWTECH))
 			return false;
