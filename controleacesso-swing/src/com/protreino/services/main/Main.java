@@ -319,10 +319,13 @@ public class Main {
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
                     if (Utils.isTopDataFacialEnable()) {
-                    	String ipServidor = Utils.getPreference("TopdataServerRecognizerURL");
-                    	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
-                    	facialTopDataIntegrationService = new FacialTopDataIntegrationService(ipServidor, porta);
-                    	facialTopDataIntegrationService.conectarPorta();
+                    	if(!Main.temServidor()) {
+                        	String ipServidor = Utils.getPreference("TopdataServerRecognizerURL");
+                        	Integer porta =  Integer.valueOf(Utils.getPreference("topDataSocketPort"));
+                        	
+                        	facialTopDataIntegrationService = new FacialTopDataIntegrationService(ipServidor, porta);
+                        	facialTopDataIntegrationService.conectarPorta();
+                    	}
                     }
                     
                     mainScreen = new MainScreen();
