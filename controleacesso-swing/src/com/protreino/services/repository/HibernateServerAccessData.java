@@ -888,24 +888,44 @@ public class HibernateServerAccessData {
 	}
 	
 	public static synchronized void EnviaComandoCadastroFotoTopDataServidor(String card, String nome, byte[] foto) {
+	    verificaExecucaoDePing();
 
-		verificaExecucaoDePing();
-		try {
+	    if (card == null || card.isEmpty()) {
+	        throw new IllegalArgumentException("O número do cartão não pode ser nulo ou vazio.");
+	    }
+	    if (nome == null || nome.isEmpty()) {
+	        throw new IllegalArgumentException("O nome não pode ser nulo ou vazio.");
+	    }
+	    if (foto == null || foto.length == 0) {
+	        throw new IllegalArgumentException("A foto não pode ser nula ou vazia.");
+	    }
 
-			TcpMessageTO req = new TcpMessageTO(TcpMessageType.SEND_COMMAND_TO_DEVICES);
-			req.getParans().put("cardNumber", card);
-			req.getParans().put("name", nome);
-			req.getParans().put("foto", foto);
 
-			executando = true;
-			outToServer.writeObject(req);
-			outToServer.flush();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			executando = false;
-		}
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.SEND_COMMAND_TO_DEVICES);
+	        req.getParans().put("cardNumber", card);
+	        req.getParans().put("name", nome);
+	        req.getParans().put("foto", foto);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+	        ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+	        TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+	        System.out.println("Resposta do servidor: " + resp.getParans().get("status"));
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
 	}
 	
 	public static void resetStatusAllCards() {
