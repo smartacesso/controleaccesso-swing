@@ -19,6 +19,7 @@ import org.apache.commons.codec.binary.Base64;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
@@ -919,6 +920,60 @@ public class HibernateServerAccessData {
 	        TcpMessageTO resp = (TcpMessageTO) reader.readObject();
 
 	        System.out.println("Resposta do servidor: " + resp.getParans().get("status"));
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
+	}
+	
+	public static List<TopdataFacialErrorEntity> BuscaErrosTopDataServidor() {
+	    verificaExecucaoDePing();
+
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ERROS_TOP_DATA_LIST);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+	        ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+			TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+			return (List<TopdataFacialErrorEntity>) resp.getParans().get("list");
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
+	}
+	
+	public static Integer CountBuscaErrosTopDataServidor() {
+	    verificaExecucaoDePing();
+
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ERROS_TOP_DATA_LIST_COUNT);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+			ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+			TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+			return (Integer) resp.getParans().get("count");
 	        
 	    } catch (Exception e) {
 	        e.printStackTrace();
