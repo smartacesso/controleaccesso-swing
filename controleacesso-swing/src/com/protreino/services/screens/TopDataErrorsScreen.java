@@ -173,13 +173,13 @@ public class TopDataErrorsScreen extends PaginedListPanel {
 	@Override
 	protected void executeFilter() {
 
-		if(!Main.temServidor()) {
+		if(Main.temServidor()) {
+			totalRegistros = HibernateServerAccessData.CountBuscaErrosTopDataServidor();
+			listaErrors = HibernateServerAccessData.BuscaErrosTopDataServidor();
+		}else {	
 			totalRegistros = buscaQuantidadeErrors();
 			listaErrors = buscaErrorsVisitante();
 		}
-		
-		totalRegistros = HibernateServerAccessData.CountBuscaErrosTopDataServidor();
-		listaErrors = HibernateServerAccessData.BuscaErrosTopDataServidor();
 		
 		calculaTamanhoPaginas();
 		populateTable(listaErrors);

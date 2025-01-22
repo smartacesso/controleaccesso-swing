@@ -1138,8 +1138,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 			if (Objects.nonNull(visitante.getFoto())) {
 					if(!Main.temServidor()) {
 						Main.facialTopDataIntegrationService.cadastrarPedestre(Long.valueOf(cartao) ,nome,foto);						
-					}		
-					HibernateServerAccessData.EnviaComandoCadastroFotoTopDataServidor(cartao,nome,foto);
+					}else {						
+						HibernateServerAccessData.EnviaComandoCadastroFotoTopDataServidor(cartao,nome,foto);
+					}
 			}
 		} else {
 			if (Objects.nonNull(visitante.getFoto())) {
