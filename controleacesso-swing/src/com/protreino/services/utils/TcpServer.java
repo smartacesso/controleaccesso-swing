@@ -32,6 +32,7 @@ import com.protreino.services.entity.LogCartaoComandaEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.NotificationType;
@@ -42,6 +43,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
+import com.protreino.services.repository.TopDataFacialErrorRepository;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.DeviceTO;
 import com.protreino.services.to.InternalLoginResponse;
@@ -272,20 +274,39 @@ public class TcpServer {
 						} else if (TcpMessageType.GET_DEVICES_FROM_SERVER.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevices();
 							responseTcpMessage.getParans().put("list", list);
+							
 						} else if (TcpMessageType.LIBERAR_ACESSO_DEVICE_NO_SERVIDOR
 								.equals(receivedTcpMessage.getType())) {
 							liberarDevice(receivedTcpMessage);
-
+							
 						} else if (TcpMessageType.GET_ALL_DEVICES_FROM_SERVER
 								.equals(receivedTcpMessage.getType())) {
 							List<?> list = getDevicesListServer(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
+							
 						} else if (TcpMessageType.BUSCA_LOGS_DE_ACESSO_PAGINADOS
 								.equals(receivedTcpMessage.getType())) {
 							List<LogPedestrianAccessEntity> list = buscaLogsPaginados(receivedTcpMessage);
 							responseTcpMessage.getParans().put("list", list);
-						}
-						else {
+							
+						}else if (TcpMessageType.SEND_COMMAND_TO_DEVICES
+								.equals(receivedTcpMessage.getType())) {
+						    // Envia o comando para os dispositivos conectados
+						    enviarComandoTopData(receivedTcpMessage);					    
+					        responseTcpMessage.setType(TcpMessageType.SEND_COMMAND_TO_DEVICES_RESPONSE);
+					        responseTcpMessage.getParans().put("status", "Comando enviado para os dispositivos.");
+					        
+						}else if (TcpMessageType.GET_ERROS_TOP_DATA_LIST
+								.equals(receivedTcpMessage.getType())) {
+							List<TopdataFacialErrorEntity> list = getErrorsTopData();
+							responseTcpMessage.getParans().put("list", list);
+
+						} else if (TcpMessageType.GET_ERROS_TOP_DATA_LIST_COUNT
+								.equals(receivedTcpMessage.getType())) {
+							Integer count = getErrorsTopDataCount();
+							responseTcpMessage.getParans().put("count", count);
+
+						}else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
 						}
 
@@ -313,6 +334,16 @@ public class TcpServer {
 				} catch (Exception e) {
 				}
 			}
+		}
+
+		private void enviarComandoTopData(TcpMessageTO receivedTcpMessage) {
+			//Enviar um comando para topdata
+			String cartao = (String) receivedTcpMessage.getParans().get("cardNumber");
+			String nome = (String) receivedTcpMessage.getParans().get("name");
+			byte[] foto = (byte[]) receivedTcpMessage.getParans().get("foto");
+			
+			Main.facialTopDataIntegrationService.cadastrarPedestre(Long.valueOf(cartao), nome, foto);
+			
 		}
 
 		private void liberarDevice(TcpMessageTO receivedTcpMessage) {
@@ -540,6 +571,20 @@ public class TcpServer {
 			HashMap<String, Object> args = (HashMap<String, Object>) receivedTcpMessage.getParans().get("args");
 
 			return HibernateLocalAccessData.getResultListWithDynamicParamsCount(entityClass, construtor, join, groupBy, args);
+		}
+		
+		
+		private List<TopdataFacialErrorEntity> getErrorsTopData() throws ClassNotFoundException {
+			final TopDataFacialErrorRepository topDataFacialErrorRepository = new TopDataFacialErrorRepository();
+			return topDataFacialErrorRepository.findAll();			
+		}
+		
+		
+		private Integer getErrorsTopDataCount()
+				throws ClassNotFoundException {			
+			final TopDataFacialErrorRepository topDataFacialErrorRepository = new TopDataFacialErrorRepository();
+			return topDataFacialErrorRepository.countFindAll();
+
 		}
 
 		private Object getUniqueResultWithParams(TcpMessageTO receivedTcpMessage) throws ClassNotFoundException {

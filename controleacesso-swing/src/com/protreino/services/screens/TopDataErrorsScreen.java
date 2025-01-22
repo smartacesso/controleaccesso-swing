@@ -33,6 +33,7 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.TopdataFacialErrorEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.repository.TopDataFacialErrorRepository;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.utils.SelectItem;
@@ -172,14 +173,15 @@ public class TopDataErrorsScreen extends PaginedListPanel {
 	@Override
 	protected void executeFilter() {
 
-		//buscar total de erros
-		totalRegistros = buscaQuantidadeErrors();
-		System.out.println("total :" + totalRegistros);
-		calculaTamanhoPaginas();
+		if(Main.temServidor()) {
+			totalRegistros = HibernateServerAccessData.CountBuscaErrosTopDataServidor();
+			listaErrors = HibernateServerAccessData.BuscaErrosTopDataServidor();
+		}else {	
+			totalRegistros = buscaQuantidadeErrors();
+			listaErrors = buscaErrorsVisitante();
+		}
 		
-		//buscar erros paginados
-		listaErrors = buscaErrorsVisitante();
-
+		calculaTamanhoPaginas();
 		populateTable(listaErrors);
 		
 		paginatorControl();

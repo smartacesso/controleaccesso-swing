@@ -9,13 +9,16 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.entity.*;
+import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.repository.TopDataFacialErrorRepository;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
+import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.*;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +39,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -1122,6 +1126,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 	private void salvarFotoVisitanteTopData() {
 		final List<TopdataFacialErrorEntity> errors =  buscaErrorsVisitanteByCardNumber(visitante.getCardNumber());
+		String cartao = visitante.getCardNumber();
+		String nome =  visitante.getName();
+		byte[] foto =  visitante.getFoto();
 		
 		if(Objects.nonNull(errors) && !errors.isEmpty()) {
 			errors.forEach(error -> HibernateAccessDataFacade.remove(error));
@@ -1129,11 +1136,18 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 		if ("ATIVO".equals(visitante.getStatus())) {
 			if (Objects.nonNull(visitante.getFoto())) {
-					Main.facialTopDataIntegrationService.cadastrarPedestre(
-							Long.valueOf(visitante.getCardNumber()), visitante.getName(), visitante.getFoto());
+					if(!Main.temServidor()) {
+						Main.facialTopDataIntegrationService.cadastrarPedestre(Long.valueOf(cartao) ,nome,foto);						
+					}else {						
+						HibernateServerAccessData.EnviaComandoCadastroFotoTopDataServidor(cartao,nome,foto);
+					}
 			}
 		} else {
 			if (Objects.nonNull(visitante.getFoto())) {
+					if(Main.temServidor()) {
+					//logica para quando tem servidor
+					}
+				
 				Main.facialTopDataIntegrationService.DeletePedestre(Long.valueOf(visitante.getCardNumber()));
 			}
 		}

@@ -19,6 +19,7 @@ import org.apache.commons.codec.binary.Base64;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
@@ -885,6 +886,101 @@ public class HibernateServerAccessData {
 		}
 		
 		return null;
+	}
+	
+	public static void EnviaComandoCadastroFotoTopDataServidor(String card, String nome, byte[] foto) {
+	    verificaExecucaoDePing();
+
+	    if (card == null || card.isEmpty()) {
+	        throw new IllegalArgumentException("O número do cartão não pode ser nulo ou vazio.");
+	    }
+	    if (nome == null || nome.isEmpty()) {
+	        throw new IllegalArgumentException("O nome não pode ser nulo ou vazio.");
+	    }
+	    if (foto == null || foto.length == 0) {
+	        throw new IllegalArgumentException("A foto não pode ser nula ou vazia.");
+	    }
+
+
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.SEND_COMMAND_TO_DEVICES);
+	        req.getParans().put("cardNumber", card);
+	        req.getParans().put("name", nome);
+	        req.getParans().put("foto", foto);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+	        ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+	        TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+	        System.out.println("Resposta do servidor: " + resp.getParans().get("status"));
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
+	}
+	
+	public static List<TopdataFacialErrorEntity> BuscaErrosTopDataServidor() {
+	    verificaExecucaoDePing();
+
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ERROS_TOP_DATA_LIST);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+	        ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+			TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+			return (List<TopdataFacialErrorEntity>) resp.getParans().get("list");
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
+	}
+	
+	public static Integer CountBuscaErrosTopDataServidor() {
+	    verificaExecucaoDePing();
+
+	    try {
+	        TcpMessageTO req = new TcpMessageTO(TcpMessageType.GET_ERROS_TOP_DATA_LIST_COUNT);
+
+	        if (outToServer == null) {
+	            throw new IllegalStateException("Conexão com o servidor não está inicializada.");
+	        }
+
+	        outToServer.writeObject(req);
+	        outToServer.flush();
+	        
+	        // Ler a resposta do servidor para evitar inconsistências no fluxo
+			ObjectInputStream reader = new ObjectInputStream(clientSocket.getInputStream());
+			TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+
+			return (Integer) resp.getParans().get("count");
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("Erro ao enviar comando para o servidor", e);
+	    } finally {
+	        executando = false;
+	    }
 	}
 	
 	public static void resetStatusAllCards() {
