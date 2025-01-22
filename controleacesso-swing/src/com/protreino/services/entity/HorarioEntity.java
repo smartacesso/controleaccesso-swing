@@ -63,6 +63,16 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_REMOVIDO", nullable=true, length=11)
 	private Date dataRemovido = null;
+	
+	@Column(name="QTDE_DE_CREDITOS", nullable=true, length=4)
+	private Long qtdeDeCreditos;
+	
+	@ManyToOne(cascade={}, fetch=FetchType.LAZY)
+	@JoinColumn(name="ID_PEDESTRE_REGRA", nullable=true)
+	private PedestreRegraEntity pedestreRegra;
+	
+	@Column(name="ID_HORARIO_WEB", nullable=true, length=4)
+	private Long idHorarioWeb;
 
 	public Long getId() {
 		return id;
@@ -134,6 +144,30 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 
 	public void setDataRemovido(Date dataRemovido) {
 		this.dataRemovido = dataRemovido;
+	}
+
+	public Long getQtdeDeCreditos() {
+		return qtdeDeCreditos;
+	}
+
+	public void setQtdeDeCreditos(Long qtdeDeCreditos) {
+		this.qtdeDeCreditos = qtdeDeCreditos;
+	}
+
+	public PedestreRegraEntity getPedestreRegra() {
+		return pedestreRegra;
+	}
+
+	public void setPedestreRegra(PedestreRegraEntity pedestreRegra) {
+		this.pedestreRegra = pedestreRegra;
+	}
+
+	public Long getIdHorarioWeb() {
+		return idHorarioWeb;
+	}
+
+	public void setIdHorarioWeb(Long idHorarioWeb) {
+		this.idHorarioWeb = idHorarioWeb;
 	}
 	
 }

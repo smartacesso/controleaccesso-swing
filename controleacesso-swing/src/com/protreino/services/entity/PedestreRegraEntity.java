@@ -1,8 +1,12 @@
 package com.protreino.services.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,12 +15,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.to.HorarioTO;
 import com.protreino.services.to.PedestreRegraTO;
 
 @Entity
@@ -78,6 +87,11 @@ public class PedestreRegraEntity extends BaseEntity {
 	@Column(name="DATA_INICIO_ESCALA_3_3", nullable=true, length=11)
 	private Date dataInicioEscala3_3;
 	
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
+			 targetEntity=HorarioEntity.class, mappedBy="pedestreRegra")
+	@Fetch(FetchMode.SUBSELECT)
+	private List<HorarioEntity> horarios;
+	
 	public PedestreRegraEntity() {}
 	
 	public PedestreRegraEntity(PedestrianAccessEntity pedestrianAccess, PedestreRegraTO pr, RegraEntity regra) {
@@ -91,6 +105,59 @@ public class PedestreRegraEntity extends BaseEntity {
 		this.dataInicioPeriodo = pr.getDataInicioPeriodo();
 		this.dataFimPeriodo = pr.getDataFimPeriodo();
 		this.dataInicioEscala3_3 = pr.getDataInicioEscala3_3();
+		adicionaHorarios(pr);
+	}
+	
+	private void adicionaHorarios(final PedestreRegraTO pr) {
+		if(Objects.isNull(pr.getHorarios()) || pr.getHorarios().isEmpty()) {
+			if(Objects.nonNull(this.horarios)) {
+				horarios.clear();
+			}
+
+			return;
+		}
+		
+		if(horarios == null || horarios.isEmpty()) {
+			horarios = new ArrayList<HorarioEntity>();
+			
+			for(HorarioTO horarioTO : pr.getHorarios()) {
+				horarios.add(horarioTO.toEntity(this));
+			}
+		
+		} else {
+			List<HorarioEntity> naoEcontrados = new ArrayList<>();
+			
+			for(HorarioEntity horarioExistente : this.horarios) {
+				Optional<HorarioTO> first = pr.getHorarios().stream()
+					.filter(horarioTO -> horarioTO.getId().equals(horarioExistente.getIdHorarioWeb()))
+					.findFirst();
+				
+				if(!first.isPresent()) {
+					naoEcontrados.add(horarioExistente);
+				}
+			}
+
+			this.horarios.removeAll(naoEcontrados);
+			
+			for(HorarioTO newHorario : pr.getHorarios()) {
+				boolean horarioJaExiste = false;
+				
+				for(HorarioEntity horarioExistente : this.horarios) {
+					if(horarioExistente.getIdHorarioWeb().equals(newHorario.getId())) {
+						horarioExistente.setQtdeDeCreditos(newHorario.getQtdeDeCreditos());
+						horarioExistente.setDiasSemana(newHorario.getDiasSemana());
+						
+						horarioJaExiste = true;
+						break;
+					}
+				}
+				
+				if(!horarioJaExiste) {
+					this.horarios.add(newHorario.toEntity(this));
+				}
+			}
+		}
+		
 	}
 	
 	public boolean temCreditos() {
@@ -198,5 +265,13 @@ public class PedestreRegraEntity extends BaseEntity {
 
 	public void setDataInicioEscala3_3(Date dataInicioEscala3_3) {
 		this.dataInicioEscala3_3 = dataInicioEscala3_3;
+	}
+
+	public List<HorarioEntity> getHorarios() {
+		return horarios;
+	}
+
+	public void setHorarios(List<HorarioEntity> horarios) {
+		this.horarios = horarios;
 	}
 }

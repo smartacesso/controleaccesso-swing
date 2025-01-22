@@ -1,6 +1,7 @@
 package com.protreino.services.to;
 
 import java.util.Date;
+import java.util.List;
 
 public class PedestreRegraTO {
 
@@ -13,6 +14,7 @@ public class PedestreRegraTO {
 	private Date dataInicioPeriodo;
 	private Date dataFimPeriodo;
 	private Date dataInicioEscala3_3;
+	private List<HorarioTO> horarios;
 	
 	public Long getId() {
 		return id;
@@ -67,5 +69,11 @@ public class PedestreRegraTO {
 	}
 	public void setDataInicioEscala3_3(Date dataInicioEscala3_3) {
 		this.dataInicioEscala3_3 = dataInicioEscala3_3;
+	}
+	public List<HorarioTO> getHorarios() {
+		return horarios;
+	}
+	public void setHorarios(List<HorarioTO> horarios) {
+		this.horarios = horarios;
 	}
 }
