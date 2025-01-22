@@ -306,9 +306,7 @@ public class TcpServer {
 							Integer count = getErrorsTopDataCount();
 							responseTcpMessage.getParans().put("count", count);
 
-						}
-						
-						else {
+						}else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
 						}
 
