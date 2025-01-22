@@ -887,7 +887,7 @@ public class HibernateServerAccessData {
 		return null;
 	}
 	
-	public static synchronized void EnviaComandoCadastroFotoTopDataServidor(String card, String nome, byte[] foto) {
+	public static void EnviaComandoCadastroFotoTopDataServidor(String card, String nome, byte[] foto) {
 	    verificaExecucaoDePing();
 
 	    if (card == null || card.isEmpty()) {
