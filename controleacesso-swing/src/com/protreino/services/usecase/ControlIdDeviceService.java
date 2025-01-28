@@ -129,7 +129,7 @@ public class ControlIdDeviceService {
 			}
 			
 			conn.disconnect();
-			return userResponse;
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
