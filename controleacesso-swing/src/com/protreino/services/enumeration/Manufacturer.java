@@ -332,12 +332,16 @@ public enum Manufacturer {
 			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "2051"));
 			fields.add(new FieldTO("Numero do terminal", FieldType.TEXT, "01"));
 		
-		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF) || this.equals(CONTROL_ID_FACIAL)){
+		} else if (this.equals(CONTROL_ID) || this.equals(CONTROL_ID_UHF)){
 			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.100.200"));
 			fields.add(new FieldTO("Ip deste computador", FieldType.COMBOBOX, null, Utils.getAllLocalIps()));
 			fields.add(new FieldTO("Numero da porta deste computador", FieldType.TEXT, "2050"));
 			
-		} else if (this.equals(RWTECH)){
+		} else if (this.equals(CONTROL_ID_FACIAL)){
+			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.15.13"));
+			fields.add(new FieldTO("Ip deste computador", FieldType.COMBOBOX, null, Utils.getAllLocalIps()));
+		
+		}else if (this.equals(RWTECH)){
 			fields.add(new FieldTO("Numero IP do dispositivo", FieldType.TEXT, "192.168.0.20"));
 			fields.add(new FieldTO("Numero da porta", FieldType.TEXT, "1001"));
 		
