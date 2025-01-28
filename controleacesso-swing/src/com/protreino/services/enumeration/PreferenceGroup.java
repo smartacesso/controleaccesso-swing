@@ -7,7 +7,8 @@ public enum PreferenceGroup {
 	ATHLETE_SCREEN,
 	FACE_RECOGNIZER,
 	HIKIVISION_FACE_RECOGONIZER,
-	TOPDATA_FACE_RECOGONIZER;
+	TOPDATA_FACE_RECOGONIZER, 
+	CONTROLID_FACE_RECOGONIZER;
 	
 
 	public String getName(){
@@ -28,6 +29,9 @@ public enum PreferenceGroup {
 		}
 		if(this.equals(TOPDATA_FACE_RECOGONIZER)) {
 			return "Reconhecimento Facial Topdata";
+		}
+		if(this.equals(CONTROLID_FACE_RECOGONIZER)) {
+			return "Reconhecimento Facial Control ID";
 		}
 		return "";
 	}
