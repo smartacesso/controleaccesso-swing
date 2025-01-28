@@ -82,6 +82,10 @@ public class ControlIdDevice extends Device {
 	
 	protected Boolean habilitaBeep;
 	
+	public ControlIdDevice() {
+		
+	}
+	
 	public ControlIdDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
 		this.deviceEntity = deviceEntity;
@@ -681,8 +685,10 @@ public class ControlIdDevice extends Device {
 				erro = "Nao foi possivel conectar";
 			throw new Exception(erro);
 		}
-		if (responseString == null)
+		if (responseString == null) {			
 			throw new Exception("Sessão nula retornada.");
+		}	
+		Gson gson = new Gson();
 		Response response = gson.fromJson(responseString, Response.class);
 		session = response.session;
 		System.out.println(sdf.format(new Date()) + "  Sessao: " + response.session);
@@ -959,8 +965,9 @@ public class ControlIdDevice extends Device {
 			
 			byte[] data = null;
 			if (object != null) {
+				Gson gson = new Gson();
 				System.out.println(gson.toJson(object));
-				data = (gson.toJson(object)).getBytes();
+				data = gson.toJson(object).getBytes();
 			}else 
 				data = ("{}").getBytes();
 			
@@ -994,7 +1001,7 @@ public class ControlIdDevice extends Device {
 	}
 
 	
-	private byte[] createImageLogoName() throws IOException{
+	protected byte[] createImageLogoName() throws IOException{
 		
 		int width = 300;
 		int height = 300;
@@ -1318,8 +1325,8 @@ public class ControlIdDevice extends Device {
 	
 	@SuppressWarnings("unused")
 	protected class Login{
-		private String login;
-		private String password;
+		private String login = "admin";
+		private String password = "admin";
 		
 		public Login(String login, String password){
 			this.login = login;
