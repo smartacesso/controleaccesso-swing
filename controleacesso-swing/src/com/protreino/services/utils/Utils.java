@@ -563,6 +563,15 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "topDataSocketPort",
 				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 
+		//Campo Reconhecimento Facial CONTROL ID
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "enableTopDataFacial",
+				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
+				"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "topDataSocketPort",
+				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
+		
+		
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {
 				setPreference(preferenceTO.getKey(), preferenceTO.getValue());
