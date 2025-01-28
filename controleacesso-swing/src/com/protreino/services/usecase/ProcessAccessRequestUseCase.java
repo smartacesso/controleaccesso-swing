@@ -22,6 +22,7 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.devices.TopDataAcessoDevice;
 import com.protreino.services.devices.TopDataDevice;
+import com.protreino.services.entity.HorarioEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -279,54 +280,6 @@ public class ProcessAccessRequestUseCase {
 							&& Objects.nonNull(matchedPedestrianAccess.getCardNumber());
 
 				} else if(matchedPedestrianAccess.temTipoEscala3x3()) {
-//					System.out.println("Tipo de regra - Escala 3x3");
-//					
-//					LocalDateTime dataAcesso = LocalDateTime.now();
-//					LocalDate dataInicioEscala = new java.util.Date(
-//					    matchedPedestrianAccess.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()
-//					).toInstant()
-//					 .atZone(ZoneId.systemDefault())
-//					 .toLocalDate();
-//
-//					// Obter o horário de início do turno (horário de início dinâmico)
-//					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
-//					                        .atZone(ZoneId.systemDefault())
-//					                        .toLocalTime();
-//
-//					final int diaDaEscala = (Period.between(dataInicioEscala, dataAcesso.toLocalDate()).getDays() % 12) + 1;
-//
-//					// Ajuste os intervalos com base no horário de início dinâmico
-//					LocalTime fimDia = horarioInicio.plusHours(12); // 12 horas após o horário de início
-//					LocalTime fimNoite = LocalTime.of(23, 59, 59);
-//
-//					LocalTime horarioAtual = dataAcesso.toLocalTime();
-//					
-//					System.out.println("hora passagem : " + horarioAtual);
-//					System.out.println("diaDaEscala : " + diaDaEscala);
-//					System.out.println("horario inicio : " + horarioInicio);
-//					System.out.println("fim do dia : " + fimDia);
-//					System.out.println("fim da noite : " + fimNoite);
-//					
-//					if(diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
-//					    // Turno de 12 horas durante o dia
-//					    permitido = !horarioAtual.isBefore(horarioInicio) && horarioAtual.isBefore(fimDia);
-//
-//					} else if(diaDaEscala == 7) {
-//					    // Turno especial noturno
-//					    permitido = !horarioAtual.isBefore(fimDia) && horarioAtual.isBefore(fimNoite);
-//
-//					} else if(diaDaEscala == 8 || diaDaEscala == 9) {
-//					    // Cobertura para períodos combinados de dia e noite
-//					    permitido = (!horarioAtual.isBefore(horarioInicio) && horarioAtual.isBefore(fimDia)) 
-//					                || (!horarioAtual.isBefore(fimDia) && horarioAtual.isBefore(fimNoite));
-//
-//					} else if(diaDaEscala == 10) {
-//					    // Período após meia-noite até o início do turno
-//					    permitido = !horarioAtual.isBefore(LocalTime.MIDNIGHT) && horarioAtual.isBefore(horarioInicio);
-//
-//					} else {
-//					    permitido = false;
-//					}
 					System.out.println("Tipo de regra - Escala 3x3");
 
 					LocalDateTime dataAcesso = LocalDateTime.now();
@@ -336,11 +289,6 @@ public class ProcessAccessRequestUseCase {
 					 .atZone(ZoneId.systemDefault())
 					 .toLocalDate();
 
-					// Obter o horário de início do turno
-//					LocalTime horarioInicio = matchedPedestrianAccess.getInicioTurno().toInstant()
-//					                        .atZone(ZoneId.systemDefault())
-//					                        .toLocalTime();
-//					
 					LocalTime horarioInicio = matchedPedestrianAccess.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
 	                        .atZone(ZoneId.systemDefault())
 	                        .toLocalTime();
@@ -853,32 +801,63 @@ public class ProcessAccessRequestUseCase {
 			VerificationResult validado, byte[] foto, Integer origem, Date data) {
 		VerificationResult resultadoVerificacao;
 
-		if (Utils.isDiaPermitido(matchedAthleteAccess, data)) {
-			if (Utils.isDentroDoHorario(matchedAthleteAccess, data)) {
-				resultadoVerificacao = validado;
-				logAccess.setStatus("ATIVO");
-
-				if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem)) {
-					Utils.createNotification(
-							userName + " permitido"
-									+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela toler�ncia."
-											: "."), NotificationType.GOOD, foto);
+		Optional<PedestreRegraEntity> regraAtivaPedestre = matchedAthleteAccess.getRegraAtivaPedestre();
+		
+		if(regraAtivaPedestre.isPresent() 
+				&& Objects.nonNull(regraAtivaPedestre.get().getHorarios())) {
+			Optional<HorarioEntity> diaValido = regraAtivaPedestre.get().getHorarios()
+			.stream()
+			.filter(horario -> horario.isDiaPermitido(data))
+			.findFirst();
+			
+			if(!diaValido.isPresent()) {
+				resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
+				logAccess.setStatus("INATIVO");
+				if (createNotification) {
+					Utils.createNotification(userName + " nao permitido hoje.", NotificationType.BAD, foto);
 				}
-
-			} else {
+				
+				return resultadoVerificacao;
+			}
+			
+			Optional<HorarioEntity> horarioValido = regraAtivaPedestre.get().getHorarios()
+					.stream()
+					.filter(horario -> horario.isDiaPermitido(data) && horario.isDentroDoHorarioPermitido(data))
+					.findFirst();
+			if(!horarioValido.isPresent()) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
 				if (createNotification) {
 					Utils.createNotification(userName + " fora do horario.", NotificationType.BAD, foto);
 				}
+				
+				return resultadoVerificacao;
 			}
+			
+			Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios()
+					.stream()
+					.filter(horario -> horario.isDiaPermitido(data) && horario.isDentroDoHorarioPermitido(data) && horario.temCreditos())
+					.findFirst();
+			
+			if(!horarioValidoComCredito.isPresent()) {
+				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NO_CREDITS;
+				logAccess.setStatus("INATIVO");
+				if (createNotification) {
+					Utils.createNotification(userName + " sem creditos.", NotificationType.BAD, foto);
+				}
+				
+				return resultadoVerificacao;
+			}
+		}
+		
+		resultadoVerificacao = validado;
+		logAccess.setStatus("ATIVO");
 
-		} else {
-			resultadoVerificacao = VerificationResult.NOT_ALLOWED_TODAY;
-			logAccess.setStatus("INATIVO");
-			if (createNotification) {
-				Utils.createNotification(userName + " nao permitido hoje.", NotificationType.BAD, foto);
-			}
+		if (createNotification && Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem)) {
+			Utils.createNotification(
+					userName + " permitido"
+							+ (VerificationResult.TOLERANCE_PERIOD.equals(validado) ? " pela toler�ncia."
+									: "."), NotificationType.GOOD, foto);
 		}
 
 		return resultadoVerificacao;

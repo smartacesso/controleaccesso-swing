@@ -599,7 +599,7 @@ public class TopDataDevice extends Device {
 	                        // Se o tempo sem resposta for maior que o limite, verifica o cooldown de reinicialização
 	                        if (System.currentTimeMillis() - lastRestartTime > RESTART_COOLDOWN) {
 	                        	//precisa printar?
-	                            System.out.println("Tempo sem resposta excedido. Reiniciando conexão...");
+	                            System.out.println("CATRACA - sem retornar dados por 3 min. Reiniciando conexão...");
 	                            enviarMensagemPadrao(); // Reenviar mensagem padrão
 	                            configurarEntradasOnline(); // Configurar novamente as entradas
 	                            lastResponseTime = System.currentTimeMillis(); // Atualizar o tempo da última resposta
@@ -1163,12 +1163,12 @@ public class TopDataDevice extends Device {
 			if (decrementaEntrada) {
 			    // Configuração ativa: decrementar na entrada
 			    if (!ultimoAcesso.isSaida()) {
-			        pedestre.decrementaCreditos();
+			        pedestre.decrementaCreditos(data);
 			    }
 			} else {
 			    // Configuração inativa: decrementar na saída
 			    if (ultimoAcesso.isSaida() || !bloquearSaida) {
-			        pedestre.decrementaCreditos();
+			        pedestre.decrementaCreditos(data);
 			    }
 			}
 			

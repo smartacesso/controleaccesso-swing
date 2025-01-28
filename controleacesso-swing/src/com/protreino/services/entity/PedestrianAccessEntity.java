@@ -1236,8 +1236,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 
 		for (PedestreRegraEntity pedestreRegra : pedestreRegra) {
-			if (pedestreRegra.temCreditos()
-					&& pedestreRegra.isNaoRemovidoNoDesktop()) {
+			if (pedestreRegra.isNaoRemovidoNoDesktop()) {
 				return Optional.of(pedestreRegra);
 			}
 		}
@@ -1282,6 +1281,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	}
 	
 	public void decrementaCreditos() {
+		decrementaCreditos(new Date());
+	}
+	
+	public void decrementaCreditos(final Date date) {
 		if (temRegraDeAcessoPorPeriodoValido()) {
 			return;
 		}
@@ -1292,8 +1295,18 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		
 		Optional<PedestreRegraEntity> regraAtiva = getRegraAtiva();
 		
-		if(regraAtiva.isPresent() && regraAtiva.get().temCreditos()) {
+		if(!regraAtiva.isPresent()) {
+			return;
+		}
+		
+		if(regraAtiva.get().temCreditos()) {
 			regraAtiva.get().decrementaCreditos();
+			return;
+		}
+		
+		if(regraAtiva.get().temRegraDeHorariosComCredito()) {
+			regraAtiva.get().decrementaCreditoFromHorario(date);
+			return;
 		}
 	}
 	

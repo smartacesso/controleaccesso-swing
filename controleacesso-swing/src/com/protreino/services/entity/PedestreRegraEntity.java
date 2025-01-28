@@ -24,7 +24,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 
-import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.to.HorarioTO;
 import com.protreino.services.to.PedestreRegraTO;
 
@@ -129,7 +128,7 @@ public class PedestreRegraEntity extends BaseEntity {
 			
 			for(HorarioEntity horarioExistente : this.horarios) {
 				Optional<HorarioTO> first = pr.getHorarios().stream()
-					.filter(horarioTO -> horarioTO.getId().equals(horarioExistente.getIdHorarioWeb()))
+					.filter(horarioTO -> horarioTO.getId().equals(horarioExistente.getId()))
 					.findFirst();
 				
 				if(!first.isPresent()) {
@@ -143,7 +142,7 @@ public class PedestreRegraEntity extends BaseEntity {
 				boolean horarioJaExiste = false;
 				
 				for(HorarioEntity horarioExistente : this.horarios) {
-					if(horarioExistente.getIdHorarioWeb().equals(newHorario.getId())) {
+					if(horarioExistente.getId().equals(newHorario.getId())) {
 						horarioExistente.setQtdeDeCreditos(newHorario.getQtdeDeCreditos());
 						horarioExistente.setDiasSemana(newHorario.getDiasSemana());
 						
@@ -160,8 +159,31 @@ public class PedestreRegraEntity extends BaseEntity {
 		
 	}
 	
+	public boolean isRegraComHorarios() {
+		return Objects.nonNull(horarios) && !horarios.isEmpty();
+	}
+	
 	public boolean temCreditos() {
 		return Objects.nonNull(qtdeDeCreditos) && qtdeDeCreditos > 0;
+	}
+	
+	public boolean temRegraDeHorariosComCredito() {
+		if(Objects.isNull(horarios) || horarios.isEmpty()) {
+			return false;
+		}
+		
+		return horarios.stream()
+				.anyMatch(horario -> Objects.nonNull(horario.getQtdeDeCreditos()));
+	}
+	
+	public void decrementaCreditoFromHorario(final Date date) {
+		if(Objects.isNull(horarios) || horarios.isEmpty()) {
+			return;
+		}
+		
+		horarios.stream()
+			.filter(horario -> horario.isDiaPermitido(date) && horario.isDentroDoHorarioPermitido(date) && Objects.nonNull(horario.getQtdeDeCreditos()))
+			.forEach(horario -> horario.decrementaCreditos());
 	}
 	
 	public boolean isNaoRemovidoNoDesktop() {

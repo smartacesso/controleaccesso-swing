@@ -2192,6 +2192,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			return;
 		}
 		visitante.setFotoEnviada(true);
+		visitante.setDataCadastroFotoNaHikivision(new Date());
 		try {
 			new Thread() {
 				public void run() {

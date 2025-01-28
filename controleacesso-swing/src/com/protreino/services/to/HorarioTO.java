@@ -19,6 +19,7 @@ public class HorarioTO {
 	
 	public HorarioEntity toEntity(final PedestreRegraEntity pedestreRegra) {
 		final HorarioEntity horarioEntity = new HorarioEntity();
+		horarioEntity.setId(id);
 		horarioEntity.setNome(nome);
 		horarioEntity.setStatus(status);
 		horarioEntity.setDiasSemana(diasSemana);
@@ -26,7 +27,6 @@ public class HorarioTO {
 		horarioEntity.setHorarioFim(horarioFim);
 		horarioEntity.setQtdeDeCreditos(qtdeDeCreditos);
 		horarioEntity.setPedestreRegra(pedestreRegra);
-		horarioEntity.setIdHorarioWeb(id);
 		
 		return horarioEntity;
 	}

@@ -1,6 +1,8 @@
 package com.protreino.services.entity;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,8 +16,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.Type;
+
+import com.protreino.services.utils.Utils;
 
 @Entity
 @Table(name="TB_HORARIO")
@@ -71,9 +74,65 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 	@JoinColumn(name="ID_PEDESTRE_REGRA", nullable=true)
 	private PedestreRegraEntity pedestreRegra;
 	
-	@Column(name="ID_HORARIO_WEB", nullable=true, length=4)
-	private Long idHorarioWeb;
+	public boolean isDiaPermitido(final Date data) {
+		Calendar cHoje = Calendar.getInstance();
+		if (data != null) {
+			cHoje.setTime(data);
+		}
 
+		Integer hoje = cHoje.get(Calendar.DAY_OF_WEEK);
+
+		hoje--; // ajusta a numeracao dos dias para coincidir com a numeracao do pro-treino
+		if (hoje == 0) {
+			hoje = 7;
+		}
+
+		return Objects.nonNull(diasSemana) && diasSemana.contains(hoje.toString());
+	}
+	
+	public boolean isDentroDoHorarioPermitido(final Date data) {
+		if(!isDiaPermitido(dataRemovido)) {
+			return false;
+		}
+		
+		Calendar cHoje = Calendar.getInstance();
+		if (data != null) {
+			cHoje.setTime(data);
+		}
+
+		Integer hoje = cHoje.get(Calendar.DAY_OF_WEEK);
+
+		hoje--; // ajusta a numeracao dos dias para coincidir com a numeracao do pro-treino
+		if (hoje == 0)  {
+			hoje = 7;
+		}
+		
+		Calendar c = Calendar.getInstance();
+		c.setTime(horarioInicio);
+		final String horarioInicio = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
+		
+		c.setTime(horarioFim);
+		final String horarioFim = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
+		
+		return Utils.isDentroDoHorario(horarioInicio, horarioFim, data);
+	}
+	
+	public boolean temCreditos() {
+		return Objects.isNull(qtdeDeCreditos) || qtdeDeCreditos > 0;
+	}
+	
+	public void decrementaCreditos() {
+		if(Objects.isNull(qtdeDeCreditos)) {
+			return;
+		}
+		
+		qtdeDeCreditos = qtdeDeCreditos - 1;
+		
+		if(qtdeDeCreditos < 0) {
+			qtdeDeCreditos = 0l;
+		}
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -160,14 +219,6 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 
 	public void setPedestreRegra(PedestreRegraEntity pedestreRegra) {
 		this.pedestreRegra = pedestreRegra;
-	}
-
-	public Long getIdHorarioWeb() {
-		return idHorarioWeb;
-	}
-
-	public void setIdHorarioWeb(Long idHorarioWeb) {
-		this.idHorarioWeb = idHorarioWeb;
 	}
 	
 }

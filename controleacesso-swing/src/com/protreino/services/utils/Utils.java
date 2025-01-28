@@ -449,6 +449,9 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNow",
 				"Mensagem de pedestre fora do horário permitido", FieldType.MESSAGE_LINES,
 				"PEDESTRE NAO;PERMITIDO AGORA"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageNotAllowedNoCredits",
+				"Mensagem de pedestre sem creditos", FieldType.MESSAGE_LINES,
+				"SEM CREDITOS"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageError",
 				"Mensagem de erro na verificação", FieldType.MESSAGE_LINES, "ERRO NA;VERIFICACAO"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageTolerancePeriod",
