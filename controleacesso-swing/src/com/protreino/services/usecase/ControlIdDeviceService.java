@@ -14,6 +14,7 @@ import java.util.Objects;
 import com.google.gson.Gson;
 import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
+import com.protreino.services.to.controlIdDevice.ValidOutput;
 import com.protreino.services.to.hikivision.HikivisionUserInfoTO;
 
 import okhttp3.MediaType;
@@ -25,116 +26,159 @@ import okhttp3.Response;
 public class ControlIdDeviceService {
 
 	public String url;
-	private static String user;
-	private static String password;
+	private  String ip;
+	
 	private static Gson gson;
-	private String ip;
-	protected SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	protected static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-	public ControlIdDeviceService(String url, String user, String password, String ip) {
-		this.url = "http://192.168.15.13";
-		this.user = "admin";
-		this.password = "admin";
-		this.ip = "192.168.15.13";
+	public ControlIdDeviceService() {
 		gson = new Gson();
 	}
 
-	private SessionOutput login(LoginInput login) {
-		
-		if (Objects.isNull(login)) {
-			return null;
-		}
-		try {
-			URL url = new URL("http://" + ip);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-type", "application/json");
-			conn.setDoInput(true);
-			conn.setDoOutput(true);
+	
+	private static String send(String method, String url, String contentType, String body, int connectTimeout, int readTimeout) {
+	    HttpURLConnection conn = null;
+	    try {
+	        System.out.println("Iniciando requisição para URL: " + url);
 
-			System.out.println("login body: " + gson.toJson(login));
-			byte[] controlIdPayload = gson.toJson(login).getBytes();
+	        // Configura a conexão
+	        URL endpoint = new URL(url);
+	        conn = (HttpURLConnection) endpoint.openConnection();
+	        conn.setRequestMethod(method);
+	        conn.setRequestProperty("Content-Type", contentType);
+	        conn.setConnectTimeout(connectTimeout);
+	        conn.setReadTimeout(readTimeout);
 
-			// testar depois se precisa dessa conversao
+	        if ("POST".equalsIgnoreCase(method)) {
+	            conn.setDoOutput(true); // Habilita envio de dados
 
-			OutputStream os = conn.getOutputStream();
-			os.write(controlIdPayload);
+	            if (body == null || body.isEmpty()) {
+	                conn.setRequestProperty("Content-Length", "0");
+	                conn.getOutputStream().close(); // Fecha a saída para evitar bloqueio
+	            } else {
+	                try (OutputStream os = conn.getOutputStream()) {
+	                    os.write(body.getBytes("UTF-8"));
+	                    os.flush();
+	                }
+	            }
+	        }
 
-			if (conn.getResponseCode() < 199 || conn.getResponseCode() > 299) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-				String output, result = "";
-
-				while ((output = br.readLine()) != null) {
-					result += output;
-				}
-				System.out.println(sdf.format(new Date()) + " Result login error: " + result);
-				return null;
-			}
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			String output = br.readLine();
-			
-			SessionOutput userResponse = null;
-
-			if (Objects.nonNull(output) && !output.isEmpty()) {
-				userResponse = gson.fromJson(output, SessionOutput.class);
-			}
-
-			conn.disconnect();
-			return null;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+	        // Lê a resposta
+	        int responseCode = conn.getResponseCode();
+	        if (responseCode >= 200 && responseCode <= 299) {
+	            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+	                StringBuilder response = new StringBuilder();
+	                String line;
+	                while ((line = br.readLine()) != null) {
+	                    response.append(line);
+	                }
+	                System.out.println("Resposta recebida: " + response);
+	                return response.toString();
+	            }
+	        } else {
+	            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+	                StringBuilder errorResponse = new StringBuilder();
+	                String line;
+	                while ((line = br.readLine()) != null) {
+	                    errorResponse.append(line);
+	                }
+	                System.err.println("Erro na requisição. Código: " + responseCode + ". Resposta: " + errorResponse);
+	            }
+	        }
+	    } catch (SocketTimeoutException e) {
+	        System.err.println("Erro: Timeout ao conectar à URL: " + url);
+	    } catch (IOException e) {
+	        System.err.println("Erro: Não foi possível conectar à URL: " + url);
+	        e.printStackTrace();
+	    } finally {
+	        if (conn != null) {
+	            conn.disconnect();
+	        }
+	    }
+	    return null;
 	}
 
-	private Void alterarUsuario(LoginInput loginInput) {
+
+	public static String login(LoginInput login, String ip) {
+	    if (Objects.isNull(login)) {
+	        System.err.println("LoginInput não pode ser nulo.");
+	        return null;
+	    }
+
+	    String url = "http://" + ip + "/login.fcgi";
+	    String payload = gson.toJson(login);
+	    String response = send("POST", url, "application/json", payload, 5000, 5000);
+
+	    if (response != null) {
+	        // Parse da resposta para obter a sessão
+	        SessionOutput sessionOutput = gson.fromJson(response, SessionOutput.class);
+	        if (sessionOutput != null && sessionOutput.getSession() != null) {
+	            System.out.println("Sessão obtida com sucesso: " + sessionOutput.getSession());
+	            return sessionOutput.getSession();
+	        } else {
+	            System.err.println("Falha ao obter a sessão da resposta.");
+	        }
+	    }
+	    return null;
+	}
+	
+	
+	public static boolean logout(String session, String ip) {
+	    if (Objects.isNull(session) || session.isEmpty()) {
+	        System.err.println("Sessão não pode ser nula ou vazia.");
+	        return false;
+	    }
+
+	    String url = "http://" + ip + "/logout.fcgi?session=" + session;
+	    String response = send("POST", url, "application/json", null, 5000, 5000);
+
+	    if (response == null || response.trim().equals("{}")) {
+	        System.out.println("Logout realizado com sucesso.");
+	        return true;
+	    }
+	    System.err.println("Falha no logout.");
+	    return false;
+	}
+
+	
+	public static boolean isValidSession(String session, String ip) {
+	    if (Objects.isNull(session) || session.isEmpty()) {
+	        System.err.println("Sessão não pode ser nula ou vazia.");
+	        return false;
+	    }
+
+	    String url = "http://" + ip + "/session_is_valid.fcgi?session=" + session;
+	    String response = send("POST", url, "application/json", null, 5000, 5000);
+
+	    if (response != null) {
+	        // Parse da resposta para obter a sessão
+	        ValidOutput validOutput = gson.fromJson(response, ValidOutput.class);
+	        if (validOutput != null && validOutput.getValid() != null) {
+	            System.out.println("Sessão obtida com sucesso: " + validOutput.getValid());
+	            return validOutput.isValid();
+	        } else {
+	            System.err.println("Falha ao obter a sessão da resposta.");
+	        }
+	    }
+	    return false;
+	}
+
+	
+
+	private Void alterarUsuario(String session, LoginInput login) {
+		//terminar
+	
 		
-		if (Objects.isNull(loginInput)) {
-			return null;
+	    if (Objects.isNull(login)) {
+	        System.err.println("LoginInput não pode ser nulo.");
+	        return null;
+	    }
+		  if (Objects.isNull(session) || session.isEmpty()) {
+		        System.err.println("Sessão não pode ser nula ou vazia.");
+		    return null;
 		}
-
-		try {
-			URL url = new URL("http://" + ip);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-type", "application/json");
-			conn.setDoInput(true);
-			conn.setDoOutput(true);
-		
-			System.out.println("login body: " + gson.toJson(loginInput));
-			byte[] controlIdPayload = gson.toJson(loginInput).getBytes();
-
-			OutputStream os = conn.getOutputStream();
-			os.write(controlIdPayload);
-
-			if (conn.getResponseCode() < 199 || conn.getResponseCode() > 299) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-				String output, result = "";
-
-				while ((output = br.readLine()) != null) {
-					result += output;
-				}
-				System.out.println(sdf.format(new Date()) + " Result recriate Users error: " + result);
-				return null;
-			}
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			String output = br.readLine();
-			
-			SessionOutput userResponse = null;
-
-			if (Objects.nonNull(output) && !output.isEmpty()) {
-				userResponse = gson.fromJson(output, SessionOutput.class);
-			}
-			
-			conn.disconnect();
-			return null;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		  
 		return null;
-
 	}
 
 }
