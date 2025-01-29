@@ -665,6 +665,28 @@ public class HikiVisionIntegrationService {
 		}
 	}
 	
+	 public void atualizarUserRightWeekPlanCfg(final String deviceId, final int weekPlanId, UserRightWeekPlanCfgTO config) {
+	        
+	        String jsonBody = gson.toJson(config);
+	        RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+	        OkHttpClient client = getOkHttpClient();
+	        
+	        Request request = new Request.Builder()
+	                .url(url + "/ISAPI/AccessControl/UserRightWeekPlanCfg/" + weekPlanId + "?format=json&devIndex=" + deviceId)
+	                .put(body)
+	                .build();
+
+	        try (Response response = client.newCall(request).execute()) {
+	            if (response.isSuccessful()) {
+	                System.out.println(String.format("Configuração de acesso do usuário %d atualizada no dispositivo %s com sucesso!", weekPlanId, deviceId));
+	            } else {
+	                System.err.println("Erro ao atualizar configuração: " + response.code() + " - " + response.message());
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	
 	private OkHttpClient getOkHttpClient() {
 		final DigestAuthenticator authenticator = new DigestAuthenticator(new Credentials(user, password));
 		final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
