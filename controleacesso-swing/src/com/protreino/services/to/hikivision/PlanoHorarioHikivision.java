@@ -2,11 +2,11 @@ package com.protreino.services.to.hikivision;
 
 import java.util.List;
 
-public class UserRightWeekPlanCfgTO {
+public class PlanoHorarioHikivision {
 	 private boolean enable;
-	    private List<WeekPlanCfg> WeekPlanCfg;
+	 private List<DiaHIkivision> WeekPlanCfg;
 
-	    public UserRightWeekPlanCfgTO(boolean enable, List<WeekPlanCfg> weekPlanCfg) {
+	    public PlanoHorarioHikivision(boolean enable, List<DiaHIkivision> weekPlanCfg) {
 	        this.enable = enable;
 	        this.WeekPlanCfg = weekPlanCfg;
 	    }

@@ -2,13 +2,13 @@ package com.protreino.services.to.hikivision;
 
 import java.util.List;
 
-public class WeekPlanCfg {
+public class DiaHIkivision {
     private String week;
     private int id;
     private boolean enable;
-    private List<TimeSegment> TimeSegment;
-
-    public WeekPlanCfg(String week, int id, boolean enable, List<TimeSegment> timeSegment) {
+    private TimeSegment TimeSegment;
+    
+    public DiaHIkivision(String week, int id, boolean enable, TimeSegment timeSegment) {
         this.week = week;
         this.id = id;
         this.enable = enable;
