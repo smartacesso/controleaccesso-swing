@@ -365,7 +365,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 				// pesquisa por pedestre ou visitante
 				if (habilitaBuscaCPF && visitante.getId() == null && cpfTextField.getText() != null
 						&& !"".equals(cpfTextField.getText())
-						&& !"".equals(cpfTextField.getText().replace(".", "").replace("-", ""))) {
+						&& !"".equals(cpfTextField.getText().replace(".", "").replace("-", ""))
+						&& validarCPF(cpfTextField.getText())) {
 					PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateAccessDataFacade
 							.getSingleResultByCPF(PedestrianAccessEntity.class,
 									cpfTextField.getText().replace(".", "").replace("-", "").trim());
@@ -504,6 +505,18 @@ public class RegisterVisitorDialog extends BaseDialog {
 			criaPanelDadosAcesso(panel);
 
 		return panel;
+	}
+	
+	private boolean validarCPF(String cpf) {
+	    if (cpf == null) {
+	        return false;
+	    }
+	    
+	    // Remove todos os caracteres não numéricos
+	    String cpfLimpo = cpf.replaceAll("[^0-9]", "");
+	    
+	    // Se, após a limpeza, a string estiver vazia, retorna false
+	    return !cpfLimpo.isEmpty();
 	}
 
 	private void criarDialogoConfirmarmudarTipoPedestre(PedestrianAccessEntity existente) {

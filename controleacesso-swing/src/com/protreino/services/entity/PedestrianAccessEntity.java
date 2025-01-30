@@ -24,6 +24,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.Index;
+
 
 import org.apache.commons.codec.binary.Base64;
 import org.hibernate.annotations.Fetch;
@@ -43,7 +45,11 @@ import com.protreino.services.utils.EncryptionUtils;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TB_PEDESTRIAN_ACCESS")
+@Table(name = "TB_PEDESTRIAN_ACCESS",
+       indexes = {
+           @Index(name = "idx_pedestrian_cpf", columnList = "CPF"),
+           @Index(name = "idx_pedestrian_rg", columnList = "RG")
+       })
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllPedestre", query = "select obj from PedestrianAccessEntity obj "
