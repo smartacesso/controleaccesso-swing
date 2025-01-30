@@ -11,9 +11,13 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
 import com.protreino.services.to.controlIdDevice.ValidOutput;
@@ -294,6 +298,47 @@ public class ControlIdDeviceService {
 		  
 		return null;
 	}
+	
+	
+	public static List<Long> createObjects(String session, String object, List<Map<String, Object>> values, String ip) {
+	    if (session == null || session.isEmpty()) {
+	        throw new IllegalArgumentException("A sessão é obrigatória.");
+	    }
+	    if (object == null || object.isEmpty()) {
+	        throw new IllegalArgumentException("O tipo de objeto é obrigatório.");
+	    }
+	    if (values == null || values.isEmpty()) {
+	        throw new IllegalArgumentException("Os valores para criação dos objetos são obrigatórios.");
+	    }
+
+	    try {
+	        String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
+
+	        // Monta o payload da requisição
+	        Map<String, Object> payload = new HashMap<>();
+	        payload.put("object", object);
+	        payload.put("values", values);
+
+	        String jsonPayload = gson.toJson(payload);
+
+	        // Envia a requisição usando o método genérico `send`
+	        String response = send("POST", url, "application/json", jsonPayload, 5000, 5000);
+
+	        if (response == null || response.isEmpty()) {
+	            System.err.println("Resposta da API está vazia ou nula.");
+	            return null;
+	        }
+
+	        // Converte a resposta em um objeto contendo os IDs dos objetos criados
+	        Map<String, List<Long>> responseMap = gson.fromJson(response, new TypeToken<Map<String, List<Long>>>() {}.getType());
+	        return responseMap.get("ids");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+
 
 	//Listagem de Usuarios na camera
 	public static boolean ListagemdeUsers(String session, String ip) {
