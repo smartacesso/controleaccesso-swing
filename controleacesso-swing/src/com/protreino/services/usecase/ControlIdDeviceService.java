@@ -1,6 +1,8 @@
 package com.protreino.services.usecase;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -16,6 +18,11 @@ import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
 import com.protreino.services.to.controlIdDevice.ValidOutput;
 import com.protreino.services.to.hikivision.HikivisionUserInfoTO;
+
+import com.protreino.services.entity.PedestrianAccessEntity;
+
+//import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -34,7 +41,6 @@ public class ControlIdDeviceService {
 	public ControlIdDeviceService() {
 		gson = new Gson();
 	}
-
 	
 	private static String send(String method, String url, String contentType, String body, int connectTimeout, int readTimeout) {
 	    HttpURLConnection conn = null;
@@ -65,7 +71,7 @@ public class ControlIdDeviceService {
 
 	        // Lê a resposta
 	        int responseCode = conn.getResponseCode();
-	        if (responseCode >= 200 && responseCode <= 299) {
+	        if (isFamily2XX(responseCode)) {
 	            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
 	                StringBuilder response = new StringBuilder();
 	                String line;
@@ -98,6 +104,112 @@ public class ControlIdDeviceService {
 	    return null;
 	}
 
+	//TODO: Necessario tirar o Static
+	public static String postMessage(final String contentType,final String url, final String body) {
+		
+	    if (Objects.isNull(body) || body.isEmpty()) {
+           return null;// Fecha a saída para evitar bloqueio
+        } 
+		
+	    HttpURLConnection conn = null;
+	    try {
+	        System.out.println("Iniciando requisição para URL: " + url);
+
+	        // Configura a conexão
+	        URL endpoint = new URL(url);
+	        conn = (HttpURLConnection) endpoint.openConnection();
+	        conn.setRequestMethod("POST");
+	        conn.setRequestProperty("Content-Type", contentType);
+
+	        conn.setDoOutput(true);
+	        
+	        OutputStream os = conn.getOutputStream();
+	        
+	        os.write(body.getBytes("UTF-8"));
+            os.flush();
+	        
+	        int responseCode = conn.getResponseCode();
+	        
+	        if (!isFamily2XX(responseCode)) {
+	        	return null;
+	        }
+	        
+	        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                String line = br.readLine();
+                
+                if (Objects.isNull(line) || line.isEmpty()) {
+                    return null;
+                }
+                System.out.println("Resposta recebida: " + line);
+                return line;
+            }
+	        
+	    } catch (SocketTimeoutException e) {
+	        System.err.println("Erro: Timeout ao conectar à URL: " + url);
+	    } catch (IOException e) {
+	        System.err.println("Erro: Não foi possível conectar à URL: " + url);
+	        e.printStackTrace();
+	    } catch (Exception e) {
+	        System.err.println("Erro: não foi possível enviar a requisicao: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    finally {
+	    	if(Objects.nonNull(conn))
+	    	conn.disconnect();
+	    }
+	    return null;
+	}
+	
+	public static String getMessage(final String contentType,final String url) { 
+		
+	    HttpURLConnection conn = null;
+	    try {
+	        System.out.println("Iniciando requisição para URL: " + url);
+
+	        // Configura a conexão
+	        URL endpoint = new URL(url);
+	        conn = (HttpURLConnection) endpoint.openConnection();
+	        conn.setRequestMethod("POST");
+	        conn.setRequestProperty("Content-Type", contentType);
+
+	        conn.setDoOutput(true);
+	        
+	        int responseCode = conn.getResponseCode();
+	        
+	        if (!isFamily2XX(responseCode)) {
+	        	return null;
+	        }
+	        
+	        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                String line = br.readLine();
+                
+                if (Objects.isNull(line) || line.isEmpty()) {
+                    return null;
+                }
+                System.out.println("Resposta recebida: " + line);
+                return line;
+            }
+	        
+	    } catch (SocketTimeoutException e) {
+	        System.err.println("Erro: Timeout ao conectar à URL: " + url);
+	    } catch (IOException e) {
+	        System.err.println("Erro: Não foi possível conectar à URL: " + url);
+	        e.printStackTrace();
+	    } catch (Exception e) {
+	        System.err.println("Erro: não foi possível enviar a requisicao: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    finally {
+	    	if(Objects.nonNull(conn))
+	    	conn.disconnect();
+	    }
+	    return null;
+	}
+
+
+	private static boolean isFamily2XX(int responseCode) {
+		return responseCode >= 200 && responseCode <= 299;
+	}
 
 	public static String login(LoginInput login, String ip) {
 	    if (Objects.isNull(login)) {
@@ -108,6 +220,8 @@ public class ControlIdDeviceService {
 	    String url = "http://" + ip + "/login.fcgi";
 	    String payload = gson.toJson(login);
 	    String response = send("POST", url, "application/json", payload, 5000, 5000);
+	    //TODO: vamos trabalhar com objetos, nao com strings
+	    String responseLogin = postMessage(url, "application/json", payload);
 
 	    if (response != null) {
 	        // Parse da resposta para obter a sessão
@@ -150,7 +264,7 @@ public class ControlIdDeviceService {
 	    String url = "http://" + ip + "/session_is_valid.fcgi?session=" + session;
 	    String response = send("POST", url, "application/json", null, 5000, 5000);
 
-	    if (response != null) {
+	    if (Objects.isNull(response)) {
 	        // Parse da resposta para obter a sessão
 	        ValidOutput validOutput = gson.fromJson(response, ValidOutput.class);
 	        if (validOutput != null && validOutput.getValid() != null) {
@@ -181,4 +295,61 @@ public class ControlIdDeviceService {
 		return null;
 	}
 
+	//Listagem de Usuarios na camera
+	public static boolean ListagemdeUsers(String session, String ip) {
+	
+	    String url = "http://" + ip + "/user_list_images.fcgi?get_timestamp=1&session=" + session;
+	    String response = send("GET", url, "application/json", null, 5000, 5000);
+
+	    if (response == null || response.trim().equals("{}")) {
+	        System.out.println("Users recebidos.");
+	        return true;
+	    }
+	    System.err.println("Erro em receber quantos usuarios.");
+	    return false;
+	}
+	
+	//Recebe fotos do facial
+	//Precisa puxar uma variavel com um array de todos os IDs dentro do facial e colocar essa variavel em idsFacial
+	public static boolean ColetadeFotoFacial(String session, String ip) {
+		
+	    String url = "http://" + ip + "/user_get_image.fcgi?user_id="+ idsFacial +"&get_timestamp=0&session=" + session;
+	    String response = send("GET", url, "application/json", null, 5000, 5000);
+
+	    if (response == null || response.trim().equals("{}")) {
+	        System.out.println("Foto de usuario foi recebidos.");
+	        return true;
+	    }
+	    System.err.println("Erro em receber fotos de usuarios dentro do facial.");
+	    return false;
+	}
+
+	//Envio de foto para a camera
+	//precisa trocar a variavel imagePath para a recebe a foto
+	public static boolean EnviodeFoto(String session, String ip, String cardNumber, byte[] foto) { 
+		
+		try {
+			
+	        
+	        //Codifica a imagem em Base64
+			String fotoBase64 = Base64.getEncoder().encodeToString(foto);
+
+	        //Envia o Base64 para a câmera
+	        String url = "http://" + ip + "/user_set_image.fcgi?user_id=" + cardNumber + "&match=1&timestamp=1624997578&session=" + session;
+	        String response = send("POST", url, "application/octet-stream", fotoBase64, 5000, 5000);
+
+	        if (response == null || response.trim().equals("{}")) {
+	            System.out.println("Foto enviada com sucesso");
+	            return true;
+	        } else {
+	            System.err.println("Erro ao enviar foto.");
+	            return false;
+	        }
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+	
 }
