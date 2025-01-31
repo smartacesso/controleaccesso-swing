@@ -33,7 +33,13 @@ public class HttpConnection {
 		con.setReadTimeout(120000);
 	}
 	
-	
+	public void setTimeout(int timeout) {
+	    if (con != null) {
+	        con.setConnectTimeout(timeout);
+	        con.setReadTimeout(timeout);
+	    }
+	}
+
 	public int getResponseCode() throws IOException{
 		if (con != null){
 			return con.getResponseCode();

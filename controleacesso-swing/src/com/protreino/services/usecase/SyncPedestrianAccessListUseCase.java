@@ -384,7 +384,10 @@ public class SyncPedestrianAccessListUseCase {
                         + "?client=" + Main.loggedUser.getIdClient()
                         + "&lastsync=" + lastSync
                         + "&version=" + Configurations.VERSION);
+                con.setTimeout(0); // 60 segundos
+
                 Integer responseCode = con.getResponseCode();
+                
 
                 if (responseCode != 200 && responseCode != 404) {
                     System.out.println(sdf.format(new Date()) + "  ERRO NA SINCRONIZACAO: Error String: " + con.getErrorString());

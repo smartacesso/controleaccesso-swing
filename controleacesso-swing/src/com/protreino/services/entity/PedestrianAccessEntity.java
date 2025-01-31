@@ -48,7 +48,9 @@ import com.protreino.services.utils.EncryptionUtils;
 @Table(name = "TB_PEDESTRIAN_ACCESS",
        indexes = {
            @Index(name = "idx_pedestrian_cpf", columnList = "CPF"),
-           @Index(name = "idx_pedestrian_rg", columnList = "RG")
+           @Index(name = "idx_pedestrian_rg", columnList = "RG"),
+           @Index(name = "idx_pedestrian_matricula", columnList = "MATRICULA"),
+           @Index(name = "idx_pedestrian_card_number", columnList = "CARD_NUMBER")
        })
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
