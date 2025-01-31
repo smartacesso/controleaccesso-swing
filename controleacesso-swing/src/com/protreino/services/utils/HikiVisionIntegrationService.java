@@ -669,71 +669,72 @@ public class HikiVisionIntegrationService {
 		}
 	}
 	
-	 public void criarPlanoDeHorario(final String deviceId, final int weekPlanId, PlanoHorarioHikivision config) {
-		 	Gson gson = new Gson();
-		 	
-	        String bodyInterno = gson.toJson(config);
-	        String body = "{\"UserRightWeekPlanCfg\": " + bodyInterno + " }";
-	        
-	        RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
-	        OkHttpClient client = getOkHttpClient();
-	        
-	        Request request = new Request.Builder()
-	                .url(url + "/ISAPI/AccessControl/UserRightWeekPlanCfg/" + weekPlanId + "?format=json&devIndex=" + deviceId)
-	                .put(requestBody)
-	                .build();
+	public void criarPlanoDeHorario(final String deviceId, final int weekPlanId, PlanoHorarioHikivision config) {
+		Gson gson = new Gson();
 
-	        try (Response response = client.newCall(request).execute()) {
-	            if (response.isSuccessful()) {
-	                System.out.println(String.format("Configuração do horario de acesso %d atualizada no dispositivo %s com sucesso!", weekPlanId, deviceId));
-	            } else {
-	                System.err.println("Erro ao atualizar configuração de horario: " + response.code() + " - " + response.message());
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    }
+		String bodyInterno = gson.toJson(config);
+		String body = "{\"UserRightWeekPlanCfg\": " + bodyInterno + " }";
+
+		RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder().url(
+				url + "/ISAPI/AccessControl/UserRightWeekPlanCfg/" + weekPlanId + "?format=json&devIndex=" + deviceId)
+				.put(requestBody).build();
+
+		try (Response response = client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				System.out.println(
+						String.format("Configuração do horario de acesso %d atualizada no dispositivo %s com sucesso!",
+								weekPlanId, deviceId));
+			} else {
+				System.err.println(
+						"Erro ao atualizar configuração de horario: " + response.code() + " - " + response.message());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	 
-	 public void CriarTemplateComHorario(final String deviceId,final int planTemplateId ,final int weekPlanId, final String nome) {
+	public void criarTemplateComHorario(final String deviceId, final int planTemplateId, final int weekPlanId, final String nome) {
+		final String body = "{" 
+								+ "\"UserRightPlanTemplate\": {" 
+									+ "\"enable\": " + true + "," 
+									+ "\"templateName\": \"" + nome + "\"," + 
+									"\"weekPlanNo\": " + weekPlanId + "," 
+									+ "\"holidayGroupNo\": \"\"" 
+								+ "}" 
+							+ "}";
 
-		 final String body = "{"
-			        + "\"UserRightPlanTemplate\": {"
-			        + "\"enable\": " + true + ","  
-			        + "\"templateName\": \"" + nome + "\","
-			        + "\"weekPlanNo\": " + weekPlanId + ","  
-			        + "\"holidayGroupNo\": \"\""
-			        + "}"
-			        + "}";
+		RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
+		OkHttpClient client = getOkHttpClient();
 
-	        RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
-	        OkHttpClient client = getOkHttpClient();
-	        
-	        Request request = new Request.Builder()
-	                .url(url + "/ISAPI/AccessControl/UserRightPlanTemplate/" + planTemplateId + "?format=json&devIndex=" + deviceId)
-	                .put(requestBody)
-	                .build();
+		Request request = new Request.Builder().url(url + "/ISAPI/AccessControl/UserRightPlanTemplate/" + planTemplateId
+				+ "?format=json&devIndex=" + deviceId).put(requestBody).build();
 
-	        try (Response response = client.newCall(request).execute()) {
-	            if (response.isSuccessful()) {
-	                System.out.println(String.format("Configuração de acesso do plano %d atualizada no dispositivo %s com sucesso!", planTemplateId, deviceId));
-	            } else {
-	                System.err.println("Erro ao atualizar configuração de template: " + response.code() + " - " + response.message());
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    }
+		try (Response response = client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				System.out.println(
+						String.format("Configuração de acesso do plano %d atualizada no dispositivo %s com sucesso!",
+								planTemplateId, deviceId));
+			} else {
+				System.err.println(
+						"Erro ao atualizar configuração de template: " + response.code() + " - " + response.message());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	 
-	 public void vincularTemplateNoUsuario(final String deviceId, final String idUser, final int planTemplateId) {
+	public void vincularTemplateNoUsuario(final String deviceId, final String idUser, final int planTemplateId) {
+		String userType = "normal";
+		boolean validEnable = false;
+		String beginTime = "2025-12-01T17:30:08";
+		String endTime = "2032-08-01T17:30:08";
+		String doorRight = "1";
+		int doorNo = 1;
 
-		 String userType = "normal";
-		 boolean validEnable = false;
-		 String beginTime = "2025-12-01T17:30:08";
-		 String endTime = "2032-08-01T17:30:08";
-		 String doorRight = "1";
-		 int doorNo = 1;
-
-		 String body = "{\n" +
+		String body = "{\n" +
 		         "    \"UserInfo\": {\n" +
 		         "        \"employeeNo\": \"" + idUser + "\",\n" +
 		         "        \"userType\": \"" + userType + "\",\n" +
@@ -752,26 +753,24 @@ public class HikiVisionIntegrationService {
 		         "    }\n" +
 		         "}";
 		
-	        RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
-	        OkHttpClient client = getOkHttpClient();
-	        
-	        Request request = new Request.Builder()
-	                .url(url + "/ISAPI/AccessControl/UserInfo/SetUp?format=json&devIndex=" + deviceId)
-	                .put(requestBody)
-	                .build();
+        RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
+        OkHttpClient client = getOkHttpClient();
+        
+        Request request = new Request.Builder()
+                .url(url + "/ISAPI/AccessControl/UserInfo/SetUp?format=json&devIndex=" + deviceId)
+                .put(requestBody)
+                .build();
 
-	        try (Response response = client.newCall(request).execute()) {
-	            if (response.isSuccessful()) {
-	                System.out.println("Configuração de acesso do usuario atualizada no dispositivo com sucesso!");
-	            } else {
-	                System.err.println("Erro ao atualizar configuração de vinculo de usuario: " + response.code() + " - " + response.message());
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    }
-	 
-	 
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                System.out.println("Configuração de acesso do usuario atualizada no dispositivo com sucesso!");
+            } else {
+                System.err.println("Erro ao atualizar configuração de vinculo de usuario: " + response.code() + " - " + response.message());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 	 
 	private OkHttpClient getOkHttpClient() {
 		final DigestAuthenticator authenticator = new DigestAuthenticator(new Credentials(user, password));
@@ -782,10 +781,7 @@ public class HikiVisionIntegrationService {
 				.writeTimeout(10000, TimeUnit.MILLISECONDS).build();
 	}
 	
-
-	
 	public static void main(String[] args) throws InterruptedException, SocketException {
-			
 		 	url = "http://localhost:8082";
 		    user = "admin";
 		    password = "0000smart";
@@ -802,7 +798,7 @@ public class HikiVisionIntegrationService {
 
 		   
 		    service.criarPlanoDeHorario("B637DAF8-EA94-4A99-9BE5-1BB658174032", 1, config);
-		    service.CriarTemplateComHorario("B637DAF8-EA94-4A99-9BE5-1BB658174032", 10, 1, "teste 2");
+		    service.criarTemplateComHorario("B637DAF8-EA94-4A99-9BE5-1BB658174032", 10, 1, "teste 2");
 		    service.vincularTemplateNoUsuario("B637DAF8-EA94-4A99-9BE5-1BB658174032", "13903910", 10);
 	}
 
