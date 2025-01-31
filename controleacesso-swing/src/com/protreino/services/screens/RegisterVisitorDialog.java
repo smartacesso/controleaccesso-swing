@@ -165,6 +165,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private HikivisionUseCases hikivisionUseCases;
 
 	private JButton syncInHikivisionButton;
+	
+	private final static Map<Long, Vector<SelectItem>> cacheDepartamentos = new HashMap<>();
+	private final static Map<Long, Vector<SelectItem>> cacheCargos = new HashMap<>();
+	private final static Map<Long, Vector<SelectItem>> cacheCentroCustos = new HashMap<>();
+
 
 	// Tela de cadastro de pedestre
 
@@ -2793,7 +2798,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Vector<SelectItem> getAllCargosSelectItens(Long idEmpresa) {
+	private static Vector<SelectItem> getAllCargosSelectItens(Long idEmpresa) {
 		Vector<SelectItem> cargoItens = new Vector<SelectItem>();
 		cargoItens.add(new SelectItem("Selecione", null));
 		List<CargoEntity> cargos = null;
@@ -2815,7 +2820,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Vector<SelectItem> getAllCentroCustosSelectItens(Long idEmpresa) {
+	private static Vector<SelectItem> getAllCentroCustosSelectItens(Long idEmpresa) {
 		Vector<SelectItem> centroCustoItens = new Vector<SelectItem>();
 		centroCustoItens.add(new SelectItem("Selecione", null));
 		List<CentroCustoEntity> centroCustos = null;
@@ -2837,7 +2842,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Vector<SelectItem> getAllDepartamentosSelectItens(Long idEmpresa) {
+	private static Vector<SelectItem> getAllDepartamentosSelectItens(Long idEmpresa) {
 		Vector<SelectItem> departamentoItens = new Vector<SelectItem>();
 		departamentoItens.add(new SelectItem("Selecione", null));
 		List<DepartamentoEntity> departamentos = null;
@@ -3008,6 +3013,19 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 
 			return Printable.PAGE_EXISTS;
+		}
+
+		
+		public Vector<SelectItem> getDepartamentos(Long idEmpresa) {
+		    return cacheDepartamentos.computeIfAbsent(idEmpresa, id -> getAllDepartamentosSelectItens(id));
+		}
+
+		public Vector<SelectItem> getCargos(Long idEmpresa) {
+		    return cacheCargos.computeIfAbsent(idEmpresa, id -> getAllCargosSelectItens(id));
+		}
+
+		public Vector<SelectItem> getCentroCustos(Long idEmpresa) {
+		    return cacheCentroCustos.computeIfAbsent(idEmpresa, id -> getAllCentroCustosSelectItens(id));
 		}
 
 	}
