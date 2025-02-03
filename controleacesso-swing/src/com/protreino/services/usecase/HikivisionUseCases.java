@@ -21,6 +21,7 @@ import com.protreino.services.repository.HikivisionFingerErrorRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
+import com.protreino.services.to.hikivision.PlanoHorarioHikivision;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO.MatchList;
 import com.protreino.services.utils.HikiVisionIntegrationService;
@@ -368,6 +369,15 @@ public class HikivisionUseCases {
 
 		pedestre.setDataCadastroFotoNaHikivision(null);
 		pedestre.setLastAccessHikiVision(null);
+	}
+	
+	public void sincronizarHorarioHIkivision(Integer idPlan, PlanoHorarioHikivision config) {
+		final List<Device> devices = listarDispositivos();
+
+		devices.forEach(device -> {
+			hikiVisionIntegrationService.criarPlanoDeHorario(devices.get(0).getDevIndex(), idPlan, config);
+		});
+
 	}
 
 }

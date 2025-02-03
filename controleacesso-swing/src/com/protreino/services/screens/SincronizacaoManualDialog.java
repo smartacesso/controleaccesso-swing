@@ -45,6 +45,7 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.SincronismoHorariosHikivision;
 import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
 
@@ -64,6 +65,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private JButton syncAll; //botao de sincronização total
 
 	private JButton syncByDate; //botao de sincronização por data
+	
+	private JButton syncHorario; //botao de sincronização por data
 
 	private JButton addDevice; // botao de adicionar dispositivos
 	private JButton syncCameraListners; // botao de sincronizar camera
@@ -142,6 +145,15 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		addDevice.addActionListener(e -> {
 			adicionarDevice();
 		});
+		
+		syncHorario = new JButton("Sincronizar horarios");
+		syncHorario.setBorder(new EmptyBorder(10, 15, 10, 15));
+		syncHorario.setPreferredSize(new Dimension(120, 40));
+		syncHorario.addActionListener(e -> {
+			syncHorario();
+		});
+		
+		
 
 		syncCameraListners = new JButton("Sincronizar listeners");
 		syncCameraListners.setBorder(new EmptyBorder(10, 15, 10, 15));
@@ -163,6 +175,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		actionsPanel.add(syncAll);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncByDate);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(syncHorario);
 
 		populateTable();
 
@@ -176,6 +190,12 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+
+	private void syncHorario() {
+		// TODO Auto-generated method stub
+		SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+		sincronismoHorariosHikivision.execute();
 	}
 
 	// janela adicionar camera dentro de sincronismo manual de dispositivos
