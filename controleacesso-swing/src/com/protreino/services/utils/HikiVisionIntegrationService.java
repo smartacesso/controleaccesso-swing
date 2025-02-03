@@ -7,11 +7,13 @@ import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.protreino.services.enumeration.DiaSemana;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.to.hikivision.*;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.UserInfoTO.UserInfoOut;
+
 
 import okhttp3.*;
 
@@ -674,7 +676,10 @@ public class HikiVisionIntegrationService {
 
 		String bodyInterno = gson.toJson(config);
 		String body = "{\"UserRightWeekPlanCfg\": " + bodyInterno + " }";
-
+		
+		
+		System.out.println(body);
+		
 		RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
 		OkHttpClient client = getOkHttpClient();
 
@@ -789,9 +794,9 @@ public class HikiVisionIntegrationService {
 		    HikiVisionIntegrationService service = new HikiVisionIntegrationService();
 
 		    List<DiaHIkivision> dias = Arrays.asList(
-		            new DiaHIkivision("Monday", 1, true, new TimeSegment("08:00:00", "18:00:00")),
-		            new DiaHIkivision("Tuesday", 1, true, new TimeSegment("08:00:00", "18:00:00")),
-		            new DiaHIkivision("Friday", 1, true, new TimeSegment("08:00:00", "17:00:00"))
+		           // new DiaHIkivision(DiaSemana.Monday.name(), 1, true, new TimeSegment("08:00:00", "18:00:00")),
+		         //  new DiaHIkivision("Tuesday", 1, true, new TimeSegment("08:00:00", "18:00:00")),
+		          //  new DiaHIkivision("Friday", 1, true, new TimeSegment("08:00:00", "17:00:00"))
 		    );
 		  
 		    PlanoHorarioHikivision config = new PlanoHorarioHikivision(true, dias);

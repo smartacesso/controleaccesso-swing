@@ -51,7 +51,13 @@ import com.protreino.services.to.RegraTO;
 					  + "where obj.nome = :NOME_REGRA "
 					  + "and (obj.cadastradoNoDesktop = :CADASTRADO_NO_DESKTOP "
 					  + "		or obj.cadastradoNoDesktop is null) "
-					  + "order by obj.id asc")
+					  + "order by obj.id asc"),
+	@NamedQuery(name  = "RegraEntity.findAllComHorario", 
+				query = "select obj "
+				      + "from RegraEntity obj "
+				      + "join fetch obj.horarios "
+				      + "where (obj.removed is null or obj.removed = false) "
+					  + "order by obj.id asc"),
 })
 @SuppressWarnings("serial")
 public class RegraEntity extends BaseEntity implements ObjectWithId {
@@ -106,6 +112,12 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	
 	@Column(name="ID_CLIENT", nullable=false, length=10)
 	private String idClient;
+	
+	@Column(name="ID_TEMPLATE", nullable=false, length=10)
+	private Integer idTemplate;
+	
+	@Column(name="ID_PLANO", nullable=false, length=10)
+	private Integer idPlano;
 	
 	@Type(type="org.hibernate.type.NumericBooleanType")
 	@Column(name="CADASTRADO_NO_DESKTOP", nullable=true, length=30)
@@ -361,5 +373,21 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 
 	public void setDataRemovido(Date dataRemovido) {
 		this.dataRemovido = dataRemovido;
+	}
+
+	public Integer getIdTemplate() {
+		return idTemplate;
+	}
+
+	public void setIdTemplate(Integer idTemplate) {
+		this.idTemplate = idTemplate;
+	}
+
+	public Integer getIdPlano() {
+		return idPlano;
+	}
+
+	public void setIdPlano(Integer idPlano) {
+		this.idPlano = idPlano;
 	}
 }

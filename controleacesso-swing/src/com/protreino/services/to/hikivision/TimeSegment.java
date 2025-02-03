@@ -1,20 +1,22 @@
 package com.protreino.services.to.hikivision;
 
+import java.util.Date;
+
 public class TimeSegment {
     
-	private final String beginTime;
-    private final String endTime;
+	private final Date beginTime;
+    private final Date endTime;
 
-    public TimeSegment(String beginTime, String endTime) {
+    public TimeSegment(Date beginTime, Date endTime) {
         this.beginTime = beginTime;
         this.endTime = endTime;
     }
 
-	public String getBeginTime() {
+	public Date getBeginTime() {
 		return beginTime;
 	}
 
-	public String getEndTime() {
+	public Date getEndTime() {
 		return endTime;
 	}
 }
