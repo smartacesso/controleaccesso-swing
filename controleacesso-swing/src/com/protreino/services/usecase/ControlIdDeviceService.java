@@ -109,7 +109,7 @@ public class ControlIdDeviceService {
 	}
 
 	//TODO: Necessario tirar o Static
-	public static String postMessage(final String contentType,final String url, final String body) {
+	public <T> Object postMessage(final String contentType, final String url, final String body, Class<T> entityClass) {
 		
 	    if (Objects.isNull(body) || body.isEmpty()) {
            return null;// Fecha a saída para evitar bloqueio
@@ -126,12 +126,12 @@ public class ControlIdDeviceService {
 	        conn.setRequestProperty("Content-Type", contentType);
 
 	        conn.setDoOutput(true);
-	        
+
 	        OutputStream os = conn.getOutputStream();
-	        
+
 	        os.write(body.getBytes("UTF-8"));
             os.flush();
-	        
+
 	        int responseCode = conn.getResponseCode();
 	        
 	        if (!isFamily2XX(responseCode)) {
@@ -210,191 +210,14 @@ public class ControlIdDeviceService {
 	    return null;
 	}
 
-
 	private static boolean isFamily2XX(int responseCode) {
 		return responseCode >= 200 && responseCode <= 299;
 	}
 
-	public static String login(LoginInput login, String ip) {
-	    if (Objects.isNull(login)) {
-	        System.err.println("LoginInput não pode ser nulo.");
-	        return null;
-	    }
-
-	    String url = "http://" + ip + "/login.fcgi";
-	    String payload = gson.toJson(login);
-	    String response = send("POST", url, "application/json", payload, 5000, 5000);
-	    //TODO: vamos trabalhar com objetos, nao com strings
-	    String responseLogin = postMessage(url, "application/json", payload);
-
-	    if (response != null) {
-	        // Parse da resposta para obter a sessão
-	        SessionOutput sessionOutput = gson.fromJson(response, SessionOutput.class);
-	        if (sessionOutput != null && sessionOutput.getSession() != null) {
-	            System.out.println("Sessão obtida com sucesso: " + sessionOutput.getSession());
-	            return sessionOutput.getSession();
-	        } else {
-	            System.err.println("Falha ao obter a sessão da resposta.");
-	        }
-	    }
-	    return null;
-	}
-	
-	
-	public static boolean logout(String session, String ip) {
-	    if (Objects.isNull(session) || session.isEmpty()) {
-	        System.err.println("Sessão não pode ser nula ou vazia.");
-	        return false;
-	    }
-
-	    String url = "http://" + ip + "/logout.fcgi?session=" + session;
-	    String response = send("POST", url, "application/json", null, 5000, 5000);
-
-	    if (response == null || response.trim().equals("{}")) {
-	        System.out.println("Logout realizado com sucesso.");
-	        return true;
-	    }
-	    System.err.println("Falha no logout.");
-	    return false;
-	}
-
-	
-	public static boolean isValidSession(String session, String ip) {
-	    if (Objects.isNull(session) || session.isEmpty()) {
-	        System.err.println("Sessão não pode ser nula ou vazia.");
-	        return false;
-	    }
-
-	    String url = "http://" + ip + "/session_is_valid.fcgi?session=" + session;
-	    String response = send("POST", url, "application/json", null, 5000, 5000);
-
-	    if (Objects.isNull(response)) {
-	        // Parse da resposta para obter a sessão
-	        ValidOutput validOutput = gson.fromJson(response, ValidOutput.class);
-	        if (validOutput != null && validOutput.getValid() != null) {
-	            System.out.println("Sessão obtida com sucesso: " + validOutput.getValid());
-	            return validOutput.isValid();
-	        } else {
-	            System.err.println("Falha ao obter a sessão da resposta.");
-	        }
-	    }
-	    return false;
-	}
 
 	
 
-	private Void alterarUsuario(String session, LoginInput login) {
-		//terminar
-	
-		
-	    if (Objects.isNull(login)) {
-	        System.err.println("LoginInput não pode ser nulo.");
-	        return null;
-	    }
-		  if (Objects.isNull(session) || session.isEmpty()) {
-		        System.err.println("Sessão não pode ser nula ou vazia.");
-		    return null;
-		}
-		  
-		return null;
-	}
-	
-	
-	public static List<Long> createObjects(String session, String object, List<Map<String, Object>> values, String ip) {
-	    if (session == null || session.isEmpty()) {
-	        throw new IllegalArgumentException("A sessão é obrigatória.");
-	    }
-	    if (object == null || object.isEmpty()) {
-	        throw new IllegalArgumentException("O tipo de objeto é obrigatório.");
-	    }
-	    if (values == null || values.isEmpty()) {
-	        throw new IllegalArgumentException("Os valores para criação dos objetos são obrigatórios.");
-	    }
-
-	    try {
-	        String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
-
-	        // Monta o payload da requisição
-	        Map<String, Object> payload = new HashMap<>();
-	        payload.put("object", object);
-	        payload.put("values", values);
-
-	        String jsonPayload = gson.toJson(payload);
-
-	        // Envia a requisição usando o método genérico `send`
-	        String response = send("POST", url, "application/json", jsonPayload, 5000, 5000);
-
-	        if (response == null || response.isEmpty()) {
-	            System.err.println("Resposta da API está vazia ou nula.");
-	            return null;
-	        }
-
-	        // Converte a resposta em um objeto contendo os IDs dos objetos criados
-	        Map<String, List<Long>> responseMap = gson.fromJson(response, new TypeToken<Map<String, List<Long>>>() {}.getType());
-	        return responseMap.get("ids");
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return null;
-	    }
-	}
 
 
-	//Listagem de Usuarios na camera
-	public static boolean ListagemdeUsers(String session, String ip) {
-	
-	    String url = "http://" + ip + "/user_list_images.fcgi?get_timestamp=1&session=" + session;
-	    String response = send("GET", url, "application/json", null, 5000, 5000);
-
-	    if (response == null || response.trim().equals("{}")) {
-	        System.out.println("Users recebidos.");
-	        return true;
-	    }
-	    System.err.println("Erro em receber quantos usuarios.");
-	    return false;
-	}
-	
-	//Recebe fotos do facial
-	//Precisa puxar uma variavel com um array de todos os IDs dentro do facial e colocar essa variavel em idsFacial
-	public static boolean ColetadeFotoFacial(String session, String ip) {
-		
-	    String url = "http://" + ip + "/user_get_image.fcgi?user_id="+ idsFacial +"&get_timestamp=0&session=" + session;
-	    String response = send("GET", url, "application/json", null, 5000, 5000);
-
-	    if (response == null || response.trim().equals("{}")) {
-	        System.out.println("Foto de usuario foi recebidos.");
-	        return true;
-	    }
-	    System.err.println("Erro em receber fotos de usuarios dentro do facial.");
-	    return false;
-	}
-
-	//Envio de foto para a camera
-	//precisa trocar a variavel imagePath para a recebe a foto
-	public static boolean EnviodeFoto(String session, String ip, String cardNumber, byte[] foto) { 
-		
-		try {
-			
-	        
-	        //Codifica a imagem em Base64
-			String fotoBase64 = Base64.getEncoder().encodeToString(foto);
-
-	        //Envia o Base64 para a câmera
-	        String url = "http://" + ip + "/user_set_image.fcgi?user_id=" + cardNumber + "&match=1&timestamp=1624997578&session=" + session;
-	        String response = send("POST", url, "application/octet-stream", fotoBase64, 5000, 5000);
-
-	        if (response == null || response.trim().equals("{}")) {
-	            System.out.println("Foto enviada com sucesso");
-	            return true;
-	        } else {
-	            System.err.println("Erro ao enviar foto.");
-	            return false;
-	        }
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return false;
-	    }
-	}
 	
 }
