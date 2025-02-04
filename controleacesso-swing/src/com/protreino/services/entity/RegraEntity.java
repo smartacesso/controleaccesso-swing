@@ -113,10 +113,10 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="ID_CLIENT", nullable=false, length=10)
 	private String idClient;
 	
-	@Column(name="ID_TEMPLATE", nullable=false, length=10)
+	@Column(name="ID_TEMPLATE", nullable=true, length=10)
 	private Integer idTemplate;
 	
-	@Column(name="ID_PLANO", nullable=false, length=10)
+	@Column(name="ID_PLANO", nullable=true, length=10)
 	private Integer idPlano;
 	
 	@Type(type="org.hibernate.type.NumericBooleanType")

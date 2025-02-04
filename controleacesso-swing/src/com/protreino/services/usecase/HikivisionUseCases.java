@@ -373,9 +373,23 @@ public class HikivisionUseCases {
 	
 	public void sincronizarHorarioHIkivision(Integer idPlan, PlanoHorarioHikivision config) {
 		final List<Device> devices = listarDispositivos();
+		
+		System.out.println( "quantidade de devices : " + devices.size()); 
 
 		devices.forEach(device -> {
 			hikiVisionIntegrationService.criarPlanoDeHorario(devices.get(0).getDevIndex(), idPlan, config);
+		});
+
+	}
+	
+	
+	public void sincronizarTemplateHIkivision(Integer idPlan, Integer idTemplate, String nomeTemplate) {
+		final List<Device> devices = listarDispositivos();
+		
+		System.out.println( "quantidade de devices : " + devices.size()); 
+
+		devices.forEach(device -> {
+			hikiVisionIntegrationService.criarTemplateComHorario(devices.get(0).getDevIndex(),idTemplate , idPlan, nomeTemplate);
 		});
 
 	}
