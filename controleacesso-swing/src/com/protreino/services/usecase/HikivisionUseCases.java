@@ -377,7 +377,7 @@ public class HikivisionUseCases {
 		System.out.println( "quantidade de devices : " + devices.size()); 
 
 		devices.forEach(device -> {
-			hikiVisionIntegrationService.criarPlanoDeHorario(devices.get(0).getDevIndex(), idPlan, config);
+			hikiVisionIntegrationService.criarPlanoDeHorario(device.getDevIndex(), idPlan, config);
 		});
 
 	}
@@ -385,13 +385,22 @@ public class HikivisionUseCases {
 	
 	public void sincronizarTemplateHIkivision(Integer idPlan, Integer idTemplate, String nomeTemplate) {
 		final List<Device> devices = listarDispositivos();
-		
-		System.out.println( "quantidade de devices : " + devices.size()); 
 
 		devices.forEach(device -> {
-			hikiVisionIntegrationService.criarTemplateComHorario(devices.get(0).getDevIndex(),idTemplate , idPlan, nomeTemplate);
+			hikiVisionIntegrationService.criarTemplateComHorario(device.getDevIndex(),idTemplate , idPlan, nomeTemplate);
 		});
 
 	}
+	
+	public void vincularPedestreaoTemplate(String cardNUmber, Integer idTemplate) {
+		final List<Device> devices = listarDispositivos();
+		
+		devices.forEach(device -> {
+			hikiVisionIntegrationService.vincularTemplateNoUsuario(device.getDevIndex(), cardNUmber, idTemplate);
+		});
+
+	}
+	
+	
 
 }
