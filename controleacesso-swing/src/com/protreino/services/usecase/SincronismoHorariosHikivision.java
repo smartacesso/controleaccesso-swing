@@ -32,7 +32,6 @@ public class SincronismoHorariosHikivision {
 			System.out.println("Sem regras para sincronizar");			
 			return;
 		}
-		System.out.println("Quantidade de regras : " + regrasComHorario.size());
 		regrasComHorario.forEach(regra -> {
 			PlanoHorarioHikivision planoHorarios = montaPlanoHorario(regra.getHorarios());
 			
