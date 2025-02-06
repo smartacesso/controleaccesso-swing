@@ -497,7 +497,7 @@ public class Main {
 
         Long periodExpirar = 24L * 3600L * 1000L;
         Calendar inicio = Calendar.getInstance();
-        System.out.println(" hora para reset " + hora);
+        System.out.println("Hora para reset definido para " + hora + "Hr");
 
         inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
         inicio.set(Calendar.MINUTE, 0);
