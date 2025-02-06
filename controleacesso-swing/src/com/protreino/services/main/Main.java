@@ -938,9 +938,6 @@ public class Main {
                     timerSyncUsersAccessList
                             .setInitialDelay(Integer.valueOf(Utils.getPreference("timeUserAccessList")) * 60000);
                     trayIcon.setImage(trayIconImageLoading);
-
-                    // send all top data facial
-                    // get all top data facial
                     
                     requestAllUsers();
 

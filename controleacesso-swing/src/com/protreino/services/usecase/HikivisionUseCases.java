@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 import com.protreino.services.entity.HikivisionFingerEntity;
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.HikivisonFingerErrorEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.HikivisionAction;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
@@ -19,6 +21,7 @@ import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HikivisionFingerErrorRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
+import com.protreino.services.repository.RegraRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.to.hikivision.PlanoHorarioHikivision;
@@ -33,6 +36,7 @@ public class HikivisionUseCases {
 
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository();
 	private final HikivisionFingerErrorRepository hikivisionFingerErrors = new HikivisionFingerErrorRepository();
+	public final RegraRepository regraRepository = new RegraRepository();
 	
 	public HikivisionUseCases() {
 		this.hikiVisionIntegrationService = HikiVisionIntegrationService.getInstace();
@@ -374,8 +378,6 @@ public class HikivisionUseCases {
 	public void sincronizarHorarioHIkivision(Integer idPlan, PlanoHorarioHikivision config) {
 		final List<Device> devices = listarDispositivos();
 		
-		System.out.println( "quantidade de devices : " + devices.size()); 
-
 		devices.forEach(device -> {
 			hikiVisionIntegrationService.criarPlanoDeHorario(device.getDevIndex(), idPlan, config);
 		});
@@ -392,15 +394,40 @@ public class HikivisionUseCases {
 
 	}
 	
-	public void vincularPedestreaoTemplate(String cardNUmber, Integer idTemplate) {
-		final List<Device> devices = listarDispositivos();
-		
-		devices.forEach(device -> {
-			hikiVisionIntegrationService.vincularTemplateNoUsuario(device.getDevIndex(), cardNUmber, idTemplate);
-		});
+	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre) {
+	    final List<Device> devices = listarDispositivos();
+	    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
+	    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
+	        System.out.println("sem regras de horarios");
+	        return;
+	    }
+
+	    // Pegamos a regra inicial
+	    RegraEntity regra = regraAtiva.get().getRegra();
+
+	    if (Objects.isNull(regra.getIdTemplate())) {
+	        SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+	        sincronismoHorariosHikivision.execute();
+
+	        // Buscar a regra atualizada do banco
+	        regra = regraRepository.buscaRegraById(regra.getId());
+	    }
+
+	    // A regra usada nos dispositivos será sempre a mais atual
+	    final RegraEntity regraFinal = regra;
+
+	    devices.forEach(device -> {
+	        hikiVisionIntegrationService.vincularTemplateNoUsuario(
+	            device.getDevIndex(),
+	            pedestre.getCardNumber(),
+	            regraFinal.getIdTemplate()
+	        );
+	    });
+
+	    System.out.println("regra atualizada com sucesso");
 	}
-	
-	
+
+
 
 }

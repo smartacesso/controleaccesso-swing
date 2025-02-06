@@ -19,6 +19,7 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.text.Format;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -768,7 +769,7 @@ public class HikiVisionIntegrationService {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                System.out.println("Configuração de acesso do usuario atualizada no dispositivo com sucesso!");
+                System.out.println(String.format("Configuração de acesso do usuario atualizada no dispositivo com sucesso! no template %d", planTemplateId));
             } else {
                 System.err.println("Erro ao atualizar configuração de vinculo de usuario: " + response.code() + " - " + response.message());
             }

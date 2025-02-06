@@ -105,14 +105,7 @@ public class SincronismoHorariosHikivision {
 		.orElse(1);
 
 	}
-	
-	
-	public static void main(String[] args) throws InterruptedException, SocketException {
-		SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
-		sincronismoHorariosHikivision.execute();
 
-	}
-	
 	private String formataHora(Date data) {
 	    Calendar cal = Calendar.getInstance();
 	    cal.setTime(data);
@@ -120,5 +113,12 @@ public class SincronismoHorariosHikivision {
 	    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 	    return sdf.format(cal.getTime());
 	}
+	
+	public static void main(String[] args) throws InterruptedException, SocketException {
+		SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+		sincronismoHorariosHikivision.execute();
+
+	}
+	
 
 }
