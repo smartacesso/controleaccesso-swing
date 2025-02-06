@@ -50,53 +50,62 @@ public class HikivisionEventsUseCase {
 		}
 	}).create();
 
-	public void execute(final StringBuilder sb) {
-		final String requestBody = sb.toString();
-		final String objectPayload = Utils.getFirstJsonFromString(requestBody);
-		final String hikivisionCameraId = sb.toString().substring(requestBody.indexOf("/") + 1,
-				requestBody.indexOf(" HTTP"));
-		final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
+	public void execute(final String requestBody) { // Alterado de StringBuilder para String
+	    final String objectPayload = Utils.getFirstJsonFromString(requestBody);
 
-		if (Objects.isNull(eventListnerTO) 
-				|| Objects.isNull(eventListnerTO.getAccessControllerEvent())
-				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
+	    int startIndex = requestBody.indexOf("/") + 1;
+	    int endIndex = requestBody.indexOf(" HTTP");
 
-			System.out.println("Cartao recebido nulo da hikivision: :  " + Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo()));
-			System.out.println("Evento de pedestre nao reconhecido pela camera :  " + hikivisionCameraId);
-			System.out.println("Processa passagem encerrado");
-			return;
-		}
-		
-		System.out.println(String.format("Evento do usuario com o cartao : %s", eventListnerTO.getAccessControllerEvent().getCardNo()));
+	    if (startIndex < 1 || endIndex < 0 || startIndex >= endIndex) {
+	        System.out.println("Erro ao extrair hikivisionCameraId");
+	        return;
+	    }
 
-		final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
+	    final String hikivisionCameraId = requestBody.substring(startIndex, endIndex);
+	    final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
 
-		if (Objects.isNull(attachedDevice)) {
-			System.out.println("Sem catraca vinculada para a camera: " + hikivisionCameraId);
-			return;
-		}
-		
-		final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
-		final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
-		
-		if (isEventOffline(offsetDateTime)) {
-			System.out.println("Evento offline (hora errada) : " + eventListnerTO.getAccessControllerEvent().getDeviceName()
-					+ " | " + cardNumber + " | " + eventListnerTO.getDateTime());
+	    if (Objects.isNull(eventListnerTO) 
+	            || Objects.isNull(eventListnerTO.getAccessControllerEvent())
+	            || Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
 
-			if (DeviceStatus.CONNECTED == attachedDevice.getStatus()) {
-				try {
-					attachedDevice.disconnect();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime);
+	        System.out.println("Cartão recebido nulo da Hikvision.");
+	        System.out.println("Evento de pedestre não reconhecido pela câmera: " + hikivisionCameraId);
+	        System.out.println("Processamento encerrado.");
+	        return;
+	    }
+	    
+	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
+	            eventListnerTO.getAccessControllerEvent().getCardNo()));
 
-		} else {
-			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime);
-		}
+	    final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
+	    if (Objects.isNull(attachedDevice)) {
+	        System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
+	        return;
+	    }
+	    
+	    final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
+	    final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
+	    
+	    if (isEventOffline(offsetDateTime)) {
+	        System.out.println("Evento offline (hora errada): " 
+	                + eventListnerTO.getAccessControllerEvent().getDeviceName()
+	                + " | " + cardNumber + " | " + eventListnerTO.getDateTime());
+
+	        if (DeviceStatus.CONNECTED == attachedDevice.getStatus()) {
+	            try {
+	                attachedDevice.disconnect();
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+	        }
+	        processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime);
+
+	    } else {
+	        liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime);
+	    }
 	}
+
 
 	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso) {
 		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
