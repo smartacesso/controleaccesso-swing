@@ -10,7 +10,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import com.protreino.services.usecase.HikivisionEventsUseCase;
@@ -64,32 +66,34 @@ public class HikivisionTcpServer {
 		}
 
 		public void run() {
-			try (InputStream inputStream = socket.getInputStream();
-					OutputStream outputStream = socket.getOutputStream();
-					BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-				final StringBuilder sb = new StringBuilder();
-				try {
-					String line = "";
-					while (!line.equals("--MIME_boundary--")) {
-						line = br.readLine();
-						sb.append(line);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				hikivisionEventsUseCase.execute(sb);
-				sendResponse(outputStream);
+		    try (InputStream inputStream = socket.getInputStream();
+		         OutputStream outputStream = socket.getOutputStream();
+		         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+		        
+		        List<String> lines = new ArrayList<>();
+		        String line;
+		        
+		        while ((line = br.readLine()) != null && !line.equals("--MIME_boundary--")) {
+		            lines.add(line);
+		        }
 
-			} catch (EOFException eof) {
-				eof.printStackTrace();
-			} catch (SocketException se) {
-				se.printStackTrace();
-			} catch (Exception e) {
-				System.out.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
-				e.printStackTrace();
-			}
+		        String message = String.join("\n", lines);
+//		        System.out.println(message);
+		        hikivisionEventsUseCase.execute(message);
+		        sendResponse(outputStream);
+
+		    } catch (IOException e) {
+		        System.err.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
+		        e.printStackTrace();
+		    } finally {
+		        try {
+		            socket.close(); // Garantindo o fechamento do socket
+		        } catch (IOException e) {
+		            System.err.println("Erro ao fechar socket: " + e.getMessage());
+		        }
+		    }
 		}
+
 		
 		private void sendResponse(final OutputStream outputStream) throws IOException {
 			responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
