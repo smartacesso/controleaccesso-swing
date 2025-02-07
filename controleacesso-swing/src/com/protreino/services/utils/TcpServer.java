@@ -956,16 +956,20 @@ public class TcpServer {
 	    synchronized (connectedClients) {
 	        for (Socket client : connectedClients) {
 	            try {
+	                // Obtém ou cria o ObjectOutputStream
 	                ObjectOutputStream outputStream = clientStreams.get(client);
 	                if (outputStream == null) {
 	                    outputStream = new ObjectOutputStream(client.getOutputStream());
 	                    clientStreams.put(client, outputStream);
 	                }
 
-	                // Imprime a mensagem para conferirmos o que está sendo enviado
-	                System.out.println("Enviando mensagem: " + message);
-	                outputStream.writeObject(message); // Envia a mensagem de evento
-	                outputStream.flush();
+	                // Sincroniza o envio de mensagens
+	                synchronized (outputStream) {
+	                    // Imprime a mensagem para conferirmos o que está sendo enviado
+	                    System.out.println("Enviando mensagem: " + message);
+	                    outputStream.writeObject(message); // Envia a mensagem de evento
+	                    outputStream.flush(); // Garante que a mensagem seja completamente enviada
+	                }
 	            } catch (IOException e) {
 	                System.out.println("Erro ao enviar mensagem: " + e.getMessage());
 	            }

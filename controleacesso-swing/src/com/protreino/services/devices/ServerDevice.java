@@ -167,7 +167,7 @@ public class ServerDevice extends Device {
 
 	private void listenForServerMessages() {
 	    try {
-	        // Certifique-se de que está criando o ObjectInputStream uma vez, não a cada iteração
+	        // Verifique se o ObjectInputStream já foi criado, se não, crie-o
 	        if (HibernateServerAccessData.inFromServer == null) {
 	            HibernateServerAccessData.inFromServer = new ObjectInputStream(
 	                new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
@@ -175,6 +175,7 @@ public class ServerDevice extends Device {
 	        }
 
 	        while (true) {
+	            // Leia o objeto
 	            Object obj = HibernateServerAccessData.inFromServer.readObject();
 
 	            if (obj instanceof TcpMessageTO) {
@@ -197,6 +198,7 @@ public class ServerDevice extends Device {
 	        e.printStackTrace();
 	    }
 	}
+
 
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
