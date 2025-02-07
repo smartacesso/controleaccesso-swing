@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -62,7 +64,10 @@ public class TcpServer {
 	private final DeviceRepository deviceRepository = new DeviceRepository();
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
+	
 	private static List<Socket> connectedClients = Collections.synchronizedList(new ArrayList<>());
+	private final Map<Socket, ObjectOutputStream> clientStreams = new HashMap<>();
+
 	
 	private TcpServer() {
         this.porta = Integer.parseInt(Utils.getPreference("tcpServerSocketPort"));
@@ -947,18 +952,32 @@ public class TcpServer {
 
 	public void sendMessageToClients(TcpMessageTO message) {
 	    synchronized (connectedClients) {
-	        for (Socket client : connectedClients) {
+	        Iterator<Socket> iterator = connectedClients.iterator();
+	        while (iterator.hasNext()) {
+	            Socket client = iterator.next();
 	            try {
-	                ObjectOutputStream outputStream = new ObjectOutputStream(
-	                    new BufferedOutputStream(client.getOutputStream())
-	                );
+	                // Obtendo o OutputStream do cliente
+	                ObjectOutputStream outputStream = clientStreams.get(client);
+	                
+	                if (outputStream == null) {
+	                    outputStream = new ObjectOutputStream(client.getOutputStream());
+	                    clientStreams.put(client, outputStream);
+	                }
+
+	                // Enviando a mensagem
 	                outputStream.writeObject(message);
 	                outputStream.flush();
 	            } catch (IOException e) {
 	                System.out.println("Erro ao enviar mensagem para cliente: " + e.getMessage());
+	                iterator.remove(); // Remove o cliente da lista se estiver desconectado
+	                clientStreams.remove(client);
+	                try {
+	                    client.close();
+	                } catch (IOException ignored) {}
 	            }
 	        }
 	    }
 	}
+
 
 }
