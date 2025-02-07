@@ -960,6 +960,12 @@ public class TcpServer {
 	                    clientStreams.put(client, outputStream);
 	                }
 
+	                if (message == null) {
+	                    System.out.println("Tentativa de enviar mensagem nula. Ignorando...");
+	                    continue;
+	                }
+	                
+	                System.out.println("Enviando mensagem: " + message);
 	                outputStream.writeObject(message);
 	                outputStream.flush();
 	            } catch (IOException e) {
@@ -968,5 +974,4 @@ public class TcpServer {
 	        }
 	    }
 	}
-
 }
