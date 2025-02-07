@@ -330,9 +330,6 @@ public class TcpServer {
 							Integer count = getErrorsTopDataCount();
 							responseTcpMessage.getParans().put("count", count);
 
-						} else if (TcpMessageType.EVENTO_RECEBIDO
-								.equals(receivedTcpMessage.getType())) {
-							sendMessageToClients(receivedTcpMessage);
 						}else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
 						}
@@ -950,8 +947,11 @@ public class TcpServer {
 		}
 	}
 
-	public void sendMessageToClients() {
-	    TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_RECEBIDO); // Aqui você cria apenas a mensagem de evento recebido
+	public void sendMessageToClients(TcpMessageTO message) {
+	    if (message == null) {
+	        System.out.println("Tentativa de enviar mensagem nula. Ignorando...");
+	        return;
+	    }
 
 	    synchronized (connectedClients) {
 	        for (Socket client : connectedClients) {
@@ -962,11 +962,7 @@ public class TcpServer {
 	                    clientStreams.put(client, outputStream);
 	                }
 
-	                if (message == null) {
-	                    System.out.println("Tentativa de enviar mensagem nula. Ignorando...");
-	                    continue;
-	                }
-
+	                // Imprime a mensagem para conferirmos o que está sendo enviado
 	                System.out.println("Enviando mensagem: " + message);
 	                outputStream.writeObject(message); // Envia a mensagem de evento
 	                outputStream.flush();

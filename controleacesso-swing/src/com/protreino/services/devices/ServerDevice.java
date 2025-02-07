@@ -198,8 +198,6 @@ public class ServerDevice extends Device {
 	    }
 	}
 
-
-
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
 	}
