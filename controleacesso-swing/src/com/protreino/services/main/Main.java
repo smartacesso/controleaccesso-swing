@@ -180,7 +180,7 @@ public class Main {
     public static String logPath;
     public static ReleaseReasonDialog releaseReasonDialog;
     public static BroadcastServer broadcastServer;
-    public static TcpServer tcpServer =TcpServer.getInstance();;
+    public static TcpServer tcpServer;
     public static AlmitecDevice almTCP;
     public static HikivisionTcpServer hikivisionTcpServer;
     public static FacialTopDataIntegrationService facialTopDataIntegrationService;
@@ -313,12 +313,11 @@ public class Main {
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableBroadcastServer"))) {
                     	broadcastServer = new BroadcastServer();
                     }
-                    if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer"))) {
-                    	//tcpServer = new TcpServer();
-                    	tcpServer.iniciarServidor();
                     
-
+                    if(Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer"))){
+                    	tcpServer = TcpServer.getInstance();
                     }
+                    
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
                     if (Utils.isTopDataFacialEnable()) {
