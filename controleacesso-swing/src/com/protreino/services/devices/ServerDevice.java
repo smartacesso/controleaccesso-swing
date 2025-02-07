@@ -165,21 +165,28 @@ public class ServerDevice extends Device {
 	    }
 	}
 
-	
 	private void listenForServerMessages() {
 	    try {
-	        // O ObjectInputStream já foi inicializado no método connect
-	        // Não precisa inicializar de novo aqui
+	        // Certifique-se de que está criando o ObjectInputStream uma vez, não a cada iteração
+	        if (HibernateServerAccessData.inFromServer == null) {
+	            HibernateServerAccessData.inFromServer = new ObjectInputStream(
+	                new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
+	            );
+	        }
 
 	        while (true) {
-	            Object obj = HibernateServerAccessData.inFromServer.readObject(); // Usa o stream já existente
+	            Object obj = HibernateServerAccessData.inFromServer.readObject();
 
 	            if (obj instanceof TcpMessageTO) {
 	                TcpMessageTO message = (TcpMessageTO) obj;
+
 	                System.out.println("Mensagem recebida do servidor: " + message.getType());
 
+	                // Filtra para processar apenas a mensagem do tipo EVENTO_RECEBIDO
 	                if (TcpMessageType.EVENTO_RECEBIDO.equals(message.getType())) {
 	                    processServerMessage(message);
+	                } else {
+	                    System.out.println("Mensagem ignorada: " + message.getType());
 	                }
 	            } else {
 	                System.out.println("Objeto inesperado recebido: " + obj);
@@ -191,6 +198,8 @@ public class ServerDevice extends Device {
 	    }
 	}
 
+
+
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
 	}
@@ -199,7 +208,7 @@ public class ServerDevice extends Device {
 	public void disconnect(String... args) throws Exception {
 		watchDogEnabled = false;
 		setStatus(DeviceStatus.DISCONNECTED);
-		HibernateServerAccessData.closeConnection();
+		HibernateServerAccessData.closeConnetion();
 	}
 	
 	@Override

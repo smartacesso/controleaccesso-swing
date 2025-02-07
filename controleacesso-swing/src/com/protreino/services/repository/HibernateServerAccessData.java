@@ -56,46 +56,27 @@ public class HibernateServerAccessData {
 		}
 	}
 	
-	public static void closeConnection() {
+	public static void closeConnetion() {
 	    try {
-	        System.out.println("Fechando conexão");
-
-	        // Fechar ObjectOutputStream se estiver aberto
+	        System.out.println("Fechando conexao");
 	        if (outToServer != null) {
-	            outToServer.flush(); // Certifique-se de enviar todos os dados antes de fechar
 	            outToServer.close();
 	        }
-
-	        // Fechar ObjectInputStream se estiver aberto
-	        if (inFromServer != null) {
-	            inFromServer.close();
-	        }
-
-	        // Fechar o socket principal
 	        if (clientSocket != null) {
 	            clientSocket.close();
 	        }
-
-	        // Fechar socket de reconhecimento facial, se existir
 	        if (clientSocketFaceRecognizer != null) {
 	            clientSocketFaceRecognizer.close();
 	        }
-
-	        // Fechar ObjectOutputStream do FaceRecognizer, se estiver aberto
 	        if (outToServerFaceRecogizer != null) {
-	            outToServerFaceRecogizer.flush();
 	            outToServerFaceRecogizer.close();
 	        }
 
-	        System.out.println("Conexão fechada com sucesso.");
-
-	    } catch (IOException e) {
-	        System.out.println("Erro ao fechar a conexão: " + e.getMessage());
+	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
 	}
 
-	
 	private static synchronized void verificaExecucaoDePing() {
 		while (executandoPing) {
 			Utils.sleep(500);
