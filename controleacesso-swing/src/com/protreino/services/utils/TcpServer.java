@@ -952,32 +952,21 @@ public class TcpServer {
 
 	public void sendMessageToClients(TcpMessageTO message) {
 	    synchronized (connectedClients) {
-	        Iterator<Socket> iterator = connectedClients.iterator();
-	        while (iterator.hasNext()) {
-	            Socket client = iterator.next();
+	        for (Socket client : connectedClients) {
 	            try {
-	                // Obtendo o OutputStream do cliente
 	                ObjectOutputStream outputStream = clientStreams.get(client);
-	                
 	                if (outputStream == null) {
 	                    outputStream = new ObjectOutputStream(client.getOutputStream());
 	                    clientStreams.put(client, outputStream);
 	                }
 
-	                // Enviando a mensagem
 	                outputStream.writeObject(message);
 	                outputStream.flush();
 	            } catch (IOException e) {
-	                System.out.println("Erro ao enviar mensagem para cliente: " + e.getMessage());
-	                iterator.remove(); // Remove o cliente da lista se estiver desconectado
-	                clientStreams.remove(client);
-	                try {
-	                    client.close();
-	                } catch (IOException ignored) {}
+	                System.out.println("Erro ao enviar mensagem: " + e.getMessage());
 	            }
 	        }
 	    }
 	}
-
 
 }
