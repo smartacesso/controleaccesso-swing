@@ -104,6 +104,7 @@ public class ServerDevice extends Device {
 	        listenerThread.setDaemon(true);
 	        listenerThread.start();
 	        
+	        // Código de Watchdog permanece igual
 	        watchDog = new SwingWorker<Void, Void>() {
 	            @Override
 	            protected synchronized Void doInBackground() throws Exception {
@@ -112,7 +113,6 @@ public class ServerDevice extends Device {
 	                        contador++;
 	                        if (contador > 2) {
 	                            setStatus(DeviceStatus.DISCONNECTED);
-	                            
 	                            try {
 	                                HibernateServerAccessData.openConnection();
 	                            } catch (ConnectException e) {
@@ -168,12 +168,11 @@ public class ServerDevice extends Device {
 	
 	private void listenForServerMessages() {
 	    try {
-	        ObjectInputStream inputStream = new ObjectInputStream(
-	            new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
-	        ); // Criado uma única vez
+	        // O ObjectInputStream já foi inicializado no método connect
+	        // Não precisa inicializar de novo aqui
 
 	        while (true) {
-	            Object obj = inputStream.readObject(); // Ler objeto sem recriar inputStream
+	            Object obj = HibernateServerAccessData.inFromServer.readObject(); // Usa o stream já existente
 
 	            if (obj instanceof TcpMessageTO) {
 	                TcpMessageTO message = (TcpMessageTO) obj;
@@ -191,7 +190,6 @@ public class ServerDevice extends Device {
 	        e.printStackTrace();
 	    }
 	}
-
 
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
