@@ -80,11 +80,11 @@ public class HikivisionEventsUseCase {
 	    }
 	    
 	    //enviar mensagem para cliente
-	    TcpMessageTO message = new TcpMessageTO();
-	    message.setType(TcpMessageType.EVENTO_RECEBIDO);
-	    message.setParans(new HashMap<>());
-	    message.getParans().put("info", "Evento recebido");
-
+	    TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_RECEBIDO);
+	    message.getParans().put("cameraId", hikivisionCameraId);
+	    message.getParans().put("cardNumber", eventListnerTO.getAccessControllerEvent().getCardNo());
+	    message.getParans().put("dateTime", eventListnerTO.getDateTime());
+	    
 	    // Obtendo instância do servidor e enviando mensagem
 	    tcpServer.sendMessageToClients(message);
 

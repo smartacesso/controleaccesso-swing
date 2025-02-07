@@ -180,11 +180,6 @@ public class ServerDevice extends Device {
 
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
-
-	    if (TcpMessageType.SEND_COMMAND_TO_DEVICES.equals(message.getType())) {
-	        System.out.println("Comando recebido do servidor: " + message.getParans().get("comando"));
-	        // Aqui você processa o comando recebido
-	    }
 	}
 	
 	@Override
