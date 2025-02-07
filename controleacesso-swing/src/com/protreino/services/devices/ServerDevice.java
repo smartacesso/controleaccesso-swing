@@ -199,7 +199,7 @@ public class ServerDevice extends Device {
 	public void disconnect(String... args) throws Exception {
 		watchDogEnabled = false;
 		setStatus(DeviceStatus.DISCONNECTED);
-		HibernateServerAccessData.closeConnetion();
+		HibernateServerAccessData.closeConnection();
 	}
 	
 	@Override

@@ -951,27 +951,45 @@ public class TcpServer {
 	}
 
 	public void sendMessageToClients(TcpMessageTO message) {
+	    if (message == null) {
+	        System.out.println("Tentativa de enviar mensagem nula. Ignorando...");
+	        return;
+	    }
+
 	    synchronized (connectedClients) {
-	        for (Socket client : connectedClients) {
-	            try {
-	                ObjectOutputStream outputStream = clientStreams.get(client);
-	                if (outputStream == null) {
+	        Iterator<Socket> clientIterator = connectedClients.iterator();
+	        while (clientIterator.hasNext()) {
+	            Socket client = clientIterator.next();
+	            ObjectOutputStream outputStream = clientStreams.get(client);
+	            
+	            // Verifica se o stream já foi criado
+	            if (outputStream == null) {
+	                try {
 	                    outputStream = new ObjectOutputStream(client.getOutputStream());
 	                    clientStreams.put(client, outputStream);
-	                }
-
-	                if (message == null) {
-	                    System.out.println("Tentativa de enviar mensagem nula. Ignorando...");
+	                } catch (IOException e) {
+	                    System.out.println("Erro ao criar ObjectOutputStream para o cliente " + client.getRemoteSocketAddress() + ": " + e.getMessage());
+	                    clientIterator.remove(); // Remover cliente problemático
 	                    continue;
 	                }
-	                
-	                System.out.println("Enviando mensagem: " + message);
+	            }
+
+	            try {
+	                System.out.println("Enviando mensagem para o cliente: " + client.getRemoteSocketAddress());
 	                outputStream.writeObject(message);
 	                outputStream.flush();
 	            } catch (IOException e) {
-	                System.out.println("Erro ao enviar mensagem: " + e.getMessage());
+	                System.out.println("Erro ao enviar mensagem para o cliente " + client.getRemoteSocketAddress() + ": " + e.getMessage());
+	                clientStreams.remove(client); // Remove o cliente da lista de streams
+	                try {
+	                    client.close(); // Fecha a conexão do cliente
+	                } catch (IOException ex) {
+	                    System.out.println("Erro ao fechar conexão com o cliente " + client.getRemoteSocketAddress() + ": " + ex.getMessage());
+	                }
+	                clientIterator.remove(); // Remove o cliente da lista de clientes conectados
 	            }
 	        }
 	    }
 	}
+
 }
