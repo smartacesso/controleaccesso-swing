@@ -80,9 +80,6 @@ public class TcpServer {
 
 
 	public void iniciarServidor() {
-		this.porta = Integer.valueOf(Utils.getPreference("tcpServerSocketPort"));
-		this.portaPdv = 2021;
-
 		Thread serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
