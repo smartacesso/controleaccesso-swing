@@ -36,6 +36,8 @@ public class HibernateServerAccessData {
 	public static ObjectOutputStream outToServer;
 	public static Socket clientSocketFaceRecognizer;
 	public static ObjectOutputStream outToServerFaceRecogizer;
+	public static ObjectInputStream inFromServer;
+
 	
 	public static void openConnection() throws ConnectException {
 		try {

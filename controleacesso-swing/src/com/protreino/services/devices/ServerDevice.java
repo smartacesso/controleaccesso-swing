@@ -80,95 +80,99 @@ public class ServerDevice extends Device {
 
 	@Override
 	public void connect(String... args) throws Exception {
-		try {
-			HibernateServerAccessData.openConnection();
-		} catch (ConnectException e) {
-			disconnect("");
-			return;
-		}
-
-		if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
-			watchDogEnabled = true;
-			contador = 0;
-			setStatus(DeviceStatus.CONNECTED);
-			
-			sendConfiguration();
-			
-	        // Inicia a thread para escutar mensagens do servidor
-	        Thread listenerThread = new Thread(() -> listenForServerMessages());
-	        listenerThread.setDaemon(true);
-	        listenerThread.start();
-			
-			watchDog = new SwingWorker<Void, Void>(){
-				@Override
-				protected synchronized Void doInBackground() throws Exception {
-					
-					while (watchDogEnabled) {
-						try {
-							contador++;
-							if (contador > 2) {
-								setStatus(DeviceStatus.DISCONNECTED);
-								
-								try {
-									HibernateServerAccessData.openConnection();
-								} catch (ConnectException e) {
-									disconnect("");
-									return null;
-								}
-								
-								if (HibernateServerAccessData.clientSocket.isConnected())
-									contador = 0;
-							} else {
-								setStatus(DeviceStatus.CONNECTED);
-								
-								if(!HibernateServerAccessData.executando) {
-									HibernateServerAccessData.executandoPing = true;
-									
-									HibernateServerAccessData.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
-									HibernateServerAccessData.outToServer.flush();
-									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream()));
-									TcpMessageTO resp = (TcpMessageTO) reader.readObject();
-									
-									if(TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
-										contador = 0;
-									}
-								} else {
-									contador = 0;
-								}
-							}
-						} catch (SocketException e) {
-							contador++;
-						} catch (Exception e) {
-							e.printStackTrace();
-		                } finally {
-		                	HibernateServerAccessData.executandoPing = false;
-							Utils.sleep(10000);
-						}
-					}
-					return null;
-				}
-			};
-			watchDog.execute();
-			
-		} else {
-			InetAddress inetAddress = InetAddress.getByName(ip);
-			if (inetAddress.isReachable(3000))
-				throw new Exception("Servidor Nao responde. Verifique se o aplicativo está rodando no servidor.");
-			else
-				throw new Exception("Servidor Nao encontrado na rede.");
-		}
-	}
-	
-	private void listenForServerMessages() {
 	    try {
-	        ObjectInputStream inputStream = new ObjectInputStream(
+	        HibernateServerAccessData.openConnection();
+	    } catch (ConnectException e) {
+	        disconnect("");
+	        return;
+	    }
+
+	    if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
+	        watchDogEnabled = true;
+	        contador = 0;
+	        setStatus(DeviceStatus.CONNECTED);
+	        
+	        sendConfiguration();
+	        
+	        // 🔹 Inicializa o ObjectInputStream apenas uma vez
+	        HibernateServerAccessData.inFromServer = new ObjectInputStream(
 	            new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
 	        );
 
-	        while (true) {
-	            TcpMessageTO message = (TcpMessageTO) inputStream.readObject();
+	        // Inicia a thread para escutar mensagens do servidor
+	        Thread listenerThread = new Thread(this::listenForServerMessages);
+	        listenerThread.setDaemon(true);
+	        listenerThread.start();
+	        
+	        watchDog = new SwingWorker<Void, Void>() {
+	            @Override
+	            protected synchronized Void doInBackground() throws Exception {
+	                while (watchDogEnabled) {
+	                    try {
+	                        contador++;
+	                        if (contador > 2) {
+	                            setStatus(DeviceStatus.DISCONNECTED);
+	                            
+	                            try {
+	                                HibernateServerAccessData.openConnection();
+	                            } catch (ConnectException e) {
+	                                disconnect("");
+	                                return null;
+	                            }
+	                            
+	                            if (HibernateServerAccessData.clientSocket.isConnected()) {
+	                                contador = 0;
+	                            }
+	                        } else {
+	                            setStatus(DeviceStatus.CONNECTED);
+	                            
+	                            if (!HibernateServerAccessData.executando) {
+	                                HibernateServerAccessData.executandoPing = true;
+	                                
+	                                HibernateServerAccessData.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
+	                                HibernateServerAccessData.outToServer.flush();
 
-	            if (message != null) {
+	                                // 🔹 Reutiliza o mesmo ObjectInputStream
+	                                TcpMessageTO resp = (TcpMessageTO) HibernateServerAccessData.inFromServer.readObject();
+	                                
+	                                if (TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
+	                                    contador = 0;
+	                                }
+	                            } else {
+	                                contador = 0;
+	                            }
+	                        }
+	                    } catch (SocketException e) {
+	                        contador++;
+	                    } catch (Exception e) {
+	                        e.printStackTrace();
+	                    } finally {
+	                        HibernateServerAccessData.executandoPing = false;
+	                        Utils.sleep(10000);
+	                    }
+	                }
+	                return null;
+	            }
+	        };
+	        watchDog.execute();
+	        
+	    } else {
+	        InetAddress inetAddress = InetAddress.getByName(ip);
+	        if (inetAddress.isReachable(3000))
+	            throw new Exception("Servidor Nao responde. Verifique se o aplicativo está rodando no servidor.");
+	        else
+	            throw new Exception("Servidor Nao encontrado na rede.");
+	    }
+	}
+
+	
+	private void listenForServerMessages() {
+	    try {
+	        while (true) {
+	            // 🔹 Reutiliza o mesmo ObjectInputStream
+	            TcpMessageTO message = (TcpMessageTO) HibernateServerAccessData.inFromServer.readObject();
+	            
+	            if (message != null && TcpMessageType.EVENTO_RECEBIDO.equals(message.getType())) {
 	                processServerMessage(message);
 	            }
 	        }
@@ -177,6 +181,7 @@ public class ServerDevice extends Device {
 	        e.printStackTrace();
 	    }
 	}
+
 
 	private void processServerMessage(TcpMessageTO message) {
 	    System.out.println("Mensagem recebida do servidor: " + message.getType());
