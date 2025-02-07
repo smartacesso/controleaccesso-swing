@@ -168,12 +168,22 @@ public class ServerDevice extends Device {
 	
 	private void listenForServerMessages() {
 	    try {
+	        ObjectInputStream inputStream = new ObjectInputStream(
+	            new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
+	        );
+
 	        while (true) {
-	            // 🔹 Reutiliza o mesmo ObjectInputStream
-	            TcpMessageTO message = (TcpMessageTO) HibernateServerAccessData.inFromServer.readObject();
-	            
-	            if (message != null && TcpMessageType.EVENTO_RECEBIDO.equals(message.getType())) {
-	                processServerMessage(message);
+	            Object obj = inputStream.readObject(); // Ler o objeto sem converter diretamente
+
+	            if (obj instanceof TcpMessageTO) {
+	                TcpMessageTO message = (TcpMessageTO) obj;
+	                System.out.println(message.getMessage());
+
+	                if (TcpMessageType.EVENTO_RECEBIDO.equals(message.getType())) {
+	                    processServerMessage(message);
+	                }
+	            } else {
+	                System.out.println("Objeto inesperado recebido do servidor: " + obj);
 	            }
 	        }
 	    } catch (IOException | ClassNotFoundException e) {
@@ -181,6 +191,7 @@ public class ServerDevice extends Device {
 	        e.printStackTrace();
 	    }
 	}
+
 
 
 	private void processServerMessage(TcpMessageTO message) {
