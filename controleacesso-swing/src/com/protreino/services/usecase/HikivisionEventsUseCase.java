@@ -79,14 +79,17 @@ public class HikivisionEventsUseCase {
 	        return;
 	    }
 	    
-	    //enviar mensagem para cliente
+	 // Criando a mensagem
 	    TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_RECEBIDO);
-	    message.getParans().put("cameraId", hikivisionCameraId);
-	    message.getParans().put("cardNumber", eventListnerTO.getAccessControllerEvent().getCardNo());
-	    message.getParans().put("dateTime", eventListnerTO.getDateTime());
-	    
-	    // Obtendo instância do servidor e enviando mensagem
+
+	    // Convertendo valores para String antes de adicionar ao mapa
+	    message.getParans().put("cameraId", String.valueOf(hikivisionCameraId));
+	    message.getParans().put("cardNumber", String.valueOf(eventListnerTO.getAccessControllerEvent().getCardNo()));
+	    message.getParans().put("dateTime", String.valueOf(eventListnerTO.getDateTime()));
+
+	    // Enviando a mensagem
 	    tcpServer.sendMessageToClients(message);
+
 
 	    
 	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
