@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Objects;
 
 import com.google.gson.Gson;
@@ -25,11 +26,14 @@ import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
+import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
+import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.to.hikivision.EventListnerTO;
+import com.protreino.services.utils.TcpServer;
 import com.protreino.services.utils.Utils;
 
 public class HikivisionEventsUseCase {
@@ -37,6 +41,7 @@ public class HikivisionEventsUseCase {
 	private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	TcpServer tcpServer = TcpServer.getInstance();
 
 	private static Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
 		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
@@ -73,6 +78,16 @@ public class HikivisionEventsUseCase {
 	        System.out.println("Processamento encerrado.");
 	        return;
 	    }
+	    
+	    //enviar mensagem para cliente
+	    TcpMessageTO message = new TcpMessageTO();
+	    message.setType(TcpMessageType.EVENTO_RECEBIDO);
+	    message.setParans(new HashMap<>());
+	    message.getParans().put("info", "Evento recebido");
+
+	    // Obtendo instância do servidor e enviando mensagem
+	    tcpServer.sendMessageToClients(message);
+
 	    
 	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
 	            eventListnerTO.getAccessControllerEvent().getCardNo()));

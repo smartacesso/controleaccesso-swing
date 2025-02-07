@@ -1,6 +1,7 @@
 package com.protreino.services.devices;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -93,6 +94,11 @@ public class ServerDevice extends Device {
 			
 			sendConfiguration();
 			
+	        // Inicia a thread para escutar mensagens do servidor
+	        Thread listenerThread = new Thread(() -> listenForServerMessages());
+	        listenerThread.setDaemon(true);
+	        listenerThread.start();
+			
 			watchDog = new SwingWorker<Void, Void>(){
 				@Override
 				protected synchronized Void doInBackground() throws Exception {
@@ -151,6 +157,34 @@ public class ServerDevice extends Device {
 			else
 				throw new Exception("Servidor Nao encontrado na rede.");
 		}
+	}
+	
+	private void listenForServerMessages() {
+	    try {
+	        ObjectInputStream inputStream = new ObjectInputStream(
+	            new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream())
+	        );
+
+	        while (true) {
+	            TcpMessageTO message = (TcpMessageTO) inputStream.readObject();
+
+	            if (message != null) {
+	                processServerMessage(message);
+	            }
+	        }
+	    } catch (IOException | ClassNotFoundException e) {
+	        System.out.println("Erro ao escutar mensagens do servidor: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
+
+	private void processServerMessage(TcpMessageTO message) {
+	    System.out.println("Mensagem recebida do servidor: " + message.getType());
+
+	    if (TcpMessageType.SEND_COMMAND_TO_DEVICES.equals(message.getType())) {
+	        System.out.println("Comando recebido do servidor: " + message.getParans().get("comando"));
+	        // Aqui você processa o comando recebido
+	    }
 	}
 	
 	@Override

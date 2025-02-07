@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -54,14 +55,31 @@ import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 
 public class TcpServer {
-
+	
+	private static TcpServer instance; // Instância única do Singleton
 	private int porta;
 	private int portaPdv;
 	private final DeviceRepository deviceRepository = new DeviceRepository();
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
+	private static List<Socket> connectedClients = Collections.synchronizedList(new ArrayList<>());
+	
+	private TcpServer() {
+        this.porta = Integer.parseInt(Utils.getPreference("tcpServerSocketPort"));
+        this.portaPdv = 2021;
+        iniciarServidor();
+    }
 
-	public TcpServer() {
+    // Método para obter a única instância da classe
+    public static synchronized TcpServer getInstance() {
+        if (instance == null) {
+            instance = new TcpServer();
+        }
+        return instance;
+    }
+
+
+	public void iniciarServidor() {
 		this.porta = Integer.valueOf(Utils.getPreference("tcpServerSocketPort"));
 		this.portaPdv = 2021;
 
@@ -72,11 +90,15 @@ public class TcpServer {
 					System.out.println(sdf.format(new Date()) + "  ... TCP server escutando na porta " + porta);
 
 					while (true) {
-						Socket socket = serverSocket.accept();
-						socket.setTcpNoDelay(true);
-						System.out.println(sdf.format(new Date()) + "  ... New client connected: "
-								+ socket.getInetAddress().getHostAddress());
-						new ProcessThread(socket).start();
+					    Socket socket = serverSocket.accept();
+					    socket.setTcpNoDelay(true);
+					    
+					    synchronized (connectedClients) {
+					        connectedClients.add(socket);
+					    }
+					    
+					    System.out.println("Novo cliente conectado: " + socket.getInetAddress().getHostAddress());
+					    new ProcessThread(socket).start();
 					}
 
 				} catch (IOException ex) {
@@ -306,6 +328,9 @@ public class TcpServer {
 							Integer count = getErrorsTopDataCount();
 							responseTcpMessage.getParans().put("count", count);
 
+						} else if (TcpMessageType.EVENTO_RECEBIDO
+								.equals(receivedTcpMessage.getType())) {
+							sendMessageToClients(receivedTcpMessage);
 						}else {
 							responseTcpMessage.setType(TcpMessageType.ERROR);
 						}
@@ -359,6 +384,7 @@ public class TcpServer {
 				ReleaseAccessUseCase.setApertouF10(false);
 			}
 		}
+		
 
 		private void allowAccess(Device device, String sentido) {
 			LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), null,
@@ -920,7 +946,22 @@ public class TcpServer {
 			HibernateLocalAccessData.save(LogCartaoComandaEntity.class, log);
 
 		}
+	}
 
+	public void sendMessageToClients(TcpMessageTO message) {
+	    synchronized (connectedClients) {
+	        for (Socket client : connectedClients) {
+	            try {
+	                ObjectOutputStream outputStream = new ObjectOutputStream(
+	                    new BufferedOutputStream(client.getOutputStream())
+	                );
+	                outputStream.writeObject(message);
+	                outputStream.flush();
+	            } catch (IOException e) {
+	                System.out.println("Erro ao enviar mensagem para cliente: " + e.getMessage());
+	            }
+	        }
+	    }
 	}
 
 }
