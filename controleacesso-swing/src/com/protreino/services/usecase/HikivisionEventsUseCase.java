@@ -25,11 +25,14 @@ import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
+import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
+import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.to.hikivision.EventListnerTO;
+import com.protreino.services.utils.TcpServer;
 import com.protreino.services.utils.Utils;
 
 public class HikivisionEventsUseCase {
@@ -76,7 +79,13 @@ public class HikivisionEventsUseCase {
 	    
 	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
 	            eventListnerTO.getAccessControllerEvent().getCardNo()));
-
+	    
+	    TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+	    message.getParans().put("cameraId", hikivisionCameraId);
+	    message.getParans().put("cardNumber", eventListnerTO.getAccessControllerEvent().getCardNo());
+	    TcpServer.enviarMensagemParaTodos(message);
+	    
+	    
 	    final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
 	    if (Objects.isNull(attachedDevice)) {

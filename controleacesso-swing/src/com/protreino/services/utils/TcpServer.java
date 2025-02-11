@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -60,6 +61,7 @@ public class TcpServer {
 	private final DeviceRepository deviceRepository = new DeviceRepository();
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
+	private final static List<Socket> clientesConectados = new CopyOnWriteArrayList<>();
 
 	public TcpServer() {
 		this.porta = Integer.valueOf(Utils.getPreference("tcpServerSocketPort"));
@@ -74,8 +76,14 @@ public class TcpServer {
 					while (true) {
 						Socket socket = serverSocket.accept();
 						socket.setTcpNoDelay(true);
+						
+	                    synchronized (clientesConectados) {
+	                        clientesConectados.add(socket);
+	                    }
+						
 						System.out.println(sdf.format(new Date()) + "  ... New client connected: "
 								+ socket.getInetAddress().getHostAddress());
+						
 						new ProcessThread(socket).start();
 					}
 
@@ -922,5 +930,25 @@ public class TcpServer {
 		}
 
 	}
-
+	
+	public static void enviarMensagemParaTodos(TcpMessageTO mensagem) {
+        synchronized (clientesConectados) {
+            for (Socket socket : clientesConectados) {
+                try {
+                	System.out.println("ENVIANDO EVENTO HIKI");
+                    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                    out.writeObject(mensagem);
+                    out.flush();
+                } catch (IOException e) {
+                    System.out.println("Erro ao enviar mensagem para o cliente: " + e.getMessage());
+                    try {
+                        socket.close();
+                        clientesConectados.remove(socket);
+                    } catch (IOException ex) {
+                        System.out.println("Erro ao remover cliente desconectado: " + ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
 }

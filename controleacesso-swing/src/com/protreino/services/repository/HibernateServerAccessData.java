@@ -43,8 +43,8 @@ public class HibernateServerAccessData {
 			clientSocket = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
 			outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 
-			clientSocketFaceRecognizer = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
-			outToServerFaceRecogizer = new ObjectOutputStream(clientSocketFaceRecognizer.getOutputStream());
+			//clientSocketFaceRecognizer = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
+			//outToServerFaceRecogizer = new ObjectOutputStream(clientSocketFaceRecognizer.getOutputStream());
 
 		} catch (ConnectException ce) {
 			ce.printStackTrace();

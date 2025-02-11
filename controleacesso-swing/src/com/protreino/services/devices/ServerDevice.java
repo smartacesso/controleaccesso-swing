@@ -1,7 +1,6 @@
 package com.protreino.services.devices;
 
-import java.io.BufferedInputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -10,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingWorker;
 
@@ -30,13 +30,14 @@ import tcpcom.TcpClient;
 public class ServerDevice extends Device {
 	
 	private static final long serialVersionUID = 1L;
-	
 	private TcpClient client;
 	private int timeout = 3000;
 	private Gson gson = new Gson();
 	private LogPedestrianAccessEntity logAccess;
-	private Map<String, LogPedestrianAccessEntity> mapLogs = new HashMap<String, LogPedestrianAccessEntity>();
-	
+	private Map<String, LogPedestrianAccessEntity> mapLogs = new HashMap<>();
+	private Thread messageListenerThread;
+	private AtomicBoolean watchDogEnabled = new AtomicBoolean(false);
+
 	public ServerDevice(DeviceEntity deviceEntity) {
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
 		this.deviceEntity = deviceEntity;
@@ -45,36 +46,24 @@ public class ServerDevice extends Device {
 		this.desiredStatus = deviceEntity.getDesiredStatus();
 		this.defaultDevice = deviceEntity.getDefaultDevice();
 	}
-	
+
 	public ServerDevice(String identifier) {
 		this(identifier, null);
 	}
-	
+
 	public ServerDevice(String identifier, List<ConfigurationGroupTO> configurationGroups) {
 		this.manufacturer = Manufacturer.SERVER;
 		this.identifier = identifier;
 		String[] partes = identifier.split(";");
 		this.ip = partes[0];
-		this.port = Integer.valueOf(partes[1]);
+		this.port = Integer.parseInt(partes[1]);
 		this.name = "Servidor " + ip;
 		this.client = new TcpClient(ip, port, timeout);
 		if (configurationGroups != null)
 			this.configurationGroups = configurationGroups;
-		else 
+		else
 			createDefaultConfiguration();
 		createConfigurationMap();
-	}
-	
-	/**
-	 * Construtor usado para varredura de ip
-	 * @param ip
-	 * @param port
-	 */
-	public ServerDevice(Integer timeout, String identifier) {
-		String[] partes = identifier.split(";");
-		this.ip = partes[0];
-		this.port = Integer.valueOf(partes[1]);
-		this.client = new TcpClient(ip, port, timeout);
 	}
 
 	@Override
@@ -87,87 +76,132 @@ public class ServerDevice extends Device {
 		}
 
 		if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
-			watchDogEnabled = true;
-			contador = 0;
+			watchDogEnabled.set(true);
 			setStatus(DeviceStatus.CONNECTED);
-			
 			sendConfiguration();
-			
-			watchDog = new SwingWorker<Void, Void>(){
-				@Override
-				protected synchronized Void doInBackground() throws Exception {
-					
-					while (watchDogEnabled) {
-						try {
-							contador++;
-							if (contador > 2) {
-								setStatus(DeviceStatus.DISCONNECTED);
-								
-								try {
-									HibernateServerAccessData.openConnection();
-								} catch (ConnectException e) {
-									disconnect("");
-									return null;
-								}
-								
-								if (HibernateServerAccessData.clientSocket.isConnected())
-									contador = 0;
-							} else {
-								setStatus(DeviceStatus.CONNECTED);
-								
-								if(!HibernateServerAccessData.executando) {
-									HibernateServerAccessData.executandoPing = true;
-									
-									HibernateServerAccessData.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
-									HibernateServerAccessData.outToServer.flush();
-									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream()));
-									TcpMessageTO resp = (TcpMessageTO) reader.readObject();
-									
-									if(TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
-										contador = 0;
-									}
-								} else {
-									contador = 0;
-								}
-							}
-						} catch (SocketException e) {
-							contador++;
-						} catch (Exception e) {
-							e.printStackTrace();
-		                } finally {
-		                	HibernateServerAccessData.executandoPing = false;
-							Utils.sleep(10000);
-						}
-					}
-					return null;
-				}
-			};
-			watchDog.execute();
-			
+
+			// Inicia a thread de escuta de mensagens
+			//startMessageListener();
+
+			// Inicia a thread do watchdog para envio de PINGs
+			new Thread(this::watchDogTask).start();
 		} else {
 			InetAddress inetAddress = InetAddress.getByName(ip);
 			if (inetAddress.isReachable(3000))
-				throw new Exception("Servidor Nao responde. Verifique se o aplicativo está rodando no servidor.");
+				throw new Exception("Servidor não responde. Verifique se o aplicativo está rodando no servidor.");
 			else
-				throw new Exception("Servidor Nao encontrado na rede.");
+				throw new Exception("Servidor não encontrado na rede.");
 		}
 	}
-	
+
+	/**
+	 * Thread dedicada para ouvir mensagens do servidor.
+	 */
+	private void startMessageListener() {
+	    messageListenerThread = new Thread(() -> {
+	        try {
+	            BufferedReader reader = new BufferedReader(new InputStreamReader(
+	                    HibernateServerAccessData.clientSocket.getInputStream()));
+
+	            while (watchDogEnabled.get()) {
+	                String line = reader.readLine();
+	                if (line == null) {
+	                    System.out.println("Conexão fechada pelo servidor.");
+	                    break;
+	                }
+
+	                System.out.println("Recebido: " + line);
+
+	                // Verifique a estrutura completa da mensagem
+	                if (line.contains("EVENTO_HIKIVISION")) {
+	                    // Tente converter ou fazer uma análise mais detalhada aqui
+	                    try {
+	                        // Supondo que TcpMessageTO é um objeto serializado, tente convertê-lo
+	                        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(line.getBytes());
+	                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+	                        TcpMessageTO resp = (TcpMessageTO) objectInputStream.readObject();
+
+	                        // Verifique se o tipo é o esperado
+	                        if (resp != null && resp.getType() == TcpMessageType.EVENTO_HIKIVISION) {
+	                            // Extraia os parâmetros necessários
+	                            Map<String, Object> params = resp.getParans();
+	                            String cameraId = (String) params.get("cameraId");
+	                            String cardNumber = (String) params.get("cardNumber");
+
+	                            if (cameraId != null && cardNumber != null) {
+	                                System.out.println("Evento Hikvision recebido:");
+	                                System.out.println("cameraId: " + cameraId);
+	                                System.out.println("cardNumber: " + cardNumber);
+	                            } else {
+	                                System.out.println("Evento Hikvision ignorado: falta 'cameraId' ou 'cardNumber'.");
+	                            }
+	                        } else {
+	                            System.out.println("Mensagem ignorada: Tipo de mensagem não é EVENTO_HIKIVISION.");
+	                        }
+	                    } catch (IOException | ClassNotFoundException e) {
+	                        System.out.println("Erro ao desserializar a mensagem: " + e.getMessage());
+	                    }
+	                } else {
+	                    System.out.println("Mensagem ignorada: Não contém 'EVENTO_HIKIVISION'.");
+	                }
+	            }
+	        } catch (IOException e) {
+	            System.out.println("Erro na thread de leitura: " + e.getMessage());
+	        }
+	    });
+
+	    messageListenerThread.start();
+	}
+
+
+	/**
+	 * Thread do watchdog que envia PINGs ao servidor periodicamente.
+	 */
+	private void watchDogTask() {
+		while (watchDogEnabled.get()) {
+			try {
+				setStatus(DeviceStatus.CONNECTED);
+
+				if (!HibernateServerAccessData.executando) {
+					HibernateServerAccessData.executandoPing = true;
+
+					// Enviando PING como JSON
+					TcpMessageTO pingMessage = new TcpMessageTO(TcpMessageType.PING);
+					HibernateServerAccessData.outToServer.writeObject(pingMessage);
+					HibernateServerAccessData.outToServer.flush();
+
+					System.out.println("PING enviado ao servidor.");
+				}
+			} catch (SocketException e) {
+				System.out.println("Erro de conexão, tentando reconectar...");
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				HibernateServerAccessData.executandoPing = false;
+				Utils.sleep(10000); // Aguarda 10 segundos antes de enviar o próximo PING
+			}
+		}
+	}
+
 	@Override
 	public void disconnect(String... args) throws Exception {
-		watchDogEnabled = false;
+		watchDogEnabled.set(false);
+		if (messageListenerThread != null) {
+			messageListenerThread.interrupt();
+		}
 		setStatus(DeviceStatus.DISCONNECTED);
 		HibernateServerAccessData.closeConnetion();
+		System.out.println("Desconectado.");
 	}
-	
+
 	@Override
 	public void createDefaultConfiguration() {
-		// nao faz nada
+		// Não faz nada
 	}
 
 	@Override
 	public void sendConfiguration() throws Exception {
-		// nao faz nada
+		// Não faz nada
 	}
 
 	@Override
@@ -177,24 +211,23 @@ public class ServerDevice extends Device {
 		tcpMessage.setId(id);
 		mapLogs.put(id, logAccess);
 		String mensagem = gson.toJson(tcpMessage);
-		//System.out.println(sdf.format(new Date()) + "  --> Enviando mensagem: " + mensagem);
 		mensagem = mensagem + "\r\n";
 		client.sendData(mensagem.toCharArray());
 	}
 
 	@Override
 	public void denyAccess() {
-		// nao faz nada
+		// Não faz nada
 	}
-	
+
 	@Override
 	public void processSampleForEnrollment(Object obj) {
-		// nao faz nada
+		// Não faz nada
 	}
 
 	@Override
 	public void processAccessRequest(Object obj) {
-		// nao faz nada
+		// Não faz nada
 	}
 
 	@Override
