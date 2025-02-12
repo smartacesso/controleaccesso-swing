@@ -28,6 +28,7 @@ import com.protreino.services.utils.Utils;
 import tcpcom.TcpClient;
 
 public class ServerDevice extends Device {
+	int count = 1;
 	
 	private static final long serialVersionUID = 1L;
 	private TcpClient client;
@@ -36,7 +37,7 @@ public class ServerDevice extends Device {
 	private LogPedestrianAccessEntity logAccess;
 	private Map<String, LogPedestrianAccessEntity> mapLogs = new HashMap<>();
 	private Thread messageListenerThread;
-	private AtomicBoolean watchDogEnabled = new AtomicBoolean(false);
+	private boolean watchDogEnabled = false;
 
 	public ServerDevice(DeviceEntity deviceEntity) {
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -76,15 +77,14 @@ public class ServerDevice extends Device {
 		}
 
 		if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
-			watchDogEnabled.set(true);
+			watchDogEnabled = true;
 			setStatus(DeviceStatus.CONNECTED);
 			sendConfiguration();
 
 			// Inicia a thread de escuta de mensagens
-			//startMessageListener();
-
-			// Inicia a thread do watchdog para envio de PINGs
-			new Thread(this::watchDogTask).start();
+			startMessageListener();
+			
+			
 		} else {
 			InetAddress inetAddress = InetAddress.getByName(ip);
 			if (inetAddress.isReachable(3000))
@@ -98,51 +98,40 @@ public class ServerDevice extends Device {
 	 * Thread dedicada para ouvir mensagens do servidor.
 	 */
 	private void startMessageListener() {
+	    System.out.println("Iniciando listener de evento hiki");
+
 	    messageListenerThread = new Thread(() -> {
 	        try {
 	            BufferedReader reader = new BufferedReader(new InputStreamReader(
 	                    HibernateServerAccessData.clientSocket.getInputStream()));
 
-	            while (watchDogEnabled.get()) {
-	                String line = reader.readLine();
-	                if (line == null) {
-	                    System.out.println("Conexão fechada pelo servidor.");
-	                    break;
-	                }
-
-	                System.out.println("Recebido: " + line);
-
-	                // Verifique a estrutura completa da mensagem
-	                if (line.contains("EVENTO_HIKIVISION")) {
-	                    // Tente converter ou fazer uma análise mais detalhada aqui
-	                    try {
-	                        // Supondo que TcpMessageTO é um objeto serializado, tente convertê-lo
-	                        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(line.getBytes());
-	                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-	                        TcpMessageTO resp = (TcpMessageTO) objectInputStream.readObject();
-
-	                        // Verifique se o tipo é o esperado
-	                        if (resp != null && resp.getType() == TcpMessageType.EVENTO_HIKIVISION) {
-	                            // Extraia os parâmetros necessários
-	                            Map<String, Object> params = resp.getParans();
-	                            String cameraId = (String) params.get("cameraId");
-	                            String cardNumber = (String) params.get("cardNumber");
-
-	                            if (cameraId != null && cardNumber != null) {
-	                                System.out.println("Evento Hikvision recebido:");
-	                                System.out.println("cameraId: " + cameraId);
-	                                System.out.println("cardNumber: " + cardNumber);
-	                            } else {
-	                                System.out.println("Evento Hikvision ignorado: falta 'cameraId' ou 'cardNumber'.");
-	                            }
-	                        } else {
-	                            System.out.println("Mensagem ignorada: Tipo de mensagem não é EVENTO_HIKIVISION.");
+	            while (watchDogEnabled) {
+	                try {
+	                    // 🔹 Verifica se há dados antes de ler para evitar travamentos
+	                    if (reader.ready()) {
+	                        String line = reader.readLine();
+	                        if (line == null) {
+	                            System.out.println("Conexão fechada pelo servidor.");
+	                            break;
 	                        }
-	                    } catch (IOException | ClassNotFoundException e) {
-	                        System.out.println("Erro ao desserializar a mensagem: " + e.getMessage());
+
+	                        System.out.println("Recebido: " + line);
+
+	                        // 🔹 Processar apenas mensagens formatadas corretamente
+	                        if (line.contains("CARD_NUMBER") && line.contains("DEVICE_ID")) {
+	                            processarMensagem(line);
+	                        } else {
+	                            System.out.println("⚠ Mensagem ignorada: formato inválido.");
+	                        }
+	                    } else {
+	                        // 🔹 Pequena pausa para evitar uso excessivo da CPU
+	                        Thread.sleep(100);
 	                    }
-	                } else {
-	                    System.out.println("Mensagem ignorada: Não contém 'EVENTO_HIKIVISION'.");
+	                } catch (IOException e) {
+	                    System.out.println("Erro na leitura da mensagem: " + e.getMessage());
+	                } catch (Exception e) {
+	                    System.out.println("Erro inesperado no listener: " + e.getMessage());
+	                    e.printStackTrace();
 	                }
 	            }
 	        } catch (IOException e) {
@@ -153,39 +142,35 @@ public class ServerDevice extends Device {
 	    messageListenerThread.start();
 	}
 
+	private void processarMensagem(String line) {
+	    try {
+	        String[] partes = line.split(";");
+	        Map<String, String> params = new HashMap<>();
 
-	/**
-	 * Thread do watchdog que envia PINGs ao servidor periodicamente.
-	 */
-	private void watchDogTask() {
-		while (watchDogEnabled.get()) {
-			try {
-				setStatus(DeviceStatus.CONNECTED);
+	        for (String parte : partes) {
+	            String[] keyValue = parte.split("=");
+	            if (keyValue.length == 2) {
+	                params.put(keyValue[0].trim(), keyValue[1].trim());
+	            }
+	        }
 
-				if (!HibernateServerAccessData.executando) {
-					HibernateServerAccessData.executandoPing = true;
+	        String cardNumber = params.get("CARD_NUMBER");
+	        String deviceId = params.get("DEVICE_ID");
+	        String catracaInner = params.get("CATRACA_INNER");
 
-					// Enviando PING como JSON
-					TcpMessageTO pingMessage = new TcpMessageTO(TcpMessageType.PING);
-					HibernateServerAccessData.outToServer.writeObject(pingMessage);
-					HibernateServerAccessData.outToServer.flush();
-
-					System.out.println("PING enviado ao servidor.");
-				}
-			} catch (SocketException e) {
-				System.out.println("Erro de conexão, tentando reconectar...");
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				HibernateServerAccessData.executandoPing = false;
-				Utils.sleep(10000); // Aguarda 10 segundos antes de enviar o próximo PING
-			}
-		}
+	        System.out.println("Evento processado:");
+	        System.out.println("CARD_NUMBER: " + cardNumber);
+	        System.out.println("DEVICE_ID: " + deviceId);
+	        System.out.println("CATRACA_INNER: " + catracaInner);
+	    } catch (Exception e) {
+	        System.out.println("⚠ Erro ao processar mensagem: " + e.getMessage());
+	    }
 	}
+
 
 	@Override
 	public void disconnect(String... args) throws Exception {
-		watchDogEnabled.set(false);
+		watchDogEnabled = false;
 		if (messageListenerThread != null) {
 			messageListenerThread.interrupt();
 		}

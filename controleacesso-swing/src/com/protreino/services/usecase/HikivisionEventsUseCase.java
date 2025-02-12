@@ -80,12 +80,6 @@ public class HikivisionEventsUseCase {
 	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
 	            eventListnerTO.getAccessControllerEvent().getCardNo()));
 	    
-	    TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
-	    message.getParans().put("cameraId", hikivisionCameraId);
-	    message.getParans().put("cardNumber", eventListnerTO.getAccessControllerEvent().getCardNo());
-	    TcpServer.enviarMensagemParaTodos(message);
-	    
-	    
 	    final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
 	    if (Objects.isNull(attachedDevice)) {
@@ -93,6 +87,12 @@ public class HikivisionEventsUseCase {
 	        return;
 	    }
 	    
+	    String message = "CARD_NUMBER=" + eventListnerTO.getAccessControllerEvent().getCardNo()
+                + ";DEVICE_ID=" + hikivisionCameraId
+                + ";CATRACA_INNER=" + attachedDevice.getIdentifier();
+	    
+	    TcpServer.enviarMensagemParaTodos(message);
+
 	    final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
 	    final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
 	    

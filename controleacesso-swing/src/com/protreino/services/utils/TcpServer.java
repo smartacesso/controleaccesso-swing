@@ -3,6 +3,7 @@ package com.protreino.services.utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -931,24 +933,34 @@ public class TcpServer {
 
 	}
 	
-	public static void enviarMensagemParaTodos(TcpMessageTO mensagem) {
-        synchronized (clientesConectados) {
-            for (Socket socket : clientesConectados) {
-                try {
-                	System.out.println("ENVIANDO EVENTO HIKI");
-                    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                    out.writeObject(mensagem);
-                    out.flush();
-                } catch (IOException e) {
-                    System.out.println("Erro ao enviar mensagem para o cliente: " + e.getMessage());
-                    try {
-                        socket.close();
-                        clientesConectados.remove(socket);
-                    } catch (IOException ex) {
-                        System.out.println("Erro ao remover cliente desconectado: " + ex.getMessage());
-                    }
-                }
-            }
-        }
-    }
+	public static void enviarMensagemParaTodos(Object mensagem) {
+	    synchronized (clientesConectados) {
+	        for (Socket socket : clientesConectados) {
+	            try {
+	                System.out.println("ENVIANDO MENSAGEM...");
+	                
+	                if (mensagem instanceof String) {
+	                    // Se for String, usar BufferedWriter
+	                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+	                    writer.write((String) mensagem);
+	                    writer.newLine(); // Adiciona quebra de linha para evitar problemas no `readLine()` do cliente
+	                    writer.flush();
+	                    System.out.println("STRING ENVIADA: " + mensagem);
+	                }else {
+	                    System.out.println("Tipo de mensagem não suportado: " + mensagem.getClass().getName());
+	                }
+	                
+	            } catch (IOException e) {
+	                System.out.println("Erro ao enviar mensagem para o cliente: " + e.getMessage());
+	                try {
+	                    socket.close();
+	                    clientesConectados.remove(socket);
+	                } catch (IOException ex) {
+	                    System.out.println("Erro ao remover cliente desconectado: " + ex.getMessage());
+	                }
+	            }
+	        }
+	    }
+	}
+
 }
