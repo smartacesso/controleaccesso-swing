@@ -53,11 +53,10 @@ import com.protreino.services.to.RegraTO;
 					  + "		or obj.cadastradoNoDesktop is null) "
 					  + "order by obj.id asc"),
 	@NamedQuery(name  = "RegraEntity.findAllComHorario", 
-				query = "select obj "
-				      + "from RegraEntity obj "
+				query = "select distinct obj from RegraEntity obj "
 				      + "join fetch obj.horarios "
 				      + "where (obj.removed is null or obj.removed = false) "
-					  + "order by obj.id asc"),
+					  + "order by obj.id asc")
 })
 @SuppressWarnings("serial")
 public class RegraEntity extends BaseEntity implements ObjectWithId {
