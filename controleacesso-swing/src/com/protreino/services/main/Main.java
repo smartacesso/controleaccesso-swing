@@ -44,6 +44,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -97,6 +98,7 @@ import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
+import com.protreino.services.repository.RegraRepository;
 import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
 import com.protreino.services.screens.MainScreen;
 import com.protreino.services.screens.ReleaseReasonDialog;
@@ -944,6 +946,8 @@ public class Main {
                     requestAllEmpresas();
 
                     requestAllParametros();
+                    
+                    uploadRegrasComPlano();
 
                     requestAllRegras();
 
@@ -1073,6 +1077,7 @@ public class Main {
                     if (regraExistente != null) {
                         regraExistente.update(regra);
                         HibernateAccessDataFacade.update(RegraEntity.class, regraExistente);
+                        
                     } else {
                     	HibernateAccessDataFacade.save(RegraEntity.class, regra);
                     }
@@ -1084,6 +1089,29 @@ public class Main {
                     loggedUser.setLastSyncRegra(new Date(lastSyncGetRegras));
                     loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
                 }
+            }
+            
+            private void uploadRegrasComPlano() {
+            	final RegraRepository regraRepository = new RegraRepository();
+            	List<RegraEntity> regras = regraRepository.buscaRegrasComPlanoETemplate();
+            	
+            	if(Objects.isNull(regras) || regras.isEmpty()) {
+            		System.out.println("Sem regras com plano ou template para enviar");
+            		return;
+            	}
+            	
+            	final JsonArray regrasJsonArray = new JsonArray();
+
+            	for(RegraEntity regra : regras) {
+            		final JsonObject regraJsonObject = new JsonObject();
+            		regraJsonObject.addProperty("id", regra.getId());
+            		regraJsonObject.addProperty("idPlano", regra.getIdPlano());
+            		regraJsonObject.addProperty("idTemplate", regra.getIdTemplate());
+            		
+            		regrasJsonArray.add(regraJsonObject);
+            	}
+
+            	smartAcessoClient.uploadRegras(regrasJsonArray);
             }
 
             private void requestAllParametros() throws IOException {

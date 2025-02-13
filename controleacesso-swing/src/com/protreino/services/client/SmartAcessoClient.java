@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -213,6 +214,29 @@ public class SmartAcessoClient {
 			e.printStackTrace();
 			Main.mainScreen.addEvento("Falha ao remover templates do servidor: " + e.getMessage());
 		}
+	}
+	
+	public void uploadRegras(final JsonArray regrasJsonArray) {
+		try {
+			HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/uploadRegras");
+	        int responseCode = con.sendResponse(regrasJsonArray.toString());
+
+	        if (responseCode != 200) {
+	            System.out.println(sdf.format(new Date())
+	                    + "  ERRO AO ENVIAR VISITANTES LOCAIS: Response code: " + responseCode);
+	            System.out.println(sdf.format(new Date())
+	                    + "  ERRO AO ENVIAR VISITANTES LOCAIS: Error String: " + con.getErrorString());
+	            
+	            return;
+	        }
+	        
+	        System.out.println(sdf.format(new Date())
+                    + "  REGRAS ENVIADAS COM SUCESSO: Response code: " + responseCode);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 }

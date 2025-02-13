@@ -23,6 +23,8 @@ public class RegraTO {
 	private Date horarioInicioTurno;
 	private Long qtdeDeCreditos;
 	private Long diasValidadeCredito;
+	private Integer idTemplate;
+	private Integer idPlano;
 	
 	private String status;
 	private Boolean removed;
@@ -131,6 +133,18 @@ public class RegraTO {
 	}
 	public void setDataRemovido(Date dataRemovido) {
 		this.dataRemovido = dataRemovido;
+	}
+	public Integer getIdTemplate() {
+		return idTemplate;
+	}
+	public void setIdTemplate(Integer idTemplate) {
+		this.idTemplate = idTemplate;
+	}
+	public Integer getIdPlano() {
+		return idPlano;
+	}
+	public void setIdPlano(Integer idPlano) {
+		this.idPlano = idPlano;
 	}
 	
 }

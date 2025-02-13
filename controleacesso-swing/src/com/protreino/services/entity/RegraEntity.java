@@ -56,6 +56,12 @@ import com.protreino.services.to.RegraTO;
 				query = "select distinct obj from RegraEntity obj "
 				      + "join fetch obj.horarios "
 				      + "where (obj.removed is null or obj.removed = false) "
+					  + "order by obj.id asc"),
+	@NamedQuery(name  = "RegraEntity.findAllComPlanoETemplate", 
+				query = "select obj from RegraEntity obj "
+				      + "where (obj.removed is null or obj.removed = false) "
+				      + "and obj.idPlano is not null "
+				      + "and obj.idTemplate is not null  "
 					  + "order by obj.id asc")
 })
 @SuppressWarnings("serial")
@@ -158,6 +164,8 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 		this.status = regraTO.getStatus();
 		this.removed = regraTO.getRemoved();
 		this.dataRemovido = regraTO.getDataRemovido();
+		this.idPlano = regraTO.getIdPlano();
+		this.idTemplate = regraTO.getIdTemplate();
 		
 		if(regraTO.getHorarios() != null && !regraTO.getHorarios().isEmpty()) {
 			this.horarios = new ArrayList<>();
@@ -184,10 +192,13 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 		this.status = regra.getStatus();
 		this.removed = regra.getRemoved();
 		this.dataRemovido = regra.getDataRemovido();
+		this.idPlano = regra.getIdPlano();
+		this.idTemplate = regra.getIdTemplate();
 		
 		if(regra.getHorarios() != null && !regra.getHorarios().isEmpty()) {
-			if(this.horarios == null)
+			if(this.horarios == null) {
 				this.horarios = new ArrayList<>();
+			}
 			
 			atualizaHorarios(regra.getHorarios());
 		}
