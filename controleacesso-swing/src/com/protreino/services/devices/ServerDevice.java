@@ -121,7 +121,7 @@ public class ServerDevice extends Device {
 	                        if (line.contains("CARD_NUMBER") && line.contains("DEVICE_ID")) {
 	                            processarMensagem(line);
 	                        } else {
-	                            System.out.println("⚠ Mensagem ignorada: formato inválido.");
+	                            System.out.println("Mensagem ignorada: formato inválido.");
 	                        }
 	                    } else {
 	                        // 🔹 Pequena pausa para evitar uso excessivo da CPU
@@ -157,7 +157,9 @@ public class ServerDevice extends Device {
 	        String cardNumber = params.get("CARD_NUMBER");
 	        String deviceId = params.get("DEVICE_ID");
 	        String catracaInner = params.get("CATRACA_INNER");
-
+	        
+	    	athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
+	        
 	        System.out.println("Evento processado:");
 	        System.out.println("CARD_NUMBER: " + cardNumber);
 	        System.out.println("DEVICE_ID: " + deviceId);
