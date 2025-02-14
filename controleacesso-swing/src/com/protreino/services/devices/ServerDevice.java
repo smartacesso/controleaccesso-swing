@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -107,26 +108,32 @@ public class ServerDevice extends Device {
 	            BufferedReader reader = new BufferedReader(new InputStreamReader(
 	                    HibernateServerAccessData.clientSocket.getInputStream()));
 
+	            // 🔹 Regex para validar o formato exato da mensagem
+	            String regex = "^CARD_NUMBER=\\d+;DEVICE_ID=[0-9A-Fa-f\\-]+;CATRACA_INNER=\\d+;\\d+;$";
+
 	            while (watchDogEnabled) {
 	                try {
-	                    // 🔹 Verifica se há dados antes de ler para evitar travamentos
-	                    if (reader.ready()) {
+	                    if (reader.ready()) { // Verifica se há dados antes de tentar ler
 	                        String line = reader.readLine();
+
 	                        if (line == null) {
 	                            System.out.println("Conexão fechada pelo servidor.");
 	                            break;
 	                        }
 
-	                        System.out.println("Recebido: " + line);
+	                        line = line.trim();
 
-	                        // 🔹 Processar apenas mensagens formatadas corretamente
-	                        if (line.contains("CARD_NUMBER") && line.contains("DEVICE_ID")) {
+	                        if (line.isEmpty()) {
+	                            continue;
+	                        }
+
+	                        if (line.matches(regex)) {
+	                            System.out.println("Recebido: " + line);
 	                            processarMensagem(line);
 	                        } else {
 	                            System.out.println("Mensagem ignorada: formato inválido.");
 	                        }
 	                    } else {
-	                        // 🔹 Pequena pausa para evitar uso excessivo da CPU
 	                        Thread.sleep(100);
 	                    }
 	                } catch (IOException e) {
@@ -143,6 +150,9 @@ public class ServerDevice extends Device {
 
 	    messageListenerThread.start();
 	}
+
+
+
 
 	private void processarMensagem(String line) {
 	    try {
