@@ -44,8 +44,12 @@ import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +139,13 @@ public class Utils {
 			Thread.sleep(tempo);
 		} catch (InterruptedException e) {
 		}
+	}
+	
+	public static Date toDate(final LocalTime localTime) {
+		final Instant instant = localTime.atDate(LocalDate.now()).
+		        atZone(ZoneId.systemDefault()).toInstant();
+
+		return Date.from(instant);
 	}
 
 	public static class SoundPlayer extends SwingWorker<Void, Void> {
@@ -557,6 +568,8 @@ public class Utils {
 				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
 				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionPlanHorario",
+				"Habilitar horario hikivision", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

@@ -1,6 +1,7 @@
 package com.protreino.services.usecase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -189,7 +190,7 @@ public class HikivisionUseCases {
 						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 					}
 				}
-
+				
 			} catch (HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
 						ex.getDeviceId(), ex.getHikivisionAction()));
@@ -202,6 +203,8 @@ public class HikivisionUseCases {
 			}
 		
 		});
+		
+		vincularPedestreaoTemplate(pedestre, devicesToSync);
 
 		pedestre.setDataCadastroFotoNaHikivision(new Date());
 
@@ -249,6 +252,8 @@ public class HikivisionUseCases {
 				return false;
 			}
 		}
+		
+		vincularPedestreaoTemplate(pedestre, Arrays.asList(deviceId));
 
 		pedestre.setDataCadastroFotoNaHikivision(new Date());
 		return true;
@@ -394,12 +399,27 @@ public class HikivisionUseCases {
 
 	}
 	
-	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre) {
-	    final List<Device> devices = listarDispositivos();
+	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
+		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+			final List<Device> devices = listarDispositivos();
+			if (Objects.isNull(devices) || devices.isEmpty()) {
+				return;
+			}
+
+			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+		}
+		
 	    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
 	    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
 	        System.out.println("sem regras de horarios");
+	        devicesToSync.forEach(device -> {
+		        hikiVisionIntegrationService.vincularTemplateNoUsuario(
+		            device,
+		            pedestre.getCardNumber(),
+		            1
+		        );
+		    });
 	        return;
 	    }
 
@@ -417,9 +437,9 @@ public class HikivisionUseCases {
 	    // A regra usada nos dispositivos será sempre a mais atual
 	    final RegraEntity regraFinal = regra;
 
-	    devices.forEach(device -> {
+	    devicesToSync.forEach(device -> {
 	        hikiVisionIntegrationService.vincularTemplateNoUsuario(
-	            device.getDevIndex(),
+	            device,
 	            pedestre.getCardNumber(),
 	            regraFinal.getIdTemplate()
 	        );
@@ -427,7 +447,9 @@ public class HikivisionUseCases {
 
 	    System.out.println("regra atualizada com sucesso");
 	}
-
-
+	
+	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre) {
+		vincularPedestreaoTemplate(pedestre, null);
+	}
 
 }

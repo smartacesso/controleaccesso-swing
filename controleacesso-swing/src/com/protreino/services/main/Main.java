@@ -107,6 +107,7 @@ import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
+import com.protreino.services.usecase.SincronismoHorariosHikivision;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.usecase.SyncTemplatesInTopDataDevices;
 import com.protreino.services.utils.BroadcastServer;
@@ -1082,6 +1083,9 @@ public class Main {
                     	HibernateAccessDataFacade.save(RegraEntity.class, regra);
                     }
                 }
+                
+                final SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+                sincronismoHorariosHikivision.execute();
 
                 if (loggedUser != null) {
                     Utils.sleep(1000);

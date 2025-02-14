@@ -68,6 +68,7 @@ public class SyncPedestrianAccessListUseCase {
     }).create();
 	
 	private final SmartAcessoFotoServiceClient smartAcessoFotoServiceClient = new SmartAcessoFotoServiceClient();
+	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	
 	public void syncPedestrianAccessList() {
         if (getUpdatingPedestrianAccessList()) {
@@ -463,7 +464,6 @@ public class SyncPedestrianAccessListUseCase {
                         		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                         		&& Utils.isHikivisionConfigValid() ) {
                         	
-                        	final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
                         	try {
                         		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
 
@@ -491,6 +491,7 @@ public class SyncPedestrianAccessListUseCase {
                         if (!atualizaDigitais && Boolean.TRUE.equals(newAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
                         }
+                        
                         HibernateAccessDataFacade.save(PedestrianAccessEntity.class, newAthleteAccess);
                     }
                 }

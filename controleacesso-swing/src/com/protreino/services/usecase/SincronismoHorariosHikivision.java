@@ -2,6 +2,7 @@ package com.protreino.services.usecase;
 
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -21,25 +22,30 @@ import com.protreino.services.repository.RegraRepository;
 import com.protreino.services.to.hikivision.DiaHIkivision;
 import com.protreino.services.to.hikivision.PlanoHorarioHikivision;
 import com.protreino.services.to.hikivision.TimeSegment;
+import com.protreino.services.utils.Utils;
 
 public class SincronismoHorariosHikivision {
+	
 	public final RegraRepository regraRepository = new RegraRepository();
 	private HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	
 	public void execute() {
 		List<RegraEntity> regrasComHorario = regraRepository.buscaRegrasComHorario();
 		if(Objects.isNull(regrasComHorario) || regrasComHorario.isEmpty()) {
-			System.out.println("Sem regras para sincronizar");			
+			System.out.println("Sem regras para sincronizar");
 			return;
 		}
+		
+		adicionaRegraDefault();
+		
 		regrasComHorario.forEach(regra -> {
 			PlanoHorarioHikivision planoHorarios = montaPlanoHorario(regra.getHorarios());
 			
-			Integer idPlanoHorario = getIdPlanoHorario(regra,regrasComHorario);
+			Integer idPlanoHorario = getIdPlanoHorario(regra, regrasComHorario);
 			//chamar hibernateUseCases para cadastrara horarios
 			hikivisionUseCases.sincronizarHorarioHIkivision(idPlanoHorario, planoHorarios);
 			
-			Integer idTemplate = getIdTemplate(regra,regrasComHorario);		
+			Integer idTemplate = getIdTemplate(regra,regrasComHorario);
 			//chamar hibernateUsecases para cadastrar Templates
 			hikivisionUseCases.sincronizarTemplateHIkivision(idTemplate,idPlanoHorario, regra.getNome());
 			
@@ -51,6 +57,26 @@ public class SincronismoHorariosHikivision {
 		});
 	}
 	
+	private void adicionaRegraDefault() {
+		List<HorarioEntity> horarios = new ArrayList<HorarioEntity>();
+		HorarioEntity horarioEntity = new HorarioEntity();
+		horarioEntity.setDiasSemana("1234567");
+		LocalTime inicio = LocalTime.of(0, 0, 0);
+		LocalTime fim = LocalTime.of(23, 59, 59);
+		
+		horarioEntity.setHorarioInicio(Utils.toDate(inicio));
+		horarioEntity.setHorarioFim(Utils.toDate(fim));
+		horarios.add(horarioEntity);
+		
+		PlanoHorarioHikivision planoHorarios = montaPlanoHorario(horarios);
+		
+		Integer idPlanoHorario = 1;
+		hikivisionUseCases.sincronizarHorarioHIkivision(idPlanoHorario, planoHorarios);
+		
+		Integer idTemplate = 1;
+		hikivisionUseCases.sincronizarTemplateHIkivision(idTemplate, idPlanoHorario, "Regra Default");
+	}
+
 	private PlanoHorarioHikivision montaPlanoHorario(List<HorarioEntity> horarios) {
         Map<String, AtomicInteger> idCounterByDay = new HashMap<>();
         List<DiaHIkivision> dias = new ArrayList<>();
@@ -78,7 +104,7 @@ public class SincronismoHorariosHikivision {
         return new PlanoHorarioHikivision(true, dias);
     }
 	
-	private Integer getIdPlanoHorario(RegraEntity regraAtual, List<RegraEntity> regras ) {
+	private Integer getIdPlanoHorario(RegraEntity regraAtual, List<RegraEntity> regras) {
 		if(Objects.nonNull(regraAtual.getIdPlano())) {
 			return Integer.valueOf(regraAtual.getIdPlano());
 		}
@@ -87,9 +113,8 @@ public class SincronismoHorariosHikivision {
 		.map(RegraEntity::getIdPlano)
 		.filter(Objects::nonNull)
 		.max(Comparator.naturalOrder())
-		.map(id -> id+1)
-		.orElse(1);
-
+		.map(id -> id + 1)
+		.orElse(2);
 	}
 	
 	
@@ -102,7 +127,7 @@ public class SincronismoHorariosHikivision {
 		.filter(Objects::nonNull)
 		.max(Comparator.naturalOrder())
 		.map(id -> id+1)
-		.orElse(1);
+		.orElse(2);
 
 	}
 
