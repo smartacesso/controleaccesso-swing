@@ -18,7 +18,7 @@ public class ControlIdUseCase {
 	
 	ControlIdDeviceService controlIdService = new ControlIdDeviceService();
 	
-	public String login(LoginInput login, String ip) {
+	public String login(LoginInput login, final String ip) {
 		
 	    if (Objects.isNull(login)) {
 	        System.err.println("LoginInput não pode ser nulo.");
@@ -26,7 +26,7 @@ public class ControlIdUseCase {
 	    }
 
 	    final String url = "http://" + ip + "/login.fcgi";
-	    String payload = gson.toJson(login);
+	    final String payload = gson.toJson(login);
 	    //TODO: vamos trabalhar com objetos, nao com strings
 	 
 	    SessionOutput sessionOutput;
@@ -45,13 +45,13 @@ public class ControlIdUseCase {
 	    return null;
 	}
 	
-	public boolean logout(String session, String ip) {
+	public boolean logout(final String session, String ip) {
 	    if (Objects.isNull(session) || session.isEmpty()) {
 	        System.err.println("Sessão não pode ser nula ou vazia.");
 	        return false;
 	    }
 
-	    String url = "http://" + ip + "/logout.fcgi?session=" + session;
+	    final String url = "http://" + ip + "/logout.fcgi?session=" + session;
 	    String response = controlIdService.getMessage("application/json", url);
 
 	    if (response == null || response.trim().equals("{}")) {
@@ -62,13 +62,13 @@ public class ControlIdUseCase {
 	    return false;
 	}
 	
-	public boolean isValidSession(String session, String ip) {
+	public boolean isValidSession(final String session, String ip) {
 	    if (Objects.isNull(session) || session.isEmpty()) {
 	        System.err.println("Sessão não pode ser nula ou vazia.");
 	        return false;
 	    }
 
-	    String url = "http://" + ip + "/session_is_valid.fcgi?session=" + session;
+	    final String url = "http://" + ip + "/session_is_valid.fcgi?session=" + session;
 	    String response = controlIdService.getMessage(url, "application/json");
 
 	    if (Objects.isNull(response)) {
@@ -86,7 +86,7 @@ public class ControlIdUseCase {
 
 	
 
-	private Void alterarUsuario(String session, LoginInput login) {
+	private Void alterarUsuario(final String session, LoginInput login) {
 
 		//terminar
 	    if (Objects.isNull(login)) {
@@ -102,7 +102,7 @@ public class ControlIdUseCase {
 	}
 	
 	
-	public List<Long> createObjects(String session, String object, List<Map<String, Object>> values, String ip) {
+	public List<Long> createObjects(final String session, final String object, List<Map<String, Object>> values, String ip) {
 	    if (session == null || session.isEmpty()) {
 	        throw new IllegalArgumentException("A sessão é obrigatória.");
 	    }
@@ -114,14 +114,14 @@ public class ControlIdUseCase {
 	    }
 
 	    try {
-	        String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
+	        final String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
 
 	        // Monta o payload da requisição
 	        Map<String, Object> payload = new HashMap<>();
 	        payload.put("object", object);
 	        payload.put("values", values);
 
-	        String jsonPayload = gson.toJson(payload);
+	        final String jsonPayload = gson.toJson(payload);
 
 	        // Envia a requisição usando o método genérico `send`
 	        Object response = controlIdService.postMessage("application/json", url, jsonPayload, Object.class);
@@ -143,23 +143,23 @@ public class ControlIdUseCase {
 
 
 	//Listagem de Usuarios na camera
-	public String ListagemdeUsers(String session, String ip) {
+	public final String ListagemdeUsers(String session, final String ip) {
 		
-	    String url = "http://" + ip + "/user_list_images.fcgi?get_timestamp=1&session=" + session;
-	    String response = controlIdService.getMessage( "application/json", url);
+	    final String url = "http://" + ip + "/user_list_images.fcgi?get_timestamp=1&session=" + session;
+	    final String response = controlIdService.getMessage( "application/json", url);
 
 	    if (response == null || response.trim().equals("{}")) {
 	        System.out.println("Users recebidos.");
 	        return response;
 	    }
-	    String idsFacial =  response;
+	    final String idsFacial =  response;
 	    System.err.println("Erro em receber quantidade de usuarios.");
 	    return idsFacial;
 	}
 	
 	//Recebe fotos do facial
 	//Precisa puxar uma variavel com um array de todos os IDs dentro do facial e colocar essa variavel em idsFacial
-	public boolean ColetadeFotoFacial(String session, String ip, String idsFacial) {
+	public boolean ColetadeFotoFacial(final String session, String ip, String idsFacial) {
 		
 	    String url = "http://" + ip + "/user_get_image.fcgi?user_id="+ idsFacial +"&get_timestamp=0&session=" + session;
 	    String response = controlIdService.getMessage("application/json", url);

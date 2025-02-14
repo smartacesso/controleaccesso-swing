@@ -89,7 +89,7 @@ public class ControlIdFacial extends ControlIdDevice {
 			LoginInput body = new LoginInput(login, password);
 
 			// Agora usando a variável de instância session
-			this.session = ControlIdDeviceService.login(body, ip);
+			//this.session = ControlIdDeviceService.login(body, ip);
 			System.out.println("Sessão recebida: " + session);
 
 			if (Objects.isNull(session)) {
@@ -105,7 +105,7 @@ public class ControlIdFacial extends ControlIdDevice {
 
 	@Override
 	public void disconnect(String... args) throws Exception {
-		ControlIdDeviceService.logout(getSession(), ip);
+		//ControlIdDeviceService.logout(getSession(), ip);
 		session = null;
 		setStatus(DeviceStatus.DISCONNECTED);
 	}
