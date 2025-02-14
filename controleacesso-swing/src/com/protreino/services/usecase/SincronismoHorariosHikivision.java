@@ -61,8 +61,8 @@ public class SincronismoHorariosHikivision {
 		List<HorarioEntity> horarios = new ArrayList<HorarioEntity>();
 		HorarioEntity horarioEntity = new HorarioEntity();
 		horarioEntity.setDiasSemana("1234567");
-		LocalTime inicio = LocalTime.of(0, 0, 0);
-		LocalTime fim = LocalTime.of(23, 59, 59);
+		LocalTime inicio = LocalTime.of(3, 0, 0);
+		LocalTime fim = LocalTime.of(2, 59, 59);
 		
 		horarioEntity.setHorarioInicio(Utils.toDate(inicio));
 		horarioEntity.setHorarioFim(Utils.toDate(fim));
