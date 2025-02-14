@@ -66,9 +66,9 @@ public class SyncPedestrianAccessListUseCase {
             return null;
         }
     }).create();
-	
+	private HikivisionUseCases hikivisionUseCases;
 	private final SmartAcessoFotoServiceClient smartAcessoFotoServiceClient = new SmartAcessoFotoServiceClient();
-	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+	
 	
 	public void syncPedestrianAccessList() {
         if (getUpdatingPedestrianAccessList()) {
