@@ -20,7 +20,9 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.TcpMessageType;
+import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateServerAccessData;
+import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.utils.Utils;
@@ -158,14 +160,17 @@ public class ServerDevice extends Device {
 	        String deviceId = params.get("DEVICE_ID");
 	        String catracaInner = params.get("CATRACA_INNER");
 	        
-	    	athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
-	        
-	        System.out.println("Evento processado:");
-	        System.out.println("CARD_NUMBER: " + cardNumber);
-	        System.out.println("DEVICE_ID: " + deviceId);
-	        System.out.println("CATRACA_INNER: " + catracaInner);
+	        List<Device> devicesList = Main.devicesList;
+	        Device device = devicesList.get(0);
+			List<AttachedTO> attachedHikivisionCameras = device.getAttachedHikivisionCameras();
+	        for(AttachedTO attachedTO : attachedHikivisionCameras) {
+	        	if(attachedTO.getIdDevice().equalsIgnoreCase(deviceId)) {
+	    	    	athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
+	        	}
+	        }
+
 	    } catch (Exception e) {
-	        System.out.println("⚠ Erro ao processar mensagem: " + e.getMessage());
+	        System.out.println("Erro ao processar mensagem: " + e.getMessage());
 	    }
 	}
 
