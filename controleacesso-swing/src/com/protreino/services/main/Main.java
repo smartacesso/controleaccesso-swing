@@ -199,7 +199,6 @@ public class Main {
     private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
     private static final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
     private static final SyncTemplatesInTopDataDevices syncTemplatesInTopDataDevices = new SyncTemplatesInTopDataDevices();
-    static SincronismoHorariosHikivision sincronismoHorariosHikivision;
     private HikivisionUseCases hikivisionUseCases;
 
     public static void main(String[] args) {
@@ -1085,7 +1084,7 @@ public class Main {
                     }
                 }
                 
-                
+                SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
                 sincronismoHorariosHikivision.execute();
 
                 if (loggedUser != null) {
