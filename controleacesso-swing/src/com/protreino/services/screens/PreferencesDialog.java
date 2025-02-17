@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -40,37 +41,33 @@ import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class PreferencesDialog extends JDialog {
-	
-	private final List<String> nonRequiredFields = Arrays.
-			asList("releaseAccessReason", 
-					"serverRecognizerIP",
-					"hikivisionServerRecognizerURL",
-					"hikivisionUserServerConnection",
-					"hikivisionPasswordServerConnection",
-					"tcpServerHikivisionSocketPort");
-	
+
+	private final List<String> nonRequiredFields = Arrays.asList("releaseAccessReason", "serverRecognizerIP",
+			"hikivisionServerRecognizerURL", "hikivisionUserServerConnection", "hikivisionPasswordServerConnection",
+			"tcpServerHikivisionSocketPort", "controlIdServerURL");
+
 	private Image configImage;
 	private PanelWithLabel errosLabel;
 	private Map<String, FieldTO> fieldMap;
 	private UserEntity user = Utils.userLogado();
-	
+
 	public PreferencesDialog() {
 		super(Main.mainScreen, "Preferencias", true);
-		
+
 		loadImages();
-		
+
 		setIconImage(configImage);
 		setResizable(true);
 		setLayout(new BorderLayout());
-		setMinimumSize(new Dimension(750,550));
-		
+		setMinimumSize(new Dimension(750, 550));
+
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
+
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setPreferredSize(new Dimension(750, 550));
 		mainPanel.add(tabbedPane, BorderLayout.CENTER);
-		
+
 		// Cria as abas
 		Map<PreferenceGroup, JPanel> groupMap = new HashMap<PreferenceGroup, JPanel>();
 		for (PreferenceGroup group : PreferenceGroup.values()) {
@@ -78,14 +75,13 @@ public class PreferencesDialog extends JDialog {
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 			panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 			groupMap.put(group, panel);
-			
-			JScrollPane scrollPane = new JScrollPane(panel, 
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+
+			JScrollPane scrollPane = new JScrollPane(panel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
 					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
 			tabbedPane.addTab(group.getName(), scrollPane);
 		}
-		
+
 		// Cria os campos
 		fieldMap = new HashMap<String, FieldTO>();
 		List<PreferenceTO> defaultPreferencesList = Utils.getDefaultPreferencesList();
@@ -93,17 +89,17 @@ public class PreferencesDialog extends JDialog {
 			FieldType fieldType = preference.getFieldType();
 			FieldTO field = null;
 			if (FieldType.NUMERIC_LIST.equals(fieldType))
-				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()), 
+				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()),
 						preference.getNumericListSequency());
-			else if(FieldType.COMBOBOX.equals(fieldType)) {
+			else if (FieldType.COMBOBOX.equals(fieldType)) {
 				String[] options = preference.getValue().split(";");
 				field = new FieldTO(preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()),
 						options);
-			
+
 			} else {
-				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()));				
+				field = new FieldTO(this, preference.getLabel(), fieldType, Utils.getPreference(preference.getKey()));
 			}
-			
+
 			field.setNumeric(preference.getNumeric());
 			field.setTextFieldSize(preference.getTextFieldSize());
 			if ("messageAllowed".equals(preference.getKey())) {
@@ -123,7 +119,7 @@ public class PreferencesDialog extends JDialog {
 				field.setTextFieldSize(25);
 			}
 			if ("athleteScreenBackgroundImage".equals(preference.getKey())) {
-				field.setImageExtensions(new String[] {"jpg", "jpeg"});
+				field.setImageExtensions(new String[] { "jpg", "jpeg" });
 				field.setFullSize(true);
 			}
 			if ("messageEntryAllowed".equals(preference.getKey())) {
@@ -134,7 +130,7 @@ public class PreferencesDialog extends JDialog {
 				field.setMaxCharacteres(14);
 				field.setTextFieldSize(12);
 			}
-			
+
 			// ajusta visibilidade de alguns campos
 			if ("restrictAccessDays".equals(preference.getKey())) {
 				field.setVisible("true".equals(fieldMap.get("restrictAccess").getValue()));
@@ -143,7 +139,8 @@ public class PreferencesDialog extends JDialog {
 				field.setActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						fieldMap.get("restrictAccessDays").setVisible("true".equals(fieldMap.get("restrictAccess").getValue()));
+						fieldMap.get("restrictAccessDays")
+								.setVisible("true".equals(fieldMap.get("restrictAccess").getValue()));
 					}
 				});
 			}
@@ -154,7 +151,8 @@ public class PreferencesDialog extends JDialog {
 				field.setActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						fieldMap.get("tcpServerSocketPort").setVisible("true".equals(fieldMap.get("enableTCPServer").getValue()));
+						fieldMap.get("tcpServerSocketPort")
+								.setVisible("true".equals(fieldMap.get("enableTCPServer").getValue()));
 					}
 				});
 			}
@@ -165,7 +163,8 @@ public class PreferencesDialog extends JDialog {
 				field.setActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						fieldMap.get("topDataSocketPort").setVisible("true".equals(fieldMap.get("enableTopDataFacial").getValue()));
+						fieldMap.get("topDataSocketPort")
+								.setVisible("true".equals(fieldMap.get("enableTopDataFacial").getValue()));
 					}
 				});
 			}
@@ -176,15 +175,16 @@ public class PreferencesDialog extends JDialog {
 				field.setActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						fieldMap.get("broadcastServerSocketPort").setVisible("true".equals(fieldMap.get("enableBroadcastServer").getValue()));
+						fieldMap.get("broadcastServerSocketPort")
+								.setVisible("true".equals(fieldMap.get("enableBroadcastServer").getValue()));
 					}
 				});
 			}
-			
+
 			if (nonRequiredFields.contains(preference.getKey())) {
 				field.setRequired(false);
 			}
-			
+
 			JPanel panel = groupMap.get(preference.getPreferenceGroup());
 			JPanel fieldPanel = field.getPanel();
 			fieldPanel.setMaximumSize(new Dimension(10000, (int) fieldPanel.getPreferredSize().getHeight()));
@@ -192,15 +192,15 @@ public class PreferencesDialog extends JDialog {
 			panel.add(Box.createVerticalStrut(5));
 			fieldMap.put(preference.getKey(), field);
 		}
-		
+
 		for (PreferenceGroup group : PreferenceGroup.values()) {
 			JPanel panel = groupMap.get(group);
 			panel.add(Box.createGlue());
 		}
-		
+
 		errosLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 10, 0);
 		errosLabel.setLabelColor(Color.RED);
-		
+
 		JButton zerarLastSyncButton = new JButton("Zerar marcador");
 		zerarLastSyncButton.setPreferredSize(new Dimension(140, 30));
 		JButton syncButton = new JButton("Sincronizar");
@@ -209,18 +209,18 @@ public class PreferencesDialog extends JDialog {
 		logoutButton.setPreferredSize(new Dimension(80, 30));
 		JButton executarButton = new JButton("Disparar tarefas");
 		executarButton.setPreferredSize(new Dimension(120, 30));
-		
-		//novo
+
+		// novo
 		JButton sincLog = new JButton("Forçar Sinc");
 		sincLog.setPreferredSize(new Dimension(120, 30));
-		
+
 		JButton resetarButton = new JButton("Valores padrao");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
 		salvarButton.setPreferredSize(new Dimension(80, 30));
 		JButton cancelarButton = new JButton("Cancelar");
 		cancelarButton.setPreferredSize(new Dimension(100, 30));
-		
+
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
 		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -240,43 +240,42 @@ public class PreferencesDialog extends JDialog {
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(cancelarButton);
 
-		
 		logoutButton.addActionListener(e -> {
 			Main.mainScreen.doLogout(this);
 		});
-		
+
 		executarButton.addActionListener(e -> {
 			Main.tasksOfDay(true);
 		});
-		
+
 		sincLog.addActionListener(e -> {
 			HibernateLocalAccessData.forcaSinc(user.getLoginName());
 		});
 
 		syncButton.addActionListener(e -> {
-			  JFrame jFrame = new JFrame();
-		        String dateInitialMessage = JOptionPane.showInputDialog(jFrame, "Primeira data com o formato dd/MM/yyyy HH:mm");
-		        String dateFinalgetMessage = JOptionPane.showInputDialog(jFrame, "Segunda data com o formato dd/MM/yyyy HH:mm");
-		        try {
-					Main.dateSync(dateInitialMessage, dateFinalgetMessage);
-				} catch (ParseException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+			JFrame jFrame = new JFrame();
+			String dateInitialMessage = JOptionPane.showInputDialog(jFrame,
+					"Primeira data com o formato dd/MM/yyyy HH:mm");
+			String dateFinalgetMessage = JOptionPane.showInputDialog(jFrame,
+					"Segunda data com o formato dd/MM/yyyy HH:mm");
+			try {
+				Main.dateSync(dateInitialMessage, dateFinalgetMessage);
+			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 //Amanhã fazer a configuracoes da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
-		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
+			JOptionPane.showMessageDialog(jFrame, "Datas : " + dateInitialMessage + "\n" + dateFinalgetMessage);
 		});
 
-		
 		salvarButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// Verifica campos de texto obrigatorios
-				
+
 				for (String key : fieldMap.keySet()) {
 					FieldTO field = fieldMap.get(key);
-					if (FieldType.TEXT.equals(field.getType())
-							|| FieldType.MESSAGE_LINES.equals(field.getType())){
+					if (FieldType.TEXT.equals(field.getType()) || FieldType.MESSAGE_LINES.equals(field.getType())) {
 						String statusField = field.checkField();
 						if (!"".equals(statusField)) {
 							errosLabel.setText(statusField);
@@ -284,22 +283,23 @@ public class PreferencesDialog extends JDialog {
 						}
 					}
 				}
-				
+
 				// Salva as novas preferencias
 				for (String key : fieldMap.keySet()) {
 					FieldTO field = fieldMap.get(key);
 					Utils.setPreference(key, field.getValue());
 				}
-				
+
 //				if(Main.temServidor()) {
-	//			}
+				// }
 				Utils.exportPreferences();
-				
-				JOptionPane.showMessageDialog(Main.mainScreen, "Preferencias salvas!", "Sucesso!", JOptionPane.PLAIN_MESSAGE);
+
+				JOptionPane.showMessageDialog(Main.mainScreen, "Preferencias salvas!", "Sucesso!",
+						JOptionPane.PLAIN_MESSAGE);
 				dispose();
 			}
 		});
-		
+
 		resetarButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -309,25 +309,25 @@ public class PreferencesDialog extends JDialog {
 				}
 			}
 		});
-		
+
 		cancelarButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				dispose();
 			}
 		});
-		
+
 		zerarLastSyncButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmacao", 
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Zerar marcador?", "Confirmacao",
 						JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
-				if (dialogResult == JOptionPane.YES_OPTION){
+				if (dialogResult == JOptionPane.YES_OPTION) {
 					SyncPedestrianAccessListUseCase.setLastSync(0l);
 				}
 			}
 		});
-		
+
 		getContentPane().add(mainPanel, BorderLayout.PAGE_START);
 		getContentPane().add(errosLabel, BorderLayout.CENTER);
 		getContentPane().add(buttonsPanel, BorderLayout.PAGE_END);
@@ -336,12 +336,13 @@ public class PreferencesDialog extends JDialog {
 		setVisible(true);
 	}
 
-	private void loadImages(){
+	private void loadImages() {
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		configImage = toolkit.getImage(Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
+		configImage = toolkit.getImage(
+				Main.class.getResource(Configurations.IMAGE_FOLDER + Main.customImageFolder + "configuracoes.png"));
 	}
-	
-	public void setErrorMessage(String message){
+
+	public void setErrorMessage(String message) {
 		errosLabel.setText(message);
 	}
 

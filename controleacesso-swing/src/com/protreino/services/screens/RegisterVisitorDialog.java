@@ -3,31 +3,26 @@
 
 package com.protreino.services.screens;
 
-import com.protreino.services.client.SmartAcessoFotoServiceClient;
-import com.protreino.services.constants.Configurations;
-import com.protreino.services.devices.Device;
-import com.protreino.services.devices.FacialDevice;
-import com.protreino.services.devices.ServerDevice;
-import com.protreino.services.entity.*;
-import com.protreino.services.enumeration.TipoPedestre;
-import com.protreino.services.enumeration.TipoRegra;
-import com.protreino.services.exceptions.InvalidPhotoException;
-import com.protreino.services.main.Main;
-import com.protreino.services.repository.HibernateAccessDataFacade;
-import com.protreino.services.repository.TopDataFacialErrorRepository;
-import com.protreino.services.screens.dialogs.SimpleMessageDialog;
-import com.protreino.services.usecase.HikivisionUseCases;
-import com.protreino.services.utils.*;
-import org.apache.commons.lang.StringUtils;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.DimensionUIResource;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.MaskFormatter;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -37,8 +32,64 @@ import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Objects;
+import java.util.Vector;
+
+import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.DimensionUIResource;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.MaskFormatter;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.protreino.services.client.SmartAcessoFotoServiceClient;
+import com.protreino.services.constants.Configurations;
+import com.protreino.services.devices.Device;
+import com.protreino.services.devices.FacialDevice;
+import com.protreino.services.devices.ServerDevice;
+import com.protreino.services.entity.CargoEntity;
+import com.protreino.services.entity.CentroCustoEntity;
+import com.protreino.services.entity.DepartamentoEntity;
+import com.protreino.services.entity.EmpresaEntity;
+import com.protreino.services.entity.ParametroEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.RegraEntity;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
+import com.protreino.services.enumeration.TipoPedestre;
+import com.protreino.services.enumeration.TipoRegra;
+import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.TopDataFacialErrorRepository;
+import com.protreino.services.screens.dialogs.SimpleMessageDialog;
+import com.protreino.services.usecase.ControlIdUseCase;
+import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.utils.CropImage;
+import com.protreino.services.utils.EncryptionUtils;
+import com.protreino.services.utils.QRCodeUtils;
+import com.protreino.services.utils.SelectItem;
+import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class RegisterVisitorDialog extends BaseDialog {
@@ -159,6 +210,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JComboBox<SelectItem> tipoAcessoJComboBox;
 	private boolean isFotoModificada = false;
 	private HikivisionUseCases hikivisionUseCases;
+	private ControlIdUseCase controlIdUseCases;
 
 	private JButton syncInHikivisionButton;
 
@@ -262,6 +314,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		if (Utils.isHikivisionConfigValid()) {
 			hikivisionUseCases = new HikivisionUseCases();
+		}
+
+		if (Utils.isControlIdPreferencesValid()) {
+			controlIdUseCases = new ControlIdUseCase();
 		}
 
 		addWindowListener(new WindowAdapter() {
@@ -1016,7 +1072,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 					visitante.setDataFimPeriodo(null);
 					visitante.setQuantidadeCreditos(1l);
 					System.out.println("Credito adicionado");
-					if(Objects.nonNull(visitante.getPedestreRegra())) {
+					if (Objects.nonNull(visitante.getPedestreRegra())) {
 						for (PedestreRegraEntity pedestreRegra : visitante.getPedestreRegra()) {
 							if (pedestreRegra.getQtdeDeCreditos() != null) {
 								pedestreRegra.setQtdeDeCreditos(1L);
@@ -1035,6 +1091,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 				if (isTopDataEnable()) {
 					salvarFotoVisitanteTopData();
+				}
+
+				if (Objects.nonNull(controlIdUseCases)) {
+					salvarFotoVisitanteControlIdServer();
 				}
 
 				limparTodosOsCampos();
@@ -1121,16 +1181,16 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private void salvarFotoVisitanteTopData() {
-		final List<TopdataFacialErrorEntity> errors =  buscaErrorsVisitanteByCardNumber(visitante.getCardNumber());
-		
-		if(Objects.nonNull(errors) && !errors.isEmpty()) {
+		final List<TopdataFacialErrorEntity> errors = buscaErrorsVisitanteByCardNumber(visitante.getCardNumber());
+
+		if (Objects.nonNull(errors) && !errors.isEmpty()) {
 			errors.forEach(error -> HibernateAccessDataFacade.remove(error));
 		}
-		
+
 		if ("ATIVO".equals(visitante.getStatus())) {
 			if (Objects.nonNull(visitante.getFoto())) {
-					Main.facialTopDataIntegrationService.cadastrarPedestre(
-							Long.valueOf(visitante.getCardNumber()), visitante.getName(), visitante.getFoto());
+				Main.facialTopDataIntegrationService.cadastrarPedestre(Long.valueOf(visitante.getCardNumber()),
+						visitante.getName(), visitante.getFoto());
 			}
 		} else {
 			if (Objects.nonNull(visitante.getFoto())) {
@@ -1574,14 +1634,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
 
 		}
-		
+
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
-	
+
 	private Boolean isTopDataEnable() {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
-	
+
 	private void preencheDadosVisitanteEditando() {
 		// Dados basicos
 		nomeTextField.setText(visitante.getName() != null ? visitante.getName() : "");
@@ -2120,6 +2180,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 			if (Objects.nonNull(hikivisionUseCases)) {
 				hikivisionUseCases.apagarFotosUsuario(visitante);
 			}
+
+			if (Objects.nonNull(controlIdUseCases)) {
+				controlIdUseCases.removerUsuario(visitante);
+			}
+
 			escolherFotoDialog.dispose();
 		});
 
@@ -2182,7 +2247,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			new Thread() {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
-						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);						
+						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
 					} else {
 						hikivisionUseCases.removerUsuarioFromDevices(visitante);
 					}
@@ -2254,6 +2319,43 @@ public class RegisterVisitorDialog extends BaseDialog {
 				criarDialogoCropImage(caminho);
 			}
 		}
+	}
+
+	private void salvarFotoVisitanteControlIdServer() {
+		if (Objects.isNull(controlIdUseCases)) {
+			return;
+		}
+
+		final boolean isHikivisionServerOnline = hikivisionUseCases.getSystemInformation();
+
+		if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
+			visitante.setDataCadastroFotoControlId(new Date());
+			System.out.println("Visitante atualizado por server invalido");
+			visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class,
+					visitante)[0];
+
+			// criar dialogo caso o cadastro ainda nao esteja salvo
+			return;
+		}
+		visitante.setFotoEnviada(true);
+		try {
+			new Thread() {
+				public void run() {
+					if ("ATIVO".equals(visitante.getStatus())) {
+						controlIdUseCases.cadastrarUsuario(visitante);
+					} else {
+						controlIdUseCases.removerUsuario(visitante);
+					}
+				}
+			}.start();
+
+		} catch (InvalidPhotoException ife) {
+			criarDialogoFotoInvalida();
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 
 	private void criarDialogoCropImage(String caminho) {

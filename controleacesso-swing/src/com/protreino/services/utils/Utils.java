@@ -82,7 +82,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.protreino.services.constants.Configurations;
-import com.protreino.services.devices.AlmitecDevice;
 import com.protreino.services.devices.Device;
 import com.protreino.services.entity.AllowedTimeEntity;
 import com.protreino.services.entity.ConfigurationEntity;
@@ -119,13 +118,19 @@ public class Utils {
 	private static List<PreferenceTO> defaultPreferencesList;
 
 	private static final DeviceRepository deviceRepository = new DeviceRepository();
-	
+
 	public static boolean isHikivisionConfigValid() {
 		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
 
 		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
 	}
-	
+
+	public static boolean isControlIdPreferencesValid() {
+		final String controlIdURL = getPreference("controlIdServerURL");
+
+		return Objects.nonNull(controlIdURL) && !controlIdURL.isEmpty();
+	}
+
 	public static boolean isTopDataFacialEnable() {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
@@ -240,9 +245,9 @@ public class Utils {
 		}
 		// caso nao tenha preferencia definida, retorna valor padrao
 		if (value == null) {
-			value = getDefaultPreference(key);			
+			value = getDefaultPreference(key);
 		}
-		
+
 		return value;
 	}
 
@@ -343,14 +348,14 @@ public class Utils {
 			e.printStackTrace();
 		}
 	}
-	
-		//Preferencias
-	
+
+	// Preferencias
+
 	public static void defineDefaultPreferences() {
 		defaultPreferencesList = new ArrayList<PreferenceTO>();
-		
-		//Campo "Geral"
-		
+
+		// Campo "Geral"
+
 		defaultPreferencesList.add(
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "disableNotifications",
@@ -359,8 +364,9 @@ public class Utils {
 				FieldType.TEXT, "5", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccess",
 				"Limitar a quantidade de acessos por pedestre por dia", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "biometricRegistrationType", "Tipo de cadastro de biometria",
-				FieldType.COMBOBOX, "Catraca ou Device_CATRACA", "Catraca ou Device_CATRACA;Hikivision_HIKIVISION"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "biometricRegistrationType",
+				"Tipo de cadastro de biometria", FieldType.COMBOBOX, "Catraca ou Device_CATRACA",
+				"Catraca ou Device_CATRACA;Hikivision_HIKIVISION"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccessDays", "Limite de acessos",
 				FieldType.NUMERIC_LIST, "1", "1;1;5"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "toleranceAccess",
@@ -378,7 +384,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "releaseAccessReason",
 				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
-				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));	
+				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
 				"Habilitar servidor TCP", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerSocketPort",
@@ -420,7 +426,7 @@ public class Utils {
 
 		// TODO NOVAS PREFERENCIAS SAO INSERIDAS AQUI
 
-		//Campo "Mensagens"
+		// Campo "Mensagens"
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "messageEnrollment",
 				"Mensagem de cadastro de digital", FieldType.MESSAGE_LINES, "POSICIONE O DEDO;NO LEITOR"));
@@ -482,7 +488,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "RevistaRequired",
 				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
 
-		//Campo "Tela de pedestre"
+		// Campo "Tela de pedestre"
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenBackgroundImage",
 				"Imagem de fundo da tela do pedestre", FieldType.IMAGE, ""));
@@ -495,8 +501,8 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.ATHLETE_SCREEN, "athleteScreenTimeout",
 				"Tempo limite para apresentação dos dados (segundos)", FieldType.NUMERIC_LIST, "5", "5;5;60"));
 
-		//Campo "Reconhecimento facial"
-		
+		// Campo "Reconhecimento facial"
+
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER, "samplesNumberForTraining",
 				"Número de amostras para treinamento", FieldType.NUMERIC_LIST, "1", "1;1;10"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.FACE_RECOGNIZER,
@@ -514,64 +520,80 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cardMaster",
 				"Definir número do cartão Master", FieldType.TEXT, "99999", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "syncLogPageSize",
-				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));	
+				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "bloquearCartaoZero",
-				"Bloquear cartao zerado", FieldType.CHECKBOX, "true"));	
+				"Bloquear cartao zerado", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaCpf",
 				"Habilita busca por CPF", FieldType.CHECKBOX, "true"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg",
-				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg", "Habilita busca por RG",
+				FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "porcentagemRevista",
-				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));	
+				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaSemVerificar",
 				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "decrementaEntrada",
 				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
 
-		//Campo Reconhecimento Facial HIKI
+		// Campo Reconhecimento Facial HIKI
 
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
-				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
-				"Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionPasswordServerConnection",
-				"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "tcpServerHikivisionSocketPort",
-				"Porta do servidor TCP Hikivision para receber os eventos", FieldType.TEXT, "2025", true, 10));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
-				"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
-				"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)", FieldType.NUMERIC_LIST, "10", "0;10;60"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reconectDeviceOnReceiveCurrentEvent",
-				"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "deletePhotoFromInactivePedestrian",
-				"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeVisitanteCameraSaida",
-				"Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));		
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionFingerRegistration",
-				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
-				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
-		
-		//Campo Reconhecimento Facial TOPDATA
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
+						"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
+						"Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionPasswordServerConnection",
+						"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "tcpServerHikivisionSocketPort",
+						"Porta do servidor TCP Hikivision para receber os eventos", FieldType.TEXT, "2025", true, 10));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
+						"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
+						"Tempo para reprocessar erros de integração da Hikivision (minutos) (0 para desabilitar)",
+						FieldType.NUMERIC_LIST, "10", "0;10;60"));
+		defaultPreferencesList.add(
+				new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reconectDeviceOnReceiveCurrentEvent",
+						"Reconectar catraca ao receber um evento atual", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "deletePhotoFromInactivePedestrian",
+						"Apagar foto de pedestre inativo ao receber atualização da web", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER,
+				"removeVisitanteCameraSaida", "Remover visitante da camera ao sair", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER,
+				"hikiVisionFingerRegistration", "Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
+						"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
+
+		// Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",
 				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
-				"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
+						"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "topDataSocketPort",
 				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 
-		//Campo Reconhecimento Facial CONTROL ID
+		// Campo Reconhecimento Facial CONTROL ID
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "enableTopDataFacial",
 				"Habilitar websocket topdata", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
-				"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
+						"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "topDataSocketPort",
 				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
-		
-		
+
+		// Identificador de url ControlId
+		defaultPreferencesList
+				.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER, "hikivisionServerRecognizerURL",
+						"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
+
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {
 				setPreference(preferenceTO.getKey(), preferenceTO.getValue());
@@ -609,7 +631,7 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	public static UserEntity userLogado() {
 		UserEntity user = Main.loggedUser;
 		return user;
@@ -634,7 +656,7 @@ public class Utils {
 		if (!getPreferenceAsBoolean("importExportDevices")) {
 			return;
 		}
-		
+
 		String json = Main.loggedUser.getBackupDevices();
 		if (isNullOrEmpty(json)) {
 			return;
@@ -644,9 +666,9 @@ public class Utils {
 		JsonArray deviceArray = (JsonArray) parser.parse(json);
 		for (JsonElement elementDevice : deviceArray) {
 			JsonObject deviceObj = (JsonObject) elementDevice;
-			
+
 			DeviceEntity deviceEntity = convertToDeviceEntity(deviceObj);
-			
+
 			List<ConfigurationGroupEntity> configurationGroupList = new ArrayList<ConfigurationGroupEntity>();
 			JsonArray configGroupArray = deviceObj.get("configurationGroups").getAsJsonArray();
 
@@ -676,14 +698,15 @@ public class Utils {
 				deviceEntity.setAttachedDevices(attachedDevicesArray.toString());
 			}
 
-			if(deviceRepository.isDeviceAlreadyExists(deviceEntity.getIdentifier())) {
+			if (deviceRepository.isDeviceAlreadyExists(deviceEntity.getIdentifier())) {
 				continue;
 			}
-			
+
 			HibernateAccessDataFacade.save(DeviceEntity.class, deviceEntity);
 		}
 
-		List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
+		List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class,
+				"DeviceEntity.findAll");
 		if (lista != null && !lista.isEmpty()) {
 			for (DeviceEntity deviceEntity : lista) {
 				Main.devicesList.add(deviceEntity.recoverDevice());
@@ -701,48 +724,45 @@ public class Utils {
 			Main.devicesList.get(0).setDefaultDevice(true);
 		}
 	}
-	
-	private static ConfigurationEntity convertToConfigurationEntity(final JsonObject configObj, ConfigurationGroupEntity configGroupEntity) {
+
+	private static ConfigurationEntity convertToConfigurationEntity(final JsonObject configObj,
+			ConfigurationGroupEntity configGroupEntity) {
 		ConfigurationEntity configEntity = new ConfigurationEntity();
 		configEntity.setGroup(configGroupEntity);
 		configEntity.setName(configObj.get("name").getAsString());
-		configEntity.setValue(
-				configObj.get("value").isJsonNull() ? null : configObj.get("value").getAsString());
+		configEntity.setValue(configObj.get("value").isJsonNull() ? null : configObj.get("value").getAsString());
 		configEntity.setType(FieldType.valueOf(configObj.get("type").getAsString()));
-		configEntity.setComboboxValues(configObj.get("comboboxValues").isJsonNull() ? null
-				: configObj.get("comboboxValues").getAsString());
-		configEntity.setMaxCharacteres(configObj.get("maxCharacteres").isJsonNull() ? null
-				: configObj.get("maxCharacteres").getAsInt());
-		configEntity.setMinCharacteres(configObj.get("minCharacteres").isJsonNull() ? null
-				: configObj.get("minCharacteres").getAsInt());
-		configEntity.setNumeric(
-				configObj.get("numeric").isJsonNull() ? null : configObj.get("numeric").getAsBoolean());
-		configEntity.setRequired(configObj.get("required").isJsonNull() ? null
-				: configObj.get("required").getAsBoolean());
-		
+		configEntity.setComboboxValues(
+				configObj.get("comboboxValues").isJsonNull() ? null : configObj.get("comboboxValues").getAsString());
+		configEntity.setMaxCharacteres(
+				configObj.get("maxCharacteres").isJsonNull() ? null : configObj.get("maxCharacteres").getAsInt());
+		configEntity.setMinCharacteres(
+				configObj.get("minCharacteres").isJsonNull() ? null : configObj.get("minCharacteres").getAsInt());
+		configEntity.setNumeric(configObj.get("numeric").isJsonNull() ? null : configObj.get("numeric").getAsBoolean());
+		configEntity
+				.setRequired(configObj.get("required").isJsonNull() ? null : configObj.get("required").getAsBoolean());
+
 		return configEntity;
 	}
-	
+
 	private static DeviceEntity convertToDeviceEntity(final JsonObject deviceObj) {
 		DeviceEntity deviceEntity = new DeviceEntity();
 		deviceEntity.setManufacturer(Manufacturer.valueFromImport(deviceObj.get("manufacturer").getAsString()));
 		deviceEntity.setIdentifier(deviceObj.get("identifier").getAsString());
 		deviceEntity.setName(deviceObj.get("name").isJsonNull() ? null : deviceObj.get("name").getAsString());
+		deviceEntity.setLogin(deviceObj.get("login").isJsonNull() ? null : deviceObj.get("login").getAsString());
 		deviceEntity
-				.setLogin(deviceObj.get("login").isJsonNull() ? null : deviceObj.get("login").getAsString());
-		deviceEntity.setPassword(
-				deviceObj.get("password").isJsonNull() ? null : deviceObj.get("password").getAsString());
-		deviceEntity.setLocation(
-				deviceObj.get("location").isJsonNull() ? null : deviceObj.get("location").getAsString());
+				.setPassword(deviceObj.get("password").isJsonNull() ? null : deviceObj.get("password").getAsString());
 		deviceEntity
-				.setDesiredStatus(DeviceStatus.valueFromImport(deviceObj.get("desiredStatus").getAsString()));
-		deviceEntity.setDefaultDevice(deviceObj.get("defaultDevice").isJsonNull() ? false
-				: deviceObj.get("defaultDevice").getAsBoolean());
-		deviceEntity.setMirrorDevice(deviceObj.get("mirrorDevice").isJsonNull() ? false
-				: deviceObj.get("mirrorDevice").getAsBoolean());
+				.setLocation(deviceObj.get("location").isJsonNull() ? null : deviceObj.get("location").getAsString());
+		deviceEntity.setDesiredStatus(DeviceStatus.valueFromImport(deviceObj.get("desiredStatus").getAsString()));
+		deviceEntity.setDefaultDevice(
+				deviceObj.get("defaultDevice").isJsonNull() ? false : deviceObj.get("defaultDevice").getAsBoolean());
+		deviceEntity.setMirrorDevice(
+				deviceObj.get("mirrorDevice").isJsonNull() ? false : deviceObj.get("mirrorDevice").getAsBoolean());
 		deviceEntity.setAthleteScreenConfig(deviceObj.get("athleteScreenConfig").isJsonNull() ? null
 				: deviceObj.get("athleteScreenConfig").getAsString());
-		
+
 		return deviceEntity;
 	}
 
@@ -751,10 +771,11 @@ public class Utils {
 		if (getPreferenceAsBoolean("importExportDevices")) {
 			JsonArray deviceArray = new JsonArray();
 
-			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class, "DeviceEntity.findAll");
-			
+			List<DeviceEntity> lista = (List<DeviceEntity>) HibernateAccessDataFacade.getResultList(DeviceEntity.class,
+					"DeviceEntity.findAll");
+
 			List<DeviceEntity> listWithDistinctIdentifiers = getDistinctsIdentifier(lista);
-			
+
 			if (!isNullOrEmpty(listWithDistinctIdentifiers)) {
 				for (DeviceEntity deviceEntity : listWithDistinctIdentifiers) {
 					JsonObject deviceObj = new JsonObject();
@@ -814,13 +835,15 @@ public class Utils {
 						}
 					}
 					deviceObj.add("attachedDevices", attachedDevicesArray);
-					
+
 					JsonArray hikivisionAttachedCamerasArray = new JsonArray();
-					if (deviceEntity.getAttachedHikivisionCameras() != null && !deviceEntity.getAttachedHikivisionCameras().isEmpty()) {
+					if (deviceEntity.getAttachedHikivisionCameras() != null
+							&& !deviceEntity.getAttachedHikivisionCameras().isEmpty()) {
 						String hikivisionAttachedCameras = deviceEntity.getAttachedHikivisionCameras();
 						Gson gson = new GsonBuilder().create();
-						List<AttachedTO> list = gson.fromJson(hikivisionAttachedCameras, new TypeToken<List<AttachedTO>>() {
-						}.getType());
+						List<AttachedTO> list = gson.fromJson(hikivisionAttachedCameras,
+								new TypeToken<List<AttachedTO>>() {
+								}.getType());
 
 						for (AttachedTO attachedTO : list) {
 							JsonObject attachedHikivisionCamerasObj = new JsonObject();
@@ -843,20 +866,20 @@ public class Utils {
 
 	private static List<DeviceEntity> getDistinctsIdentifier(List<DeviceEntity> lista) {
 		final List<DeviceEntity> distinctDevices = new ArrayList<>();
-		
-		for(DeviceEntity device : lista) {
+
+		for (DeviceEntity device : lista) {
 			boolean contains = false;
-			for(DeviceEntity d : distinctDevices) {
-				if(d.getIdentifier().equals(device.getIdentifier())) {
+			for (DeviceEntity d : distinctDevices) {
+				if (d.getIdentifier().equals(device.getIdentifier())) {
 					contains = true;
 				}
 			}
-			
-			if(!contains) {
+
+			if (!contains) {
 				distinctDevices.add(device);
 			}
 		}
-		
+
 		return distinctDevices;
 	}
 
@@ -893,7 +916,8 @@ public class Utils {
 					System.out.println("FALHA AO ENVIAR BACKUP: Exception: " + e.getMessage());
 					Main.loggedUser.setBackupChanged(true);
 				} finally {
-					Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class, Main.loggedUser)[0];
+					Main.loggedUser = (UserEntity) HibernateAccessDataFacade.saveUser(UserEntity.class,
+							Main.loggedUser)[0];
 				}
 				return null;
 			}
@@ -912,7 +936,7 @@ public class Utils {
 	public static void createNotification(String message, NotificationType type, byte[] photo, int duration) {
 		final Boolean disableNotifications = getPreferenceAsBoolean("disableNotifications");
 
-		if(Boolean.TRUE.equals(disableNotifications)) {
+		if (Boolean.TRUE.equals(disableNotifications)) {
 			return;
 		}
 
@@ -928,7 +952,8 @@ public class Utils {
 		JLabel proTreinoLabel = new JLabel(Main.nomeAplicacao);
 		proTreinoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		proTreinoLabel.setForeground(Color.WHITE);
-		Font customFont = new Font(proTreinoLabel.getFont().getFontName(), Font.BOLD, proTreinoLabel.getFont().getSize() + 1);
+		Font customFont = new Font(proTreinoLabel.getFont().getFontName(), Font.BOLD,
+				proTreinoLabel.getFont().getSize() + 1);
 		proTreinoLabel.setFont(customFont);
 
 		JPanel messageContainer = new JPanel();
@@ -948,7 +973,7 @@ public class Utils {
 		}
 
 		final List<String> mensagens = createMessage(message);
-		
+
 		for (String mensagem : mensagens) {
 			JLabel infoMessage = new JLabel(mensagem);
 			infoMessage.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -1012,12 +1037,12 @@ public class Utils {
 
 		new java.util.Timer().schedule(new FaderOut(dialog), duration, 5);
 	}
-	
+
 	private static List<String> createMessage(final String message) {
 		List<String> mensagens = new ArrayList<String>();
 		String[] palavras = message.split(" ");
 		final StringBuilder frase = new StringBuilder();
-		
+
 		for (String palavra : palavras) {
 			if ((frase.length() + palavra.length()) < 50) {
 				frase.append(palavra + " ");
@@ -1027,9 +1052,9 @@ public class Utils {
 				frase.setLength(0);
 			}
 		}
-		
+
 		mensagens.add(frase.toString());
-		
+
 		return mensagens;
 	}
 
@@ -1090,7 +1115,7 @@ public class Utils {
 				while (null != (bufferedString = bufferedReader.readLine())) {
 					stringBuilder.append(bufferedString);
 				}
-					
+
 				version = stringBuilder.toString();
 			}
 		} catch (Exception e) {
@@ -1105,13 +1130,14 @@ public class Utils {
 			Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 			if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 				desktop.browse(url.toURI());
-			
+
 			} else {
 				JOptionPane.showConfirmDialog(null,
 						"Não foi possível abrir a pÃ¡gina de download.\nTente abri-la manualmente atravÃ©s do link:\n"
-								+ link, title, JOptionPane.OK_CANCEL_OPTION);
+								+ link,
+						title, JOptionPane.OK_CANCEL_OPTION);
 			}
-		
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showConfirmDialog(null,
@@ -1138,7 +1164,7 @@ public class Utils {
 		}
 		return ip;
 	}
-	
+
 	public static String getLocalIpAddress() {
 		try {
 			InetAddress IP = InetAddress.getLocalHost();
@@ -1147,7 +1173,7 @@ public class Utils {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return "";
 	}
 
@@ -1182,7 +1208,7 @@ public class Utils {
 					if (inetAddress.isSiteLocalAddress()) {
 						local.add(inetAddress.getHostAddress());
 					}
-						
+
 				}
 			}
 		} catch (Exception e) {
@@ -1687,7 +1713,7 @@ public class Utils {
 				} catch (Exception exe) {
 					String data = null;
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-					if(element.getAsString().contains("+0000")) {
+					if (element.getAsString().contains("+0000")) {
 						data = element.getAsString().replace(".000+0000", "");
 					}
 					return sdf.parse(data);
@@ -1695,27 +1721,27 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	public static BufferedImage createImageFromBytes(byte[] imageData) {
-	    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-	    try {
-	        return ImageIO.read(bais);
-	    } catch (IOException e) {
-	        throw new RuntimeException(e);
-	    }
+		ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+		try {
+			return ImageIO.read(bais);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
+
 	public static Long convert(Long key) {
 		String abatrackHexa = Long.toHexString(key);
 
 		if (abatrackHexa.length() == 5) {
 			abatrackHexa = "0" + abatrackHexa;
 		}
-		
+
 		if (abatrackHexa.length() == 4) {
 			abatrackHexa = "00" + abatrackHexa;
 		}
-		
+
 		int abaLength = abatrackHexa.length();
 		String abatrackLast4 = abatrackHexa.substring(abaLength - 4);
 		String abatrackRest = abatrackHexa.substring(abaLength - 6, abaLength - 4);
@@ -1756,17 +1782,17 @@ public class Utils {
 //			olhar a posiÃ§Ã£o pegar exatamente o mesmo if
 			String fcWiegand = hexAbatrack.substring(4);
 			String fcwiegand = "";
-			if(!Objects.equals(fcWiegand, "")) {
+			if (!Objects.equals(fcWiegand, "")) {
 				String temp = "";
 				temp += fcWiegand.charAt(0);
 				temp += fcWiegand.charAt(1);
 				long fclong = new BigInteger(temp, 16).longValue();
 				fcwiegand = String.valueOf(fclong);
-				
+
 			}
-		
+
 			longAbatrack = new BigInteger(hexWigan, 16).longValue();
-			
+
 			String wiegand = String.valueOf(longAbatrack);
 			if (wiegand.length() < 4) {
 				wiegand = "00" + wiegand;
@@ -1775,7 +1801,6 @@ public class Utils {
 				wiegand = "0" + wiegand;
 			}
 
-			
 			String fcwiegandtg = fcwiegand + wiegand;
 			return fcwiegandtg;
 
@@ -1786,74 +1811,75 @@ public class Utils {
 		}
 
 	}
-	
-	public static String getFirstJsonFromString(String input) {
-        List<Character> stack = new ArrayList<Character>();
 
-        String temp = "";
-        
-        for(char eachChar: input.toCharArray()) {
-            if(stack.isEmpty() && eachChar == '{') {
-                stack.add(eachChar);
-                temp += eachChar;
-            } else if(!stack.isEmpty()) {
-                temp += eachChar;
-                if(stack.get(stack.size()-1).equals('{') && eachChar == '}') {
-                    stack.remove(stack.size()-1);
-                    if(stack.isEmpty()) {
-                    	return temp;
-                    }
-                } else if(eachChar == '{' || eachChar == '}') {
-                	stack.add(eachChar);
-                }
-            } else if(temp.length() > 0 && stack.isEmpty()) {
-            	return temp;
-            }
-        }
-        
-        return "";
-    }
-	
+	public static String getFirstJsonFromString(String input) {
+		List<Character> stack = new ArrayList<Character>();
+
+		String temp = "";
+
+		for (char eachChar : input.toCharArray()) {
+			if (stack.isEmpty() && eachChar == '{') {
+				stack.add(eachChar);
+				temp += eachChar;
+			} else if (!stack.isEmpty()) {
+				temp += eachChar;
+				if (stack.get(stack.size() - 1).equals('{') && eachChar == '}') {
+					stack.remove(stack.size() - 1);
+					if (stack.isEmpty()) {
+						return temp;
+					}
+				} else if (eachChar == '{' || eachChar == '}') {
+					stack.add(eachChar);
+				}
+			} else if (temp.length() > 0 && stack.isEmpty()) {
+				return temp;
+			}
+		}
+
+		return "";
+	}
 
 	public static void main(String[] args) throws InterruptedException, SocketException {
 		final String numberStr = "0005637387";
-		
+
 		Long response = convert(Long.parseLong(numberStr));
 		System.out.println(response);
-		
-        String ip = "192.168.15.50"; // IP da placa
-        int portaTCP1 = 2000;        // Porta para serial 1
-        int portaTCP2 = 2001;        // Porta para serial 2
-        int udpPorta = 2000;         // Porta para UDP (acionamento)
 
-        // Instanciar o equipamento
+		String ip = "192.168.15.50"; // IP da placa
+		int portaTCP1 = 2000; // Porta para serial 1
+		int portaTCP2 = 2001; // Porta para serial 2
+		int udpPorta = 2000; // Porta para UDP (acionamento)
+
+		// Instanciar o equipamento
 //        AlmitecDevice equipamento = new AlmitecDevice(ip, portaTCP1, portaTCP2, udpPorta);
 
-        // Testar acionamentos (substitua por eventos reais)
-       // equipamento.recolherComanda();  // Acionar RELE 1
-        //Thread.sleep(2000);             // Espera 2 segundos
-    //    equipamento.devolverComanda();  // Acionar RELE 2
+		// Testar acionamentos (substitua por eventos reais)
+		// equipamento.recolherComanda(); // Acionar RELE 1
+		// Thread.sleep(2000); // Espera 2 segundos
+		// equipamento.devolverComanda(); // Acionar RELE 2
 	}
-	
+
 	@SuppressWarnings("unused")
 	private static OffsetDateTime getOffsetDateTime() {
-        // Data original no fuso +08:00
-        String dataOriginal = "2023-12-01T13:54:57-05:00";
+		// Data original no fuso +08:00
+		String dataOriginal = "2023-12-01T13:54:57-05:00";
 
-        // Criar um objeto OffsetDateTime a partir da String
-        final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+		// Criar um objeto OffsetDateTime a partir da String
+		final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal,
+				DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        // Definir o fuso horário desejado (-03:00)
-        final OffsetDateTime dataComFusoDesejado = dataComFusoOriginal.withOffsetSameInstant(java.time.ZoneOffset.ofHours(-3));
+		// Definir o fuso horário desejado (-03:00)
+		final OffsetDateTime dataComFusoDesejado = dataComFusoOriginal
+				.withOffsetSameInstant(java.time.ZoneOffset.ofHours(-3));
 
-        // Formatar a nova data no fuso horário desejado
-        String dataFormatada = dataComFusoDesejado.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+		// Formatar a nova data no fuso horário desejado
+		String dataFormatada = dataComFusoDesejado.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        System.out.println("Data original: " + dataOriginal);
-        System.out.println("Data convertida para -03:00: " + dataFormatada);
-        
-        return dataComFusoDesejado;
-    }
+		System.out.println("Data original: " + dataOriginal);
+		System.out.println("Data convertida para -03:00: " + dataFormatada);
+
+		return dataComFusoDesejado;
+	}
 
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {
