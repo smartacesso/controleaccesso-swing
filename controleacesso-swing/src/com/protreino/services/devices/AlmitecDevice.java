@@ -1,16 +1,10 @@
 package com.protreino.services.devices;
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -21,6 +15,7 @@ import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 
 import com.protreino.services.to.ConfigurationGroupTO;
+import com.protreino.services.utils.Utils;
 
 public class AlmitecDevice extends Device{
     /**
@@ -413,8 +408,13 @@ public class AlmitecDevice extends Device{
 	// Método auxiliar para atualizar o cartão como liberado
 	private void atualizarCartaoComoLiberado(CartaoComandaEntity cartao) {
 	    cartao.setDataAlteracao(new Date());
-	    cartao.setStatus(StatusCard.LIBERADO);
-
+	    
+        if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableCardBlock"))) {
+        	cartao.setStatus(StatusCard.AGUARDANDO);
+        }else {
+            cartao.setStatus(StatusCard.LIBERADO);
+        }
+        
 	    System.out.println("Status do cartão atualizado para: " + cartao.getStatus());
 	    HibernateAccessDataFacade.save(CartaoComandaEntity.class, cartao);
 
