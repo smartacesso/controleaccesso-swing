@@ -1,6 +1,5 @@
-package com.protreino.services.usecase;
+package com.protreino.services.usecase.controlId;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,8 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
 import com.protreino.services.to.controlIdDevice.ValidOutput;
+import com.protreino.services.usecase.ControlIdDeviceService;
+import com.protreino.services.utils.Utils;
 
 public class ControlIdUseCase {
 
@@ -21,7 +22,23 @@ public class ControlIdUseCase {
 
 	ControlIdDeviceService controlIdService = new ControlIdDeviceService();
 
-	public String login(LoginInput login, final String ip) {
+	FacialUseCase facialUseCase = new FacialUseCase();
+
+	public static String ip = Utils.getPreference("TopdataServerRecognizerURL");
+
+	public static String login = Utils.getPreference("controlIdUserConnection");
+
+	public static String password = Utils.getPreference("controlIdPasswordConnection");
+
+	public static String OCTECT_STREAM = "application/octet-stream";
+
+	private void initPreferences() {
+
+	}
+
+	private SessionOutput login() {
+
+		LoginInput loginInput = new LoginInput(login, password);
 
 		if (Objects.isNull(login)) {
 			System.err.println("LoginInput não pode ser nulo.");
@@ -33,13 +50,13 @@ public class ControlIdUseCase {
 
 		SessionOutput sessionOutput;
 		try {
-			sessionOutput = (SessionOutput) controlIdService.postMessage(url, APPLICATION_JSON, payload,
+			sessionOutput = (SessionOutput) controlIdService.postMessage(APPLICATION_JSON, url, payload,
 					SessionOutput.class);
 			if (Objects.isNull(sessionOutput)) {
 				return null;
 			}
 			System.out.println("Sessão obtida com sucesso: " + sessionOutput.getSession());
-			return sessionOutput.getSession();
+			return sessionOutput;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -161,49 +178,16 @@ public class ControlIdUseCase {
 	// Recebe fotos do facial
 	// Precisa puxar uma variavel com um array de todos os IDs dentro do facial e
 	// colocar essa variavel em idsFacial
-	public boolean ColetadeFotoFacial(final String session, String ip, String idsFacial) {
-
-		String url = "http://" + ip + "/user_get_image.fcgi?user_id=" + idsFacial + "&get_timestamp=0&session="
-				+ session;
-		String response = (String) controlIdService.getMessage("application/json", url, null);
-
-		if (response == null || response.trim().equals("{}")) {
-			System.out.println("Foto de usuario foi recebidos.");
-			return true;
-		}
-		System.err.println("Erro em receber fotos de usuarios dentro do facial.");
-		return false;
-	}
 
 	// Envio de foto para a camera
 	// Inacabada
-	public boolean EnviodeFoto(String session, String ip, String cardNumber, byte[] foto) {
-
-		try {
-
-			// Codifica a imagem em Base64
-			String fotoBase64 = Base64.getEncoder().encodeToString(foto);
-
-			// Envia o Base64 para a câmera
-			String url = "http://" + ip + "/user_set_image.fcgi?user_id=" + cardNumber
-					+ "&match=1&timestamp=1624997578&session=" + session;
-			String response = (String) controlIdService.postMessage("application/octet-stream", url, fotoBase64, null);
-
-			if (response == null || response.trim().equals("{}")) {
-				System.out.println("Foto enviada com sucesso");
-				return true;
-			} else {
-				System.err.println("Erro ao enviar foto.");
-				return false;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
 
 	public Void cadastrarUsuario(final PedestrianAccessEntity pedestre) {
+
+		// TODO: salvar sessao no banco de dados de ver persisitencia dela
+		SessionOutput session = login();
+		facialUseCase.send(session.getSession(), pedestre.getCardNumber(), pedestre.getFoto());
+
 		return null;
 
 	}

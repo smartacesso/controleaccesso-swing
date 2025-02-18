@@ -591,8 +591,15 @@ public class Utils {
 
 		// Identificador de url ControlId
 		defaultPreferencesList
-				.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER, "hikivisionServerRecognizerURL",
-						"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
+				.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
+						"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "topDataSocketPort",
+				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
+
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER,
+				"controlIdUserConnection", "Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER,
+				"controlIdPasswordConnection", "Senha para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
 
 		for (PreferenceTO preferenceTO : defaultPreferencesList) {
 			if (getPreferenceWithNull(preferenceTO.getKey()) == null) {

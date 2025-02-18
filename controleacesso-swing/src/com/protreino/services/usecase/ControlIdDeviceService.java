@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 
 public class ControlIdDeviceService {
 
-	public String url;
 	private String ip;
 
 	private static Gson gson;

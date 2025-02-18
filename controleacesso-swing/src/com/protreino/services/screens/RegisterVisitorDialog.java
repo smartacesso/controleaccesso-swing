@@ -83,8 +83,8 @@ import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.TopDataFacialErrorRepository;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
-import com.protreino.services.usecase.ControlIdUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.usecase.controlId.ControlIdUseCase;
 import com.protreino.services.utils.CropImage;
 import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.QRCodeUtils;
@@ -210,7 +210,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JComboBox<SelectItem> tipoAcessoJComboBox;
 	private boolean isFotoModificada = false;
 	private HikivisionUseCases hikivisionUseCases;
-	private ControlIdUseCase controlIdUseCases;
+	private ControlIdUseCase controlIdUseCases = new ControlIdUseCase();
 
 	private JButton syncInHikivisionButton;
 
@@ -2326,6 +2326,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			return;
 		}
 
+		// TODO: chamada no configuracoes
 		final boolean isHikivisionServerOnline = hikivisionUseCases.getSystemInformation();
 
 		if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
