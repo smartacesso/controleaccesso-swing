@@ -36,15 +36,25 @@ public class HibernateServerAccessData {
 	public static ObjectOutputStream outToServer;
 	public static Socket clientSocketFaceRecognizer;
 	public static ObjectOutputStream outToServerFaceRecogizer;
+	public static Socket clientSocketEventos;
+	public static ObjectOutputStream outToServerEventos;
 	
 	public static void openConnection() throws ConnectException {
 		try {
-			System.out.println("Abrindo conexao");
+			System.out.println("Abrindo conexao servidor tcp");
+			System.out.println("IP servidor : " + Main.getServidor().getPort());
+			System.out.println("Porta : " + Main.getServidor().getIp());
+			
 			clientSocket = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
 			outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
+			
+			System.out.println("Abrindo conexao servidor eventos");
+			clientSocketEventos = new Socket(Main.getServidor().getIp(), 2022);
+			outToServerEventos = new ObjectOutputStream(clientSocketEventos.getOutputStream());
 
-			//clientSocketFaceRecognizer = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
-			//outToServerFaceRecogizer = new ObjectOutputStream(clientSocketFaceRecognizer.getOutputStream());
+			System.out.println("Abrindo conexao servidor faceRecognizer");
+			clientSocketFaceRecognizer = new Socket(Main.getServidor().getIp(), Main.getServidor().getPort());
+			outToServerFaceRecogizer = new ObjectOutputStream(clientSocketFaceRecognizer.getOutputStream());
 
 		} catch (ConnectException ce) {
 			ce.printStackTrace();

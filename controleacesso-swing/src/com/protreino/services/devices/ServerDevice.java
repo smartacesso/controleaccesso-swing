@@ -3,17 +3,13 @@ package com.protreino.services.devices;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.SwingWorker;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
@@ -26,8 +22,6 @@ import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.TcpMessageTO;
-import com.protreino.services.utils.Utils;
-
 import tcpcom.TcpClient;
 
 public class ServerDevice extends Device {
@@ -85,7 +79,7 @@ public class ServerDevice extends Device {
 			sendConfiguration();
 
 			// Inicia a thread de escuta de mensagens
-			startMessageListener();
+			startEventListener();
 			
 			
 		} else {
@@ -96,24 +90,21 @@ public class ServerDevice extends Device {
 				throw new Exception("Servidor não encontrado na rede.");
 		}
 	}
+	
 
-	/**
-	 * Thread dedicada para ouvir mensagens do servidor.
-	 */
-	private void startMessageListener() {
+	private void startEventListener() {
 	    System.out.println("Iniciando listener de evento hiki");
 
 	    messageListenerThread = new Thread(() -> {
 	        try {
 	            BufferedReader reader = new BufferedReader(new InputStreamReader(
-	                    HibernateServerAccessData.clientSocket.getInputStream()));
+	                    HibernateServerAccessData.clientSocketEventos.getInputStream())); //cliente socket eventos
 
-	            // 🔹 Regex para validar o formato exato da mensagem
-	            String regex = "^CARD_NUMBER=\\d+;DEVICE_ID=[0-9A-Fa-f\\-]+;CATRACA_INNER=\\d+;\\d+;$";
+	            ObjectMapper objectMapper = new ObjectMapper(); // Jackson para desserialização
 
 	            while (watchDogEnabled) {
 	                try {
-	                    if (reader.ready()) { // Verifica se há dados antes de tentar ler
+	                    if (reader.ready()) {
 	                        String line = reader.readLine();
 
 	                        if (line == null) {
@@ -127,11 +118,13 @@ public class ServerDevice extends Device {
 	                            continue;
 	                        }
 
-	                        if (line.matches(regex)) {
-	                            System.out.println("Recebido: " + line);
-	                            processarMensagem(line);
-	                        } else {
-	                            System.out.println("Mensagem ignorada: formato inválido.");
+	                        try {
+	                            // Convertendo JSON para objeto
+	                            TcpMessageTO message = objectMapper.readValue(line, TcpMessageTO.class);
+	                            System.out.println("Mensagem recebida: " + message);
+	                            processarMensagem(message);
+	                        } catch (Exception e) {
+	                            System.out.println("Erro ao processar JSON: " + e.getMessage());
 	                        }
 	                    } else {
 	                        Thread.sleep(100);
@@ -151,32 +144,22 @@ public class ServerDevice extends Device {
 	    messageListenerThread.start();
 	}
 
+	
 
-
-
-	private void processarMensagem(String line) {
+	private void processarMensagem(TcpMessageTO message) {
 	    try {
-	        String[] partes = line.split(";");
-	        Map<String, String> params = new HashMap<>();
+	        // Extraindo os valores diretamente do objeto TcpMessageTO
+	        String cardNumber = (String) message.getParans().get("card");
+	        String deviceId = (String) message.getParans().get("facial");
 
-	        for (String parte : partes) {
-	            String[] keyValue = parte.split("=");
-	            if (keyValue.length == 2) {
-	                params.put(keyValue[0].trim(), keyValue[1].trim());
-	            }
-	        }
-
-	        String cardNumber = params.get("CARD_NUMBER");
-	        String deviceId = params.get("DEVICE_ID");
-	        String catracaInner = params.get("CATRACA_INNER");
-	        
 	        List<Device> devicesList = Main.devicesList;
 	        Device device = devicesList.get(0);
-			List<AttachedTO> attachedHikivisionCameras = device.getAttachedHikivisionCameras();
-	        for(AttachedTO attachedTO : attachedHikivisionCameras) {
-	        	if(attachedTO.getIdDevice().equalsIgnoreCase(deviceId)) {
-	    	    	athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
-	        	}
+	        List<AttachedTO> attachedHikivisionCameras = device.getAttachedHikivisionCameras();
+
+	        for (AttachedTO attachedTO : attachedHikivisionCameras) {
+	            if (attachedTO.getIdDevice().equalsIgnoreCase(deviceId)) {
+	                athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
+	            }
 	        }
 
 	    } catch (Exception e) {

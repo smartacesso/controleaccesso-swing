@@ -87,12 +87,12 @@ public class HikivisionEventsUseCase {
 	        System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
 	        return;
 	    }
+
+	   TcpMessageTO message =  new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+	   message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+	   message.getParans().put("facial", hikivisionCameraId);
 	    
-	    String message = "CARD_NUMBER=" + eventListnerTO.getAccessControllerEvent().getCardNo()
-                + ";DEVICE_ID=" + hikivisionCameraId
-                + ";CATRACA_INNER=" + attachedDevice.getIdentifier();
-	    
-	    TcpServer.enviarMensagemParaTodos(message);
+	   TcpServer.enviarMensagemParaClientesEventos(message);
 
 	    final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
 	    final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
