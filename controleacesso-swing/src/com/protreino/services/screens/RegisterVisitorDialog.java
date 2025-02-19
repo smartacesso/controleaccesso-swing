@@ -2322,14 +2322,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private void salvarFotoVisitanteControlIdServer() {
+
 		if (Objects.isNull(controlIdUseCases)) {
-			return;
-		}
-
-		// TODO: chamada no configuracoes
-		final boolean isHikivisionServerOnline = hikivisionUseCases.getSystemInformation();
-
-		if (Boolean.FALSE.equals(isHikivisionServerOnline)) {
 			visitante.setDataCadastroFotoControlId(new Date());
 			System.out.println("Visitante atualizado por server invalido");
 			visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class,
@@ -2344,6 +2338,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
 						controlIdUseCases.cadastrarUsuario(visitante);
+						visitante.setDataCadastroFotoControlId(new Date());
 					} else {
 						controlIdUseCases.removerUsuario(visitante);
 					}
@@ -2406,6 +2401,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private void criarDialogoTirarFoto() {
 		WebCamCaptureViewer webCamCaptureViewer = new WebCamCaptureViewer();
 		// criar tela de camera nao cadastrada
+		if (Objects.isNull(webCamCaptureViewer)) {
+			return;
+		}
 		webCamCaptureViewer.getTirarFotoButton().addActionListener(e -> {
 			BufferedImage imageCaptured = webCamCaptureViewer.getWebcam().getImage();
 

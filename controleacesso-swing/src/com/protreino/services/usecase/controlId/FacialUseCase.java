@@ -9,19 +9,20 @@ public class FacialUseCase {
 
 	ControlIdDeviceService controlIdService = new ControlIdDeviceService();
 
-	public static String ip = Utils.getPreference("controlIdServerURL");
+	public static String ip = Utils.getPreference("ControlIdIdentifierURL");
 
 	public static String OCTECT_STREAM = "application/octet-stream";
 
 	protected boolean send(final String session, final String cardNumber, final byte[] foto) {
 		try {
-
+			System.out.println("envio de foto");
 			// Codifica a imagem em Base64
 			String fotoBase64 = Base64.getEncoder().encodeToString(foto);
 
 			// Envia o Base64 para a câmera
 			String url = "http://" + ip + "/user_set_image.fcgi?user_id=" + cardNumber
 					+ "&match=1&timestamp=1624997578&session=" + session;
+			System.out.println("envio de url" + url);
 			String response = (String) controlIdService.postMessage(OCTECT_STREAM, url, fotoBase64, null);
 
 			if (response == null || response.trim().equals("{}")) {

@@ -1,6 +1,6 @@
 package com.protreino.services.usecase.controlId;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -8,8 +8,10 @@ import java.util.Objects;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.to.controlIdDevice.CreateUserRequest;
 import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
+import com.protreino.services.to.controlIdDevice.UserContentTypesrequest;
 import com.protreino.services.to.controlIdDevice.ValidOutput;
 import com.protreino.services.usecase.ControlIdDeviceService;
 import com.protreino.services.utils.Utils;
@@ -24,7 +26,7 @@ public class ControlIdUseCase {
 
 	FacialUseCase facialUseCase = new FacialUseCase();
 
-	public static String ip = Utils.getPreference("TopdataServerRecognizerURL");
+	public static String ip = Utils.getPreference("ControlIdIdentifierURL");
 
 	public static String login = Utils.getPreference("controlIdUserConnection");
 
@@ -36,7 +38,7 @@ public class ControlIdUseCase {
 
 	}
 
-	private SessionOutput login() {
+	private String login() {
 
 		LoginInput loginInput = new LoginInput(login, password);
 
@@ -46,17 +48,10 @@ public class ControlIdUseCase {
 		}
 
 		final String url = "http://" + ip + "/login.fcgi";
-		final String payload = gson.toJson(login);
-
-		SessionOutput sessionOutput;
+		final String payload = gson.toJson(loginInput);
 		try {
-			sessionOutput = (SessionOutput) controlIdService.postMessage(APPLICATION_JSON, url, payload,
-					SessionOutput.class);
-			if (Objects.isNull(sessionOutput)) {
-				return null;
-			}
-			System.out.println("Sessão obtida com sucesso: " + sessionOutput.getSession());
-			return sessionOutput;
+			return (String) controlIdService.postMessage(APPLICATION_JSON, url, payload, String.class);
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -118,35 +113,18 @@ public class ControlIdUseCase {
 		return null;
 	}
 
-	public List<Long> createObjects(final String session, final String object, List<Map<String, Object>> values,
-			String ip) {
+	public List<Long> createObjects(final String session, final CreateUserRequest createUsers) {
 		if (session == null || session.isEmpty()) {
 			throw new IllegalArgumentException("A sessão é obrigatória.");
-		}
-		if (object == null || object.isEmpty()) {
-			throw new IllegalArgumentException("O tipo de objeto é obrigatório.");
-		}
-		if (values == null || values.isEmpty()) {
-			throw new IllegalArgumentException("Os valores para criação dos objetos são obrigatórios.");
 		}
 
 		try {
 			final String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
 
-			// Monta o payload da requisição
-			Map<String, Object> payload = new HashMap<>();
-			payload.put("object", object);
-			payload.put("values", values);
-
-			final String jsonPayload = gson.toJson(payload);
+			final String jsonPayload = gson.toJson(createUsers);
 
 			// Envia a requisição usando o método genérico `send`
 			Object response = controlIdService.postMessage("application/json", url, jsonPayload, Object.class);
-
-			if (Objects.isNull(object)) {
-				System.err.println("Resposta da API está vazia ou nula.");
-				return null;
-			}
 
 			// Converte a resposta em um objeto contendo os IDs dos objetos criados
 			Map<String, List<Long>> responseMap = gson.fromJson((String) response,
@@ -184,12 +162,27 @@ public class ControlIdUseCase {
 
 	public Void cadastrarUsuario(final PedestrianAccessEntity pedestre) {
 
+		String session = login();
+		SessionOutput sessionOutput = gson.fromJson(session, SessionOutput.class);
+		Long idUser = createUser(pedestre, sessionOutput);
+
 		// TODO: salvar sessao no banco de dados de ver persisitencia dela
-		SessionOutput session = login();
-		facialUseCase.send(session.getSession(), pedestre.getCardNumber(), pedestre.getFoto());
+
+		facialUseCase.send(sessionOutput.getSession(), String.valueOf(idUser), pedestre.getFoto());
 
 		return null;
 
+	}
+
+	private Long createUser(final PedestrianAccessEntity pedestre, SessionOutput sessionOutput) {
+		CreateUserRequest createUser = new CreateUserRequest();
+		createUser.setObject("users");
+
+		List<UserContentTypesrequest> userContent = new ArrayList<>();
+		userContent.add(new UserContentTypesrequest(pedestre.getName(), pedestre.getCardNumber(), "123456", ""));
+
+		List<Long> users = createObjects(sessionOutput.getSession(), createUser);
+		return users.get(0);
 	}
 
 	public Void removerUsuario(final PedestrianAccessEntity pedestre) {

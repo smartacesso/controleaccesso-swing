@@ -590,11 +590,8 @@ public class Utils {
 				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
 
 		// Identificador de url ControlId
-		defaultPreferencesList
-				.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "TopdataServerRecognizerURL",
-						"URL do servidor topdata (maquina servidor)", FieldType.TEXT, "192.168.0.201", false, 15));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_RECOGONIZER, "topDataSocketPort",
-				"Porta do webSocket TopData", FieldType.TEXT, "9999", true, 10));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER, "ControlIdIdentifierURL",
+				"URL do servidor controlId", FieldType.TEXT, "192.168.15.26", false, 15));
 
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.CONTROLID_FACE_IDENTIFIER,
 				"controlIdUserConnection", "Usuário para conexão ao Servidor", FieldType.TEXT, "admin", false, 10));
