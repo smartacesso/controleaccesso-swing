@@ -461,6 +461,7 @@ public class SyncPedestrianAccessListUseCase {
 
                         if(Utils.isHikivisionConfigValid() ) {
                         	try {
+                        		hikivisionUseCases = new HikivisionUseCases();
                         		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
 
                         	} catch (Exception e) {
