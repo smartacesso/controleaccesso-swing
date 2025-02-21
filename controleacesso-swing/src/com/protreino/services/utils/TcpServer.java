@@ -3,6 +3,7 @@ package com.protreino.services.utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
@@ -57,14 +61,17 @@ public class TcpServer {
 
 	private int porta;
 	private int portaPdv;
+	private int portaEventos;
 	private final DeviceRepository deviceRepository = new DeviceRepository();
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
+	private final static List<Socket> clientesEventos = new CopyOnWriteArrayList<>();
 
 	public TcpServer() {
 		this.porta = Integer.valueOf(Utils.getPreference("tcpServerSocketPort"));
 		this.portaPdv = 2021;
-
+		this.portaEventos = 2022; // Defina a porta para eventos
+		
 		Thread serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -74,8 +81,10 @@ public class TcpServer {
 					while (true) {
 						Socket socket = serverSocket.accept();
 						socket.setTcpNoDelay(true);
+
 						System.out.println(sdf.format(new Date()) + "  ... New client connected: "
 								+ socket.getInetAddress().getHostAddress());
+						
 						new ProcessThread(socket).start();
 					}
 
@@ -108,6 +117,32 @@ public class TcpServer {
 			}
 		});
 		serverThreadPDV.start();
+		
+		Thread serverThreadEventos = new Thread(() -> {
+		    try (ServerSocket serverSocket = new ServerSocket(portaEventos)) {
+		        System.out.println(sdf.format(new Date()) + "  ... TCP Eventos escutando na porta " + portaEventos);
+
+		        while (true) {
+		            Socket socket = serverSocket.accept();
+		            socket.setTcpNoDelay(true);
+		            
+		            synchronized (clientesEventos) {
+		                clientesEventos.add(socket);
+		            }
+		            
+		            System.out.println(sdf.format(new Date()) + "  ... Novo cliente conectado no canal de eventos: "
+		                    + socket.getInetAddress().getHostAddress());
+		            
+		            new ProcessEventosThread(socket).start();
+		        }
+
+		    } catch (IOException ex) {
+		        System.out.println(sdf.format(new Date()) + "  ... TCP Eventos exception: " + ex.getMessage());
+		        ex.printStackTrace();
+		    }
+		});
+		serverThreadEventos.start();
+
 
 	}
 
@@ -922,5 +957,64 @@ public class TcpServer {
 		}
 
 	}
+	
+	
+	class ProcessEventosThread extends Thread {
+	    private Socket socket;
+
+	    public ProcessEventosThread(Socket socket) {
+	        this.socket = socket;
+	    }
+
+	    @Override
+	    public void run() {
+	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+	            String message;
+	            while ((message = reader.readLine()) != null) {
+	                System.out.println("Evento recebido: " + message);
+	                // Aqui você pode adicionar lógica para processar o evento
+	            }
+	        } catch (IOException e) {
+	            System.err.println("Erro na thread de eventos: " + e.getMessage());
+	        }
+	    }
+	}
+
+	public static void enviarMensagemParaClientesEventos(Object mensagem) {
+	    synchronized (clientesEventos) {
+	        for (Socket socket : clientesEventos) {
+	            try {
+	                System.out.println("ENVIANDO MENSAGEM...");
+
+	                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+	                
+	                String mensagemString;
+	                if (mensagem instanceof String) {
+	                    mensagemString = (String) mensagem;
+	                } else {
+	                    ObjectMapper objectMapper = new ObjectMapper();
+	                    mensagemString = objectMapper.writeValueAsString(mensagem);
+	                }
+
+	                writer.write(mensagemString);
+	                writer.newLine();
+	                writer.flush();
+	                System.out.println("MENSAGEM ENVIADA: " + mensagemString);
+
+	            } catch (IOException e) {
+	                System.out.println("Erro ao enviar mensagem para o cliente: " + e.getMessage());
+	                try {
+	                    socket.close();
+	                    clientesEventos.remove(socket);
+	                } catch (IOException ex) {
+	                    System.out.println("Erro ao remover cliente desconectado: " + ex.getMessage());
+	                }
+	            }
+	        }
+	    }
+	}
+
+
+
 
 }

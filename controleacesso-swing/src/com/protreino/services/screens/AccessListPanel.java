@@ -50,8 +50,8 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Regra", "Liberar acesso", "Criado por"};
-	private Integer[] columnWidths = {60, 70, 280, 80, 100, 190, 105, 100};
+	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Observacao", "Regra", "Liberar acesso", "Criado por"};
+	private Integer[] columnWidths = {60, 70, 280, 80, 100 ,280, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
 	private JTextField filtroCartaoTextField;
@@ -279,7 +279,7 @@ public class AccessListPanel extends PaginedListPanel {
 		args.put("removido", false);
 		
 		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
-				  + "obj.tipo, obj.status, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
+				  + "obj.tipo, obj.status, obj.observacoes, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
 				  + "obj.idUsuario) ";
 //		fazer isso no hibernate utils
 		totalRegistros =  HibernateAccessDataFacade.
@@ -344,15 +344,16 @@ public class AccessListPanel extends PaginedListPanel {
 		if (listaAcesso != null && !listaAcesso.isEmpty()){
 //			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (PedestrianAccessEntity acesso : listaAcesso) {
-				Object[] obj = new Object[8];
+				Object[] obj = new Object[9];
 				obj[0] = acesso.getId();
 				obj[1] = (acesso.getCardNumber() != null && !"".equals(acesso.getCardNumber())) ? acesso.getCardNumber() : "-";
 				obj[2] = acesso.getName();
 				obj[3] = acesso.getTipo() != null ? acesso.getTipo() : "-";
 				obj[4] = "ATIVO".equals(acesso.getStatus()) ? "LIBERADO" : "BLOQUEADO";
-				obj[5] =  montaLiberado(acesso); //TODO : vericar quantidade de acessos
-				obj[6] = "LIBERAR ACESSO";
-				obj[7] = acesso.getNomeUuarioQueCriou();
+				obj[5] = (acesso.getObservacoes() != null && !"".equals(acesso.getObservacoes())) ? acesso.getObservacoes() : "-";
+				obj[6] =  montaLiberado(acesso); //TODO : vericar quantidade de acessos
+				obj[7] = "LIBERAR ACESSO";
+				obj[8] = acesso.getNomeUuarioQueCriou();
 				dataModel.addRow(obj);
 			}
 		}

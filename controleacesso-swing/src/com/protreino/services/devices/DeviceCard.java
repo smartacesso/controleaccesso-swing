@@ -423,6 +423,9 @@ public class DeviceCard extends JPanel {
 		if (!Manufacturer.SERVER.equals(device.getManufacturer())) {
 			jPopup.add(registerUserMenuItem);
 			jPopup.add(defaultDeviceMenuItem);
+			
+		}
+		if(Manufacturer.SERVER.equals(device.getManufacturer())) {
 			jPopup.add(athleteScreenMenuItem);
 		}
 		if (Manufacturer.CONTROL_ID.equals(device.getManufacturer())) {
@@ -792,7 +795,6 @@ public class DeviceCard extends JPanel {
 			}
 			
 			boolean exibeAbaCamerasHikivision = !(device instanceof FacialDevice)
-					&& !(device instanceof ServerDevice)
 					&& Utils.isHikivisionConfigValid();
 			if(exibeAbaCamerasHikivision) {
 				JPanel camerasHikivisionPanel = new HikivisionAttachedDevicesPanel(device);

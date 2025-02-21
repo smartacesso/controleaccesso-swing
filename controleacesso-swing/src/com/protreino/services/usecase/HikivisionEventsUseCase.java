@@ -21,15 +21,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.Device;
+import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
+import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
+import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.to.hikivision.EventListnerTO;
+import com.protreino.services.utils.TcpServer;
 import com.protreino.services.utils.Utils;
 
 public class HikivisionEventsUseCase {
@@ -76,14 +80,20 @@ public class HikivisionEventsUseCase {
 	    
 	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
 	            eventListnerTO.getAccessControllerEvent().getCardNo()));
-
+	    
 	    final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
-
+	    
 	    if (Objects.isNull(attachedDevice)) {
 	        System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
 	        return;
 	    }
+
+	   TcpMessageTO message =  new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+	   message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+	   message.getParans().put("facial", hikivisionCameraId);
 	    
+	   TcpServer.enviarMensagemParaClientesEventos(message);
+
 	    final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
 	    final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
 	    
@@ -265,6 +275,7 @@ public class HikivisionEventsUseCase {
 
 		return null;
 	}
+	
 
 	private OffsetDateTime getOffsetDateTime(final String dataOriginal) {
 		final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal,

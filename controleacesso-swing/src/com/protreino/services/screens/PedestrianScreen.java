@@ -28,6 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
@@ -63,6 +65,7 @@ import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
@@ -129,6 +132,9 @@ public class PedestrianScreen extends JFrame {
 	private Integer larguraRestaurada;
 	private Integer alturaRestaurada;
 	private Integer athleteScreenTimeoutMilis;
+	
+	private String cartaoAcesso;
+	private String deviceId;
 	
 	private Color firstColor;
 	private Color secondColor;
@@ -1187,6 +1193,37 @@ public class PedestrianScreen extends JFrame {
 		    g2.drawImage(srcImg, 0, 0, w, h, null);
 		    g2.dispose();
 		    return resizedImg;
+		}
+	}
+	
+	public void requisicaoHivisionServer(String cartaoAcesso, int tempoDeEspera) {
+		HashMap<String, Object> args = new HashMap<>();	
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+			this.cartaoAcesso = cartaoAcesso;
+			
+			args.put("CARD_NUMBER", cartaoAcesso);
+			
+			matchedAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+					.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cartaoAcesso));
+			
+			verificaSePossuiMensagem(matchedAthleteAccess);
+			statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
+
+			if(matchedAthleteAccess != null && matchedAthleteAccess.getFoto() != null) {
+				resultadoLabel.setIcon(new ImageIcon(createMiniImage(matchedAthleteAccess.getFoto())));
+				
+			} else {
+    			resultadoLabel.setIcon(permitidoImageIcon);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			setErroDigital("Erro ao processar a face.");
+
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 }
