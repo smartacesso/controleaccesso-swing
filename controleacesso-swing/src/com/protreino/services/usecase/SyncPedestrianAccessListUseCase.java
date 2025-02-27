@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.swing.SwingWorker;
 
@@ -622,6 +624,51 @@ public class SyncPedestrianAccessListUseCase {
         };
         worker.execute();
     }
+	
+	  public void buscaFotosTodosDosPedestres(List<PedestrianAccessEntity> pedestres) throws IOException {
+		 List<Long> ids = pedestres.stream()
+		  .map(p -> p.getId())
+		  .collect(Collectors.toList());
+		  
+          if(Objects.isNull(ids) || ids.isEmpty()) {
+          	return;
+          }
+          
+          System.out.println(sdf.format(new Date()) + "  BUSCANDO FOTOS: " + ids.size());
+          
+          final Integer imageSize = Utils.getPreferenceAsInteger("imageSizeRequestServer");
+          final Integer targetWidth = Utils.getPreferenceAsInteger("imageTargetWidthRequestServer");
+          final Integer targetHeight = Utils.getPreferenceAsInteger("imageTargetHeightRequestServer");
+          final boolean resize = Utils.getPreferenceAsBoolean("shouldMakeImageResize");
+          
+          ids.forEach(id -> {
+          	final String idsParameter = id + ";";
+          	
+              List<PedestrianAccessTO> athleteAccessTOList = smartAcessoFotoServiceClient
+              		.buscaFotoDePedestres(idsParameter, imageSize, resize, targetWidth, targetHeight);
+
+              if (athleteAccessTOList != null && !athleteAccessTOList.isEmpty()) {
+                  for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
+                      if (Main.loggedUser == null) {
+                          break;
+                      }
+
+                      PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
+                              .getSingleResultById(PedestrianAccessEntity.class, athleteAccessTO.getId());
+
+                      if (existentAthleteAccess != null) {
+                    	  System.out.println("baixando foto do pedestre: " + existentAthleteAccess.getName());
+                          existentAthleteAccess.setFoto(Base64.decodeBase64(athleteAccessTO.getFotoBase64()));
+                          HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
+                      }
+                  }
+              }
+          });
+          
+          System.out.println(sdf.format(new Date()) + "  DOWNLOAD DE FOTOS CONCLUIDO: " + ids.size());
+      }
+	
+	
 	
 	@SuppressWarnings("unchecked")
     private List<LogPedestrianAccessEntity> buscaAcessosVisitante(Long idVisitante) {

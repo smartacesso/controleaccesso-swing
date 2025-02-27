@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.SincronismoHorariosHikivision;
+import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
 
@@ -58,6 +60,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private Container mainContentPane; //container principal
 	private final HikivisionUseCases hikivisionUseCases; //integração com hikivison
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository(); // repositorio com erro
+	private SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase;
 	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" }; // colunas da tabela
 	private Integer[] columnWidths = { 280, 200, 150, 80 }; // largura das colunas
 	private JTable deviceListTable; //tabela de dispositivos
@@ -70,7 +73,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 
 	private JButton addDevice; // botao de adicionar dispositivos
 	private JButton syncCameraListners; // botao de sincronizar camera
-
+	private JButton requestFotos;
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); //formato por data
 
 	private static final int CHECKBOX_COLUMN = 3; //indice de colunas com checkbox
@@ -162,6 +165,15 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		syncCameraListners.addActionListener(e -> {
 			syncCameraListners();
 		});
+		
+		
+		requestFotos = new JButton("Baixar fotos");
+		requestFotos.setBorder(new EmptyBorder(10, 15, 10, 15));
+		requestFotos.setPreferredSize(new Dimension(140, 40));
+		requestFotos.setVisible(!Main.temServidor());
+		requestFotos.addActionListener(e -> {
+			baixarFotos();
+		});
 
 		//ação dos botoes 
 		JPanel actionsPanel = new JPanel();
@@ -177,6 +189,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		actionsPanel.add(syncByDate);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncHorario);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(requestFotos);
 
 		populateTable();
 
@@ -190,6 +204,35 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+
+	private void baixarFotos() {
+		// TODO Auto-generated method stubSync
+		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
+		// fazer a busca paginada
+		
+		final int pageSize = 500;
+		final Integer countPedestresParaSincronizar = countPesdestresParaSincronizar(null, null);
+		if(Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
+			return;
+		}
+
+		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
+		int offset = 0;
+		do {
+			List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(null, null, offset, pageSize);
+			
+			try {
+				syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
+				syncPedestrianAccessListUseCase.buscaFotosTodosDosPedestres(pedestresParaSicronizar);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			offset += pageSize;
+		} while (offset < countPedestresParaSincronizar);
+		
 	}
 
 	private void syncHorario() {
