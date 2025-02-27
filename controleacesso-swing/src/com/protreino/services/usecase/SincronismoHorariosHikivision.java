@@ -30,31 +30,35 @@ public class SincronismoHorariosHikivision {
 	private HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
 	
 	public void execute() {
-		List<RegraEntity> regrasComHorario = regraRepository.buscaRegrasComHorario();
-		if(Objects.isNull(regrasComHorario) || regrasComHorario.isEmpty()) {
-			System.out.println("Sem regras para sincronizar");
-			return;
-		}
-		
-		adicionaRegraDefault();
-		
-		regrasComHorario.forEach(regra -> {
-			PlanoHorarioHikivision planoHorarios = montaPlanoHorario(regra.getHorarios());
-			
-			Integer idPlanoHorario = getIdPlanoHorario(regra, regrasComHorario);
-			//chamar hibernateUseCases para cadastrara horarios
-			hikivisionUseCases.sincronizarHorarioHIkivision(idPlanoHorario, planoHorarios);
-			
-			Integer idTemplate = getIdTemplate(regra,regrasComHorario);
-			//chamar hibernateUsecases para cadastrar Templates
-			hikivisionUseCases.sincronizarTemplateHIkivision(idTemplate,idPlanoHorario, regra.getNome());
-			
-			if(Objects.isNull(regra.getIdPlano()) || Objects.isNull(regra.getIdTemplate())) {
-				regra.setIdPlano(idPlanoHorario);
-				regra.setIdTemplate(idTemplate);
-				HibernateAccessDataFacade.save(RegraEntity.class, regra);
+		if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
+			List<RegraEntity> regrasComHorario = regraRepository.buscaRegrasComHorario();
+			if (Objects.isNull(regrasComHorario) || regrasComHorario.isEmpty()) {
+				System.out.println("Sem regras para sincronizar");
+				return;
 			}
-		});
+
+			adicionaRegraDefault();
+
+			regrasComHorario.forEach(regra -> {
+				PlanoHorarioHikivision planoHorarios = montaPlanoHorario(regra.getHorarios());
+
+				Integer idPlanoHorario = getIdPlanoHorario(regra, regrasComHorario);
+				// chamar hibernateUseCases para cadastrara horarios
+				hikivisionUseCases.sincronizarHorarioHIkivision(idPlanoHorario, planoHorarios);
+
+				Integer idTemplate = getIdTemplate(regra, regrasComHorario);
+				// chamar hibernateUsecases para cadastrar Templates
+				hikivisionUseCases.sincronizarTemplateHIkivision(idTemplate, idPlanoHorario, regra.getNome());
+
+				if (Objects.isNull(regra.getIdPlano()) || Objects.isNull(regra.getIdTemplate())) {
+					regra.setIdPlano(idPlanoHorario);
+					regra.setIdTemplate(idTemplate);
+					HibernateAccessDataFacade.save(RegraEntity.class, regra);
+				}
+			});
+		}else {
+			 System.out.println("Hikivision horario desabilitado");
+		}
 	}
 	
 	private void adicionaRegraDefault() {

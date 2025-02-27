@@ -400,52 +400,56 @@ public class HikivisionUseCases {
 	}
 	
 	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
-			final List<Device> devices = listarDispositivos();
-			if (Objects.isNull(devices) || devices.isEmpty()) {
-				return;
+		if(Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
+			if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+				final List<Device> devices = listarDispositivos();
+				if (Objects.isNull(devices) || devices.isEmpty()) {
+					return;
+				}
+
+				devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
 			}
+			
+		    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
-			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
-		}
-		
-	    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
+		    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
+		        System.out.println("sem regras de horarios");
+		        devicesToSync.forEach(device -> {
+			        hikiVisionIntegrationService.vincularTemplateNoUsuario(
+			            device,
+			            pedestre.getCardNumber(),
+			            1
+			        );
+			    });
+		        return;
+		    }
 
-	    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
-	        System.out.println("sem regras de horarios");
-	        devicesToSync.forEach(device -> {
+		    // Pegamos a regra inicial
+		    RegraEntity regra = regraAtiva.get().getRegra();
+
+		    if (Objects.isNull(regra.getIdTemplate())) {
+		        SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+		        sincronismoHorariosHikivision.execute();
+
+		        // Buscar a regra atualizada do banco
+		        regra = regraRepository.buscaRegraById(regra.getId());
+		    }
+
+		    // A regra usada nos dispositivos será sempre a mais atual
+		    final RegraEntity regraFinal = regra;
+
+		    devicesToSync.forEach(device -> {
 		        hikiVisionIntegrationService.vincularTemplateNoUsuario(
 		            device,
 		            pedestre.getCardNumber(),
-		            1
+		            regraFinal.getIdTemplate()
 		        );
 		    });
-	        return;
-	    }
 
-	    // Pegamos a regra inicial
-	    RegraEntity regra = regraAtiva.get().getRegra();
-
-	    if (Objects.isNull(regra.getIdTemplate())) {
-	        SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
-	        sincronismoHorariosHikivision.execute();
-
-	        // Buscar a regra atualizada do banco
-	        regra = regraRepository.buscaRegraById(regra.getId());
-	    }
-
-	    // A regra usada nos dispositivos será sempre a mais atual
-	    final RegraEntity regraFinal = regra;
-
-	    devicesToSync.forEach(device -> {
-	        hikiVisionIntegrationService.vincularTemplateNoUsuario(
-	            device,
-	            pedestre.getCardNumber(),
-	            regraFinal.getIdTemplate()
-	        );
-	    });
-
-	    System.out.println("regra atualizada com sucesso");
+		    System.out.println("regra atualizada com sucesso");
+		}else {
+			 System.out.println("Horario hikivision desabilitado");
+		}
 	}
 	
 	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre) {
