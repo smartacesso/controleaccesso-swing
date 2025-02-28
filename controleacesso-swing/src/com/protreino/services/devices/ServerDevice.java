@@ -3,6 +3,7 @@ package com.protreino.services.devices;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +23,11 @@ import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.TcpMessageTO;
+import com.protreino.services.utils.Utils;
+
 import tcpcom.TcpClient;
+
+import javax.swing.SwingWorker;
 
 public class ServerDevice extends Device {
 	int count = 1;
@@ -63,7 +68,14 @@ public class ServerDevice extends Device {
 			createDefaultConfiguration();
 		createConfigurationMap();
 	}
-
+	
+	public ServerDevice(Integer timeout, String identifier) {
+		String[] partes = identifier.split(";");
+		this.ip = partes[0];
+		this.port = Integer.valueOf(partes[1]);
+		this.client = new TcpClient(ip, port, timeout);
+	}
+	/*
 	@Override
 	public void connect(String... args) throws Exception {
 		try {
@@ -90,7 +102,98 @@ public class ServerDevice extends Device {
 				throw new Exception("Servidor não encontrado na rede.");
 		}
 	}
+	*/
 	
+	@Override
+	public void connect(String... args) throws Exception {
+		try {
+			HibernateServerAccessData.openConnection();
+		} catch (ConnectException e) {
+			disconnect("");
+			return;
+		}
+
+		if (HibernateServerAccessData.clientSocket != null && HibernateServerAccessData.clientSocket.isConnected()) {
+			watchDogEnabled = true;
+			contador = 0;
+			setStatus(DeviceStatus.CONNECTED);
+			
+			sendConfiguration();
+			
+			// Inicia a thread de escuta de mensagens
+			startEventListener();
+			
+			watchDog = new SwingWorker<Void, Void>(){
+				@Override
+				protected synchronized Void doInBackground() throws Exception {
+					
+					while (watchDogEnabled) {
+						try {
+							contador++;
+							if (contador > 2) {
+								setStatus(DeviceStatus.DISCONNECTED);
+								
+								try {
+									HibernateServerAccessData.openConnection();
+								} catch (ConnectException e) {
+									disconnect("");
+									return null;
+								}
+								
+								if (HibernateServerAccessData.clientSocket.isConnected())
+									contador = 0;
+							} else {
+								setStatus(DeviceStatus.CONNECTED);
+								
+								if(!HibernateServerAccessData.executando) {
+									HibernateServerAccessData.executandoPing = true;
+									
+									HibernateServerAccessData.outToServer.writeObject(new TcpMessageTO(TcpMessageType.PING));
+									HibernateServerAccessData.outToServer.flush();
+									ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(HibernateServerAccessData.clientSocket.getInputStream()));
+									TcpMessageTO resp = (TcpMessageTO) reader.readObject();
+									
+									if(TcpMessageType.PING_RESPONSE.equals(resp.getType())) {
+										contador = 0;
+									}
+								} else {
+									contador = 0;
+								}
+							}
+						} catch (SocketException e) {
+							contador++;
+						} catch (Exception e) {
+							e.printStackTrace();
+		                } finally {
+		                	HibernateServerAccessData.executandoPing = false;
+							Utils.sleep(10000);
+						}
+					}
+					return null;
+				}
+			};
+			watchDog.execute();
+			
+		} else {
+			InetAddress inetAddress = InetAddress.getByName(ip);
+			if (inetAddress.isReachable(3000))
+				throw new Exception("Servidor Nao responde. Verifique se o aplicativo está rodando no servidor.");
+			else
+				throw new Exception("Servidor Nao encontrado na rede.");
+		}
+	}
+
+
+	@Override
+	public void disconnect(String... args) throws Exception {
+		watchDogEnabled = false;
+		if (messageListenerThread != null) {
+			messageListenerThread.interrupt();
+		}
+		setStatus(DeviceStatus.DISCONNECTED);
+		HibernateServerAccessData.closeConnetion();
+		System.out.println("Desconectado.");
+	}
 
 	private void startEventListener() {
 	    System.out.println("Iniciando listener de evento hiki");
@@ -165,18 +268,6 @@ public class ServerDevice extends Device {
 	    } catch (Exception e) {
 	        System.out.println("Erro ao processar mensagem: " + e.getMessage());
 	    }
-	}
-
-
-	@Override
-	public void disconnect(String... args) throws Exception {
-		watchDogEnabled = false;
-		if (messageListenerThread != null) {
-			messageListenerThread.interrupt();
-		}
-		setStatus(DeviceStatus.DISCONNECTED);
-		HibernateServerAccessData.closeConnetion();
-		System.out.println("Desconectado.");
 	}
 
 	@Override
