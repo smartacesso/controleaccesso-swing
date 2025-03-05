@@ -1,8 +1,5 @@
 package com.protreino.services.usecase;
 
-import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
-import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
-
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -21,7 +18,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.Device;
-import com.protreino.services.devices.ServerDevice;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -41,7 +37,6 @@ public class HikivisionEventsUseCase {
 	private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
-
 	private static Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
 		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 				throws JsonParseException {
@@ -72,7 +67,7 @@ public class HikivisionEventsUseCase {
 	            || Objects.isNull(eventListnerTO.getAccessControllerEvent())
 	            || Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
 
-	        System.out.println("Cartão recebido nulo da Hikvision.");
+	        System.out.println("Cartão recebido nulo da Hikvision. : " + eventListnerTO.getAccessControllerEvent().getCardNo());
 	        System.out.println("Evento de pedestre não reconhecido pela câmera: " + hikivisionCameraId);
 	        System.out.println("Processamento encerrado.");
 	        return;
@@ -87,7 +82,7 @@ public class HikivisionEventsUseCase {
 	        System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
 	        return;
 	    }
-
+	    
 	   TcpMessageTO message =  new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
 	   message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
 	   message.getParans().put("facial", hikivisionCameraId);
@@ -123,10 +118,16 @@ public class HikivisionEventsUseCase {
 		if (Objects.isNull(pedestre)) {
 			return;
 		}
-		
-		final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffiline(pedestre, device, dataAcesso);
-		System.out.println("Log de evento off do acesso : " + logEventoOffline.getDirection()
-		+ " | Equipamento :" + logEventoOffline.getEquipament() + " | Pedestre : " + logEventoOffline.getIdPedestrian());
+			    
+	    if(device.ignorarAcesso()) {
+	    	System.out.println("Acesso ignorado");
+			return;
+	    }
+	    
+		final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffiline(pedestre, device,
+				dataAcesso);
+		System.out.println("Log de evento off do acesso : " + logEventoOffline.getDirection() + " | Equipamento :"
+				+ logEventoOffline.getEquipament() + " | Pedestre : " + logEventoOffline.getIdPedestrian());
 		decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline);
 	}
 	

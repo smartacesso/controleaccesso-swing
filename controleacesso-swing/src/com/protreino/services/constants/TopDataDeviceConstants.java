@@ -34,5 +34,8 @@ public class TopDataDeviceConstants {
 	public static final String ENTRADA = "entrada";
 	public static final String ONLY_ENABLED_MODE = "Catracas somente no modo habilitado";
 	public static final String BOTAO_EXTERNO = "Habilita botao externo";
+	public static final String ENABLE_IGNORED_ACCESS = "Habilita catraca ignorar acesso hikivision";
+	public static final String HOUR_START_IGNORE = "Hora de inicio";
+	public static final String HOUR_STOP_IGNORE = "Hora de fim";
 
 }

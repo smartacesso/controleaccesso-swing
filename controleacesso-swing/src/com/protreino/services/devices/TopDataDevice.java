@@ -1,37 +1,11 @@
 package com.protreino.services.devices;
 
-import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
-import static com.protreino.services.constants.TopDataDeviceConstants.COLETA_CARTOES_OFFLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.DOIS_LEITORES;
-import static com.protreino.services.constants.TopDataDeviceConstants.ECOAR_ASTERISCOS;
-import static com.protreino.services.constants.TopDataDeviceConstants.ENVIA_DIGITAIS_PARA_CATRACA;
-import static com.protreino.services.constants.TopDataDeviceConstants.HABILITAR_TECLADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.IDENTIFICACAO_BIOMETRICA;
-import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
-import static com.protreino.services.constants.TopDataDeviceConstants.IS_DEVICE_RESTRITO;
-import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_1;
-import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_2;
-import static com.protreino.services.constants.TopDataDeviceConstants.LOGICA_DE_CATRACA_COM_URNA;
-import static com.protreino.services.constants.TopDataDeviceConstants.MENSAGEM_ONLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.MODELO_BIOMETRICO;
-import static com.protreino.services.constants.TopDataDeviceConstants.MODO_DE_TRABALHO;
-import static com.protreino.services.constants.TopDataDeviceConstants.NIVEL_RECONHECIMENTO;
-import static com.protreino.services.constants.TopDataDeviceConstants.PADRAO_DE_CARTAO;
-import static com.protreino.services.constants.TopDataDeviceConstants.QUANTIDADE_DIGITOS_CARTAO;
-import static com.protreino.services.constants.TopDataDeviceConstants.SENTIDO_DA_CATRACA;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_LIBERADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_MENSAGEM_NEGADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_PING;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_ESPERA_PARA_CONECTAR;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_MUDANCA_ONLINE_OFFLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_TECLADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOMETRICO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
-import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
-import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
 
+import static com.protreino.services.constants.TopDataDeviceConstants.*;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -75,6 +49,7 @@ import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
@@ -84,6 +59,7 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
+import com.protreino.services.to.PreferenceTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
@@ -147,6 +123,7 @@ public class TopDataDevice extends Device {
 	private final EnviaSmsDeRegistroUseCase enviaSmsDeRegistroUseCase = new EnviaSmsDeRegistroUseCase();
 	private final ProcessAccessRequestUseCase processAccessRequestUseCase = new ProcessAccessRequestUseCase();
 	final Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean("removeVisitanteCameraSaida");
+	private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
 	
 	public TopDataDevice(DeviceEntity deviceEntity){
 		this(deviceEntity.getIdentifier(), deviceEntity.getConfigurationGroupsTO());
@@ -444,7 +421,7 @@ public class TopDataDevice extends Device {
 //	}
 	
 	private long lastResponseTime = System.currentTimeMillis(); //Tempo da última resposta
-	private final long MAX_TIME_WITHOUT_RESPONSE = 8000; //Tempo máximo sem resposta (30 segundos)
+	private final long MAX_TIME_WITHOUT_RESPONSE = 15000; //Tempo máximo sem resposta (30 segundos)
 	private long lastRestartTime = 0;  // Tempo da última reinicialização
 	private final long RESTART_COOLDOWN = 60000; // 1 minuto de cooldown entre reinicializações
 
@@ -1131,8 +1108,9 @@ public class TopDataDevice extends Device {
 		}
 		
 		ultimoAcesso.setDataCriacao(new Date());
-		
-		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
+		if(!ignorarAcesso()) {			
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
+		}
 		
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
@@ -2086,6 +2064,9 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(IGNORAR_REGRAS_DE_ACESSO, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(IS_DEVICE_RESTRITO, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ONLY_ENABLED_MODE, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(ENABLE_IGNORED_ACCESS, "false", FieldType.CHECKBOX));
+		geralConfigurations.add(new ConfigurationTO(HOUR_START_IGNORE, "15:00", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO(HOUR_STOP_IGNORE, "18:00", FieldType.TEXT));
 		
 		String nomeAcademia = "SmartPonto;Controle Acesso";
     	if (Main.loggedUser != null) {
@@ -2270,8 +2251,9 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
+
 			processAccessRequest(cardNumber, false);
-			
+				
 			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);
 			}
@@ -2908,6 +2890,25 @@ public class TopDataDevice extends Device {
 		}
 		
 		return mensagem;
+	}
+	
+	public Boolean ignorarAcesso() {
+		if (getConfigurationValueAsBoolean(ENABLE_IGNORED_ACCESS)) {
+
+			String stringHoraInicio = getConfigurationValue(HOUR_START_IGNORE);
+			String stringHoraFim = getConfigurationValue(HOUR_STOP_IGNORE);
+
+			LocalTime horaInicio = LocalTime.parse(stringHoraInicio, dtf);
+			LocalTime horaFim = LocalTime.parse(stringHoraFim, dtf);
+
+			LocalTime horaAtual = LocalTime.now();
+
+			if (!horaAtual.isBefore(horaInicio) && !horaAtual.isAfter(horaFim)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 	
 	@Override
