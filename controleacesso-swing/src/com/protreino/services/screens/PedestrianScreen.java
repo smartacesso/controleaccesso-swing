@@ -1209,11 +1209,17 @@ public class PedestrianScreen extends JFrame {
 					.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cartaoAcesso));
 			
 			verificaSePossuiMensagem(matchedAthleteAccess);
-			statusLabel.setText(Utils.getPreference("messageAllowedAthleteScreen"));
+			statusLabel.setText("<html><div style='text-align: center;'>" 
+				    + Utils.getPreference("messageAllowedAthleteScreen") 
+				    + "<br>" 
+				    + matchedAthleteAccess.getName() 
+				    + "</div></html>");
 
+			
 			if(matchedAthleteAccess != null && matchedAthleteAccess.getFoto() != null) {
 				resultadoLabel.setIcon(new ImageIcon(createMiniImage(matchedAthleteAccess.getFoto())));
-				
+			Utils.sleep(tempoDeEspera);	
+			cleanScreen(true, true);
 			} else {
     			resultadoLabel.setIcon(permitidoImageIcon);
 			}

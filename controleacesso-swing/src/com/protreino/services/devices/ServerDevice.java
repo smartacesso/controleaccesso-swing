@@ -261,7 +261,7 @@ public class ServerDevice extends Device {
 
 	        for (AttachedTO attachedTO : attachedHikivisionCameras) {
 	            if (attachedTO.getIdDevice().equalsIgnoreCase(deviceId)) {
-	                athleteScreen.requisicaoHivisionServer(cardNumber, 4000);
+	                athleteScreen.requisicaoHivisionServer(cardNumber, 5000);
 	            }
 	        }
 
