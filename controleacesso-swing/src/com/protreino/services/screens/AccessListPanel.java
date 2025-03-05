@@ -50,7 +50,7 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Observacao", "Regra", "Liberar acesso", "Criado por"};
+	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Observacao", "Regra", "Liberar acesso", "Alterado por"};
 	private Integer[] columnWidths = {60, 70, 280, 80, 100 ,280, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;

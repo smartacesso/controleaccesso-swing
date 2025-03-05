@@ -1491,7 +1491,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setId(new Date().getTime());
 			visitante.setIdTemp(visitante.getId());
 			visitante.setCadastradoNoDesktop(true);
-			visitante.setIdUsuario(Main.internoLoggedUser.getId());
+			
 
 		} else {
 
@@ -1507,6 +1507,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 
 		// Dados basicos
+		visitante.setIdUsuario(Main.internoLoggedUser.getId());
 		visitante.setName(nomeTextField.getText());
 		try {
 			visitante.setDataNascimento(sdf.parse(dataNascimentoTextField.getText()));
