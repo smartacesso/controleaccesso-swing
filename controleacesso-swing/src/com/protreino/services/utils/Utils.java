@@ -134,8 +134,8 @@ public class Utils {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
 	
-	public static boolean removeZeroEsquerdaAoSalvar() {
-		return !Utils.getPreferenceAsBoolean("naoRemoverZeroCartaoAoSalvar");
+	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
+		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
 	}
 
 	public static void sleep(long tempo) {
@@ -370,8 +370,6 @@ public class Utils {
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "disableNotifications",
 				"Desablitar notificações", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "naoRemoverZeroCartaoAoSalvar",
-				"Nao remover zero a esquerda do cartao ao salvar", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "scrollSpeed", "Velocidade de rolagem",
 				FieldType.TEXT, "5", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccess",
@@ -578,6 +576,8 @@ public class Utils {
 				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionPlanHorario",
 				"Habilitar horario hikivision", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "adicionaZeroEsquerda",
+				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

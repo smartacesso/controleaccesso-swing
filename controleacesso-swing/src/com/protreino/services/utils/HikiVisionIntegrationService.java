@@ -369,10 +369,18 @@ public class HikiVisionIntegrationService {
 	}
 
 	public boolean adicionarCartaoDePedestre(final String deviceId, final String idUser) {
+		String numeroCartao = idUser;
+		
+		if(Utils.adicionaZeroEsquerdaNoCartaoHikivision()) {		
+			while (numeroCartao.length() < 12) {
+				numeroCartao = "0" + numeroCartao;
+			}
+		}
+		
 		final String body = "{" 
 				+ "		\"CardInfo\": {" 
 				+ "			\"employeeNo\": \"" + idUser + "\","
-				+ "			\"cardNo\": \"" + idUser + "\"" 
+				+ "			\"cardNo\": \"" + numeroCartao + "\"" 
 				+ "		}" 
 				+ "}";
 
