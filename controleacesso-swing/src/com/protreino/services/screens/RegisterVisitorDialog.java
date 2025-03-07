@@ -1530,12 +1530,17 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setFoto(fotoVisitante);
 		visitante.setStatus(statusJComboBox.getSelectedItem().toString());
 		visitante.setMatricula(matriculaTextField != null ? matriculaTextField.getText() : null);
-		try {
-			visitante.setCardNumber(Long.valueOf(cartaoAcessoTextField.getText().replaceAll("[^0-9]", "")).toString());
-		} catch (Exception e) {
-			e.printStackTrace();
+		if(Utils.removeZeroEsquerdaAoSalvar()) {
+			try {
+				visitante.setCardNumber(Long.valueOf(cartaoAcessoTextField.getText().replaceAll("[^0-9]", "")).toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+				visitante.setCardNumber(cartaoAcessoTextField.getText());
+			}
+		}else {
 			visitante.setCardNumber(cartaoAcessoTextField.getText());
 		}
+
 		visitante.setEnviaSmsAoPassarNaCatraca(enviaSMSdeConfirmacaoEntrada.isSelected());
 		visitante.setSempreLiberado(sempreLiberado.isSelected());
 		visitante.setHabilitarTeclado(habilitarTecladoCheckBox.isSelected());

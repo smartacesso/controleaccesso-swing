@@ -133,6 +133,10 @@ public class Utils {
 	public static boolean isTopDataFacialEnable() {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
+	
+	public static boolean removeZeroEsquerdaAoSalvar() {
+		return !Utils.getPreferenceAsBoolean("naoRemoverZeroCartaoAoSalvar");
+	}
 
 	public static void sleep(long tempo) {
 		try {
@@ -366,6 +370,8 @@ public class Utils {
 				new PreferenceTO(PreferenceGroup.GENERAL, "blockSounds", "Bloquear sons", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "disableNotifications",
 				"Desablitar notificações", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "naoRemoverZeroCartaoAoSalvar",
+				"Nao remover zero a esquerda do cartao ao salvar", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "scrollSpeed", "Velocidade de rolagem",
 				FieldType.TEXT, "5", true, 12));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "restrictAccess",
