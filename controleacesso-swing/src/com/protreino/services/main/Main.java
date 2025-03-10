@@ -1506,7 +1506,7 @@ public class Main {
 
         List<LogPedestrianAccessEntity> listaAcessoNaoEnvidados = (List<LogPedestrianAccessEntity>) HibernateAccessDataFacade.
                 getResultListWithParams(LogPedestrianAccessEntity.class, "LogPedestrianAccessEntity.findByCurrentDate", args);
-        if(Objects.isNull(listaAcessoNaoEnvidados)) {
+        if(Objects.isNull(listaAcessoNaoEnvidados) || listaAcessoNaoEnvidados.isEmpty()) {
         	System.out.println(sdf.format(new Date()) + "  LOG DE ACESSO: " + (listaAcessoNaoEnvidados != null ? listaAcessoNaoEnvidados.size() : 0)  + " registros sincronizados manualmente para enviar");
         	return;
         }
