@@ -154,7 +154,6 @@ import com.protreino.services.constants.Tipo;
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCurrentDate",
 	query = "select obj from LogPedestrianAccessEntity obj "
 		  + "where obj.dataCriacao is not null "
-		  + "and  obj.idPedestrian = :ID_PEDESTRE  "
 		  + "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM "
 		  + "order by obj.dataCriacao desc ")
 })
