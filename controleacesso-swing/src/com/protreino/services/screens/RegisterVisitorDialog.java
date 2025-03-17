@@ -2322,7 +2322,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private void salvarFotoVisitanteControlIdServer() {
-
 		if (Objects.isNull(controlIdUseCases)) {
 			visitante.setDataCadastroFotoControlId(new Date());
 			System.out.println("Visitante atualizado por server invalido");
@@ -2337,8 +2336,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 			new Thread() {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
-						controlIdUseCases.cadastrarUsuario(visitante);
+						controlIdUseCases.cadastrarUsuario(visitante, null);
 						visitante.setDataCadastroFotoControlId(new Date());
+						controlIdUseCases.sincronizarNasCameras(visitante);
 					} else {
 						controlIdUseCases.removerUsuario(visitante);
 					}

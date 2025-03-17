@@ -32,80 +32,80 @@ import com.protreino.services.to.ConfigurationGroupTO;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="TB_DEVICE")
-@NamedQueries({
-	@NamedQuery(name = "DeviceEntity.findAll", query = "select obj from DeviceEntity obj order by id asc"),
-	@NamedQuery(name = "DeviceEntity.findById", query = "select obj from DeviceEntity obj where obj.id = :ID"),
-	@NamedQuery(name = "DeviceEntity.findByIdentifier", 
-			   query = "select obj from DeviceEntity obj "
-			   		 + "where obj.identifier = :IDENTIFIER")
-})
+@Table(name = "TB_DEVICE")
+@NamedQueries({ @NamedQuery(name = "DeviceEntity.findAll", query = "select obj from DeviceEntity obj order by id asc"),
+		@NamedQuery(name = "DeviceEntity.findById", query = "select obj from DeviceEntity obj where obj.id = :ID"),
+		@NamedQuery(name = "DeviceEntity.findByManufacturer", query = "select obj from DeviceEntity obj where obj.manufacturer = :MANUFACTURER"),
+		@NamedQuery(name = "DeviceEntity.findByIdentifier", query = "select obj from DeviceEntity obj "
+				+ "where obj.identifier = :IDENTIFIER") })
 public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializable {
-	
+
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="ID_DEVICE", nullable=false, length=10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID_DEVICE", nullable = false, length = 10)
 	private Long id;
-	
+
 	@Enumerated(EnumType.STRING)
-	@Column(name="MANUFACTURER", nullable=false, length=100)
+	@Column(name = "MANUFACTURER", nullable = false, length = 100)
 	private Manufacturer manufacturer;
-	
-	@Column(name="IDENTIFIER", nullable=false, length=100)
+
+	@Column(name = "IDENTIFIER", nullable = false, length = 100)
 	private String identifier;
-	
-	@Column(name="NAME", nullable=true, length=100)
+
+	@Column(name = "NAME", nullable = true, length = 100)
 	private String name;
-	
-	@Column(name="LOGIN", nullable=true, length=100)
+
+	@Column(name = "LOGIN", nullable = true, length = 100)
 	private String login;
-	
-	@Column(name="PASSWORD", nullable=true, length=100)
+
+	@Column(name = "PASSWORD", nullable = true, length = 100)
 	private String password;
-	
-	@Column(name="LOCATION", nullable=true, length=100)
+
+	@Column(name = "LOCATION", nullable = true, length = 100)
 	private String location;
-	
+
 	@Enumerated(EnumType.STRING)
-	@Column(name="DESIRED_STATUS", nullable=false, length=100)
+	@Column(name = "DESIRED_STATUS", nullable = false, length = 100)
 	private DeviceStatus desiredStatus;
-	
+
 	@Type(type = "org.hibernate.type.NumericBooleanType")
-	@Column(name="DEFAULT_DEVICE", nullable=false, length=30)
+	@Column(name = "DEFAULT_DEVICE", nullable = false, length = 30)
 	private Boolean defaultDevice = false;
-	
+
 	@Type(type = "org.hibernate.type.NumericBooleanType")
-	@Column(name="MIRROR_DEVICE", nullable=false, length=30)
+	@Column(name = "MIRROR_DEVICE", nullable = false, length = 30)
 	private Boolean mirrorDevice = false;
-	
+
 	@Type(type = "org.hibernate.type.NumericBooleanType")
-	@Column(name="SYNC_USERS", nullable=true, length=30)
+	@Column(name = "SYNC_USERS", nullable = true, length = 30)
 	private Boolean syncUsers = false;
-	
-	@Column(name="ATHLETE_SCREEN_CONFIG", nullable=true, length=100)
+
+	@Column(name = "FACIAL_CONTROL_ID", nullable = true, length = 1000)
+	private String facialControlId;
+
+	@Column(name = "ATHLETE_SCREEN_CONFIG", nullable = true, length = 100)
 	private String athleteScreenConfig; // ticketGateManufacturer%ticketGateIdentifier%openAthleteScreenOnInit%fullScreenAthleteScreen
-	
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, 
-			   orphanRemoval=true, mappedBy="deviceEntity")
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "deviceEntity")
 	private List<ConfigurationGroupEntity> configurationGroups;
-	
-	@Column(name="ATTACEHD_DEVICES", nullable=true, length=1000)
+
+	@Column(name = "ATTACEHD_DEVICES", nullable = true, length = 1000)
 	private String attachedDevices;
-	
-	@Column(name="ATTACHED_HIKIVISION_CAMERAS", nullable=true, length=10000)
+
+	@Column(name = "ATTACHED_HIKIVISION_CAMERAS", nullable = true, length = 10000)
 	private String attachedHikivisionCameras;
-	
-	@Temporal( TemporalType.TIMESTAMP)
-	@Column(name="LAST_SYNC", nullable=true, length=11)
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "LAST_SYNC", nullable = true, length = 11)
 	private Date ultimaAtualizacao;
-	
+
 	@Transient
 	private Device device;
-	
-	public DeviceEntity(){
+
+	public DeviceEntity() {
 	}
-	
-	public DeviceEntity(Device device){
+
+	public DeviceEntity(Device device) {
 		this.device = device;
 		this.manufacturer = device.getManufacturer();
 		this.identifier = device.getIdentifier();
@@ -119,12 +119,38 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 		if (device.getConfigurationGroups() != null) {
 			configurationGroups = new ArrayList<ConfigurationGroupEntity>();
 			for (ConfigurationGroupTO configGroupTO : device.getConfigurationGroups()) {
-				configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));				
+				configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));
 			}
 		}
 	}
 
-	public Device recoverDevice(){
+	public DeviceEntity(Long id, Manufacturer manufacturer, String identifier, String name, String login,
+			String password, String location, DeviceStatus desiredStatus, Boolean defaultDevice, Boolean mirrorDevice,
+			Boolean syncUsers, String facialControlId, String athleteScreenConfig,
+			List<ConfigurationGroupEntity> configurationGroups, String attachedDevices,
+			String attachedHikivisionCameras, Date ultimaAtualizacao, Device device) {
+		super();
+		this.id = id;
+		this.manufacturer = manufacturer;
+		this.identifier = identifier;
+		this.name = name;
+		this.login = login;
+		this.password = password;
+		this.location = location;
+		this.desiredStatus = desiredStatus;
+		this.defaultDevice = defaultDevice;
+		this.mirrorDevice = mirrorDevice;
+		this.syncUsers = syncUsers;
+		this.facialControlId = facialControlId;
+		this.athleteScreenConfig = athleteScreenConfig;
+		this.configurationGroups = configurationGroups;
+		this.attachedDevices = attachedDevices;
+		this.attachedHikivisionCameras = attachedHikivisionCameras;
+		this.ultimaAtualizacao = ultimaAtualizacao;
+		this.device = device;
+	}
+
+	public Device recoverDevice() {
 		Device recoveredDevice = manufacturer.recoverDevice(this);
 		this.device = recoveredDevice;
 		return recoveredDevice;
@@ -170,20 +196,28 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 		this.desiredStatus = desiredStatus;
 	}
 
+	public String getFacialControlId() {
+		return facialControlId;
+	}
+
+	public void setFacialControlId(String facialControlId) {
+		this.facialControlId = facialControlId;
+	}
+
 	public List<ConfigurationGroupEntity> getConfigurationGroups() {
 		return configurationGroups;
 	}
-	
+
 	public List<ConfigurationGroupTO> getConfigurationGroupsTO() {
 		List<ConfigurationGroupTO> configuracoes = new ArrayList<ConfigurationGroupTO>();
 		if (configurationGroups == null) {
 			return null;
 		}
-		
+
 		for (ConfigurationGroupEntity groupEntity : configurationGroups) {
 			configuracoes.add(new ConfigurationGroupTO(groupEntity));
 		}
-		
+
 		return configuracoes;
 	}
 
@@ -194,18 +228,18 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 			}
 			configurationGroups.clear();
 		}
-		
+
 		if (configurationGroupsTO == null) {
 			configurationGroups = null;
 			return;
 		}
-		
+
 		configurationGroups = new ArrayList<ConfigurationGroupEntity>();
 		for (ConfigurationGroupTO configGroupTO : configurationGroupsTO) {
 			configurationGroups.add(new ConfigurationGroupEntity(this, configGroupTO));
 		}
 	}
-	
+
 	public void setConfigurationGroups(List<ConfigurationGroupEntity> configurationGroups) {
 		this.configurationGroups = configurationGroups;
 	}

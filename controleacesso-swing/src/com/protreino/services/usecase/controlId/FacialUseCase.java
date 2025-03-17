@@ -23,7 +23,9 @@ public class FacialUseCase {
 			String url = "http://" + ip + "/user_set_image.fcgi?user_id=" + cardNumber
 					+ "&match=1&timestamp=1624997578&session=" + session;
 			System.out.println("envio de url" + url);
-			String response = (String) controlIdService.postMessage(OCTECT_STREAM, url, fotoBase64, null);
+
+			String imageContent = "{ \"data\": \"" + Base64.getEncoder().encodeToString(foto) + "\" }";
+			String response = (String) controlIdService.postImsage(OCTECT_STREAM, url, foto, null);
 
 			if (response == null || response.trim().equals("{}")) {
 				System.out.println("Foto enviada com sucesso");

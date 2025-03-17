@@ -1,13 +1,20 @@
 package com.protreino.services.usecase.controlId;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.enumeration.Manufacturer;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.to.controlIdDevice.AttachedRulesRequest;
+import com.protreino.services.to.controlIdDevice.CreateUserAttachedRulesRequest;
 import com.protreino.services.to.controlIdDevice.CreateUserRequest;
 import com.protreino.services.to.controlIdDevice.LoginInput;
 import com.protreino.services.to.controlIdDevice.SessionOutput;
@@ -34,11 +41,7 @@ public class ControlIdUseCase {
 
 	public static String OCTECT_STREAM = "application/octet-stream";
 
-	private void initPreferences() {
-
-	}
-
-	private String login() {
+	private String login(String ipConfig) {
 
 		LoginInput loginInput = new LoginInput(login, password);
 
@@ -47,7 +50,7 @@ public class ControlIdUseCase {
 			return null;
 		}
 
-		final String url = "http://" + ip + "/login.fcgi";
+		final String url = "http://" + ipConfig + "/login.fcgi";
 		final String payload = gson.toJson(loginInput);
 		try {
 			return (String) controlIdService.postMessage(APPLICATION_JSON, url, payload, String.class);
@@ -68,7 +71,7 @@ public class ControlIdUseCase {
 		final String url = "http://" + ip + "/logout.fcgi?session=" + session;
 		String response = (String) controlIdService.getMessage("application/json", url, null);
 
-		if (response == null || response.trim().equals("{}")) {
+		if (Objects.isNull(response) || response.trim().equals("{}")) {
 			System.out.println("Logout realizado com sucesso.");
 			return true;
 		}
@@ -86,7 +89,7 @@ public class ControlIdUseCase {
 		String response = (String) controlIdService.getMessage(url, "application/json", null);
 
 		if (Objects.isNull(response)) {
-			// Parse da resposta para obter a sessão
+
 			ValidOutput validOutput = gson.fromJson(response, ValidOutput.class);
 			if (validOutput != null && validOutput.getValid() != null) {
 				System.out.println("Sessão obtida com sucesso: " + validOutput.getValid());
@@ -99,8 +102,6 @@ public class ControlIdUseCase {
 	}
 
 	private Void alterarUsuario(final String session, LoginInput login) {
-
-		// terminar
 		if (Objects.isNull(login)) {
 			System.err.println("LoginInput não pode ser nulo.");
 			return null;
@@ -113,20 +114,18 @@ public class ControlIdUseCase {
 		return null;
 	}
 
-	public List<Long> createObjects(final String session, final CreateUserRequest createUsers) {
-		if (session == null || session.isEmpty()) {
+	public List<Long> createObjects(final String session, final CreateUserRequest createUsers, final String ipDevice) {
+		if (Objects.isNull(createUsers) || session.isEmpty()) {
 			throw new IllegalArgumentException("A sessão é obrigatória.");
 		}
 
 		try {
-			final String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
+			final String url = "http://" + ipDevice + "/create_objects.fcgi?session=" + session;
 
 			final String jsonPayload = gson.toJson(createUsers);
 
-			// Envia a requisição usando o método genérico `send`
 			Object response = controlIdService.postMessage("application/json", url, jsonPayload, Object.class);
 
-			// Converte a resposta em um objeto contendo os IDs dos objetos criados
 			Map<String, List<Long>> responseMap = gson.fromJson((String) response,
 					new TypeToken<Map<String, List<Long>>>() {
 					}.getType());
@@ -138,8 +137,7 @@ public class ControlIdUseCase {
 		}
 	}
 
-	// Listagem de Usuarios na camera
-	public final String ListagemdeUsers(String session, final String ip) {
+	public final String ListagemdeUsers(final String session, final String ip) {
 
 		final String url = "http://" + ip + "/user_list_images.fcgi?get_timestamp=1&session=" + session;
 		final String response = (String) controlIdService.getMessage("application/json", url, null);
@@ -153,40 +151,86 @@ public class ControlIdUseCase {
 		return idsFacial;
 	}
 
-	// Recebe fotos do facial
-	// Precisa puxar uma variavel com um array de todos os IDs dentro do facial e
-	// colocar essa variavel em idsFacial
+	public Void cadastrarUsuario(final PedestrianAccessEntity pedestre, String ipConfig) {
 
-	// Envio de foto para a camera
-	// Inacabada
+		if (Objects.isNull(ipConfig)) {
+			ipConfig = ip;
+		}
 
-	public Void cadastrarUsuario(final PedestrianAccessEntity pedestre) {
-
-		String session = login();
+		String session = login(ipConfig);
 		SessionOutput sessionOutput = gson.fromJson(session, SessionOutput.class);
-		Long idUser = createUser(pedestre, sessionOutput);
+		Long idUser = createUser(pedestre, sessionOutput, ipConfig);
+		Long idRule = 1L;
+
+		CreateUserAttachedRulesRequest userAttached = new CreateUserAttachedRulesRequest();
+		userAttached.setObject("user_access_rules");
+
+		List<AttachedRulesRequest> userContent = Collections.singletonList(new AttachedRulesRequest(idUser, idRule));
+		userAttached.setUserContent(userContent);
+		attachedRules(sessionOutput.getSession(), userAttached);
+
+		// TODO: criar uma regra para o pedestre
 
 		// TODO: salvar sessao no banco de dados de ver persisitencia dela
 
 		facialUseCase.send(sessionOutput.getSession(), String.valueOf(idUser), pedestre.getFoto());
 
 		return null;
-
 	}
 
-	private Long createUser(final PedestrianAccessEntity pedestre, SessionOutput sessionOutput) {
+	private boolean attachedRules(final String session, CreateUserAttachedRulesRequest attachedRules) {
+		if (Objects.isNull(session) || session.isEmpty()) {
+			throw new IllegalArgumentException("A sessão é obrigatória.");
+		}
+
+		try {
+			final String url = "http://" + ip + "/create_objects.fcgi?session=" + session;
+
+			final String jsonPayload = gson.toJson(attachedRules);
+
+			Object response = controlIdService.postMessage("application/json", url, jsonPayload, Object.class);
+
+			Map<String, List<Long>> responseMap = gson.fromJson((String) response,
+					new TypeToken<Map<String, List<Long>>>() {
+					}.getType());
+			return true;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private Long createUser(final PedestrianAccessEntity pedestre, SessionOutput sessionOutput, String ipConfig) {
 		CreateUserRequest createUser = new CreateUserRequest();
 		createUser.setObject("users");
 
-		List<UserContentTypesrequest> userContent = new ArrayList<>();
-		userContent.add(new UserContentTypesrequest(pedestre.getName(), pedestre.getCardNumber(), "123456", ""));
+		List<UserContentTypesrequest> userContent = Collections
+				.singletonList(new UserContentTypesrequest(pedestre.getName(), pedestre.getCardNumber(), "", ""));
 
-		List<Long> users = createObjects(sessionOutput.getSession(), createUser);
+		createUser.setUserContent(userContent);
+
+		List<Long> users = createObjects(sessionOutput.getSession(), createUser, ipConfig);
 		return users.get(0);
 	}
 
 	public Void removerUsuario(final PedestrianAccessEntity pedestre) {
 		return null;
+
+	}
+
+	public void sincronizarNasCameras(PedestrianAccessEntity visitante) {
+
+		HashMap<String, Object> args = new HashMap<>();
+		args.put("MANUFACTURER", Manufacturer.CONTROL_ID_FACIAL);
+
+		@SuppressWarnings("unchecked")
+		List<DeviceEntity> devices = (List<DeviceEntity>) HibernateAccessDataFacade
+				.getResultListWithParams(DeviceEntity.class, "DeviceEntity.findByManufacturer", args);
+
+		Optional.ofNullable(devices).orElse(Collections.emptyList()).stream().forEach(device -> {
+			cadastrarUsuario(visitante, device.getFacialControlId());
+		});
 
 	}
 

@@ -76,6 +76,55 @@ public class ControlIdDeviceService {
 		return null;
 	}
 
+	public <T> Object postImsage(final String contentType, final String url, final byte[] body, Class<T> entityClass) {
+		HttpURLConnection conn = null;
+		try {
+			System.out.println("Iniciando requisição para URL: " + url);
+
+			// Configura a conexão
+			URL endpoint = new URL(url);
+			conn = (HttpURLConnection) endpoint.openConnection();
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", contentType);
+
+			conn.setDoOutput(true);
+
+			OutputStream os = conn.getOutputStream();
+			os.write(body);
+			os.flush();
+
+			int responseCode = conn.getResponseCode();
+
+			if (!isFamily2XX(responseCode)) {
+				return null;
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+			String line;
+			while ((line = br.readLine()) != null) {
+				System.out.println("linha " + line);
+			}
+
+			System.out.println("Resposta recebida: " + line);
+
+			return line;
+
+		} catch (SocketTimeoutException e) {
+			System.err.println("Erro: Timeout ao conectar à URL: " + url);
+		} catch (IOException e) {
+			System.err.println("Erro: Não foi possível conectar à URL: " + url);
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("Erro: não foi possível enviar a requisicao: " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			if (Objects.nonNull(conn))
+				conn.disconnect();
+		}
+		return null;
+	}
+
 	public <T> Object getMessage(final String contentType, final String url, Class<T> entityClass) {
 
 		HttpURLConnection conn = null;
