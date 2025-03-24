@@ -738,6 +738,7 @@ public class TopDataDevice extends Device {
 	}
 	
 	public boolean isDeviceRestrito() {
+		System.out.println("Device Restrito");
 		return getConfigurationValueAsBoolean(IS_DEVICE_RESTRITO);
 	}
 	

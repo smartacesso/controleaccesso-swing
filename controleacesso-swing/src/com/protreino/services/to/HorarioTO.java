@@ -1,5 +1,6 @@
 package com.protreino.services.to;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import com.protreino.services.entity.HorarioEntity;
@@ -23,8 +24,8 @@ public class HorarioTO {
 		horarioEntity.setNome(nome);
 		horarioEntity.setStatus(status);
 		horarioEntity.setDiasSemana(diasSemana);
-		horarioEntity.setHorarioInicio(horarioInicio);
-		horarioEntity.setHorarioFim(horarioFim);
+		horarioEntity.setHorarioInicio(getHorarioInicio());
+		horarioEntity.setHorarioFim(getHorarioFim());
 		horarioEntity.setQtdeDeCreditos(qtdeDeCreditos);
 		horarioEntity.setPedestreRegra(pedestreRegra);
 		
@@ -56,14 +57,26 @@ public class HorarioTO {
 		this.diasSemana = diasSemana;
 	}
 	public Date getHorarioInicio() {
-		return horarioInicio;
+		
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(horarioInicio);
+	    // Ajuste a hora, por exemplo, subtraindo 3 horas
+	    calendar.add(Calendar.HOUR_OF_DAY, -3);
+	    return calendar.getTime();
+		
 	}
 	public void setHorarioInicio(Date horarioInicio) {
 		this.horarioInicio = horarioInicio;
 	}
+	
 	public Date getHorarioFim() {
-		return horarioFim;
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(horarioFim);
+	    // Ajuste a hora, por exemplo, subtraindo 3 horas
+	    calendar.add(Calendar.HOUR_OF_DAY, -3);
+	    return calendar.getTime();
 	}
+	
 	public void setHorarioFim(Date horarioFim) {
 		this.horarioFim = horarioFim;
 	}

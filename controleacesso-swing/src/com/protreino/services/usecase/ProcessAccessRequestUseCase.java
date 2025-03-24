@@ -196,6 +196,8 @@ public class ProcessAccessRequestUseCase {
 				}
 
 				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
+			}else {
+				System.out.println("Sem equipamento restrito");
 			}
 
 			if (Objects.isNull(origem) || (Boolean.TRUE.equals(matchedPedestrianAccess.getSempreLiberado())
@@ -211,13 +213,13 @@ public class ProcessAccessRequestUseCase {
 				permitidoSensor = false;
 			}
 			
-			if (isNaoPermitidoNoEquipamento(equipament, matchedPedestrianAccess.getEquipamentos())) {
-				if (createNotification) {
-					Utils.createNotification(userName + " nao permitido nesse equipamento.", NotificationType.BAD, foto);
-				}
-
-				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
-			}
+//			if (isNaoPermitidoNoEquipamento(equipament, matchedPedestrianAccess.getEquipamentos())) {
+//				if (createNotification) {
+//					Utils.createNotification(userName + " nao permitido nesse equipamento.", NotificationType.BAD, foto);
+//				}
+//
+//				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
+//			}
 
 
 			

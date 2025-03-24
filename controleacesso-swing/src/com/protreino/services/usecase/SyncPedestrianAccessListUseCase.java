@@ -421,12 +421,12 @@ public class SyncPedestrianAccessListUseCase {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
                     }
-
+                    //System.out.println("sempre liberado que chegou da web : " + athleteAccessTO.getSempreLiberado());
                     // TODO : criar novo m�todo para pegar pedestre removido ou nao
                     //        isso pode resolver v�rios bugs
                     // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
                     //		  aqui ou ne
-
+                    //athleteAccessTO.setSempreLiberado(true);
                     PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade.
                             getAllPedestresById(athleteAccessTO.getId());
 
@@ -461,7 +461,10 @@ public class SyncPedestrianAccessListUseCase {
 
                         existentAthleteAccess.update(athleteAccessTO);
 
-                        if(Utils.isHikivisionConfigValid() ) {
+                        if((existentAthleteAccess.isRemovido() 
+                    			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
+                    		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
+                    		&& Utils.isHikivisionConfigValid() ) {
                         	try {
                         		hikivisionUseCases = new HikivisionUseCases();
                         		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);

@@ -578,6 +578,8 @@ public class Utils {
 				"Habilitar horario hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "adicionaZeroEsquerda",
 				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "doisDispositivos",
+				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

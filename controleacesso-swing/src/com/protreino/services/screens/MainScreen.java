@@ -723,6 +723,11 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
+		if(Objects.isNull(Main.internoLoggedUser)) {
+			 JOptionPane.showMessageDialog(null, "Necessário realizar: LOGIN INTERNO");
+			 return;
+		}
+		
 		PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
 	    // Verifica se o usuario tem um perfil de acesso
 	    if(Objects.nonNull(perfil)) {	
@@ -778,7 +783,7 @@ public class MainScreen extends JFrame {
 		toolBar.setRollover(false);
 		
 		//toolBar.setPreferredSize(preferredSize);
-
+		
 		Dimension buttonSize = System.getProperty("os.name").toLowerCase().contains("linux") 
 				? new Dimension(150, 80) : new Dimension(160, 80);
 
@@ -787,7 +792,25 @@ public class MainScreen extends JFrame {
 		addDeviceButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				addNewDevice();
+				if(Objects.isNull(Main.internoLoggedUser)) {
+					 JOptionPane.showMessageDialog(null, "Necessário realizar: LOGIN INTERNO");
+					 return;
+				}
+				
+				PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
+				
+				if(Objects.isNull(perfil)) {
+					 JOptionPane.showMessageDialog(null, "Necessário realizar: LOGIN INTERNO");
+					 return;
+				}
+				
+		        if(perfil.equals(PerfilAcesso.PORTEIRO) || perfil.equals(PerfilAcesso.OPERADOR)) {
+		            JOptionPane.showMessageDialog(null, "Usuario nao possui acesso");
+		            return;
+		        }
+		        
+		        addNewDevice();	
+				
 			}
 		});
 		toolBar.add(addDeviceButton);
