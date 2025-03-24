@@ -1109,9 +1109,7 @@ public class TopDataDevice extends Device {
 		}
 		
 		ultimoAcesso.setDataCriacao(new Date());
-		if(!ignorarAcesso()) {			
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
-		}
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 		
 		PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
@@ -2252,8 +2250,12 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-
-			processAccessRequest(cardNumber, false);
+			if(!this.ignorarAcesso()) {
+				processAccessRequest(cardNumber, false);				
+			}else {
+				setVerificationResult(VerificationResult.ALLOWED);
+				System.out.println("Acesso ignorado catraca online");
+			}
 				
 			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);

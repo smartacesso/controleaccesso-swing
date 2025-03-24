@@ -120,7 +120,7 @@ public class HikivisionEventsUseCase {
 	    }
 
 	    if (device.ignorarAcesso()) {
-	        System.out.println("Acesso ignorado");
+	        System.out.println("Acesso ignorado catraca offline");
 	        return;
 	    }
 
@@ -226,16 +226,18 @@ public class HikivisionEventsUseCase {
 	    }
 	}
 
-	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo, final OffsetDateTime dataAcesso, String hikivisionDeviceName) {
-		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED 
+	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo,
+			final OffsetDateTime dataAcesso, String hikivisionDeviceName) {
+		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED
 				|| selectedDevice.getStatus() == DeviceStatus.ONLY_ENABLED) {
-			System.out.println("Evento online, catraca desconectada, cartao : " + cardNo + " | data : " + dataAcesso + " | equipamento : " + selectedDevice.getName());
-			
+			System.out.println("Evento online, catraca desconectada, cartao : " + cardNo + " | data : " + dataAcesso
+					+ " | equipamento : " + selectedDevice.getName());
+
 			if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED) {
 				tryReconectDevice(selectedDevice);
 			}
-			
-			if(selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
+
+			if (selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);
 			} else {
 				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso, hikivisionDeviceName);
@@ -245,7 +247,7 @@ public class HikivisionEventsUseCase {
 			selectedDevice.validaAcessoHikivision(cardNo);
 		}
 	}
-	
+
 	private void tryReconectDevice(final TopDataDevice selectedDevice) {
 		final Boolean reconectDeviceOnReceiveCurrentEvent = Utils.getPreferenceAsBoolean("reconectDeviceOnReceiveCurrentEvent");
 		
