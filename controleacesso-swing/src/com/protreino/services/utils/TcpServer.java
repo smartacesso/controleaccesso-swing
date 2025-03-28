@@ -999,7 +999,6 @@ public class TcpServer {
 	                writer.write(mensagemString);
 	                writer.newLine();
 	                writer.flush();
-	                System.out.println("MENSAGEM ENVIADA: " + mensagemString);
 
 	            } catch (IOException e) {
 	                System.out.println("Erro ao enviar mensagem para o cliente: " + e.getMessage());

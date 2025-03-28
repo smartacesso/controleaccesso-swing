@@ -199,19 +199,13 @@ public class HikivisionEventsUseCase {
 	    boolean bloquearSaida = device.getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 	    Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean(REMOVE_VISITANTE_CAMERA);
 
-	    // Log da quantidade de créditos antes da operação
-	    System.out.println("Quantidade de créditos antes: " + pedestre.getQuantidadeCreditos());
-
 	    // Decrementa créditos se for saída ou se saída não está bloqueada
 	    if (logEventoOffline.isSaida()) {
-	    	System.out.println("direcao :" +  logEventoOffline.getDirection() + " is saida : " + logEventoOffline.isSaida());
-	    	System.out.println("saida librada :" + !bloquearSaida);
+	    	System.out.println("direcao :" +  logEventoOffline.getDirection());
 	        System.out.println("Decrementando créditos...");
 	        pedestre.decrementaCreditos();
 	    }
 
-	    // Log da quantidade de créditos após a operação
-	    System.out.println("Quantidade de créditos depois: " + pedestre.getQuantidadeCreditos());
 
 	    // Verifica condições para saída antecipada
 	    if ((pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) || !pedestre.isVisitante()) {
