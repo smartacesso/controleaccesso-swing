@@ -142,7 +142,9 @@ public class HikivisionUseCases {
 				return;
 			}
 
-			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+			devicesToSync = devices.stream().filter(device -> !device.getDevName().toLowerCase().trim().contains("refeitorio") ||
+					!device.getDevName().toLowerCase().trim().contains("refeitorio"))
+					.map(Device::getDevIndex).collect(Collectors.toList());
 		}
 
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
@@ -253,7 +255,7 @@ public class HikivisionUseCases {
 			}
 		}
 		
-		vincularPedestreaoTemplate(pedestre, Arrays.asList(deviceId));
+		//vincularPedestreaoTemplate(pedestre, Arrays.asList(deviceId));
 
 		pedestre.setDataCadastroFotoNaHikivision(new Date());
 		return true;
@@ -384,7 +386,13 @@ public class HikivisionUseCases {
 		final List<Device> devices = listarDispositivos();
 		
 		devices.forEach(device -> {
-			hikiVisionIntegrationService.criarPlanoDeHorario(device.getDevIndex(), idPlan, config);
+			String nomeNormalizado =  device.getDevName().trim().toLowerCase();
+			System.out.println("nome normalizado : " + nomeNormalizado);
+			if(!nomeNormalizado.contains("refeitorio") || !nomeNormalizado.contains("refeitório")) {
+				hikiVisionIntegrationService.criarPlanoDeHorario(device.getDevIndex(), idPlan, config);
+			}else {
+				System.out.println("Horario não enviado para device, pois nao faz parte");
+			}
 		});
 
 	}
@@ -394,7 +402,14 @@ public class HikivisionUseCases {
 		final List<Device> devices = listarDispositivos();
 
 		devices.forEach(device -> {
-			hikiVisionIntegrationService.criarTemplateComHorario(device.getDevIndex(),idTemplate , idPlan, nomeTemplate);
+			String nomeNormalizado =  device.getDevName().trim().toLowerCase();
+			System.out.println("nome normalizado : " + nomeNormalizado);
+			if(!nomeNormalizado.contains("refeitorio") || !nomeNormalizado.contains("refeitório")) {
+				hikiVisionIntegrationService.criarTemplateComHorario(device.getDevIndex(),idTemplate , idPlan, nomeTemplate);
+			}else {
+				System.out.println("Horario não enviado para device, pois nao faz parte");
+			}
+			
 		});
 
 	}
@@ -405,16 +420,21 @@ public class HikivisionUseCases {
 				final List<Device> devices = listarDispositivos();
 				if (Objects.isNull(devices) || devices.isEmpty()) {
 					return;
-				}
-
-				devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+				}				
+				
+				devicesToSync = devices.stream().filter(device -> !device.getDevName().toLowerCase().trim().contains("refeitorio") ||
+						!device.getDevName().toLowerCase().trim().contains("refeitorio"))
+						.map(Device::getDevIndex).collect(Collectors.toList());
 			}
 			
 		    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
+		    
+		    System.out.println("devices to sync : " + devicesToSync.size());
 
 		    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
 		        System.out.println("sem regras de horarios");
 		        devicesToSync.forEach(device -> {
+
 			        hikiVisionIntegrationService.vincularTemplateNoUsuario(
 			            device,
 			            pedestre.getCardNumber(),

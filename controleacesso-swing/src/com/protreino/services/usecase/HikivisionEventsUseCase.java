@@ -133,6 +133,7 @@ public class HikivisionEventsUseCase {
 	    System.out.println("Log de evento off do acesso : " + logEventoOffline.getDirection() + " | Equipamento :"
 	            + logEventoOffline.getEquipament() + " | Pedestre : " + logEventoOffline.getIdPedestrian());
 
+	    //decrementa apenas de visitante
 	    decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline);
 	}
 
