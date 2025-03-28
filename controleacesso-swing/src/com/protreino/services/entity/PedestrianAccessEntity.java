@@ -249,8 +249,9 @@ import com.protreino.services.utils.EncryptionUtils;
 						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select obj " +
 						"from PedestrianAccessEntity obj " +
+						"left join fetch obj.pedestreRegra p " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
 						"and obj.tipo = 'PEDESTRE' " +
@@ -263,8 +264,9 @@ import com.protreino.services.utils.EncryptionUtils;
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select obj " +
 						"from PedestrianAccessEntity obj " +
+						"left join fetch obj.pedestreRegra p " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +

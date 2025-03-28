@@ -37,5 +37,8 @@ public class TopDataDeviceConstants {
 	public static final String ENABLE_IGNORED_ACCESS = "Habilita catraca ignorar acesso hikivision";
 	public static final String HOUR_START_IGNORE = "Hora de inicio";
 	public static final String HOUR_STOP_IGNORE = "Hora de fim";
+	public static final String HOUR_START_IGNORE_2 = "Hora de inicio tarde";
+	public static final String HOUR_STOP_IGNORE_2 = "Hora de fim tarde";
+	
 
 }

@@ -1075,6 +1075,8 @@ public class TopDataDevice extends Device {
 		}
 		
 		inner.BilheteInner.Cartao = new StringBuilder();
+		if(!this.ignorarAcesso()) {
+			
 		
 		 LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 		                        .getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
@@ -1175,6 +1177,7 @@ public class TopDataDevice extends Device {
 		}
 		
 		System.out.println("Registrou giro no equipamento: " + inner.Numero);
+	}
 	}
 	
 	@Override
@@ -2064,8 +2067,10 @@ public class TopDataDevice extends Device {
 		geralConfigurations.add(new ConfigurationTO(IS_DEVICE_RESTRITO, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ONLY_ENABLED_MODE, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(ENABLE_IGNORED_ACCESS, "false", FieldType.CHECKBOX));
-		geralConfigurations.add(new ConfigurationTO(HOUR_START_IGNORE, "15:00", FieldType.TEXT));
-		geralConfigurations.add(new ConfigurationTO(HOUR_STOP_IGNORE, "18:00", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO(HOUR_START_IGNORE, "08:30", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO(HOUR_STOP_IGNORE, "09:00", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO(HOUR_START_IGNORE_2, "15:30", FieldType.TEXT));
+		geralConfigurations.add(new ConfigurationTO(HOUR_STOP_IGNORE_2, "16:30", FieldType.TEXT));
 		
 		String nomeAcademia = "SmartPonto;Controle Acesso";
     	if (Main.loggedUser != null) {
@@ -2896,23 +2901,33 @@ public class TopDataDevice extends Device {
 	}
 	
 	public Boolean ignorarAcesso() {
-		if (getConfigurationValueAsBoolean(ENABLE_IGNORED_ACCESS)) {
+	    if (getConfigurationValueAsBoolean(ENABLE_IGNORED_ACCESS)) {
 
-			String stringHoraInicio = getConfigurationValue(HOUR_START_IGNORE);
-			String stringHoraFim = getConfigurationValue(HOUR_STOP_IGNORE);
+	        String stringHoraInicio = getConfigurationValue(HOUR_START_IGNORE);
+	        String stringHoraFim = getConfigurationValue(HOUR_STOP_IGNORE);
 
-			LocalTime horaInicio = LocalTime.parse(stringHoraInicio, dtf);
-			LocalTime horaFim = LocalTime.parse(stringHoraFim, dtf);
+	        String stringHoraInicio2 = getConfigurationValue(HOUR_START_IGNORE_2);
+	        String stringHoraFim2 = getConfigurationValue(HOUR_STOP_IGNORE_2);
 
-			LocalTime horaAtual = LocalTime.now();
+	        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
 
-			if (!horaAtual.isBefore(horaInicio) && !horaAtual.isAfter(horaFim)) {
-				return true;
-			}
-		}
+	        LocalTime horaInicio = LocalTime.parse(stringHoraInicio, dtf);
+	        LocalTime horaFim = LocalTime.parse(stringHoraFim, dtf);
+	        LocalTime horaInicio2 = LocalTime.parse(stringHoraInicio2, dtf);
+	        LocalTime horaFim2 = LocalTime.parse(stringHoraFim2, dtf);
 
-		return false;
+	        LocalTime horaAtual = LocalTime.now();
+
+	        // Verifica se a hora atual está em qualquer um dos dois intervalos
+	        if ((!horaAtual.isBefore(horaInicio) && !horaAtual.isAfter(horaFim)) ||
+	            (!horaAtual.isBefore(horaInicio2) && !horaAtual.isAfter(horaFim2))) {
+	            return true;
+	        }
+	    }
+
+	    return false;
 	}
+
 	
 	@Override
 	public String getFullIdentifier() {
