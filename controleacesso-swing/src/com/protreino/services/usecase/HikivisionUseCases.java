@@ -23,6 +23,7 @@ import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HikivisionFingerErrorRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
+import com.protreino.services.repository.PedestreRegraRepository;
 import com.protreino.services.repository.RegraRepository;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO;
@@ -143,9 +144,10 @@ public class HikivisionUseCases {
 				return;
 			}
 
-			devicesToSync = devices.stream().filter(device -> !device.getDevName().toLowerCase().trim().contains("refeitorio") &&
-					!device.getDevName().toLowerCase().trim().contains("refeitório"))
-					.map(Device::getDevIndex).collect(Collectors.toList());
+			devicesToSync = devices.stream().filter(device -> {
+				String nome = device.getDevName().toLowerCase().trim();
+				return !nome.contains("refeitorio") && !nome.contains("refeitório");
+			}).map(Device::getDevIndex).collect(Collectors.toList());
 		}
 
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
@@ -494,11 +496,17 @@ public class HikivisionUseCases {
 
 	        // Removendo dispositivos que contenham "refeitório" no nome
 	        Set<String> devicesRefeitorio = devices.stream()
-	            .filter(device -> device.getDevName().toLowerCase().trim().contains("refeitorio"))
+	            .filter(device -> device.getDevName().toLowerCase().trim().contains("refeitorio")
+	            		|| device.getDevName().toLowerCase().trim().contains("refeitório"))
 	            .map(Device::getDevIndex)
 	            .collect(Collectors.toSet());
 
 	        devicesToSync.removeAll(devicesRefeitorio);
+	        
+	        if(devicesToSync.size() == 0) {
+	        	System.out.println("Sem devices para sincronizar");
+	        	return;
+	        }
 
 	        System.out.println("Devices para sincronizar: " + devicesToSync.size());
 
@@ -506,14 +514,25 @@ public class HikivisionUseCases {
 
 	        if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
 	            System.out.println("Sem regras de horários");
-	            devicesToSync.forEach(device -> {
-	                hikiVisionIntegrationService.vincularTemplateNoUsuario(
-	                    device,
-	                    pedestre.getCardNumber(),
-	                    1
-	                );
-	            });
-	            return;
+
+	            // Buscar regra associada ao pedestre, caso ela exista
+	            PedestreRegraEntity pedestreRegra = PedestreRegraRepository.buscarRegraPedestre(pedestre.getId());
+	            
+	            if (pedestreRegra != null) {
+	            	regraAtiva = Optional.of(pedestreRegra);
+	                System.out.println("Regra carregada do banco");
+	            } else {
+	                System.out.println("Nenhuma regra encontrada no banco");
+		            devicesToSync.forEach(device -> {
+		                hikiVisionIntegrationService.vincularTemplateNoUsuario(
+		                    device,
+		                    pedestre.getCardNumber(),
+		                    1 // ID padrão quando não há regra
+		                );
+		            });
+		            return;
+	            }
+	           
 	        }
 
 	        // Pegamos a regra inicial

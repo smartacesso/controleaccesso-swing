@@ -36,7 +36,12 @@ import com.protreino.services.to.PedestreRegraTO;
 					  + "order by obj.id asc"),
 	@NamedQuery(name  = "PedestreRegraEntity.findById", 
 				query = "select obj from PedestreRegraEntity obj "
-					  + "where obj.id = :ID order by obj.id asc")
+					  + "where obj.id = :ID order by obj.id asc"),
+	@NamedQuery(name  = "PedestreRegraEntity.findAllByIdPedestre", 
+				query = "select obj from PedestreRegraEntity obj "
+					  + "where obj.pedestrianAccess.id = :ID_PEDESTRE "
+					  + "and obj.removidoNoDesktop = 0 " 
+					  + "order by obj.id asc")
 })
 @SuppressWarnings("serial")
 public class PedestreRegraEntity extends BaseEntity {
