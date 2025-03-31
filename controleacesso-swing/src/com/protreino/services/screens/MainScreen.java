@@ -146,7 +146,7 @@ public class MainScreen extends JFrame {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLayout(new BorderLayout());
 		setPreferredSize(System.getProperty("os.name").toLowerCase().contains("linux") 
-				? new Dimension(900, 600) : new Dimension(920, 718));
+				? new Dimension(900, 600) : new Dimension(1200, 718));
 		setMinimumSize(getPreferredSize());
 		setResizable(true);
 		setIconImage(Main.favicon);

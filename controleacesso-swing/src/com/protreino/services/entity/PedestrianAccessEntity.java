@@ -708,6 +708,23 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.idUsuario = idUsuario;
 	}
 	
+	public PedestrianAccessEntity(Long id, String cardNumber, String cpf ,String name, String tipo, String status, String observacao,
+			Long quantidadeCreditos, Date validadeCreditos, Date dataInicioPeriodo, Date dataFimPeriodo, 
+			Long idUsuario) {
+		this.id = id;
+		this.cardNumber = cardNumber;
+		this.cpf = cpf;
+		this.name = name;
+		this.tipo = tipo;
+		this.status = status;
+		this.observacoes = observacao;
+		this.quantidadeCreditos = quantidadeCreditos;
+		this.validadeCreditos = validadeCreditos;
+		this.dataInicioPeriodo = dataInicioPeriodo;
+		this.dataFimPeriodo = dataFimPeriodo;
+		this.idUsuario = idUsuario;
+	}
+	
 	public PedestrianAccessEntity(PedestrianAccessTO athleteAccessTO){
 		//Dados basicos
 		this.id = athleteAccessTO.getId();

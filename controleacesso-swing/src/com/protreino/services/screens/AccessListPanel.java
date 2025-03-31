@@ -50,11 +50,12 @@ public class AccessListPanel extends PaginedListPanel {
 
 	private JTable accessListTable;
 	private List<PedestrianAccessEntity> listaAcesso;
-	private String[] columns = {"Codigo", "Cartao", "Nome", "Tipo", "Status", "Observacao", "Regra", "Liberar acesso", "Alterado por"};
-	private Integer[] columnWidths = {60, 70, 280, 80, 100 ,280, 190, 105, 100};
+	private String[] columns = {"Codigo", "Cartao", "Cpf", "Nome", "Tipo", "Status", "Observacao", "Regra", "Liberar acesso", "Alterado por"};
+	private Integer[] columnWidths = {130, 140, 150, 300, 100, 100 ,280, 190, 105, 100};
 	
 	private JTextField filtroIdTextField;
 	private JTextField filtroCartaoTextField;
+	private JTextField filtroCpfTextField;
 	private JTextField filtroNomeTextField;
 	private JComboBox<SelectItem> filtroTipoJComboBox;
 	private List<UserEntity> usuarioDoSistema;
@@ -74,8 +75,8 @@ public class AccessListPanel extends PaginedListPanel {
 		args = new HashMap<String, Object>();
 		
 		colunasComLink = new ArrayList<Integer>();
-		colunasComLink.add(4);
-		colunasComLink.add(6);
+		colunasComLink.add(5);
+		colunasComLink.add(8);
 		
 		Font font = new JLabel().getFont();
 		Font headerFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -99,6 +100,16 @@ public class AccessListPanel extends PaginedListPanel {
 		filtroCartaoTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filtroCartaoPanel.add(filtroCartaoTextField);
 		filtroCartaoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		
+		JPanel filtroCpfPanel= new JPanel();
+		filtroCpfPanel.setLayout(new BoxLayout(filtroCpfPanel, BoxLayout.Y_AXIS));
+		JLabel filtroCpfLabel = new JLabel("Cpf");
+		filtroCpfLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		filtroCpfPanel.add(filtroCpfLabel);
+		filtroCpfTextField = new JTextField("", 8);
+		filtroCpfTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
+		filtroCpfPanel.add(filtroCpfTextField);
+		filtroCpfPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
 		JPanel filtroNomePanel= new JPanel();
 		filtroNomePanel.setLayout(new BoxLayout(filtroNomePanel, BoxLayout.Y_AXIS));
@@ -143,6 +154,8 @@ public class AccessListPanel extends PaginedListPanel {
 		filterPanel.add(filtroIdPanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
 		filterPanel.add(filtroCartaoPanel);
+		filterPanel.add(Box.createHorizontalStrut(10));
+		filterPanel.add(filtroCpfPanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
 		filterPanel.add(filtroNomePanel);
 		filterPanel.add(Box.createHorizontalStrut(10));
@@ -221,6 +234,7 @@ public class AccessListPanel extends PaginedListPanel {
 		searchButton.addActionListener(search);
 		filtroIdTextField.addActionListener(search);
 		filtroCartaoTextField.addActionListener(search);
+		filtroCpfTextField.addActionListener(search);
 		filtroNomeTextField.addActionListener(search);
 		filtroTipoJComboBox.addItemListener(new ItemListener() {
 			@Override
@@ -245,6 +259,8 @@ public class AccessListPanel extends PaginedListPanel {
 		}
 		if (filtroCartaoTextField.getText() != null && !"".equals(filtroCartaoTextField.getText()))
 			args.put("cardNumber", filtroCartaoTextField.getText());
+		if (filtroCpfTextField.getText() != null && !"".equals(filtroCpfTextField.getText()))
+			args.put("cpf", filtroCpfTextField.getText());
 		if (filtroNomeTextField.getText() != null && !"".equals(filtroNomeTextField.getText()))
 			args.put("name", filtroNomeTextField.getText());
 		if (filtroTipoJComboBox.getSelectedItem() != null) {
@@ -278,7 +294,7 @@ public class AccessListPanel extends PaginedListPanel {
 			args = new HashMap<>();
 		args.put("removido", false);
 		
-		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.name, "
+		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.cpf ,obj.name, "
 				  + "obj.tipo, obj.status, obj.observacoes, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
 				  + "obj.idUsuario) ";
 //		fazer isso no hibernate utils
@@ -313,6 +329,7 @@ public class AccessListPanel extends PaginedListPanel {
 		args = new HashMap<String, Object>();
 		filtroIdTextField.setText("");
 		filtroCartaoTextField.setText("");
+		filtroCpfTextField.setText("");
 		filtroNomeTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
 		
@@ -329,7 +346,7 @@ public class AccessListPanel extends PaginedListPanel {
 					//	"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
 		
 		if(Main.internoLoggedUser != null)
-			colunasComLink.add(2);
+			colunasComLink.add(3);
 		populateTable(listaAcesso);
 		
 		paginatorControl();
@@ -344,16 +361,17 @@ public class AccessListPanel extends PaginedListPanel {
 		if (listaAcesso != null && !listaAcesso.isEmpty()){
 //			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (PedestrianAccessEntity acesso : listaAcesso) {
-				Object[] obj = new Object[9];
+				Object[] obj = new Object[10];
 				obj[0] = acesso.getId();
 				obj[1] = (acesso.getCardNumber() != null && !"".equals(acesso.getCardNumber())) ? acesso.getCardNumber() : "-";
-				obj[2] = acesso.getName();
-				obj[3] = acesso.getTipo() != null ? acesso.getTipo() : "-";
-				obj[4] = "ATIVO".equals(acesso.getStatus()) ? "LIBERADO" : "BLOQUEADO";
-				obj[5] = (acesso.getObservacoes() != null && !"".equals(acesso.getObservacoes())) ? acesso.getObservacoes() : "-";
-				obj[6] =  montaLiberado(acesso); //TODO : vericar quantidade de acessos
-				obj[7] = "LIBERAR ACESSO";
-				obj[8] = acesso.getNomeUuarioQueCriou();
+				obj[2] = (acesso.getCpf() != null && !"".equals(acesso.getCpf())) ? acesso.getCpf() : "-";
+				obj[3] = acesso.getName();
+				obj[4] = acesso.getTipo() != null ? acesso.getTipo() : "-";
+				obj[5] = "ATIVO".equals(acesso.getStatus()) ? "LIBERADO" : "BLOQUEADO";
+				obj[6] = (acesso.getObservacoes() != null && !"".equals(acesso.getObservacoes())) ? acesso.getObservacoes() : "-";
+				obj[7] =  montaLiberado(acesso); //TODO : vericar quantidade de acessos
+				obj[8] = "LIBERAR ACESSO";
+				obj[9] = acesso.getNomeUuarioQueCriou();
 				dataModel.addRow(obj);
 			}
 		}
@@ -448,11 +466,11 @@ public class AccessListPanel extends PaginedListPanel {
 			TableColumn column = accessListTable.getColumnModel().getColumn(i);
 			column.setPreferredWidth(columnWidths[i]);
 			
-			if (i == 2 && Main.internoLoggedUser != null)
+			if (i == 3 && Main.internoLoggedUser != null)
 				column.setCellRenderer(editVisitanteRenderer);
-			else if (i == 4)
+			else if (i == 5)
 				column.setCellRenderer(urlRenderer);
-			else if (i == 6)
+			else if (i == 8)
 				column.setCellRenderer(actionRenderer);
 			else
 				column.setCellRenderer(centerRenderer);	
@@ -466,6 +484,7 @@ public class AccessListPanel extends PaginedListPanel {
 	public boolean isFiltering(){
 		return (filtroIdTextField.getText() != null && !filtroIdTextField.getText().isEmpty())
 				|| (filtroCartaoTextField.getText() != null && !filtroCartaoTextField.getText().isEmpty())
+				|| (filtroCpfTextField.getText() != null && !filtroCpfTextField.getText().isEmpty())
 				|| (filtroNomeTextField.getText() != null && !filtroNomeTextField.getText().isEmpty())
 				|| (filtroTipoJComboBox.getSelectedItem() != null );
 	}
@@ -495,7 +514,7 @@ public class AccessListPanel extends PaginedListPanel {
 	        JTable table = (JTable) e.getComponent();
 	        Point pt = e.getPoint();
 	        int ccol = table.columnAtPoint(pt);
-	        if (ccol == 6) { // && pointInsidePrefSize(table, pt)) {
+	        if (ccol == 8) { // && pointInsidePrefSize(table, pt)) {
 	            int crow = table.rowAtPoint(pt);
 	            String idPedestre = String.valueOf(table.getValueAt(crow, 0));
 	            
@@ -527,7 +546,7 @@ public class AccessListPanel extends PaginedListPanel {
 			JTable table = (JTable) e.getComponent();
 			Point pt = e.getPoint();
 			int ccol = table.columnAtPoint(pt);
-			if (ccol == 2) {
+			if (ccol == 3) {
 				int crow = table.rowAtPoint(pt);
 				String idVisitante = String.valueOf(table.getValueAt(crow, 0));
 
