@@ -117,6 +117,7 @@ public class ProcessAccessRequestUseCase {
 			}
 
 			if (Objects.isNull(matchedPedestrianAccess)) {
+				System.out.println("Não encontou o pedestre");
 				resultadoVerificacao = VerificationResult.NOT_FOUND;
 				if (createNotification) {
 					Utils.createNotification("Usuario de Codigo " + codigo + " nao encontrado.", NotificationType.BAD, foto);					
@@ -124,7 +125,9 @@ public class ProcessAccessRequestUseCase {
 
 				return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
 			}
-
+			System.out.println("Encontrou o pedestre");
+			
+			
 			userName = matchedPedestrianAccess.getFirstName().toUpperCase();
 			foto = matchedPedestrianAccess.getFoto();
 			
@@ -144,7 +147,7 @@ public class ProcessAccessRequestUseCase {
 				System.out.println("ULTIMO ACESSO : " + ultimoAcesso.getDirection());
 			    if (ultimoAcesso.isEntrada()) {
 			    	
-			        boolean revista = realizarRevista(); // Método para aplicar a lógica de revista
+			    	boolean revista = realizarRevista(); // Método para aplicar a lógica de revista
 
 			        if (revista) {
 			            if (createNotification) {
@@ -238,6 +241,8 @@ public class ProcessAccessRequestUseCase {
 				permitidoRetornar = true;
 
 			} else if (matchedPedestrianAccess.isVisitante()) {
+				System.out.println("Acesso de visitante");
+				
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
 					if (matchedPedestrianAccess.temCreditos()
 							|| isPermitidoPedestreRegra(matchedPedestrianAccess)) {
@@ -245,13 +250,16 @@ public class ProcessAccessRequestUseCase {
 
 						// fazer um for validando se existe regra livre ou com quantidade veazia, só
 						// assim libero
-
+						System.out.println("usua urna : " + usaUrna);
+						
 						if ((matchedPedestrianAccess.isUltimoCredito()
 								|| (matchedPedestrianAccess.getRegraAtiva().isPresent() 
 										&& matchedPedestrianAccess.getRegraAtiva().get().isUltimoCredito()))
 								&& !Integer.valueOf(Origens.ORIGEM_BIOMETRIA).equals(origem) 
 								&& usaUrna) {
 							permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedPedestrianAccess);
+							System.out.println("permitido no sensor : " + permitidoSensor);
+							resultadoVerificacao = VerificationResult.ALLOWED;
 						}
 
 						if (isPermitidoPedestreRegra(matchedPedestrianAccess)) {
@@ -271,7 +279,10 @@ public class ProcessAccessRequestUseCase {
 
 				} else {
 					if (usaUrna) {
+						System.out.println("Usou urna");
 						permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, matchedPedestrianAccess);
+						System.out.println("permitido no sensor : " + permitidoSensor);
+						resultadoVerificacao = VerificationResult.ALLOWED;
 					}
 				}
 
@@ -451,9 +462,11 @@ public class ProcessAccessRequestUseCase {
 				}
 
 				if (matchedPedestrianAccess.isAtivo()) {
-					resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedPedestrianAccess,
-							logAccess, VerificationResult.ALLOWED, foto, origem, data);
-
+					
+					if(!matchedPedestrianAccess.isVisitante()) {
+						resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedPedestrianAccess,
+								logAccess, VerificationResult.ALLOWED, foto, origem, data);
+					}
 				} else {
 					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
 					logAccess.setStatus("INATIVO");
@@ -493,7 +506,8 @@ public class ProcessAccessRequestUseCase {
 						NotificationType.BAD, foto);
 			}
 		}
-
+		System.out.println("Resultado da verificação : " + resultadoVerificacao);
+		
 		return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
 	}
 	
@@ -867,7 +881,7 @@ public class ProcessAccessRequestUseCase {
 	
 	private PedestrianAccessEntity buscaPedestrePeloCodigo(final Long codigoUsuario, final Integer origem, final Boolean digitaisCatraca) {
 		PedestrianAccessEntity matchedPedestrianAccess = null;
-		
+		System.out.println("codigo usuario : " + codigoUsuario);
 		if (Objects.nonNull(origem)
 				&& origem.equals(Enumeradores.VIA_TECLADO)) {
 			matchedPedestrianAccess = (PedestrianAccessEntity) HibernateAccessDataFacade
