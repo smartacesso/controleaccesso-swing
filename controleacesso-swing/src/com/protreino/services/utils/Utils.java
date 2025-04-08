@@ -134,6 +134,12 @@ public class Utils {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
 	
+	
+	public static boolean isAcessoHoraErradoIgnorada() {
+		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
+	}
+
+	
 	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
 		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
 	}
@@ -580,6 +586,8 @@ public class Utils {
 				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "doisDispositivos",
 				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
+				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

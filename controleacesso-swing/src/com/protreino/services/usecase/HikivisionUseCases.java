@@ -144,10 +144,7 @@ public class HikivisionUseCases {
 				return;
 			}
 
-			devicesToSync = devices.stream().filter(device -> {
-				String nome = device.getDevName().toLowerCase().trim();
-				return !nome.contains("refeitorio") && !nome.contains("refeitório");
-			}).map(Device::getDevIndex).collect(Collectors.toList());
+			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
 		}
 
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
@@ -208,6 +205,7 @@ public class HikivisionUseCases {
 			}
 		
 		});
+		
 		
 		vincularPedestreaoTemplate(pedestre, devicesToSync);
 
@@ -508,7 +506,7 @@ public class HikivisionUseCases {
 	        	return;
 	        }
 
-	        System.out.println("Devices para sincronizar: " + devicesToSync.size());
+	        System.out.println("Devices para vincular horarios: " + devicesToSync.size());
 
 	        Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 

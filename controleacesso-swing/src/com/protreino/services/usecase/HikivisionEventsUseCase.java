@@ -113,12 +113,18 @@ public class HikivisionEventsUseCase {
 
 
 	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDeviceName) {
+		
 	    final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 	            .getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
 	    if (Objects.isNull(pedestre)) {
 	        return;
 	    }
 
+	    if(Utils.isAcessoHoraErradoIgnorada()) {
+	        System.out.println("Acesso ignorado catraca offline - hora errada");
+	        return;
+	    }
+	    
 	    if (device.ignorarAcesso()) {
 	        System.out.println("Acesso ignorado catraca offline");
 	        return;
