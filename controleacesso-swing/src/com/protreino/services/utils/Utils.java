@@ -135,6 +135,11 @@ public class Utils {
 	}
 	
 	
+	public static boolean isSaidaSemVerificar() {
+		return Utils.getPreferenceAsBoolean("saidaSemVerificar");
+	}
+	
+	
 	public static boolean isAcessoHoraErradoIgnorada() {
 		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
 	}
