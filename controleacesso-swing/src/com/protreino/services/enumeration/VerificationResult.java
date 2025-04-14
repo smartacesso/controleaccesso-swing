@@ -35,9 +35,8 @@ public enum VerificationResult {
 			return Utils.getPreference("messageNotAllowedToday");
 		if(this.equals(NOT_ALLOWED_NOW))
 			return Utils.getPreference("messageNotAllowedNow");
-		if(this.equals(NOT_ALLOWED_NO_CREDITS)) {
+		if(this.equals(NOT_ALLOWED_NO_CREDITS))
 			return Utils.getPreference("messageNotAllowedNoCredits");
-		}
 		if(this.equals(TOLERANCE_PERIOD))
 			return Utils.getPreference("messageTolerancePeriod");
 		if(this.equals(ALLOWED_ONLY_ONCE))

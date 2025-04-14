@@ -40,7 +40,6 @@ import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.utils.Utils;
-import com.topdata.EasyInner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 
 public class ProcessAccessRequestUseCase {
@@ -145,7 +144,7 @@ public class ProcessAccessRequestUseCase {
 			if (isVisitante) {
 				return processVisitanteAccess(matchedPedestrianAccess);
 			} else {
-				return processPedestreAccess(matchedPedestrianAccess, equipament);
+				return processaVerificacoesBasicasPedestre(ignoraRegras, origem, matchedPedestrianAccess, location, data, direction, createNotification, equipament, codigo);
 			}
 
 		} catch (Exception e) {
@@ -588,57 +587,279 @@ public class ProcessAccessRequestUseCase {
 		return null;
 	}
 
+	
+	public Object[] processaVerificacoesBasicasPedestre(Boolean ignoraRegras, Integer origem, PedestrianAccessEntity pedestre, String location, Date data, String direction, boolean createNotification, String equipament, String codigoCartao) {
 
-	private Object[] processPedestreAccess(PedestrianAccessEntity pedestre, String equipament) {
-	    VerificationResult resultadoVerificacao = VerificationResult.NOT_FOUND;
-	    String userName = "";
-	    byte[] foto = null;
+		String userName = pedestre.getFirstName().toUpperCase();
+		byte[] foto = pedestre.getFoto();
+		String motivo = "";
+		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
+				pedestre.getQtdAcessoAntesSinc());
 
-	    try {
-	    	
-	        // Nome e foto para notificação ou retorno
-			userName = pedestre.getFirstName().toUpperCase(); // ou getPessoa().getNome() dependendo da estrutura
-			foto = Objects.nonNull(pedestre.getFoto()) ? pedestre.getFoto() : null; // se aplicável
-			final LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository
-					.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
+		try {
 			
-	        
-	        // Verificações de status
-	        if (pedestre.isInativo()) {
-	            Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
-	            return new Object[]{VerificationResult.NOT_ALLOWED, userName, pedestre};
-	        }
-	        
-	        // Verificação de equipamento autorizado
-	        if (isNaoPermitidoEquipamentoRestrito(equipament, pedestre.getEquipamentos())) {
-	            Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
-	            return new Object[]{VerificationResult.NOT_ALLOWED, userName, pedestre};
-	        }
+			if (isPedestreInativo(pedestre)) {
+				Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - INATIVO";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+			}
 
-	        //realiza revista e saida livre apenas na saida
-	        if(Objects.nonNull(ultimoAcesso) && ultimoAcesso.isEntrada()) {
-	        	
-				if (Utils.isSaidaSemVerificar()) {
-//					permitido = true;
-					Utils.createNotification("Revista obrigatória.", NotificationType.GOOD, foto);
-					return new Object[] { VerificationResult.ALLOWED, userName, pedestre };
+			if (isNaoPermitidoEquipamentoRestrito(equipament, pedestre.getEquipamentos())) {
+				Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - EQUIPAMENTO NAO AUTORIZADO";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+			}
 
-				}
-				
-		        if (realizarRevista()) {
-		            Utils.createNotification("Revista obrigatória.", NotificationType.BAD, foto);
-		            return new Object[]{VerificationResult.REVISTA_REQUIRED, userName, pedestre};
-		        }
+			if (isSaidaLiberada(ultimoAcesso)) {
+				Utils.createNotification("Saída liberada.", NotificationType.GOOD, foto);
+				motivo = "LIBERADO - SAIDA LIVRE";
+				return resultadoSucesso(userName, pedestre, foto, motivo);
+			}
+
+			if (precisaRevista(ultimoAcesso)) {
+				Utils.createNotification("Revista obrigatória.", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - REVISTA";
+				return resultadoNegado(VerificationResult.REVISTA_REQUIRED, userName, pedestre, motivo);
+			}
+
+			if (isTecladoBloqueado(pedestre, origem)) {
+				Utils.createNotification("Teclado bloqueado.", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - TECLADO BLOQUEADO";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+			}
+
+			if (pedestre.temCreditos() && !isPermitidoPorCredito(pedestre, data)) {
+				Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - SEM CREDITOS";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
+			}
+			
+			if (pedestre.temTipoEscala3x3() && !isPermitidoPorEscala3x3(pedestre)) {
+				Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - FORA DA ESCALA";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
+			}
+			
+			if (pedestre.temTipoTurno() && !isPermitidoPorTurno(pedestre)) {
+				Utils.createNotification("Fora do turno", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - FORA DO TURNO";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
+			}
+
+			if (Utils.isAcessoRestrito() &&  !isPermitidoHoje(pedestre)) {
+				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);
+				motivo = "ACESSO NEGADO - DIA NÃO PERMITIDO";
+				return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+			}
+			
+			if (isSempreLiberado(pedestre)) {
+//				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
+//						createNotification, equipament, foto, userName);
+				return resultadoSucesso(userName, pedestre, foto, motivo);
+			}
+			
+			LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+					pedestre.getId(), pedestre.getStatus(), location, motivo, direction, equipament);
+			
+			if (data != null) {
+				logAccess.setAccessDate(data);
+			}
+
+			VerificationResult resultadoFinal = validaDiasHorarios(createNotification, userName, pedestre, logAccess,
+					VerificationResult.ALLOWED, foto, origem, data);
+
+			if (!VerificationResult.ALLOWED.equals(resultadoFinal) && !VerificationResult.TOLERANCE_PERIOD.equals(resultadoFinal)) {
+				return resultadoNegado(resultadoFinal, userName, pedestre, motivo);
+			}
+			
+//			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+
+			return resultadoSucesso(userName, pedestre, foto, motivo);
+			
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return resultadoNegado(VerificationResult.ERROR, userName, pedestre, motivo);
+		}
+	}
+	
+	private boolean isPermitidoPorCredito(PedestrianAccessEntity pedestre, Date data) {
+	    return pedestre.temCreditos()
+	            && pedestre.temCreditosValidos(data)
+	            && !isPermitidoPedestreRegra(pedestre)
+	            && Objects.nonNull(pedestre.getCardNumber());
+	}
+
+	
+	private boolean isPermitidoPorEscala3x3(PedestrianAccessEntity pedestre) {
+		System.out.println("Tipo de regra - Escala 3x3");
+
+		LocalDateTime dataAcesso = LocalDateTime.now();
+		LocalDate dataInicioEscala = new java.util.Date(
+				pedestre.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()).toInstant()
+				.atZone(ZoneId.systemDefault()).toLocalDate();
+
+		LocalTime horarioInicio = pedestre.getRegraAtivaPedestre().get().getRegra()
+				.getHorarioInicioTurno().toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+
+		horarioInicio = horarioInicio.minusHours(3);
+		System.out.println("Horario inicio turno : " + horarioInicio);
+
+		// Calcular o número de dias entre a data de início da escala e a data de acesso
+		long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
+
+		// Aplicar o ciclo de 12 dias
+		int diaDaEscala = (int) (diasEntre % 12) + 1; // +1 para garantir que o ciclo comece do 1
+
+		// Ajustar os intervalos com base no horário de início dinâmico
+		LocalTime fimDia = horarioInicio.plusHours(12);
+		// 12 horas após o início
+		LocalTime fimNoite = LocalTime.of(23, 59, 59);
+
+		// Caso o horário de fim do turno passe para o dia seguinte
+		boolean atravessaMeiaNoite = fimDia.isBefore(horarioInicio);
+		System.out.println("Data inicio escala : " + dataInicioEscala);
+		System.out.println("hora passagem : " + dataAcesso);
+		System.out.println("diaDaEscala : " + diaDaEscala);
+		System.out.println("horario inicio : " + horarioInicio);
+		System.out.println("fim do dia : " + fimDia);
+		System.out.println("fim da noite : " + fimNoite);
+
+		if (diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
+			if (atravessaMeiaNoite) {
+				return  dataAcesso.toLocalTime().isAfter(horarioInicio)
+						|| dataAcesso.toLocalTime().isBefore(fimDia);
+			} else {
+				return  dataAcesso.toLocalTime().isAfter(horarioInicio)
+						&& dataAcesso.toLocalTime().isBefore(fimDia);
+			}
+
+		} else if (diaDaEscala == 7) {
+			return dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite);
+
+		} else if (diaDaEscala == 8 || diaDaEscala == 9) {
+			if (atravessaMeiaNoite) {
+				return (dataAcesso.toLocalTime().isAfter(horarioInicio)
+						|| dataAcesso.toLocalTime().isBefore(fimDia))
+						|| (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
+			} else {
+				return (dataAcesso.toLocalTime().isAfter(horarioInicio)
+						&& dataAcesso.toLocalTime().isBefore(fimDia))
+						|| (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
+			}
+
+		} else if (diaDaEscala == 10) {
+			return dataAcesso.toLocalTime().isAfter(LocalTime.MIDNIGHT)
+					&& dataAcesso.toLocalTime().isBefore(horarioInicio);
+
+		} else {
+			return false;
+		}
+	}
+
+	
+	private boolean isPermitidoPorTurno(PedestrianAccessEntity pedestre) {
+		System.out.println("Tipo escala - Turno ");
+		TipoEscala tipo = TipoEscala.valueOf(pedestre.getTipoTurno());
+		int tipoAdicao = TipoEscala.ESCALA_12_36.equals(tipo) || TipoEscala.ESCALA_24_04.equals(tipo) ? Calendar.HOUR
+				: Calendar.DATE;
+		Calendar dataAcesso = Calendar.getInstance();
+		String[] escala = tipo.name().replace("ESCALA_", "").split("_");
+
+		// data de partida
+		Date dataInicial = calculaDataInicialEscala(pedestre, escala, tipoAdicao);
+		System.out.println("Data calculada: " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(dataInicial));
+
+		Calendar periodoPermitidoIni = Calendar.getInstance();
+		periodoPermitidoIni.setTime(dataInicial);
+
+		Calendar periodoPermitidoFim = Calendar.getInstance();
+		periodoPermitidoFim.setTime(dataInicial);
+		periodoPermitidoFim.add(tipoAdicao, Integer.parseInt(escala[0]));
+
+		System.out.println("Periodo Permitido Inicio: "
+				+ new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoIni.getTime()));
+		System.out.println("Periodo Permitido Fim: "
+				+ new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(periodoPermitidoFim.getTime()));
+		System.out.println("Data Acesso: " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dataAcesso.getTime()));
+
+//		permitido = dataAcesso.after(periodoPermitidoIni) && dataAcesso.before(periodoPermitidoFim);
+
+		Calendar dataInicioTurno = Calendar.getInstance();
+		dataInicioTurno.setTime(pedestre.getInicioTurno()); // Data base do inicio do turno, ex.:
+																			// 04/10/2024 �s 10:00
+
+		// Calcular a diferen�a em milissegundos entre agora e o in�cio do turno
+		long diffMillis = Calendar.getInstance().getTimeInMillis() - dataInicioTurno.getTimeInMillis();
+		long diffHours = diffMillis / (1000 * 60 * 60); // Convertendo para horas
+
+		// Cada ciclo tem 48 horas (12 horas de trabalho + 36 horas de folga)
+		long cicloAtual = diffHours % 48;
+
+		// Se está nas primeiras 12 horas do ciclo, ou entre 24 e 36 horas (segundo
+		// periodo de trabalho)
+		if ((cicloAtual >= 0 && cicloAtual < 12) || (cicloAtual >= 24 && cicloAtual < 36)) {
+			// Est� no periodo de trabalho
+			return true;
+		} else {
+			// Est� no periodo de folga
+			return false;
+		}
+	}
+
+	private boolean isPermitidoHoje(PedestrianAccessEntity pedestre) {
+	    HashMap<String, Object> args = new HashMap<>();
+	    args.put("ID_ATLETA", pedestre.getId());
+
+	    @SuppressWarnings("unchecked")
+		List<LogPedestrianAccessEntity> acessosHoje = (List<LogPedestrianAccessEntity>) HibernateAccessDataFacade
+	            .getResultListWithParams(LogPedestrianAccessEntity.class,
+	                    "LogPedestrianAccessEntity.findTodayByAthlete", args);
+
+	    int limiteAcessos = Integer.parseInt(Utils.getPreference("restrictAccessDays"));
+	    return acessosHoje == null || acessosHoje.size() < limiteAcessos;
+	}
+
+
+	private boolean isSempreLiberado(PedestrianAccessEntity pedestre) {
+		// TODO Auto-generated method stub
+		if(pedestre.getSempreLiberado()) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isTecladoBloqueado(PedestrianAccessEntity pedestre, Integer origem) {
+        if (Objects.nonNull(origem) && origem.equals(Origens.ORIGEM_TECLADO) && tecladoBloqueado(pedestre)) {
+        	return true;
+        }
+        return false;
+	}
+
+	private boolean precisaRevista(LogPedestrianAccessEntity ultimoAcesso) {
+        //realiza revista apenas na saida
+        if(Objects.nonNull(ultimoAcesso) && ultimoAcesso.isEntrada()) {
+	        if (realizarRevista()) {
+	        	return true;
 	        }
-	        
-	        // Se passou por tudo com sucesso
-	        resultadoVerificacao = VerificationResult.ALLOWED;
-	        return new Object[]{resultadoVerificacao, userName, pedestre};
+        }
+		return false;
+	}
 
-	    } catch (Exception e) {
-	        e.printStackTrace(); // logar melhor em produção
-	        return new Object[]{VerificationResult.ERROR, userName, pedestre};
-	    }
+	private boolean isSaidaLiberada(LogPedestrianAccessEntity ultimoAcesso) {
+        //realiza revista e saida livre apenas na saida
+        if(Objects.nonNull(ultimoAcesso) && ultimoAcesso.isEntrada()) {
+			if (Utils.isSaidaSemVerificar()) {
+//				permitido = true;
+				return true;
+			}
+        }
+        return false;
+	}	
+	
+	private boolean isPedestreInativo(PedestrianAccessEntity pedestre) {
+		return !pedestre.isAtivo();
 	}
 	
 	private boolean realizarRevista() {
@@ -664,6 +885,10 @@ public class ProcessAccessRequestUseCase {
 
 		return false;
 
+	}
+	
+	private Boolean tecladoBloqueado(PedestrianAccessEntity pedestre) {
+		return Boolean.FALSE.equals(pedestre.getHabilitarTeclado());
 	}
 
 	private PedestrianAccessEntity trataPedestreQRCode(String codigo) throws ParseException {
@@ -700,8 +925,9 @@ public class ProcessAccessRequestUseCase {
 	}
 	
 	private boolean isPedestreNaoPossuiRegras(final PedestrianAccessEntity pedestre) {
-		return Boolean.FALSE.equals(pedestre.getSempreLiberado())
+		Boolean semRegras = Boolean.FALSE.equals(pedestre.getSempreLiberado())
 				&& (Objects.isNull(pedestre.getPedestreRegra()) || pedestre.getPedestreRegra().isEmpty());
+		return semRegras;
 	}
 	
 	private boolean isNaoPermitidoEquipamentoRestrito(String equipament, List<PedestrianEquipamentEntity> equipamentosPedestre) {
@@ -752,10 +978,6 @@ public class ProcessAccessRequestUseCase {
 			logAccess.setCartaoAcessoRecebido(codigo);
 		}
 
-		if (createNotification) {
-			Utils.createNotification(userName + " liberado.", NotificationType.GOOD, foto);
-		}
-
 		if (Main.broadcastServer != null) {
 			Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.LOG_ACCESS, logAccess));
 		}
@@ -767,49 +989,6 @@ public class ProcessAccessRequestUseCase {
 		return Objects.nonNull(origem) 
 				&& origem != Origens.ORIGEM_LIBERADO_SISTEMA 
 				&& origem != 18;
-	}
-	
-	private boolean isNaoPermitidoNoEquipamento(String equipament, List<PedestrianEquipamentEntity> equipamentos) {
-		/*
-		final Device device = getDeviceByIdentifier(equipament);
-		
-		if(Objects.isNull(device)) {
-			return false;
-		}
-		
-		if(device instanceof TopDataDevice && ((TopDataDevice) device).isDeviceRestrito()) {
-			return naoPossuiEquipamentoVinculado(equipament, equipamentos);
-		}
-		*/
-
-		// nao tem bloqueo por equipamento
-		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
-			return false;
-		}
-		
-		if(equipamentos.get(0).getPedestrianAccess().hasOnlyRestrictedEquipaments()) {
-			return false;
-		}
-
-		return naoPossuiEquipamentoVinculado(equipament, equipamentos);
-	}
-	
-	private boolean naoPossuiEquipamentoVinculado(final String identifier, final List<PedestrianEquipamentEntity> equipamentos) {
-		if (Objects.isNull(equipamentos) || equipamentos.isEmpty()) {
-			return true;
-		}
-		
-		boolean naoPossuiEquipamentoVinculado = true;
-		for (PedestrianEquipamentEntity e : equipamentos) {
-			String idEquipament = identifier.replace("Inner ", "").replace("Inner Acesso ", "").replace("Control ", "");
-
-			if (e.getIdEquipamento().equals(idEquipament) || idEquipament.contains(e.getIdEquipamento())) {
-				naoPossuiEquipamentoVinculado = false;
-				break;
-			}
-		}
-		
-		return naoPossuiEquipamentoVinculado;
 	}
 	
 	private boolean verificaUltimaPassagemEmCatracaVinculada(String equipamento, Long idPedestre) {
@@ -904,24 +1083,9 @@ public class ProcessAccessRequestUseCase {
 		Calendar h = Calendar.getInstance();
 		h.setTime(pedestre.getInicioTurno());
 
-
-
 		c.set(Calendar.HOUR_OF_DAY, h.get(Calendar.HOUR_OF_DAY));
 		c.set(Calendar.MINUTE, h.get(Calendar.MINUTE));
 		c.set(Calendar.SECOND, 0);
-
-//		if (ultimoAcesso != null) {
-//			Calendar ajuste = Calendar.getInstance();
-//			ajuste.setTime(c.getTime());
-//			ajuste.add(tipoAdicao, Integer.parseInt(escala[0]));
-//
-//			Calendar agora = Calendar.getInstance();
-//			if (agora.after(ajuste)) {
-//				c.add(tipoAdicao, Integer.parseInt(escala[1]));
-//			} else {
-//				c.add(tipoAdicao, Integer.parseInt(escala[0]) * -1);
-//			}
-//		}
 		
 		if (ultimoAcesso != null) {
 		    Calendar ajuste = Calendar.getInstance();
@@ -936,8 +1100,6 @@ public class ProcessAccessRequestUseCase {
 		        c.add(tipoAdicao, Integer.parseInt(escala[1]));  // Adiciona 36 horas de folga
 		    }
 		}
-
-
 		return c.getTime();
 	}
 	
@@ -1038,5 +1200,14 @@ public class ProcessAccessRequestUseCase {
 		}
 		
 		return matchedPedestrianAccess;
+	}
+	
+	private Object[] resultadoNegado(VerificationResult status, String user, PedestrianAccessEntity pedestre, String motivo) {
+	    return new Object[]{status, user, pedestre};
+	}
+
+	private Object[] resultadoSucesso(String user, PedestrianAccessEntity pedestre, byte[] foto, String motivo) {
+	    Utils.createNotification(String.format("Liberado %s", user), NotificationType.GOOD, foto);
+	    return new Object[]{VerificationResult.ALLOWED, user, pedestre};
 	}
 }

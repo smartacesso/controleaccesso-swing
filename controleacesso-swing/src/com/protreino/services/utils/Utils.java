@@ -148,6 +148,12 @@ public class Utils {
 	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
 		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
 	}
+	
+	public static boolean isAcessoRestrito() {
+		return Boolean.valueOf(Utils.getPreference("restrictAccess"));
+	}
+
+	
 
 	public static void sleep(long tempo) {
 		try {
@@ -851,12 +857,14 @@ public class Utils {
 						Gson gson = new GsonBuilder().create();
 						List<AttachedTO> list = gson.fromJson(hikivisionAttachedCameras, new TypeToken<List<AttachedTO>>() {
 						}.getType());
-
-						for (AttachedTO attachedTO : list) {
-							JsonObject attachedHikivisionCamerasObj = new JsonObject();
-							attachedHikivisionCamerasObj.addProperty("nomeDevice", attachedTO.getNomeDevice());
-							attachedHikivisionCamerasObj.addProperty("idDevice", attachedTO.getIdDevice());
-							hikivisionAttachedCamerasArray.add(attachedHikivisionCamerasObj);
+						
+						if(Objects.nonNull(list) && !list.isEmpty()) {
+							for (AttachedTO attachedTO : list) {
+								JsonObject attachedHikivisionCamerasObj = new JsonObject();
+								attachedHikivisionCamerasObj.addProperty("nomeDevice", attachedTO.getNomeDevice());
+								attachedHikivisionCamerasObj.addProperty("idDevice", attachedTO.getIdDevice());
+								hikivisionAttachedCamerasArray.add(attachedHikivisionCamerasObj);
+							}
 						}
 					}
 					deviceObj.add("hikivisionAttachedCameras", hikivisionAttachedCamerasArray);
