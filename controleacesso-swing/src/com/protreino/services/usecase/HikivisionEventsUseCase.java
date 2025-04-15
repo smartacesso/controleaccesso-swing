@@ -2,6 +2,7 @@ package com.protreino.services.usecase;
 
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -50,65 +51,66 @@ public class HikivisionEventsUseCase {
 	}).create();
 
 	public void execute(final String requestBody) { // Alterado de StringBuilder para String
-	    final String objectPayload = Utils.getFirstJsonFromString(requestBody);
+		final String objectPayload = Utils.getFirstJsonFromString(requestBody);
 
-	    int startIndex = requestBody.indexOf("/") + 1;
-	    int endIndex = requestBody.indexOf(" HTTP");
+		int startIndex = requestBody.indexOf("/") + 1;
+		int endIndex = requestBody.indexOf(" HTTP");
 
-	    if (startIndex < 1 || endIndex < 0 || startIndex >= endIndex) {
-	        System.out.println("Erro ao extrair hikivisionCameraId");
-	        return;
-	    }
+		if (startIndex < 1 || endIndex < 0 || startIndex >= endIndex) {
+			System.out.println("Erro ao extrair hikivisionCameraId");
+			return;
+		}
 
-	    final String hikivisionCameraId = requestBody.substring(startIndex, endIndex);
-	    final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
+		final String hikivisionCameraId = requestBody.substring(startIndex, endIndex);
+		final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
 
-	    if (Objects.isNull(eventListnerTO) 
-	            || Objects.isNull(eventListnerTO.getAccessControllerEvent())
-	            || Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
+		if (Objects.isNull(eventListnerTO) || Objects.isNull(eventListnerTO.getAccessControllerEvent())
+				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
 
-	    	System.out.println("Evento de pedestre não reconhecido pela câmera: " + hikivisionCameraId);
-	        System.out.println("Cartão recebido nulo da Hikvision. : " + eventListnerTO.getAccessControllerEvent().getCardNo());
-	        System.out.println("Processamento encerrado.");
-	        return;
-	    }
-	    
-	    System.out.println(String.format("Evento do usuário com o cartão: %s", 
-	            eventListnerTO.getAccessControllerEvent().getCardNo()));
-	    
-	    final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
-	    
-	    if (Objects.isNull(attachedDevice)) {
-	        System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
-	        return;
-	    }
-	    
-	   TcpMessageTO message =  new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
-	   message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
-	   message.getParans().put("facial", hikivisionCameraId);
-	    
-	   TcpServer.enviarMensagemParaClientesEventos(message);
+			System.out.println("Evento de pedestre não reconhecido pela câmera: " + hikivisionCameraId);
+			System.out.println(
+					"Cartão recebido nulo da Hikvision. : " + eventListnerTO.getAccessControllerEvent().getCardNo());
+			System.out.println("Processamento encerrado.");
+			return;
+		}
 
-	    final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
-	    final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
-	    
-	    if (isEventOffline(offsetDateTime)) {
-	        System.out.println("Evento offline (hora errada): " 
-	                + eventListnerTO.getAccessControllerEvent().getDeviceName()
-	                + " | " + cardNumber + " | " + eventListnerTO.getDateTime());
+		System.out.println(String.format("Evento do usuário com o cartão: %s",
+				eventListnerTO.getAccessControllerEvent().getCardNo()));
 
-	        if (DeviceStatus.CONNECTED == attachedDevice.getStatus()) {
-	            try {
-	                attachedDevice.disconnect();
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
-	        }
-	        processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
+		final TopDataDevice attachedDevice = getAttachedDevice(hikivisionCameraId);
 
-	    } else {
-	        liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
-	    }
+		if (Objects.isNull(attachedDevice)) {
+			System.out.println("Sem catraca vinculada para a câmera: " + hikivisionCameraId);
+			return;
+		}
+
+		final OffsetDateTime offsetDateTime = getOffsetDateTime(eventListnerTO.getDateTime());
+		final String cardNumber = eventListnerTO.getAccessControllerEvent().getCardNo();
+
+		if (isEventOffline(offsetDateTime)) {
+			System.out.println(
+					"Evento offline (hora errada): " + eventListnerTO.getAccessControllerEvent().getDeviceName() + " | "
+							+ cardNumber + " | " + eventListnerTO.getDateTime());
+
+			if (DeviceStatus.CONNECTED == attachedDevice.getStatus()) {
+				try {
+					attachedDevice.disconnect();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			return;
+//	        processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
+		} else {
+			TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+			message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+			message.getParans().put("facial", hikivisionCameraId);
+
+			TcpServer.enviarMensagemParaClientesEventos(message);
+			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
+					eventListnerTO.getAccessControllerEvent().getDeviceName());
+		}
 	}
 
 
@@ -116,7 +118,9 @@ public class HikivisionEventsUseCase {
 		
 	    final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
 	            .getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
+	    
 	    if (Objects.isNull(pedestre)) {
+	    	System.out.println("pedestre não encontrado");
 	        return;
 	    }
 
@@ -147,8 +151,8 @@ public class HikivisionEventsUseCase {
 	    String sentido;
 
 	    // Busca o último acesso do pedestre
+	   
 	    final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
-
 	    // Se houver um último acesso, verifica o tempo
 	    if (Objects.nonNull(lastAccess)) {
 	        long diferencaSegundos = Math.abs(dataAcesso.toEpochSecond() - lastAccess.getAccessDate().toInstant().getEpochSecond());
@@ -292,10 +296,14 @@ public class HikivisionEventsUseCase {
 	}
 	
 	private boolean isEventOffline(final OffsetDateTime offsetDateTime) {
-		final OffsetDateTime secondsAgo = OffsetDateTime
-				.from(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).minusSeconds(20));
-		
-		return offsetDateTime.isBefore(secondsAgo);
-	}
+	    final OffsetDateTime agora = OffsetDateTime.now(ZoneId.systemDefault());
+	    final Duration diferenca = Duration.between(offsetDateTime, agora);
 
+	    System.out.println("Hora do evento recebido: " + offsetDateTime);
+	    System.out.println("Hora atual: " + agora);
+	    System.out.println("Diferença em segundos: " + diferenca.getSeconds());
+
+	    // Qualquer evento com mais de 20 segundos de diferença é considerado offline
+	    return Math.abs(diferenca.getSeconds()) > 20;
+	}
 }
