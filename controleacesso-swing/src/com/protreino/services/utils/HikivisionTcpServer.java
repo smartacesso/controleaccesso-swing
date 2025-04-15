@@ -66,73 +66,51 @@ public class HikivisionTcpServer {
 		}
 
 		public void run() {
-		    try (InputStream inputStream = socket.getInputStream();
-		         OutputStream outputStream = socket.getOutputStream();
-		         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-		        
-		        List<String> lines = new ArrayList<>();
-		        String line;
-		        
-		        while ((line = br.readLine()) != null && !line.equals("--MIME_boundary--")) {
-		            lines.add(line);
-		        }
+			try (InputStream inputStream = socket.getInputStream();
+					OutputStream outputStream = socket.getOutputStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
 
-		        String message = String.join("\n", lines);
+				List<String> lines = new ArrayList<>();
+				String line;
+
+				while ((line = br.readLine()) != null && !line.equals("--MIME_boundary--")) {
+					lines.add(line);
+				}
+
+				String message = String.join("\n", lines);
 //		        System.out.println(message);
 //		        hikivisionEventsUseCase.execute(message);
 //		        System.out.println("Mensagem processada, agora vou enviar o response!");
 //		        sendResponse(outputStream);
-		        try {
-		            hikivisionEventsUseCase.execute(message);
-		        } catch (Exception e) {
-		            System.err.println("Erro ao processar evento: " + e.getMessage());
-		        } finally {
-		            System.out.println("Mensagem processada (ou descartada), agora vou enviar o response!");
-		            sendResponse(outputStream);
-		        }
-		    } catch (IOException e) {
-		        System.err.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
-		        e.printStackTrace();
-		    } finally {
-		        try {
-		            socket.close(); // Garantindo o fechamento do socket
-		        } catch (IOException e) {
-		            System.err.println("Erro ao fechar socket: " + e.getMessage());
-		        }
-		    }
+				try {
+					hikivisionEventsUseCase.execute(message);
+				} catch (Exception e) {
+					System.err.println("Erro ao processar evento: " + e.getMessage());
+				} finally {
+					System.out.println("Mensagem processada (ou descartada), agora vou enviar o response!");
+					sendResponse(outputStream);
+				}
+			} catch (IOException e) {
+				System.err.println(sdf.format(new Date()) + "  ... TCP server exception: " + e.getMessage());
+				e.printStackTrace();
+			} finally {
+				try {
+					socket.close(); // Garantindo o fechamento do socket
+				} catch (IOException e) {
+					System.err.println("Erro ao fechar socket: " + e.getMessage());
+				}
+			}
 		}
 
 		
 		private void sendResponse(final OutputStream outputStream) throws IOException {
 			responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-			final String response = "HTTP/1.1 200\n" 
-					+ "Content-Length: 0\n" 
-					+ "Date: " + responseDateFormat.format(new Date()) + "\n";
-			
+			final String response = "HTTP/1.1 200\n" + "Content-Length: 0\n" + "Date: "
+					+ responseDateFormat.format(new Date()) + "\n";
+
 			outputStream.write(response.getBytes());
 			outputStream.flush();
-		System.out.println("Response enviado com sucesso!");
+			System.out.println("Response enviado com sucesso!");
 		}
-		
-//		private void sendResponse(final OutputStream outputStream) {
-//		    try {
-//		        responseDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-//		        final String response = "HTTP/1.1 200 OK\r\n"
-//		                + "Content-Length: 0\r\n"
-//		                + "Date: " + responseDateFormat.format(new Date()) + "\r\n"
-//		                + "Connection: close\r\n"
-//		                + "\r\n";
-//
-//		        outputStream.write(response.getBytes());
-//		        outputStream.flush();
-//		        System.out.println("Response enviado com sucesso!");
-//
-//		    } catch (IOException e) {
-//		        System.err.println("Falha ao enviar response HTTP 200: " + e.getMessage());
-//		        e.printStackTrace();
-//		    }
-//		}
-
-
 	}
 }
