@@ -203,10 +203,8 @@ public class ProcessAccessRequestUseCase {
 				System.out.println("Sem equipamento restrito");
 			}
 
-			if ((Objects.isNull(origem)
-					|| (Boolean.TRUE.equals(matchedPedestrianAccess.getSempreLiberado()) || Boolean.TRUE.equals(ignoraRegras))
-					&& origem != Origens.ORIGEM_LEITOR_2)
-			&& !matchedPedestrianAccess.isVisitante()) {
+			if (Objects.isNull(origem) || (Boolean.TRUE.equals(matchedPedestrianAccess.getSempreLiberado())
+					|| Boolean.TRUE.equals(ignoraRegras)) && origem != Origens.ORIGEM_LEITOR_2) {
 
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedPedestrianAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);
@@ -215,7 +213,6 @@ public class ProcessAccessRequestUseCase {
 			}
 
 			if (matchedPedestrianAccess.getTipo().equals("PEDESTRE") && origem == Origens.ORIGEM_LEITOR_2) {
-				System.out.println("Pedestre permitido no sensor");
 				permitidoSensor = false;
 			}
 			
@@ -226,6 +223,7 @@ public class ProcessAccessRequestUseCase {
 //
 //				return new Object[] { VerificationResult.NOT_ALLOWED_ORIGEM, userName, matchedPedestrianAccess };
 //			}
+
 
 			
 			if (Integer.valueOf(Enumeradores.VIA_TECLADO).equals(origem)
@@ -242,7 +240,7 @@ public class ProcessAccessRequestUseCase {
 					&& !isPedestrePermitidoRetornar(matchedPedestrianAccess)) {
 				permitidoRetornar = true;
 
-			}else if (matchedPedestrianAccess.isVisitante()) {
+			} else if (matchedPedestrianAccess.isVisitante()) {
 				System.out.println("Acesso de visitante");
 				
 				if (!Integer.valueOf(Origens.ORIGEM_LEITOR_2).equals(origem)) {
