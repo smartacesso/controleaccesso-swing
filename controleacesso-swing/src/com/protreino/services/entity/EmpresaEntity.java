@@ -70,6 +70,11 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="REMOVED", nullable=true, length=30)
 	private Boolean removed;
 	
+	@Type(type="org.hibernate.type.NumericBooleanType")
+	@Column(name="AUTO_ATENDIMENTO", nullable=true, length=30)
+	private Boolean autoAtendimentoLiberado;
+	
+	
 	@Temporal( TemporalType.TIMESTAMP)
 	@Column(name="DATA_REMOVIDO", nullable=true, length=11)
 	private Date dataRemovido = null;
@@ -104,6 +109,7 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 		this.status = empresa.getStatus();
 		this.removed = empresa.getRemoved();
 		this.dataRemovido = empresa.getDataRemovido();
+		this.autoAtendimentoLiberado = empresa.getAutoAtendimentoLiberado();
 		
 		if(empresa.getDepartamentos() != null) {
 			this.departamentos = new ArrayList<>();
@@ -138,6 +144,8 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 		this.setStatus(empresa.getStatus() != null ? empresa.getStatus() : null);
 		this.setRemoved(empresa.getRemoved() != null ? empresa.getRemoved() : null);
 		this.setDataRemovido(empresa.getDataRemovido() != null ? empresa.getDataRemovido() : null);
+		
+		this.setAutoAtendimentoLiberado(empresa.getAutoAtendimentoLiberado() != null ? empresa.getAutoAtendimentoLiberado() : null);
 		
 		if(empresa.getDepartamentos() != null && !empresa.getDepartamentos().isEmpty()) {
 			if(this.getDepartamentos() == null)
@@ -234,6 +242,13 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 			}
 		}
 	}
+	
+	public Boolean autoAtendimentoLiberado() {
+		if(this.getAutoAtendimentoLiberado() != null) {
+			return this.getAutoAtendimentoLiberado();
+		}
+		return false;
+	}
 
 	public String getNome() {
 		return nome;
@@ -318,6 +333,14 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public Boolean getAutoAtendimentoLiberado() {
+		return autoAtendimentoLiberado;
+	}
+
+	public void setAutoAtendimentoLiberado(Boolean autoAtendimentoLiberado) {
+		this.autoAtendimentoLiberado = autoAtendimentoLiberado;
 	}
 	
 }
