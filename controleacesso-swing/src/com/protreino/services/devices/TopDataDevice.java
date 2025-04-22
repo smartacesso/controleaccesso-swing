@@ -738,7 +738,7 @@ public class TopDataDevice extends Device {
 	}
 	
 	public boolean isDeviceRestrito() {
-		System.out.println("Verifica se device Restrito");
+		System.out.println("Device Restrito");
 		return getConfigurationValueAsBoolean(IS_DEVICE_RESTRITO);
 	}
 	
@@ -1091,7 +1091,7 @@ public class TopDataDevice extends Device {
 		String direction = Tipo.ENTRADA;
 		String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
 		
-		boolean bloquearSaida = true;
+		boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 		
 		if(sentido == 1) {
 			direction = "anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;			
@@ -2509,7 +2509,7 @@ public class TopDataDevice extends Device {
 	protected void montaConfiguracaoInner(int modo) {
 		try {
 			String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
-			boolean bloquearSaida = true;
+			boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 			int tipoCatraca = bloquearSaida ? Enumeradores.ACIONA_REGISTRO_ENTRADA_OU_SAIDA
 					: ("anticlockwise".equals(sentidoCatraca) ? Enumeradores.CATRACA_SAIDA_LIBERADA
 							: Enumeradores.CATRACA_ENTRADA_LIBERADA);
