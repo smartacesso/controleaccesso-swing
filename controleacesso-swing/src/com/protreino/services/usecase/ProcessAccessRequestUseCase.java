@@ -449,20 +449,25 @@ public class ProcessAccessRequestUseCase {
 				if (data != null) {
 					logAccess.setAccessDate(data);
 				}
+				if (!matchedPedestrianAccess.isVisitante()) {
+					if (matchedPedestrianAccess.isAtivo()) {
+						resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedPedestrianAccess,
+								logAccess, VerificationResult.ALLOWED, foto, origem, data);
 
-				if (matchedPedestrianAccess.isAtivo()) {
-					resultadoVerificacao = validaDiasHorarios(createNotification, userName, matchedPedestrianAccess,
-							logAccess, VerificationResult.ALLOWED, foto, origem, data);
-
-				} else {
-					resultadoVerificacao = VerificationResult.NOT_ALLOWED;
-					logAccess.setStatus("INATIVO");
+					} else {
+						resultadoVerificacao = VerificationResult.NOT_ALLOWED;
+						logAccess.setStatus("INATIVO");
+						if (createNotification) {
+							Utils.createNotification(userName + " nao permitido.", NotificationType.BAD, foto);
+							motivo = "Nao permitido.";
+						}
+					}
+				}else {
+					resultadoVerificacao = VerificationResult.ALLOWED;
 					if (createNotification) {
-						Utils.createNotification(userName + " nao permitido.", NotificationType.BAD, foto);
-						motivo = "Nao permitido.";
+						Utils.createNotification(userName + " LIBERADO.", NotificationType.GOOD, foto);
 					}
 				}
-
 				logAccess.setReason(motivo);
 
 				if (deveGravarCartaoRecebidoNoLog(origem)) {
