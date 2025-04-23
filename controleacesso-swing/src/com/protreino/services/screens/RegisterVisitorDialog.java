@@ -2454,270 +2454,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		dialog.setLocationRelativeTo(owner);
 		dialog.setVisible(true);
 	}
-	
-//	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
-//		
-//	    @SuppressWarnings("unchecked")
-//		List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
-//	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
-//
-//	    if (empresas == null || empresas.isEmpty()) {
-//	        JOptionPane.showMessageDialog(owner, "Nenhuma empresa ativa encontrada.", "Aviso",
-//	                JOptionPane.INFORMATION_MESSAGE);
-//	        return null;
-//	    }
-//
-//	    final EmpresaEntity[] empresaSelecionada = new EmpresaEntity[1];
-//
-//	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
-//	    dialog.setUndecorated(true); // Remove título/borda
-//
-//	    // Tamanho da tela
-//	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//	    dialog.setSize(screenSize);
-//	    dialog.setLocationRelativeTo(null);
-//
-//
-//	    JPanel mainPanel = new JPanel(new BorderLayout());
-//	    mainPanel.setBackground(Color.WHITE);
-//
-//	    JLabel titulo = new JLabel("Selecione uma Empresa");
-//	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
-//	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
-//	    titulo.setBorder(new EmptyBorder(30, 0, 30, 0));
-//	    mainPanel.add(titulo, BorderLayout.NORTH);
-//
-//	    JPanel gridPanel = new JPanel(new GridBagLayout());
-//	    gridPanel.setBackground(Color.WHITE);
-//	    GridBagConstraints gbc = new GridBagConstraints();
-//	    gbc.insets = new Insets(20, 20, 20, 20); // margem entre botões
-//	    gbc.fill = GridBagConstraints.NONE;
-//
-//	    int colunas = 4; // ajustável conforme necessidade
-//	    for (int i = 0; i < empresas.size(); i++) {
-//	        EmpresaEntity empresa = empresas.get(i);
-//	        JButton botao = new JButton(empresa.getNome());
-//	        botao.setFont(new Font("Arial", Font.PLAIN, 22));
-//	        botao.setPreferredSize(new Dimension(300, 80));
-//	        botao.setFocusPainted(false);
-//	        botao.setBackground(new Color(230, 230, 250));
-//
-//	        botao.addActionListener(e -> {
-//	            empresaSelecionada[0] = empresa;
-//	            dialog.dispose();
-//	        });
-//
-//	        gbc.gridx = i % colunas;
-//	        gbc.gridy = i / colunas;
-//	        gridPanel.add(botao, gbc);
-//	    }
-//
-//	    JScrollPane scroll = new JScrollPane(gridPanel);
-//	    scroll.setBorder(null);
-//	    scroll.getVerticalScrollBar().setUnitIncrement(16); // scroll suave
-//	    mainPanel.add(scroll, BorderLayout.CENTER);
-//
-//	    dialog.setContentPane(mainPanel);
-//	    
-//	 // Rodapé com botão Voltar
-//	    JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//	    footerPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
-//	    footerPanel.setBackground(Color.WHITE);
-//	    JButton btnVoltar = new JButton("Voltar");
-//	    btnVoltar.setFont(new Font("Arial", Font.PLAIN, 24));
-//	    btnVoltar.setPreferredSize(new Dimension(200, 50));
-//	    btnVoltar.addActionListener(e -> dialog.dispose());
-//
-//	    footerPanel.add(btnVoltar);
-//
-//	    dialog.add(footerPanel, BorderLayout.SOUTH);
-//	    
-//	    dialog.setVisible(true);
-//
-//	    return empresaSelecionada[0];
-//	}
-	
-	
-//	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
-//
-//	    @SuppressWarnings("unchecked")
-//	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
-//	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
-//
-//	    if (empresas == null || empresas.isEmpty()) {
-//	        JOptionPane.showMessageDialog(owner, "Nenhuma empresa ativa encontrada.", "Aviso",
-//	                JOptionPane.INFORMATION_MESSAGE);
-//	        return null;
-//	    }
-//
-//	    final EmpresaEntity[] empresaSelecionada = new EmpresaEntity[1];
-//
-//	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
-//	    dialog.setUndecorated(true);
-//	    dialog.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-//	    dialog.setLocationRelativeTo(null);
-//
-//	    JPanel mainPanel = new JPanel(new BorderLayout());
-//	    mainPanel.setBackground(Color.WHITE);
-//
-//	    // Título
-//	    JLabel titulo = new JLabel("Selecione uma Empresa");
-//	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
-//	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
-//	    titulo.setBorder(new EmptyBorder(30, 0, 10, 0));
-//	    mainPanel.add(titulo, BorderLayout.NORTH);
-//
-//	    // Campo de busca
-//	    JTextField buscaField = new JTextField();
-//	    buscaField.setFont(new Font("Arial", Font.PLAIN, 22));
-//	    buscaField.setBorder(new EmptyBorder(10, 10, 10, 10));
-//	    mainPanel.add(buscaField, BorderLayout.BEFORE_FIRST_LINE);
-//
-//	    // Lista de empresas
-//	    DefaultListModel<EmpresaEntity> listModel = new DefaultListModel<>();
-//	    empresas.forEach(listModel::addElement);
-//	    JList<EmpresaEntity> lista = new JList<>(listModel);
-//	    lista.setFont(new Font("Arial", Font.PLAIN, 22));
-//	    lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//
-//	    lista.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
-//	        JLabel label = new JLabel(value.getNome());
-//	        label.setFont(new Font("Arial", Font.PLAIN, 24));
-//	        label.setOpaque(true);
-//	        label.setBorder(new EmptyBorder(10, 20, 10, 20));
-//	        label.setBackground(isSelected ? new Color(180, 200, 255) : Color.WHITE);
-//	        return label;
-//	    });
-//
-//	    JScrollPane scrollPane = new JScrollPane(lista);
-//	    scrollPane.setBorder(null);
-//	    mainPanel.add(scrollPane, BorderLayout.CENTER);
-//
-//	    // Filtro de busca
-//	    buscaField.getDocument().addDocumentListener(new DocumentListener() {
-//	        public void insertUpdate(DocumentEvent e) { filter(); }
-//	        public void removeUpdate(DocumentEvent e) { filter(); }
-//	        public void changedUpdate(DocumentEvent e) { filter(); }
-//
-//	        private void filter() {
-//	            String texto = buscaField.getText().toLowerCase();
-//	            listModel.clear();
-//	            empresas.stream()
-//	                    .filter(emp -> emp.getNome().toLowerCase().contains(texto))
-//	                    .forEach(listModel::addElement);
-//	        }
-//	    });
-//
-//	    // Clique duplo seleciona
-//	    lista.addMouseListener(new MouseAdapter() {
-//	        @Override
-//	        public void mouseClicked(MouseEvent e) {
-//	            if (e.getClickCount() == 2) {
-//	                EmpresaEntity selected = lista.getSelectedValue();
-//	                if (selected != null) {
-//	                    empresaSelecionada[0] = selected;
-//	                    dialog.dispose();
-//	                }
-//	            }
-//	        }
-//	    });
-//
-//	    // Rodapé com botão Voltar
-//	    JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//	    footer.setBackground(Color.WHITE);
-//	    JButton btnVoltar = new JButton("Voltar");
-//	    btnVoltar.setFont(new Font("Arial", Font.PLAIN, 24));
-//	    btnVoltar.setPreferredSize(new Dimension(200, 50));
-//	    btnVoltar.addActionListener(e -> dialog.dispose());
-//	    footer.add(btnVoltar);
-//	    mainPanel.add(footer, BorderLayout.SOUTH);
-//
-//	    dialog.setContentPane(mainPanel);
-//	    dialog.setVisible(true);
-//
-//	    return empresaSelecionada[0];
-//	}
-	
-//	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
-//
-//	    @SuppressWarnings("unchecked")
-//	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
-//	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
-//
-//	    if (empresas == null || empresas.isEmpty()) {
-//	        JOptionPane.showMessageDialog(owner, "Nenhuma empresa ativa encontrada.", "Aviso",
-//	                JOptionPane.INFORMATION_MESSAGE);
-//	        return null;
-//	    }
-//
-//	    final EmpresaEntity[] empresaSelecionada = new EmpresaEntity[1];
-//
-//	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
-//	    dialog.setUndecorated(true);
-//	    dialog.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-//	    dialog.setLocationRelativeTo(null);
-//
-//	    JPanel mainPanel = new JPanel(new BorderLayout());
-//	    mainPanel.setBackground(Color.WHITE);
-//
-//	    // Título
-//	    JLabel titulo = new JLabel("Selecione uma Empresa");
-//	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
-//	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
-//	    titulo.setBorder(new EmptyBorder(30, 0, 30, 0));
-//	    mainPanel.add(titulo, BorderLayout.NORTH);
-//
-//	    // Painel com grid de botões
-//	    int colunas = 4;
-//	    int linhas = (int) Math.ceil(empresas.size() / (double) colunas);
-//	    JPanel gridPanel = new JPanel(new GridLayout(linhas, colunas, 20, 20));
-//	    gridPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-//	    gridPanel.setBackground(Color.WHITE);
-//
-//	    for (EmpresaEntity empresa : empresas) {
-//	        JButton botao = new JButton("<html><center>" + empresa.getNome() + "</center></html>");
-//	        botao.setFont(new Font("Arial", Font.PLAIN, 22));
-//	        botao.setPreferredSize(new Dimension(250, 80));
-//	        botao.setFocusPainted(false);
-//	        botao.setBackground(new Color(230, 230, 250));
-//
-//	        botao.addActionListener(e -> {
-//	            empresaSelecionada[0] = empresa;
-//	            dialog.dispose();
-//	        });
-//
-//	        gridPanel.add(botao);
-//	    }
-//
-//	    JScrollPane scrollPane = new JScrollPane(gridPanel);
-//	    scrollPane.setBorder(null);
-//	    scrollPane.getVerticalScrollBar().setUnitIncrement(20); // rolagem suave
-//	    scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
-//	    scrollPane.getVerticalScrollBar().setVisible(true);
-//	    scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-//	    mainPanel.add(scrollPane, BorderLayout.CENTER);
-//
-//	    // Rodapé com botão Voltar
-//	    JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//	    footerPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
-//	    footerPanel.setBackground(Color.WHITE);
-//	    JButton btnVoltar = new JButton("Voltar");
-//	    btnVoltar.setFont(new Font("Arial", Font.PLAIN, 24));
-//	    btnVoltar.setPreferredSize(new Dimension(200, 50));
-//	    btnVoltar.addActionListener(e -> dialog.dispose());
-//
-//	    footerPanel.add(btnVoltar);
-//	    mainPanel.add(footerPanel, BorderLayout.SOUTH);
-//
-//	    dialog.setContentPane(mainPanel);
-//	    dialog.setVisible(true);
-//
-//	    return empresaSelecionada[0];
-//	}
-
 
 	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
-
 	    @SuppressWarnings("unchecked")
 	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
 	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
@@ -2733,7 +2471,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
 	    dialog.setUndecorated(true);
 
-	    // Tamanho da tela
 	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	    dialog.setSize(screenSize);
 	    dialog.setLocationRelativeTo(null);
@@ -2741,88 +2478,121 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    JPanel mainPanel = new JPanel(new BorderLayout());
 	    mainPanel.setBackground(Color.WHITE);
 
-	    // Título
 	    JLabel titulo = new JLabel("Selecione uma Empresa");
 	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
 	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
 	    titulo.setBorder(new EmptyBorder(30, 0, 30, 0));
 	    mainPanel.add(titulo, BorderLayout.NORTH);
 
-	    // Painel com os botões
 	    JPanel gridPanel = new JPanel(new GridBagLayout());
 	    gridPanel.setBackground(Color.WHITE);
-	    GridBagConstraints gbc = new GridBagConstraints();
-	    gbc.insets = new Insets(20, 20, 20, 20);
-	    gbc.fill = GridBagConstraints.NONE;
-
-	    int colunas = 3; // Ajuste conforme quiser
-	    for (int i = 0; i < empresas.size(); i++) {
-	        EmpresaEntity empresa = empresas.get(i);
-	        JButton botao = new JButton("<html><center>" + empresa.getNome() + "</center></html>");
-	        botao.setFont(new Font("Arial", Font.PLAIN, 22));
-	        botao.setPreferredSize(new Dimension(300, 80));
-	        botao.setFocusPainted(false);
-	        botao.setBackground(new Color(230, 230, 250));
-
-	        botao.addActionListener(e -> {
-	            empresaSelecionada[0] = empresa;
-	            dialog.dispose();
-	        });
-
-	        gbc.gridx = i % colunas;
-	        gbc.gridy = i / colunas;
-	        gridPanel.add(botao, gbc);
-	    }
 
 	    JScrollPane scroll = new JScrollPane(gridPanel);
 	    scroll.setBorder(null);
 	    scroll.getVerticalScrollBar().setUnitIncrement(16);
 	    scroll.getHorizontalScrollBar().setUnitIncrement(16);
-
-	    // --- Suporte a "drag para scrollar" (TOUCH NATIVO) ---
-	    scroll.getViewport().addMouseListener(new MouseAdapter() {
-	        private Point lastDragPoint;
-
-	        @Override
-	        public void mousePressed(MouseEvent e) {
-	            lastDragPoint = e.getPoint();
-	        }
-
-	        @Override
-	        public void mouseDragged(MouseEvent e) {
-	            if (lastDragPoint != null) {
-	                JViewport view = (JViewport) e.getSource();
-	                Point p = view.getViewPosition();
-	                int dx = lastDragPoint.x - e.getX();
-	                int dy = lastDragPoint.y - e.getY();
-	                p.translate(dx, dy);
-	                view.setViewPosition(p);
-	                lastDragPoint = e.getPoint();
-	            }
-	        }
-	    });
+	    scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 	    mainPanel.add(scroll, BorderLayout.CENTER);
 
-	    // Rodapé com botão Voltar
-	    JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-	    footerPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
+	    // --- Rodapé melhorado ---
+	    JPanel footerPanel = new JPanel(new GridBagLayout());
+	    footerPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 	    footerPanel.setBackground(Color.WHITE);
 
-	    JButton btnVoltar = new JButton("Voltar");
-	    btnVoltar.setFont(new Font("Arial", Font.PLAIN, 24));
-	    btnVoltar.setPreferredSize(new Dimension(200, 50));
-	    btnVoltar.addActionListener(e -> dialog.dispose());
-	    footerPanel.add(btnVoltar);
+	    JButton btnVoltarPagina = new JButton("Página Anterior");
+	    btnVoltarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnVoltarPagina.setPreferredSize(new Dimension(200, 50));
+	    btnVoltarPagina.setBackground(new Color(220, 220, 220)); // Cinza claro
+
+	    JButton btnCancelar = new JButton("Cancelar");
+	    btnCancelar.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnCancelar.setPreferredSize(new Dimension(200, 50));
+	    btnCancelar.setBackground(new Color(255, 150, 150)); // Vermelho claro
+
+	    JButton btnAvancarPagina = new JButton("Próxima Página");
+	    btnAvancarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnAvancarPagina.setPreferredSize(new Dimension(200, 50));
+	    btnAvancarPagina.setBackground(new Color(173, 216, 230)); // Azul claro
+
+	    GridBagConstraints gbcFooter = new GridBagConstraints();
+	    gbcFooter.insets = new Insets(0, 10, 0, 10);
+	    gbcFooter.gridy = 0;
+
+	    gbcFooter.gridx = 0;
+	    gbcFooter.anchor = GridBagConstraints.WEST;
+	    footerPanel.add(btnVoltarPagina, gbcFooter);
+
+	    gbcFooter.gridx = 1;
+	    gbcFooter.anchor = GridBagConstraints.CENTER;
+	    footerPanel.add(btnCancelar, gbcFooter);
+
+	    gbcFooter.gridx = 2;
+	    gbcFooter.anchor = GridBagConstraints.EAST;
+	    footerPanel.add(btnAvancarPagina, gbcFooter);
 
 	    mainPanel.add(footerPanel, BorderLayout.SOUTH);
-
 	    dialog.setContentPane(mainPanel);
+
+	    final int[] paginaAtual = {0};
+	    final int itensPorPagina = 12;
+	    final int totalPaginas = (int) Math.ceil((double) empresas.size() / itensPorPagina);
+
+	    Runnable atualizarGrid = () -> {
+	        gridPanel.removeAll();
+	        GridBagConstraints gbc = new GridBagConstraints();
+	        gbc.insets = new Insets(20, 20, 20, 20);
+	        gbc.fill = GridBagConstraints.NONE;
+
+	        int start = paginaAtual[0] * itensPorPagina;
+	        int end = Math.min(start + itensPorPagina, empresas.size());
+
+	        for (int i = start; i < end; i++) {
+	            EmpresaEntity empresa = empresas.get(i);
+	            JButton botao = new JButton("<html><center>" + empresa.getNome() + "</center></html>");
+	            botao.setFont(new Font("Arial", Font.PLAIN, 22));
+	            botao.setPreferredSize(new Dimension(300, 150));
+	            botao.setFocusPainted(false);
+	            botao.setBackground(new Color(230, 230, 250));
+
+	            botao.addActionListener(e -> {
+	                empresaSelecionada[0] = empresa;
+	                dialog.dispose();
+	            });
+
+	            gbc.gridx = (i - start) % 3;
+	            gbc.gridy = (i - start) / 3;
+	            gridPanel.add(botao, gbc);
+	        }
+
+	        gridPanel.revalidate();
+	        gridPanel.repaint();
+
+	        btnVoltarPagina.setEnabled(paginaAtual[0] > 0);
+	        btnAvancarPagina.setEnabled(paginaAtual[0] < totalPaginas - 1);
+	    };
+
+	    btnVoltarPagina.addActionListener(e -> {
+	        if (paginaAtual[0] > 0) {
+	            paginaAtual[0]--;
+	            atualizarGrid.run();
+	        }
+	    });
+
+	    btnAvancarPagina.addActionListener(e -> {
+	        if (paginaAtual[0] < totalPaginas - 1) {
+	            paginaAtual[0]++;
+	            atualizarGrid.run();
+	        }
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+
+	    atualizarGrid.run();
 	    dialog.setVisible(true);
 
 	    return empresaSelecionada[0];
 	}
-
-
 
 	private boolean TirarFotoVisitanteHabilitado(PedestrianAccessEntity visitante) {
 		if (Objects.nonNull(visitante)) {

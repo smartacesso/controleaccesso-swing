@@ -59,7 +59,7 @@ public class TelaAutoAtendimento extends BaseDialog {
 		
 		// Envolve o teclado em um painel com margem inferior
 		JPanel tecladoWrapper = new JPanel(new BorderLayout());
-		tecladoWrapper.setBorder(new EmptyBorder(50, 50, 50, 50)); // top, left, bottom, right
+		tecladoWrapper.setBorder(new EmptyBorder(50, 300, 50, 300)); // top, left, bottom, right
 		tecladoWrapper.add(teclado, BorderLayout.CENTER);
 
 		add(tecladoWrapper, BorderLayout.SOUTH);

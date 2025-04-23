@@ -36,7 +36,7 @@ import com.protreino.services.to.EmpresaTO;
 				query = "select obj from EmpresaEntity obj "
 					  + "where obj.status = 'ATIVO' "
 					  + "and (obj.removed = false or obj.removed is null) "
-					  + "order by obj.id asc")
+					  + "order by obj.nome desc")
 })
 @SuppressWarnings("serial")
 public class EmpresaEntity extends BaseEntity implements ObjectWithId {

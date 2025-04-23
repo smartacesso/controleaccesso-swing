@@ -1,5 +1,6 @@
 package com.protreino.services.screens;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -29,6 +30,7 @@ public class TecladoVirtualPanel extends JPanel{
     private void addButton(String label, Font font) {
         JButton button = new JButton(label);
         button.setFont(font);
+        button.setPreferredSize(new Dimension(200, 80)); // largura x altura
         button.addActionListener(this::handleClick);
         add(button);
     }
