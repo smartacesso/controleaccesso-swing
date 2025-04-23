@@ -159,7 +159,7 @@ public class HikivisionEventsUseCase {
 
 	        if (diferencaSegundos < 10) {
 	            System.out.println("Acesso ignorado: tentativa repetida em menos de 10 segundos.");
-	            return null; // Ignora o acesso se for muito próximo do último
+	            return null;
 	        }
 	    }
 
@@ -188,46 +188,41 @@ public class HikivisionEventsUseCase {
 
 
 	private void decrementaCreditosERemoveUsuarioDaCamera(final PedestrianAccessEntity pedestre, final TopDataDevice device, final LogPedestrianAccessEntity logEventoOffline) {
-	    // Se o log for nulo, não há acesso válido para processar
 	    if (logEventoOffline == null) {
 	        System.out.println("Acesso ignorado: log de evento é nulo.");
 	        return;
 	    }
-		
-		// Constantes para configuração
+
 	    final String IGNORAR_REGRAS = "IGNORAR_REGRAS_DE_ACESSO";
 	    final String BLOQUEAR_SAIDA = "BLOQUEAR_SAIDA";
 	    final String REMOVE_VISITANTE_CAMERA = "removeVisitanteCameraSaida";
 
-	    // Verifica se deve ignorar regras de acesso
 	    boolean ignoraRegras = device.getConfigurationValueAsBoolean(IGNORAR_REGRAS);
-	    if (ignoraRegras) {
-	        return; // Ignora o restante da execução
-	    }
+	    if (ignoraRegras) return;
 
-	    // Configurações específicas
 	    boolean bloquearSaida = device.getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 	    Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean(REMOVE_VISITANTE_CAMERA);
 
-	    // Decrementa créditos se for saída ou se saída não está bloqueada
-	    if (logEventoOffline.isSaida()) {
-	    	System.out.println("direcao :" +  logEventoOffline.getDirection());
-	        System.out.println("Decrementando créditos...");
-	        pedestre.decrementaCreditos();
-	    }
-
-
-	    // Verifica condições para saída antecipada
-	    if ((pedestre.getQuantidadeCreditos() != null && pedestre.getQuantidadeCreditos() > 0) || !pedestre.isVisitante()) {
-	        System.out.println("Existe créditos restantes ou pedestre não é visitante. Operação encerrada.");
+	    // Só processa o restante se for uma SAÍDA
+	    if (!logEventoOffline.isSaida()) {
+	        System.out.println("Não é uma saída. Nenhuma ação realizada.");
 	        return;
 	    }
 
-	    // Remoção do visitante
-	    if (removeVisitanteCamera) {
-	        System.out.println("Removendo visitante da câmera...");
-	        hikivisionUseCases.removerUsuarioFromDevices(pedestre);
-	        HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+	    // SAÍDA: decrementa créditos
+	    System.out.println("direcao :" + logEventoOffline.getDirection());
+	    System.out.println("Decrementando créditos...");
+	    pedestre.decrementaCreditos();
+
+	    // Após saída, só remove visitante se os créditos forem 0 ou nulos
+	    if (pedestre.isVisitante() && (pedestre.getQuantidadeCreditos() == null || pedestre.getQuantidadeCreditos() <= 0)) {
+	        if (removeVisitanteCamera) {
+	            System.out.println("Removendo visitante da câmera...");
+	            hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+	            HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+	        }
+	    } else {
+	        System.out.println("Não será removido: ainda possui créditos ou não é visitante.");
 	    }
 	}
 
