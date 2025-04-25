@@ -26,6 +26,8 @@ import org.apache.commons.lang.StringUtils;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MaskFormatter;
@@ -42,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.*;
 
 @SuppressWarnings("serial")
@@ -716,6 +719,15 @@ public class RegisterVisitorDialog extends BaseDialog {
 			cargoJComboBox = new JComboBox<SelectItem>();
 		criaPainelComboBox(cargoLabel, cargoJComboBox, panel, 1, 5);
 	}
+	
+	private void criaMiniPanelDadosEmpresa(JPanel panel) {
+		// Adicionando a empresa
+	    empresaLabel = new JLabel("Empresa");
+	    empresaJComboBox = new JComboBox<SelectItem>(getAllEmpresasSelectItens());
+	    criaMiniPainelComboBox(empresaLabel, empresaJComboBox, panel);
+	}
+	
+	
 
 	private void buscaESelecionaEmpresaPedestre() {
 		int sizeEmp = empresaJComboBox.getItemCount();
@@ -2352,11 +2364,234 @@ public class RegisterVisitorDialog extends BaseDialog {
 //                	salvarFotoVisitanteHikivision();
 //                }
 				webCamCaptureViewer.dispose();
-				escolherFotoDialog.dispose();
+				if(Objects.nonNull(escolherFotoDialog)){					
+					escolherFotoDialog.dispose();
+				}
 			}
 		});
 
 		webCamCaptureViewer.start();
+	}
+	
+	public void mostrarMiniPerfilVisitante(Frame owner, PedestrianAccessEntity visitante,
+			Consumer<PedestrianAccessEntity> aoConfirmar) {
+		JDialog dialog = new JDialog(owner, "Mini Perfil", true); // modal
+		dialog.setIconImage(Main.favicon);
+		dialog.setResizable(false);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int largura = (int) (screenSize.width * 1);
+		int altura = (int) (screenSize.height * 1);
+
+		JPanel painel = new JPanel();
+		painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
+		painel.setBorder(new EmptyBorder(40, 40, 40, 40));
+
+		// Foto
+		JLabel fotoLabel = new JLabel();
+		fotoLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		fotoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		if (visitante.getFoto() != null) {
+			ImageIcon imagem = new ImageIcon(createMiniAutoAtendimentoImage(visitante.getFoto()));
+			fotoLabel.setIcon(imagem);
+		} else {
+			fotoLabel.setIcon(escolherImagemIcon);
+		}
+		painel.add(fotoLabel);
+		painel.add(Box.createVerticalStrut(20));
+
+		// Nome
+		JLabel nomeLabel = new JLabel(visitante.getName());
+		nomeLabel.setFont(new Font("Arial", Font.BOLD, 36)); // Tamanho maior
+		nomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		painel.add(nomeLabel);
+		painel.add(Box.createVerticalStrut(40));
+		
+		// Botões
+		JButton tirarFotoBtn = new JButton("Tirar nova foto");
+		tirarFotoBtn.setFont(new Font("Arial", Font.PLAIN, 28));
+		tirarFotoBtn.setPreferredSize(new Dimension(400, 60));
+		tirarFotoBtn.setMaximumSize(new Dimension(400, 60));
+		tirarFotoBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+		tirarFotoBtn.addActionListener(e -> {
+			criarDialogoTirarFoto();
+			visitante.setFoto(fotoVisitante);
+			ImageIcon imagem = new ImageIcon(createMiniImage(fotoVisitante));
+			fotoLabel.setIcon(imagem);
+		});
+
+		JButton salvarBtn = new JButton("Salvar cadastro");
+		salvarBtn.setFont(new Font("Arial", Font.PLAIN, 28));
+		salvarBtn.setPreferredSize(new Dimension(400, 60));
+		salvarBtn.setMaximumSize(new Dimension(400, 60));
+		salvarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+		salvarBtn.addActionListener(e -> {
+			boolean valido = validaEmpresaAutoAtendimento();
+			if(valido) {
+				salvarFotoVisitanteHikivision();
+				visitante.setQuantidadeCreditos(1L);
+				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante);
+				dialog.dispose();
+			}
+		});
+
+		JButton fecharBtn = new JButton("Fechar");
+		fecharBtn.setFont(new Font("Arial", Font.PLAIN, 28));
+		fecharBtn.setPreferredSize(new Dimension(400, 60));
+		fecharBtn.setMaximumSize(new Dimension(400, 60));
+		fecharBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+		fecharBtn.addActionListener(e -> dialog.dispose());
+
+		painel.add(tirarFotoBtn);
+		painel.add(Box.createVerticalStrut(20));
+		painel.add(salvarBtn);
+		painel.add(Box.createVerticalStrut(20));
+		painel.add(fecharBtn);
+
+		dialog.setContentPane(painel);
+		dialog.setSize(largura, altura); // Define tamanho do diálogo
+		dialog.setLocationRelativeTo(owner);
+		dialog.setVisible(true);
+	}
+
+	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
+	    @SuppressWarnings("unchecked")
+	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
+	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
+
+	    if (empresas == null || empresas.isEmpty()) {
+	        JOptionPane.showMessageDialog(owner, "Nenhuma empresa ativa encontrada.", "Aviso",
+	                JOptionPane.INFORMATION_MESSAGE);
+	        return null;
+	    }
+
+	    final EmpresaEntity[] empresaSelecionada = new EmpresaEntity[1];
+
+	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
+	    dialog.setUndecorated(true);
+
+	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	    dialog.setSize(screenSize);
+	    dialog.setLocationRelativeTo(null);
+
+	    JPanel mainPanel = new JPanel(new BorderLayout());
+	    mainPanel.setBackground(Color.WHITE);
+
+	    JLabel titulo = new JLabel("Selecione uma Empresa");
+	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
+	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
+	    titulo.setBorder(new EmptyBorder(30, 0, 30, 0));
+	    mainPanel.add(titulo, BorderLayout.NORTH);
+
+	    JPanel gridPanel = new JPanel(new GridBagLayout());
+	    gridPanel.setBackground(Color.WHITE);
+
+	    JScrollPane scroll = new JScrollPane(gridPanel);
+	    scroll.setBorder(null);
+	    scroll.getVerticalScrollBar().setUnitIncrement(16);
+	    scroll.getHorizontalScrollBar().setUnitIncrement(16);
+	    scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+	    mainPanel.add(scroll, BorderLayout.CENTER);
+
+	    // --- Rodapé melhorado ---
+	    JPanel footerPanel = new JPanel(new GridBagLayout());
+	    footerPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+	    footerPanel.setBackground(Color.WHITE);
+
+	    JButton btnVoltarPagina = new JButton("Página Anterior");
+	    btnVoltarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnVoltarPagina.setPreferredSize(new Dimension(200, 50));
+	    btnVoltarPagina.setBackground(new Color(220, 220, 220)); // Cinza claro
+
+	    JButton btnCancelar = new JButton("Cancelar");
+	    btnCancelar.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnCancelar.setPreferredSize(new Dimension(200, 50));
+	    btnCancelar.setBackground(new Color(255, 150, 150)); // Vermelho claro
+
+	    JButton btnAvancarPagina = new JButton("Próxima Página");
+	    btnAvancarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
+	    btnAvancarPagina.setPreferredSize(new Dimension(200, 50));
+	    btnAvancarPagina.setBackground(new Color(173, 216, 230)); // Azul claro
+
+	    GridBagConstraints gbcFooter = new GridBagConstraints();
+	    gbcFooter.insets = new Insets(0, 10, 0, 10);
+	    gbcFooter.gridy = 0;
+
+	    gbcFooter.gridx = 0;
+	    gbcFooter.anchor = GridBagConstraints.WEST;
+	    footerPanel.add(btnVoltarPagina, gbcFooter);
+
+	    gbcFooter.gridx = 1;
+	    gbcFooter.anchor = GridBagConstraints.CENTER;
+	    footerPanel.add(btnCancelar, gbcFooter);
+
+	    gbcFooter.gridx = 2;
+	    gbcFooter.anchor = GridBagConstraints.EAST;
+	    footerPanel.add(btnAvancarPagina, gbcFooter);
+
+	    mainPanel.add(footerPanel, BorderLayout.SOUTH);
+	    dialog.setContentPane(mainPanel);
+
+	    final int[] paginaAtual = {0};
+	    final int itensPorPagina = 12;
+	    final int totalPaginas = (int) Math.ceil((double) empresas.size() / itensPorPagina);
+
+	    Runnable atualizarGrid = () -> {
+	        gridPanel.removeAll();
+	        GridBagConstraints gbc = new GridBagConstraints();
+	        gbc.insets = new Insets(20, 20, 20, 20);
+	        gbc.fill = GridBagConstraints.NONE;
+
+	        int start = paginaAtual[0] * itensPorPagina;
+	        int end = Math.min(start + itensPorPagina, empresas.size());
+
+	        for (int i = start; i < end; i++) {
+	            EmpresaEntity empresa = empresas.get(i);
+	            JButton botao = new JButton("<html><center>" + empresa.getNome() + "</center></html>");
+	            botao.setFont(new Font("Arial", Font.PLAIN, 22));
+	            botao.setPreferredSize(new Dimension(300, 150));
+	            botao.setFocusPainted(false);
+	            botao.setBackground(new Color(230, 230, 250));
+
+	            botao.addActionListener(e -> {
+	                empresaSelecionada[0] = empresa;
+	                dialog.dispose();
+	            });
+
+	            gbc.gridx = (i - start) % 3;
+	            gbc.gridy = (i - start) / 3;
+	            gridPanel.add(botao, gbc);
+	        }
+
+	        gridPanel.revalidate();
+	        gridPanel.repaint();
+
+	        btnVoltarPagina.setEnabled(paginaAtual[0] > 0);
+	        btnAvancarPagina.setEnabled(paginaAtual[0] < totalPaginas - 1);
+	    };
+
+	    btnVoltarPagina.addActionListener(e -> {
+	        if (paginaAtual[0] > 0) {
+	            paginaAtual[0]--;
+	            atualizarGrid.run();
+	        }
+	    });
+
+	    btnAvancarPagina.addActionListener(e -> {
+	        if (paginaAtual[0] < totalPaginas - 1) {
+	            paginaAtual[0]++;
+	            atualizarGrid.run();
+	        }
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+
+	    atualizarGrid.run();
+	    dialog.setVisible(true);
+
+	    return empresaSelecionada[0];
 	}
 
 	private boolean TirarFotoVisitanteHabilitado(PedestrianAccessEntity visitante) {
@@ -2775,6 +3010,25 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 		return original;
 	}
+	
+	private byte[] createMiniAutoAtendimentoImage(byte[] original) {
+		try {
+			BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(original));
+			int sizeImage = 360; // em px
+			BufferedImage clipedImage = new BufferedImage(sizeImage, sizeImage, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g1 = clipedImage.createGraphics();
+			g1.setClip(new RoundRectangle2D.Double(0, 0, sizeImage, sizeImage, 5, 5));
+			g1.drawImage(originalImage, 0, 0, sizeImage, sizeImage, null);
+			g1.dispose();
+
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ImageIO.write(clipedImage, "png", bos);
+			return bos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return original;
+	}
 
 	private void criaPainelComboBox(JLabel label, JComboBox<SelectItem> comboBox, JPanel mainPanel, int x, int y) {
 		comboBox.setPreferredSize(new Dimension(200, 20));
@@ -2789,6 +3043,28 @@ public class RegisterVisitorDialog extends BaseDialog {
 		c.gridy = 1;
 		internoPanel.add(comboBox, c);
 		mainPanel.add(internoPanel, getNewGridBag(x, y, 30, 5));
+	}
+	
+	private void criaMiniPainelComboBox(JLabel label, JComboBox<?> comboBox, JPanel panel) {
+	    label.setFont(new Font("Arial", Font.BOLD, 28));
+	    comboBox.setFont(new Font("Arial", Font.PLAIN, 26));
+	    comboBox.setPreferredSize(new Dimension(300, 35));
+	    comboBox.setMaximumSize(new Dimension(400, 60));
+	    comboBox.setAlignmentY(CENTER_ALIGNMENT);
+	    JPanel container = new JPanel();
+	    container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+	    container.setBorder(new EmptyBorder(10, 10, 10, 10));
+	    container.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+	    label.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    comboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+	    container.add(label);
+	    container.add(Box.createVerticalStrut(5));
+	    container.add(comboBox);
+
+	    panel.add(container);
+	    panel.add(Box.createVerticalStrut(20));
 	}
 
 	private Long getValorSelecionado(JComboBox<SelectItem> itemComboBox) {
@@ -3031,5 +3307,18 @@ public class RegisterVisitorDialog extends BaseDialog {
 		    return cacheCentroCustos.computeIfAbsent(idEmpresa, id -> getAllCentroCustosSelectItens(id));
 		}
 
+	}
+	
+	public boolean validaEmpresaAutoAtendimento() {
+		boolean valido = true;
+		
+		restauraFontLabel();
+
+		if (empresaJComboBox.getSelectedIndex() < 0) {
+			redAndBoldFont(empresaLabel);
+			valido = false;
+		}
+		
+		return valido;
 	}
 }

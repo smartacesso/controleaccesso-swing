@@ -19,6 +19,8 @@ public class EmpresaTO {
 	
 	private Boolean removed;
 	private Date dataRemovido;
+	
+	private Boolean autoAtendimentoLiberado;
 
 	private ArrayList<CargoEntity> cargos;
 	private ArrayList<CentroCustoEntity> centros;
@@ -95,5 +97,11 @@ public class EmpresaTO {
 	}
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	public Boolean getAutoAtendimentoLiberado() {
+		return autoAtendimentoLiberado;
+	}
+	public void setAutoAtendimentoLiberado(Boolean autoAtendimentoLiberado) {
+		this.autoAtendimentoLiberado = autoAtendimentoLiberado;
 	}
 }

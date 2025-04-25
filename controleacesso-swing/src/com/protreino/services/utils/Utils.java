@@ -134,6 +134,9 @@ public class Utils {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
 	
+	public static boolean isAutoAtendimentoHabilitado() {
+		return Utils.getPreferenceAsBoolean("autoAtentimentoHabilitado");
+	}
 	
 	public static boolean isAcessoHoraErradoIgnorada() {
 		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
@@ -555,6 +558,9 @@ public class Utils {
 				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "decrementaEntrada",
 				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "autoAtentimentoHabilitado",
+				"Habilitar auto Atendimento", FieldType.CHECKBOX, "false"));
+
 
 		//Campo Reconhecimento Facial HIKI
 

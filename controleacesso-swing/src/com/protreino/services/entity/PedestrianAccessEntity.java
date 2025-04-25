@@ -50,7 +50,15 @@ import com.protreino.services.utils.EncryptionUtils;
            @Index(name = "idx_pedestrian_cpf", columnList = "CPF"),
            @Index(name = "idx_pedestrian_rg", columnList = "RG"),
            @Index(name = "idx_pedestrian_matricula", columnList = "MATRICULA"),
-           @Index(name = "idx_pedestrian_card_number", columnList = "CARD_NUMBER")
+           @Index(name = "idx_pedestrian_card_number", columnList = "CARD_NUMBER"),
+           @Index(name = "idx_tipo_status", columnList = "TYPE, STATUS"),
+           @Index(name = "idx_data_alteracao", columnList = "DATA_ALTERACAO"),
+           @Index(name = "idx_removido", columnList = "REMOVIDO"),
+           @Index(name = "idx_invisivel", columnList = "INVISIVEL"),
+           @Index(name = "idx_id_temp", columnList = "ID_PEDESTRIAN_ACCESS_TEMP"),
+           @Index(name = "idx_qr_code_acesso", columnList = "QR_CODE_PARA_ACESSO"),
+           @Index(name = "idx_latest_photos", columnList = "LATEST_PHOTOS_TAKEN"),
+           @Index(name = "idx_fotos_excluidas", columnList = "FOTOS_FORAM_EXCLUIDAS")
        })
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),

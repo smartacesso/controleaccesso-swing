@@ -94,6 +94,7 @@ public class MainScreen extends JFrame {
 	private JMenuItem sobreMenuItem;
 	private JMenuItem cadastrarPedestreMenuItem;
 	private JMenuItem cadastrarVisitanteMenuItem;
+	private JMenuItem AutoAtendimentoMenuItem;
 	
 	private JLabel eventosLabel;
 	private JScrollPane listaEventosScrollPane;
@@ -128,6 +129,7 @@ public class MainScreen extends JFrame {
 	
 	public RegisterVisitorDialog cadastroVisitante;
 	public RegisterVisitorDialog cadastroPedestre;
+	public TelaAutoAtendimento autoAtendimentoVisitante;
 	public CartaoComandaDialog cadastroCartao;
 	
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
@@ -687,6 +689,14 @@ public class MainScreen extends JFrame {
 				abreCadastroVisitante(null);
 			});
 			menuCadastros.add(cadastrarVisitanteMenuItem);
+			
+			AutoAtendimentoMenuItem = new JMenuItem("Auto Atendimento");
+			AutoAtendimentoMenuItem.addActionListener(e -> {
+				abreAutoAtendimento(null);
+			});
+			if(Utils.isAutoAtendimentoHabilitado()) {				
+				menuCadastros.add(AutoAtendimentoMenuItem);
+			}
 		}
 
 		JMenuItem sairMenuItem = new JMenuItem("Fechar");
@@ -701,6 +711,22 @@ public class MainScreen extends JFrame {
 		setJMenuBar(menuBar);
 
 		return menuBar;
+	}
+	
+	public void abreAutoAtendimento(PedestrianAccessEntity p) {
+		PedestrianAccessEntity visitante = p;
+		if (visitante == null) {
+			visitante = new PedestrianAccessEntity();
+			visitante.setTipo("VISITANTE");
+		}
+		autoAtendimentoVisitante = new TelaAutoAtendimento(null);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				autoAtendimentoVisitante.setVisible(true);
+			}
+		});
+
 	}
 
 	public void abreCadastroVisitante(PedestrianAccessEntity p) {
