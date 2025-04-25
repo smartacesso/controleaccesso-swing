@@ -694,7 +694,9 @@ public class MainScreen extends JFrame {
 			AutoAtendimentoMenuItem.addActionListener(e -> {
 				abreAutoAtendimento(null);
 			});
-			menuCadastros.add(AutoAtendimentoMenuItem);
+			if(Utils.isAutoAtendimentoHabilitado()) {				
+				menuCadastros.add(AutoAtendimentoMenuItem);
+			}
 		}
 
 		JMenuItem sairMenuItem = new JMenuItem("Fechar");
