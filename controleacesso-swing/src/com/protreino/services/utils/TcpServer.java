@@ -984,8 +984,6 @@ public class TcpServer {
 	    synchronized (clientesEventos) {
 	        for (Socket socket : clientesEventos) {
 	            try {
-	                System.out.println("ENVIANDO MENSAGEM...");
-
 	                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 	                
 	                String mensagemString;
