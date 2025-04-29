@@ -47,6 +47,7 @@ import com.protreino.services.utils.EncryptionUtils;
 @Entity
 @Table(name = "TB_PEDESTRIAN_ACCESS",
        indexes = {
+    	   @Index(name = "idx_pedestrian_name", columnList = "NAME"),
            @Index(name = "idx_pedestrian_cpf", columnList = "CPF"),
            @Index(name = "idx_pedestrian_rg", columnList = "RG"),
            @Index(name = "idx_pedestrian_matricula", columnList = "MATRICULA"),

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -464,7 +465,7 @@ public class HibernateLocalAccessData {
 				if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Long) {
 					query.setParameter(entry.getKey(), entry.getValue());
 				} else {
-					query.setParameter(entry.getKey(), "%" + String.valueOf(entry.getValue()).toUpperCase() + "%");
+					query.setParameter(entry.getKey(), String.valueOf(entry.getValue()).toUpperCase() + "%");
 				}
 			}
 
@@ -475,7 +476,7 @@ public class HibernateLocalAccessData {
 			if (quantidade != null) {
 				query.setMaxResults(quantidade);
 			}
-
+			
 			resultList = (List<?>) query.getResultList();
 			session.getTransaction().commit();
 		} catch (Exception e) {
@@ -541,13 +542,14 @@ public class HibernateLocalAccessData {
 				sql += " " + groupBy + " ";
 			}
 
-			Query<?> query = session.createQuery(sql);
+			Query<?> query = session.createQuery(sql).setCacheable(true);
 
 			for (Map.Entry<String, Object> entry : args.entrySet()) {
 				if (entry.getValue() instanceof Boolean || entry.getValue() instanceof Long) {
 					query.setParameter(entry.getKey(), entry.getValue());
 				} else {
-					query.setParameter(entry.getKey(), "%" + String.valueOf(entry.getValue()).toUpperCase() + "%");
+					//query.setParameter(entry.getKey(), "%" + String.valueOf(entry.getValue()).toUpperCase() + "%");
+					query.setParameter(entry.getKey(), String.valueOf(entry.getValue()).toUpperCase() + "%");
 				}
 			}
 
@@ -1647,6 +1649,6 @@ public class HibernateLocalAccessData {
 
 	    return cartaoEncontrado;
 	}
-
-
+	
+	
 }

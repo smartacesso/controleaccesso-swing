@@ -40,6 +40,7 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.SelectItem;
@@ -69,6 +70,10 @@ public class AccessListPanel extends PaginedListPanel {
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
+	
+	String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.cpf ,obj.name, "
+			  + "obj.tipo, obj.status, obj.observacoes, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
+			  + "obj.idUsuario) ";
 	
 	public AccessListPanel(){
 		
@@ -278,9 +283,10 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		//totalRegistros =  HibernateAccessDataFacade.
-			//	getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, null, null, null, args);
 		
+		totalRegistros =  HibernateAccessDataFacade.
+				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, construtor, null, null, args);
+
 		executeFilter();
 	}
 
@@ -288,24 +294,21 @@ public class AccessListPanel extends PaginedListPanel {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFilter() {
-
 		
-		if(args == null)
+		if(args == null) {
 			args = new HashMap<>();
+		}
 		args.put("removido", false);
 		
-		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.cpf ,obj.name, "
-				  + "obj.tipo, obj.status, obj.observacoes, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
-				  + "obj.idUsuario) ";
-//		fazer isso no hibernate utils
-		totalRegistros =  HibernateAccessDataFacade.
-				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, construtor, null, null, args);
 		calculaTamanhoPaginas();
+		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
-				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, "name", args, inicioPagina, registrosPorPagina);
+				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, null, args, inicioPagina, registrosPorPagina);
+		
 		if(usuarioDoSistema == null || usuarioDoSistema.isEmpty()) {
 			usuarioDoSistema = (List<UserEntity>) HibernateAccessDataFacade.getResultList(UserEntity.class, "UserEntity.findAll");
 		}
+		
 		for(PedestrianAccessEntity pedestre  : listaAcesso) {
 			if(pedestre.getIdUsuario() == null)
 				continue;
@@ -320,10 +323,9 @@ public class AccessListPanel extends PaginedListPanel {
 		populateTable(listaAcesso);
 		
 		paginatorControl();
-		
+
 	}
 
-	@SuppressWarnings("unchecked")
 	public void cleanFilter(){
 		
 		args = new HashMap<String, Object>();
@@ -376,8 +378,6 @@ public class AccessListPanel extends PaginedListPanel {
 			}
 		}
 		accessListTable.setModel(dataModel);
-		//int numAcessos = listaAcesso != null ? listaAcesso.size() : 0;
-		//countLabel.setText("Total: " + numAcessos);
 		countLabel.setText("Pag. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
