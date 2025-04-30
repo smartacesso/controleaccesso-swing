@@ -78,10 +78,7 @@ public class HikivisionTcpServer {
 				}
 
 				String message = String.join("\n", lines);
-//		        System.out.println(message);
-//		        hikivisionEventsUseCase.execute(message);
-//		        System.out.println("Mensagem processada, agora vou enviar o response!");
-//		        sendResponse(outputStream);
+				
 				try {
 					hikivisionEventsUseCase.execute(message);
 				} catch (Exception e) {

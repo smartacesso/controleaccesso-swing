@@ -74,7 +74,7 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="NOME", nullable=true, length=255)
 	private String nome;
 	
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	@Column(name="VALIDADE", nullable=true, length=11)
 	private Date validade;
 	
@@ -93,11 +93,11 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="DESCRICAO", nullable=true, length=255)
 	private String descricao;
 	
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	@Column(name="DATA_INICIO_PERIODO", nullable=true, length=11)
 	private Date dataInicioPeriodo;
 	
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	@Column(name="DATA_FIM_PERIODO", nullable=true, length=11)
 	private Date dataFimPeriodo;
 	

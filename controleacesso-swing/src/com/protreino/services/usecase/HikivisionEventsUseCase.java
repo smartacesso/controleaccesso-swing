@@ -21,6 +21,7 @@ import com.protreino.services.constants.Tipo;
 import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.TcpMessageType;
@@ -101,15 +102,18 @@ public class HikivisionEventsUseCase {
 			}
 			
 			return;
-//	        processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
 		} else {
-			TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
-			message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
-			message.getParans().put("facial", hikivisionCameraId);
-
-			TcpServer.enviarMensagemParaClientesEventos(message);
-			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
-					eventListnerTO.getAccessControllerEvent().getDeviceName());
+			new Thread() {
+				public void run() {
+				TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+				message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+				message.getParans().put("facial", hikivisionCameraId);
+				TcpServer.enviarMensagemParaClientesEventos(message);
+				
+				liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
+						eventListnerTO.getAccessControllerEvent().getDeviceName());
+				}
+			}.start();
 		}
 	}
 
@@ -208,9 +212,21 @@ public class HikivisionEventsUseCase {
 	        System.out.println("Não é uma saída. Nenhuma ação realizada.");
 	        return;
 	    }
-
+	    
 	    // SAÍDA: decrementa créditos
-	    System.out.println("direcao :" + logEventoOffline.getDirection());
+	    // veriicar regras
+	    System.out.println("direcao : " + logEventoOffline.getDirection());
+	    
+	    if(pedestre.getRegraAtiva().isPresent()) {
+	    	System.out.println("tem pedestre regra");
+	    	boolean permitido =  validaRegraVisitante(pedestre.getRegraAtiva().get());
+	    	if(permitido) {
+	    		return;
+	    	}
+	    }
+	    
+	    //nao tem nenhuma regra ou fora do periodo
+	    //decrementa credito do prorpio visitante
 	    System.out.println("Decrementando créditos...");
 	    pedestre.decrementaCreditos();
 
@@ -224,6 +240,15 @@ public class HikivisionEventsUseCase {
 	    } else {
 	        System.out.println("Não será removido: ainda possui créditos ou não é visitante.");
 	    }
+	}
+	
+	private boolean validaRegraVisitante(PedestreRegraEntity pedestreRegra) {
+		
+		if(pedestreRegra.isPeriodoValido()) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo,
@@ -293,10 +318,6 @@ public class HikivisionEventsUseCase {
 	private boolean isEventOffline(final OffsetDateTime offsetDateTime) {
 	    final OffsetDateTime agora = OffsetDateTime.now(ZoneId.systemDefault());
 	    final Duration diferenca = Duration.between(offsetDateTime, agora);
-
-	    System.out.println("Hora do evento recebido: " + offsetDateTime);
-	    System.out.println("Hora atual: " + agora);
-	    System.out.println("Diferença em segundos: " + diferenca.getSeconds());
 
 	    // Qualquer evento com mais de 20 segundos de diferença é considerado offline
 	    return Math.abs(diferenca.getSeconds()) > 20;

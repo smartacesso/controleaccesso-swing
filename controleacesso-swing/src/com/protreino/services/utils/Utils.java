@@ -1702,30 +1702,67 @@ public class Utils {
 		table.getColumnModel().getColumn(columnNumero).setWidth(0);
 	}
 
+//	public static Date convertDataJson(JsonElement element) throws ParseException {
+//		try {
+//			return new Date(element.getAsLong());
+//		} catch (Exception e) {
+//			try {
+//				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z['z']'");
+//				return sdf.parse(element.getAsString());
+//			} catch (Exception ex) {
+//
+//				try {
+//					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z['z']'");
+//					return sdf2.parse(element.getAsString());
+//
+//				} catch (Exception exe) {
+//					String data = null;
+//					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//					if(element.getAsString().contains("+0000")) {
+//						data = element.getAsString().replace(".000+0000", "");
+//					}
+//					return sdf.parse(data);
+//				}
+//			}
+//		}
+//	}
+	
 	public static Date convertDataJson(JsonElement element) throws ParseException {
-		try {
-			return new Date(element.getAsLong());
-		} catch (Exception e) {
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z['z']'");
-				return sdf.parse(element.getAsString());
-			} catch (Exception ex) {
-
-				try {
-					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z['z']'");
-					return sdf2.parse(element.getAsString());
-
-				} catch (Exception exe) {
-					String data = null;
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-					if(element.getAsString().contains("+0000")) {
-						data = element.getAsString().replace(".000+0000", "");
-					}
-					return sdf.parse(data);
-				}
-			}
-		}
+	    try {
+	        return new Date(element.getAsLong());
+	    } catch (Exception e) {
+	        try {
+	            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z['z']'");
+	            return sdf.parse(element.getAsString());
+	        } catch (Exception ex) {
+	            try {
+	                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z['z']'");
+	                return sdf2.parse(element.getAsString());
+	            } catch (Exception exe) {
+	                try {
+	                    String data = null;
+	                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	                    if (element.getAsString().contains("+0000")) {
+	                        data = element.getAsString().replace(".000+0000", "");
+	                    } else {
+	                        data = element.getAsString();
+	                    }
+	                    return sdf.parse(data);
+	                } catch (Exception exFinal) {
+	                    // NOVO FORMATO ADICIONADO: yyyy-MM-dd
+	                    try {
+	                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	                        return sdf.parse(element.getAsString());
+	                    } catch (Exception ignored) {
+	                        System.err.println("Erro ao converter data JSON: " + element);
+	                        return null;
+	                    }
+	                }
+	            }
+	        }
+	    }
 	}
+
 	
 	public static BufferedImage createImageFromBytes(byte[] imageData) {
 	    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);

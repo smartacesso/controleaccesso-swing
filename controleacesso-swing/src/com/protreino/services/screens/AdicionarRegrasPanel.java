@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -318,10 +319,16 @@ public class AdicionarRegrasPanel extends JPanel {
 			pedestreRegra.setDiasValidadeCredito(Long.valueOf(diasValidadeCreditosTextField.getText()));
 		
 		try {
+			if(dataInicioPeriodoTextField.getText().replace("/", "").trim().equals("")) {
+				pedestreRegra.setDataInicioPeriodo(regraSelecionada.getDataInicioPeriodo());
+			}
 			pedestreRegra.setDataInicioPeriodo(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioPeriodoTextField.getText())));
 		} catch (Exception e) {}
 		
 		try {
+			if(dataFimPeriodoTextField.getText().replace("/", "").trim().equals("")) {
+				pedestreRegra.setDataFimPeriodo(regraSelecionada.getDataFimPeriodo());
+			}
 			pedestreRegra.setDataFimPeriodo(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataFimPeriodoTextField.getText())));
 		} catch (Exception e) {}
 		
