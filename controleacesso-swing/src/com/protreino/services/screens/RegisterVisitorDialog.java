@@ -2417,7 +2417,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		tirarFotoBtn.addActionListener(e -> {
 			criarDialogoTirarFoto();
 			visitante.setFoto(fotoVisitante);
-			ImageIcon imagem = new ImageIcon(createMiniImage(fotoVisitante));
+			ImageIcon imagem = new ImageIcon(createMiniAutoAtendimentoImage(fotoVisitante));
 			fotoLabel.setIcon(imagem);
 		});
 
