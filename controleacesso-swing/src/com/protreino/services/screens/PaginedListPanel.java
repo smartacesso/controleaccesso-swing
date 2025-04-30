@@ -26,6 +26,9 @@ public abstract class PaginedListPanel extends JPanel{
 	protected int inicioPagina = 0;
 	protected int registrosPorPagina = 15;
 	
+	protected boolean modoEstimado = false;
+	protected boolean fimDosDados = false;
+	
 	protected JPanel createPaginatorControls() {
 		countLabel = new JLabel("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		first = new JButton("<<");
@@ -83,44 +86,84 @@ public abstract class PaginedListPanel extends JPanel{
 	
 	protected abstract void executeFilter();
 	
+//	protected void calculaTamanhoPaginas() {
+//		totalPaginas = totalRegistros / registrosPorPagina;
+//		if(totalPaginas == 0) {
+//			totalPaginas = 1;
+//		}else {
+//			int rest = totalRegistros % registrosPorPagina;
+//			if(rest > 0)
+//				totalPaginas++;
+//		}
+//	}
+	
 	protected void calculaTamanhoPaginas() {
-		totalPaginas = totalRegistros / registrosPorPagina;
-		if(totalPaginas == 0) {
-			totalPaginas = 1;
-		}else {
-			int rest = totalRegistros % registrosPorPagina;
-			if(rest > 0)
-				totalPaginas++;
+		if (modoEstimado) {
+			totalPaginas = paginaAtual + (fimDosDados ? 0 : 1); // mostra só a página atual + próxima se não chegou ao fim
+		} else {
+			totalPaginas = totalRegistros / registrosPorPagina;
+			if (totalPaginas == 0) {
+				totalPaginas = 1;
+			} else {
+				int rest = totalRegistros % registrosPorPagina;
+				if (rest > 0)
+					totalPaginas++;
+			}
+		}
+	}
+
+	
+//	protected void paginatorControl() {
+//		
+//		if(totalPaginas == 1) {
+//			first.setEnabled(false);
+//			back.setEnabled(false);
+//			prox.setEnabled(false);
+//			last.setEnabled(false);
+//		}else{
+//			if(paginaAtual == 1) {
+//				first.setEnabled(false);
+//				back.setEnabled(false);
+//				prox.setEnabled(true);
+//				last.setEnabled(true);
+//			}else if(paginaAtual == totalPaginas) {
+//				first.setEnabled(true);
+//				back.setEnabled(true);
+//				prox.setEnabled(false);
+//				last.setEnabled(false);
+//			}else {
+//				first.setEnabled(true);
+//				back.setEnabled(true);
+//				prox.setEnabled(true);
+//				last.setEnabled(true);
+//			}
+//			
+//		}
+//		
+//	}
+	
+	protected void updateCountLabel() {
+		if (modoEstimado) {
+			countLabel.setText("Pág. (" + paginaAtual + (fimDosDados ? "" : "+") + ")");
+		} else {
+			countLabel.setText("Pág. (" + paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		}
 	}
 	
 	protected void paginatorControl() {
-		
-		if(totalPaginas == 1) {
-			first.setEnabled(false);
-			back.setEnabled(false);
-			prox.setEnabled(false);
-			last.setEnabled(false);
-		}else{
-			if(paginaAtual == 1) {
-				first.setEnabled(false);
-				back.setEnabled(false);
-				prox.setEnabled(true);
-				last.setEnabled(true);
-			}else if(paginaAtual == totalPaginas) {
-				first.setEnabled(true);
-				back.setEnabled(true);
-				prox.setEnabled(false);
-				last.setEnabled(false);
-			}else {
-				first.setEnabled(true);
-				back.setEnabled(true);
-				prox.setEnabled(true);
-				last.setEnabled(true);
-			}
-			
+		updateCountLabel();
+
+		if (modoEstimado) {
+			first.setEnabled(paginaAtual > 1);
+			back.setEnabled(paginaAtual > 1);
+			prox.setEnabled(!fimDosDados);
+			last.setEnabled(false); // não se aplica em modo estimado
+		} else {
+			first.setEnabled(paginaAtual > 1);
+			back.setEnabled(paginaAtual > 1);
+			prox.setEnabled(paginaAtual < totalPaginas);
+			last.setEnabled(paginaAtual < totalPaginas);
 		}
-		
 	}
 
 }

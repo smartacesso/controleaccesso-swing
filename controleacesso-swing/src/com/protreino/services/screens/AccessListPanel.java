@@ -16,8 +16,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -30,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -70,7 +73,7 @@ public class AccessListPanel extends PaginedListPanel {
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 	private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
-	
+	private static final Map<String, CachedCount> countCache = new ConcurrentHashMap<>();
 	String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.cardNumber, obj.cpf ,obj.name, "
 			  + "obj.tipo, obj.status, obj.observacoes, obj.quantidadeCreditos, obj.validadeCreditos, obj.dataInicioPeriodo, obj.dataFimPeriodo, "
 			  + "obj.idUsuario) ";
@@ -251,7 +254,9 @@ public class AccessListPanel extends PaginedListPanel {
 	}
 	
 	private void filterList() {
-		
+		modoEstimado = true;
+		fimDosDados = false;
+
 		args = new HashMap<>();
 		args.put("removido", false);
 		//
@@ -283,11 +288,29 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		paginaAtual = 1;
 		inicioPagina = 0;
-		
-		totalRegistros =  HibernateAccessDataFacade.
-				getResultListWithDynamicParamsCount(PedestrianAccessEntity.class, construtor, null, null, args);
 
-		executeFilter();
+		// Geração de chave de cache baseada nos filtros
+		String cacheKey = args.toString();
+
+		// Verificar se há um valor em cache válido
+		CachedCount cached = countCache.get(cacheKey);
+		if (cached == null || cached.isExpired()) {
+			// Executa a contagem em uma thread separada
+			new Thread(() -> {
+				int count = HibernateAccessDataFacade.getResultListWithDynamicParamsCount(
+					PedestrianAccessEntity.class, construtor, null, null, args);
+				countCache.put(cacheKey, new CachedCount(count, System.currentTimeMillis()));
+				// Atualiza totalRegistros e recarrega dados na UI (caso necessário)
+				SwingUtilities.invokeLater(() -> {
+					totalRegistros = count;
+					executeFilter(); // Atualiza a interface novamente com o total correto
+				});
+			}).start();
+			
+		} else {
+			totalRegistros = cached.count;
+			executeFilter();
+		}
 	}
 
 
@@ -304,6 +327,11 @@ public class AccessListPanel extends PaginedListPanel {
 		
 		listaAcesso = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.
 				getResultListWithDynamicParams(PedestrianAccessEntity.class, construtor, null, null, null, args, inicioPagina, registrosPorPagina);
+		
+		// Verifica se é o fim da lista (para modo estimado)
+		if (modoEstimado && (listaAcesso == null || listaAcesso.size() < registrosPorPagina)) {
+			fimDosDados = true;
+		}
 		
 		if(usuarioDoSistema == null || usuarioDoSistema.isEmpty()) {
 			usuarioDoSistema = (List<UserEntity>) HibernateAccessDataFacade.getResultList(UserEntity.class, "UserEntity.findAll");
@@ -323,7 +351,6 @@ public class AccessListPanel extends PaginedListPanel {
 		populateTable(listaAcesso);
 		
 		paginatorControl();
-
 	}
 
 	public void cleanFilter(){
@@ -335,23 +362,10 @@ public class AccessListPanel extends PaginedListPanel {
 		filtroNomeTextField.setText("");
 		filtroTipoJComboBox.setSelectedIndex(0);
 		
-		totalRegistros = 0;  
-				//HibernateAccessDataFacade.
-				//getResultListCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countNaoRemovidosOrderedToAccessList");
-		
-		//calcula páginas
-		calculaTamanhoPaginas();
-		
-		listaAcesso = null;
-				//(List<PedestrianAccessEntity>) HibernateAccessDataFacade.
-				//getResultListLimited(PedestrianAccessEntity.class, 
-					//	"PedestrianAccessEntity.findAllNaoRemovidosOrderedToAccessList", (long)registrosPorPagina);
-		
 		if(Main.internoLoggedUser != null)
 			colunasComLink.add(3);
-		populateTable(listaAcesso);
 		
-		paginatorControl();
+		filterList();
 	}
 	
 	private void populateTable(List<PedestrianAccessEntity> listaAcesso){
@@ -361,7 +375,6 @@ public class AccessListPanel extends PaginedListPanel {
 			}
 		};
 		if (listaAcesso != null && !listaAcesso.isEmpty()){
-//			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (PedestrianAccessEntity acesso : listaAcesso) {
 				Object[] obj = new Object[10];
 				obj[0] = acesso.getId();
@@ -577,6 +590,28 @@ public class AccessListPanel extends PaginedListPanel {
 	public boolean isLoad() {
 		return listaAcesso != null && !listaAcesso.isEmpty();
 	}
+	
+	
+	private void buscarTotalAssincrono() {
+		String cacheKey = args.toString();
+		CachedCount cached = countCache.get(cacheKey);
+
+		if (cached == null || cached.isExpired()) {
+			new Thread(() -> {
+				int count = HibernateAccessDataFacade.getResultListWithDynamicParamsCount(
+					PedestrianAccessEntity.class, construtor, null, null, args);
+				countCache.put(cacheKey, new CachedCount(count, System.currentTimeMillis()));
+
+				SwingUtilities.invokeLater(() -> {
+					totalRegistros = count;
+					modoEstimado = false; // ativa modo tradicional se quiser
+					calculaTamanhoPaginas();
+					paginatorControl(); // atualiza botões e label
+				});
+			}).start();
+		}
+	}
+
 	
 }
 
