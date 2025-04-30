@@ -264,7 +264,8 @@ public class AccessListPanel extends PaginedListPanel {
 			Long id = 0l;
 			try {
 				id = Long.valueOf(filtroIdTextField.getText());
-			} catch (Exception e) {}
+			} catch (Exception e) {
+			}
 			args.put("id", id);
 		}
 		if (filtroCartaoTextField.getText() != null && !"".equals(filtroCartaoTextField.getText()))
@@ -274,9 +275,9 @@ public class AccessListPanel extends PaginedListPanel {
 		if (filtroNomeTextField.getText() != null && !"".equals(filtroNomeTextField.getText()))
 			args.put("name", filtroNomeTextField.getText());
 		if (filtroTipoJComboBox.getSelectedItem() != null) {
-			SelectItem itemSelecionado = (SelectItem)filtroTipoJComboBox.getSelectedItem();
-			if(itemSelecionado.getValue() != null){
-				if(itemSelecionado.getValue().equals("TODOS")) {
+			SelectItem itemSelecionado = (SelectItem) filtroTipoJComboBox.getSelectedItem();
+			if (itemSelecionado.getValue() != null) {
+				if (itemSelecionado.getValue().equals("TODOS")) {
 					args.remove("tipo");
 				} else {
 					args.put("tipo", itemSelecionado.getValue());
@@ -285,30 +286,35 @@ public class AccessListPanel extends PaginedListPanel {
 		} else {
 			args.remove("tipo");
 		}
-		
+
 		paginaAtual = 1;
 		inicioPagina = 0;
 
-		// Geração de chave de cache baseada nos filtros
-		String cacheKey = args.toString();
+		if (!modoEstimado) {
+			// Executar contagem e usar cache
+			// Geração de chave de cache baseada nos filtros
+			String cacheKey = args.toString();
 
-		// Verificar se há um valor em cache válido
-		CachedCount cached = countCache.get(cacheKey);
-		if (cached == null || cached.isExpired()) {
-			// Executa a contagem em uma thread separada
-			new Thread(() -> {
-				int count = HibernateAccessDataFacade.getResultListWithDynamicParamsCount(
-					PedestrianAccessEntity.class, construtor, null, null, args);
-				countCache.put(cacheKey, new CachedCount(count, System.currentTimeMillis()));
-				// Atualiza totalRegistros e recarrega dados na UI (caso necessário)
-				SwingUtilities.invokeLater(() -> {
-					totalRegistros = count;
-					executeFilter(); // Atualiza a interface novamente com o total correto
-				});
-			}).start();
-			
+			// Verificar se há um valor em cache válido
+			CachedCount cached = countCache.get(cacheKey);
+			if (cached == null || cached.isExpired()) {
+				// Executa a contagem em uma thread separada
+				new Thread(() -> {
+					int count = HibernateAccessDataFacade.getResultListWithDynamicParamsCount(
+							PedestrianAccessEntity.class, construtor, null, null, args);
+					countCache.put(cacheKey, new CachedCount(count, System.currentTimeMillis()));
+					// Atualiza totalRegistros e recarrega dados na UI (caso necessário)
+					SwingUtilities.invokeLater(() -> {
+						totalRegistros = count;
+						executeFilter(); // Atualiza a interface novamente com o total correto
+					});
+				}).start();
+
+			} else {
+				totalRegistros = cached.count;
+				executeFilter();
+			}
 		} else {
-			totalRegistros = cached.count;
 			executeFilter();
 		}
 	}
