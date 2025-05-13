@@ -90,26 +90,27 @@ public class TelaAutoAtendimento extends BaseDialog {
 		// Aqui você chama seu serviço ou DAO que busca o visitante/pedestre pelo CPF
 		PedestrianAccessEntity visitante = buscarVisitantePorCpf(cpf);
 
-		if (visitante != null) {
+		if (visitante != null && visitante.isVisitante()) {
 			cadastroVisitante = new RegisterVisitorDialog(visitante);
-			EmpresaEntity empresa = cadastroVisitante.mostrarDialogoEscolherEmpresaTouch( (Frame) SwingUtilities.getWindowAncestor(this));
-			
-			if(empresa == null) {
+			EmpresaEntity empresa = cadastroVisitante
+					.mostrarDialogoEscolherEmpresaTouch((Frame) SwingUtilities.getWindowAncestor(this));
+
+			if (empresa == null) {
 				return;
 			}
-			
-			if(empresa.autoAtendimentoLiberado()) {
-			    cadastroVisitante.mostrarMiniPerfilVisitante(
-			            (Frame) SwingUtilities.getWindowAncestor(this), // ou (Frame) this se for JFrame
-			            visitante,
-			            null
-			        );
-			}else {
-				new AlertMessage(this, "Auto atendimento bloqueado", "Sem auto atendimento. Procure um atendente.").mostrar();
+
+			if (empresa.autoAtendimentoLiberado()) {
+				cadastroVisitante.mostrarMiniPerfilVisitante((Frame) SwingUtilities.getWindowAncestor(this), visitante,
+						null);
+			} else {
+				new AlertMessage(this, "Auto atendimento BLOQUEADO", "Sem auto atendimento. Procure um atendente.")
+						.mostrar();
 			}
-		    cpfField.setText("");
+			cpfField.setText("");
+		}else if(visitante != null && visitante.isPedestre()) {
+			new AlertMessage(this, "PEDESTRE", "Apenas para visitantes.").mostrar();
 		} else {
-			new AlertMessage(this, "Não encontrado", "Não encontrado. Procure a recpção.").mostrar();
+			new AlertMessage(this, "NÃO ENCONTRADO", "Não encontrado. Procure a recpção.").mostrar();
 		}
 	}
 
