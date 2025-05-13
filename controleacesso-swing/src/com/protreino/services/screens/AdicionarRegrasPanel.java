@@ -313,6 +313,9 @@ public class AdicionarRegrasPanel extends JPanel {
 		if(!qtdeCreditosTextField.getText().isEmpty()) {
 			pedestreRegra.setQtdeTotalDeCreditos(Long.valueOf(qtdeCreditosTextField.getText()));
 			pedestreRegra.setQtdeDeCreditos(Long.valueOf(qtdeCreditosTextField.getText()));
+		}else {
+			pedestreRegra.setQtdeTotalDeCreditos(regraSelecionada.getQtdeDeCreditos());
+			pedestreRegra.setQtdeDeCreditos(regraSelecionada.getQtdeDeCreditos());
 		}
 
 		if(!diasValidadeCreditosTextField.getText().isEmpty())
