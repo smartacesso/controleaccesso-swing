@@ -57,7 +57,11 @@ import com.protreino.services.enumeration.Manufacturer;
 	@NamedQuery(name  = "TemplateEntity.findByIdUser", 
 				query = "select obj from TemplateEntity obj "
 					  + " join fetch obj.pedestrianAccess a"
-					  + " where a.id = :ID_USER")
+					  + " where a.id = :ID_USER"),
+	@NamedQuery(name  = "TemplateEntity.findByIdPedestre", 
+				query = "select obj from TemplateEntity obj "
+					  + " join fetch obj.pedestrianAccess a"
+					  + " where a.id = :ID")
 })
 public class TemplateEntity extends BaseEntity implements ObjectWithId {
 	
@@ -70,8 +74,8 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 	@JoinColumn(name="PEDESTRIAN_ACCESS", nullable=true)
 	private PedestrianAccessEntity pedestrianAccess;
 	
-	@Column(name="PEDESTRIAN_ACCESS", nullable=true, length=40, insertable = false, updatable = false)
-	private Long idPedestreianAccess;
+//	@Column(name="PEDESTRIAN_ACCESS", nullable=true, length=40, insertable = false, updatable = false)
+//	private Long idPedestreianAccess;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name="MANUFACTURER", nullable=true, length=100)
@@ -92,8 +96,8 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 	@Column(name="LOCAL", nullable=true, length=30)
 	private Boolean local = false; // indica que é uma biometria local e que seria excluida na proxima sincronizacao para evitar duplicados
 	
-	@Transient
-	private Long idPedestrianAccess;
+//	@Transient
+//	private Long idPedestrianAccess;
 	
 	public TemplateEntity(){
 	}
@@ -120,7 +124,7 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 	}
 	
 	public TemplateEntity(TemplateEntity other){
-		this.idPedestrianAccess = other.getPedestrianAccess().getId();
+//		this.idPedestrianAccess = other.getPedestrianAccess().getId();
 		this.manufacturer = other.getManufacturer();
 		this.template = other.getTemplate();
 		this.templateString = other.getTemplateString();
@@ -176,13 +180,13 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 		this.pedestrianAccess = pedestrianAccess;
 	}
 
-	public Long getIdPedestrianAccess() {
-		return idPedestrianAccess;
-	}
-
-	public void setIdPedestrianAccess(Long idPedestrianAccess) {
-		this.idPedestrianAccess = idPedestrianAccess;
-	}
+//	public Long getIdPedestrianAccess() {
+//		return idPedestrianAccess;
+//	}
+//
+//	public void setIdPedestrianAccess(Long idPedestrianAccess) {
+//		this.idPedestrianAccess = idPedestrianAccess;
+//	}
 
 	public byte[] getSample() {
 		return sample;
@@ -192,12 +196,12 @@ public class TemplateEntity extends BaseEntity implements ObjectWithId {
 		this.sample = sample;
 	}
 
-	public Long getIdPedestreianAccess() {
-		return idPedestreianAccess;
-	}
-
-	public void setIdPedestreianAccess(Long idPedestreianAccess) {
-		this.idPedestreianAccess = idPedestreianAccess;
-	}
+//	public Long getIdPedestreianAccess() {
+//		return idPedestreianAccess;
+//	}
+//
+//	public void setIdPedestreianAccess(Long idPedestreianAccess) {
+//		this.idPedestreianAccess = idPedestreianAccess;
+//	}
 	
 }

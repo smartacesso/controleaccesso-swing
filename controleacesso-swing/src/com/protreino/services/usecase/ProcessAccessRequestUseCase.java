@@ -200,8 +200,11 @@ public class ProcessAccessRequestUseCase {
 				System.out.println("Sem equipamento restrito");
 			}
 
-			if (Objects.isNull(origem) || (Boolean.TRUE.equals(matchedPedestrianAccess.getSempreLiberado())
-					|| Boolean.TRUE.equals(ignoraRegras)) && origem != Origens.ORIGEM_LEITOR_2) {
+			if (matchedPedestrianAccess.isPedestre()
+				&& (Objects.isNull(origem) || 
+					    (Boolean.TRUE.equals(matchedPedestrianAccess.getSempreLiberado()) 
+					    || Boolean.TRUE.equals(ignoraRegras)) 
+					    && origem != Origens.ORIGEM_LEITOR_2)) {
 
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, matchedPedestrianAccess, location, direction, data,
 						codigo, createNotification, equipament, foto, userName);

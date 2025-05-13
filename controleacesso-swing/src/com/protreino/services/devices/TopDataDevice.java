@@ -1,7 +1,40 @@
 package com.protreino.services.devices;
 
 
-import static com.protreino.services.constants.TopDataDeviceConstants.*;
+import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
+import static com.protreino.services.constants.TopDataDeviceConstants.COLETA_CARTOES_OFFLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.DOIS_LEITORES;
+import static com.protreino.services.constants.TopDataDeviceConstants.ECOAR_ASTERISCOS;
+import static com.protreino.services.constants.TopDataDeviceConstants.ENABLE_IGNORED_ACCESS;
+import static com.protreino.services.constants.TopDataDeviceConstants.ENVIA_DIGITAIS_PARA_CATRACA;
+import static com.protreino.services.constants.TopDataDeviceConstants.HABILITAR_TECLADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_START_IGNORE;
+import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_START_IGNORE_2;
+import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_STOP_IGNORE;
+import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_STOP_IGNORE_2;
+import static com.protreino.services.constants.TopDataDeviceConstants.IDENTIFICACAO_BIOMETRICA;
+import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
+import static com.protreino.services.constants.TopDataDeviceConstants.IS_DEVICE_RESTRITO;
+import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_1;
+import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_2;
+import static com.protreino.services.constants.TopDataDeviceConstants.LOGICA_DE_CATRACA_COM_URNA;
+import static com.protreino.services.constants.TopDataDeviceConstants.MENSAGEM_ONLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.MODELO_BIOMETRICO;
+import static com.protreino.services.constants.TopDataDeviceConstants.MODO_DE_TRABALHO;
+import static com.protreino.services.constants.TopDataDeviceConstants.NIVEL_RECONHECIMENTO;
+import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
+import static com.protreino.services.constants.TopDataDeviceConstants.PADRAO_DE_CARTAO;
+import static com.protreino.services.constants.TopDataDeviceConstants.QUANTIDADE_DIGITOS_CARTAO;
+import static com.protreino.services.constants.TopDataDeviceConstants.SENTIDO_DA_CATRACA;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_LIBERADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_MENSAGEM_NEGADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_PING;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_ESPERA_PARA_CONECTAR;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_MUDANCA_ONLINE_OFFLINE;
+import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_TECLADO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOMETRICO;
+import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
+import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -13,11 +46,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 
 import javax.swing.SwingWorker;
-import javax.swing.SwingWorker.StateValue;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
@@ -49,7 +80,6 @@ import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
-import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
@@ -59,7 +89,6 @@ import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
 import com.protreino.services.to.ConfigurationTO;
-import com.protreino.services.to.PreferenceTO;
 import com.protreino.services.usecase.EnviaSmsDeRegistroUseCase;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.usecase.ProcessAccessRequestUseCase;
@@ -69,7 +98,6 @@ import com.topdata.EasyInner;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
 import com.topdata.easyInner.enumeradores.Enumeradores.EstadosInner;
-import com.topdata.easyInner.utils.EasyInnerUtils;
 
 @SuppressWarnings("serial")
 public class TopDataDevice extends Device {
@@ -224,14 +252,17 @@ public class TopDataDevice extends Device {
 
         }
         
-        while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis() - inicio) < tempoDeEspera) {
-        	ret = testarConexaoInner(inner.Numero);
-        	Utils.sleep(50);
-        }
+    	ret = testarConexaoInner(inner.Numero);
+    	Utils.sleep(150);
         
-        if (ret != Enumeradores.RET_COMANDO_OK) {
-        	throw new Exception("Nao foi possivel conectar na catraca " + deviceEntity.getName() + ", motivo: " + ret);
-        }
+//        while (ret != Enumeradores.RET_COMANDO_OK && (System.currentTimeMillis() - inicio) < tempoDeEspera) {
+//        	ret = testarConexaoInner(inner.Numero);
+//        	Utils.sleep(50);
+//        }
+//        
+//        if (ret != Enumeradores.RET_COMANDO_OK) {
+//        	throw new Exception("Nao foi possivel conectar na catraca " + deviceEntity.getName() + ", motivo: " + ret);
+//        }
         
         bsp = new NBioBSPJNI();
 		export = bsp.new Export();
@@ -267,158 +298,6 @@ public class TopDataDevice extends Device {
 			}
 		}
 	}
-	
-//	private SwingWorker<Void, Void> getDeviceProccessWorker() {
-//		return new SwingWorker<Void, Void>() {
-//
-//			@Override
-//			protected Void doInBackground() throws Exception {
-//				while (workerEnabled) {
-//					try {
-//						while (sendingConfiguration) {
-//							Utils.sleep(50);
-//						}
-//						
-//						if (DeviceMode.VERIFICATION.equals(mode)) {
-//							StringBuffer Cartao = new StringBuffer();
-//							Cartao.delete(0, Cartao.length());
-//							int[] iArrBCartaoRb = new int[8];
-//							
-//							int ret = -1;
-//							
-//							if (inner.TipoLeitor == Enumeradores.QRCODE 
-//											|| inner.TipoLeitor ==  Enumeradores.BARRAS_PROX_QRCODE) {
-//								ret = EasyInner.ReceberDadosOnLineComLetras(inner.Numero, iArrBCartaoRb, Cartao);
-//
-//								if(iArrBCartaoRb[0] == 18) {
-//									Cartao = new StringBuffer("0000000000");
-//								}
-//
-//								if(ret == Enumeradores.RET_COMANDO_OK && !Cartao.toString().contains("_")) {
-//									if((Cartao != null && Cartao.length() != 0 || iArrBCartaoRb[0] == 2 || iArrBCartaoRb[0] == 3)) {
-//										Cartao = new StringBuffer(Utils.toHEX(Cartao.toString().replaceAll("[^a-zA-Z0-9]+","")));
-//									}
-//								}
-//								
-//							} else {
-//								ret = EasyInner.ReceberDadosOnLine(inner.Numero, iArrBCartaoRb, Cartao);
-//							}
-//							
-//							if (ret == Enumeradores.RET_COMANDO_OK) {
-//								System.out.println("Origem: " + iArrBCartaoRb[0]);
-//								System.out.println("O Pedestre/Visitante passou na catraca: " +inner.Numero);
-//								
-//								try {
-//									if(CARTAO_MASTER.equals(Cartao)) {
-//										System.out.printf("Habilitou o cartao Master, com o numero: ", CARTAO_MASTER);
-//										EasyInner.DefinirNumeroCartaoMaster(CARTAO_MASTER + "");
-//										EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-//									}
-//									
-//									Main.validandoAcesso = true;
-//									if(Main.temServidor()) {
-//										HibernateAccessDataFacade.enviaInicioVerificandoAcesso();
-//									}
-//									
-//									inner.CountTentativasEnvioComando = 0;
-//									if(iArrBCartaoRb[0] == Enumeradores.GIRO_DA_CATRACA_TOPDATA) {
-//										registraGiro(iArrBCartaoRb[1], null);
-//										
-//										enviarMensagemPadrao();
-//										configurarEntradasOnline();
-//									
-//									} else if(iArrBCartaoRb[0] == Enumeradores.ORIGEM_URNA) {
-//										inner.BilheteInner.Origem = iArrBCartaoRb[0];
-//										allowAccess();
-//										
-//									} else if (iArrBCartaoRb[0] == Enumeradores.FIM_TEMPO_ACIONAMENTO
-//											|| iArrBCartaoRb[0] == Enumeradores.TECLA_FUNCAO
-//											|| iArrBCartaoRb[0] == Enumeradores.TECLA_ANULA
-//											|| ((Cartao.length() == 0)
-//													&& !(inner.EstadoTeclado == Enumeradores.EstadosTeclado.AGUARDANDO_TECLADO))) {
-//										enviarMensagemPadrao();
-//										configurarEntradasOnline();
-//	
-//									} else {
-//										inner.BilheteInner.Origem = iArrBCartaoRb[0];
-//										inner.BilheteInner.Complemento = iArrBCartaoRb[1];
-//										inner.BilheteInner.Cartao.setLength(0);
-//										inner.BilheteInner.Cartao = new StringBuilder(Cartao.toString());
-//										if (inner.BilheteInner.Origem != 13) {
-//											validarAcesso();
-//										}
-//									}
-//								
-//								} catch (Throwable e) {
-//									e.printStackTrace();
-//								} finally {
-//									Main.validandoAcesso = false;
-//									if(Main.temServidor()) {
-//										HibernateAccessDataFacade.enviaFimVerificandoAcesso();										
-//									}
-//								}
-//								
-//							}
-//							
-//						} else if (DeviceMode.ENROLLMENT.equals(mode)) {
-//							if(modeloLC) {
-//								templateTemp = new byte[502];
-//								
-//								//solicita template
-//								int ret = EasyInner.RequisitarReceberTemplateLeitorInnerBio(inner.Numero, 1);
-//								
-//								do {
-//									ret = EasyInner.RespostaReceberTemplateLeitorInnerBio(inner.Numero, new int[] {502});
-//									Thread.sleep(500);
-//								} while (ret != Enumeradores.RET_COMANDO_OK
-//										&& DeviceMode.ENROLLMENT.equals(mode));
-//								
-//								if(ret == Enumeradores.RET_COMANDO_OK) {
-//									Long inicio = System.currentTimeMillis();
-//									do {
-//										ret = EasyInner.ReceberTemplateLeitorInnerBio(inner.Numero,templateTemp, 502);
-//										Thread.sleep(500);
-//									} while (ret != Enumeradores.RET_COMANDO_OK 
-//											&& templateTemp != null
-//											&& (System.currentTimeMillis() - inicio) < 5000 
-//											&& DeviceMode.ENROLLMENT.equals(mode));
-//									
-//									if (ret == Enumeradores.RET_COMANDO_OK) {
-//										processSampleForEnrollmentLC(null);
-//									}
-//								}
-//								
-//							} else {
-//						
-//								templateTemp = new byte[404];
-//								int ret = EasyInner.SolicitarTemplateLeitor(inner.Numero);
-//								Long inicio = System.currentTimeMillis();
-//								
-//								do {
-//									ret = EasyInner.ReceberTemplateLeitor(inner.Numero, 1, templateTemp);
-//									Thread.sleep(50);
-//								
-//								} while (ret == Enumeradores.RET_BIO_PROCESSANDO 
-//											&& (System.currentTimeMillis() - inicio) < 5000 
-//												&& DeviceMode.ENROLLMENT.equals(mode));
-//								
-//								if (ret == Enumeradores.RET_BIO_OK) {
-//									processSampleForEnrollment(null);
-//								}
-//							}
-//						}
-//	                } catch (Exception e) {
-//	                    e.printStackTrace();
-//	                
-//	                } finally {
-//						Utils.sleep(50l);
-//					}
-//				}
-//				return null;
-//			}
-//			
-//		};
-//	}
 	
 	private long lastResponseTime = System.currentTimeMillis(); //Tempo da última resposta
 	private final long MAX_TIME_WITHOUT_RESPONSE = 15000; //Tempo máximo sem resposta (30 segundos)
@@ -873,7 +752,7 @@ public class TopDataDevice extends Device {
 		boolean excluidoSeExiste = removeDigitalLFD(online, t.getPedestrianAccess());
 		
 		if(!excluidoSeExiste) {
-			System.out.println("usuario Nao foi removido !! id: " + t.getIdPedestreianAccess());
+			System.out.println("usuario Nao foi removido !! id: " + t.getPedestrianAccess().getId());
 			return;
 		}
 		
@@ -1192,6 +1071,8 @@ public class TopDataDevice extends Device {
 		} else {
 			EasyInner.ConfigurarComportamentoIndexSearch("naCatraca".equals(getConfigurationValue(MODO_DE_TRABALHO)) ? 0 : 1); // 0=match na catraca  1=match no computador
 		}
+		
+		Utils.sleep(15000);
 		
 //		enviarConfiguracoesOffline();
 		enviarMensagensOffline();
@@ -2113,11 +1994,8 @@ public class TopDataDevice extends Device {
 	}
 	
 	protected Integer testarConexaoInner(Integer Inner) {
-		int[] DataHora = new int[6];
-		Integer ret = EasyInner.ReceberRelogio(Inner, DataHora);
-		if(ret == 0) {
-			
-		}
+		Integer ret = EasyInner.Ping(Inner);
+
 		return ret;
 	}
 	
@@ -2313,7 +2191,7 @@ public class TopDataDevice extends Device {
 				TemplateEntity template = (TemplateEntity) HibernateAccessDataFacade.getSingleResultById(TemplateEntity.class, idTemplate.longValue());
 				
 				if(template != null) {
-					Long idPedestrian = template.getIdPedestreianAccess();
+					Long idPedestrian = template.getPedestrianAccess().getId();
 					PedestrianAccessEntity pedestre = pedestrianAccessRepository.buscaPedestrePorIdOuIdTemp(idPedestrian);
 					
 					if(Objects.nonNull(pedestre)) {
@@ -2362,10 +2240,15 @@ public class TopDataDevice extends Device {
 	
 	protected void enviarMensagensOffline() throws Exception{
 		int countTentativasEnvioComando = 0;
+		
 		EasyInner.DefinirMensagemEntradaOffLine(0, mensagemEntradaOffLine);
         EasyInner.DefinirMensagemSaidaOffLine(0, mensagemSaidaOffLine);            
         EasyInner.DefinirMensagemPadraoOffLine(0, mensagemPadraoOffLine);
+        
+
         int ret = EasyInner.EnviarMensagensOffLine(inner.Numero);
+        System.out.println("retorno do envia Mensagem offline : " + ret);
+        
         while (ret != easyInner.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
         	Utils.sleep(tempoEspera);
         	ret = EasyInner.EnviarMensagensOffLine(inner.Numero);
@@ -2373,7 +2256,7 @@ public class TopDataDevice extends Device {
         }
         if (ret != easyInner.RET_COMANDO_OK) {
         	Main.mainScreen.addEvento(name + ": Nao foi possivel enviar mensagens offline. Retorno da catraca " + ret);
-        	setStatus(DeviceStatus.DISCONNECTED);
+        	//setStatus(DeviceStatus.DISCONNECTED);
         	throw new Exception(name + ": Nao foi possivel enviar mensagens offline. Retorno da catraca " + ret);
         }
 	}

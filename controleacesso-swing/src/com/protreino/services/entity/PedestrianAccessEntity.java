@@ -28,6 +28,7 @@ import javax.persistence.Index;
 
 
 import org.apache.commons.codec.binary.Base64;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -38,6 +39,7 @@ import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
@@ -59,7 +61,10 @@ import com.protreino.services.utils.EncryptionUtils;
            @Index(name = "idx_id_temp", columnList = "ID_PEDESTRIAN_ACCESS_TEMP"),
            @Index(name = "idx_qr_code_acesso", columnList = "QR_CODE_PARA_ACESSO"),
            @Index(name = "idx_latest_photos", columnList = "LATEST_PHOTOS_TAKEN"),
-           @Index(name = "idx_fotos_excluidas", columnList = "FOTOS_FORAM_EXCLUIDAS")
+           @Index(name = "idx_fotos_excluidas", columnList = "FOTOS_FORAM_EXCLUIDAS"),
+           @Index(name = "idx_cadastrado_editado", columnList = "CADASTRADO_NO_DESKTOP, EDITADO_NO_DESKTOP"),
+           @Index(name = "idx_cadastrado", columnList = "CADASTRADO_NO_DESKTOP"),
+           @Index(name = "idx_editado", columnList = "EDITADO_NO_DESKTOP")
        })
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
@@ -87,6 +92,10 @@ import com.protreino.services.utils.EncryptionUtils;
 					  + "and obj.cardNumber != '' "
 					  + "and cast(obj.cardNumber as long) = :CARD_NUMBER "
 					  + "order by obj.id asc"),
+	@NamedQuery(name  = "PedestrianAccessEntity.findByCardNumberString", 
+				query = "select obj from PedestrianAccessEntity obj " +
+			            "WHERE obj.cardNumber = :CARD_NUMBER " +
+			            "ORDER BY obj.id ASC"),
 	@NamedQuery(name = "PedestrianAccessEntity.findByMatricula", 
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where obj.matricula != null "
@@ -120,8 +129,11 @@ import com.protreino.services.utils.EncryptionUtils;
 			+ " where obj.foto is not null"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop",
 				query = "select obj from PedestrianAccessEntity obj "
-					  + "where (obj.cadastradoNoDesktop = true or obj.editadoNoDesktop = true) "
-					  + "order by obj.id asc"),
+					  + "where (obj.cadastradoNoDesktop = true or obj.editadoNoDesktop = true) "),
+	@NamedQuery(name = "PedestrianAccessEntity.findCadastradosNoDesktop",
+    			query = "select obj from PedestrianAccessEntity obj where obj.cadastradoNoDesktop = true"),
+	@NamedQuery(name = "PedestrianAccessEntity.findEditadosNoDesktop",
+				query = "select obj from PedestrianAccessEntity obj where obj.editadoNoDesktop = true"),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllNaoRemovidosOrdered",
 				query = "select obj from PedestrianAccessEntity obj "
 					  + "where (obj.removido is null or obj.removido = false)"
@@ -476,7 +488,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="TIPO_QRCODE", nullable=true, length=100)
 	private String tipoQRCode;
 	
-	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY,
 			 targetEntity=TemplateEntity.class, mappedBy="pedestrianAccess")
 	@Fetch(FetchMode.SUBSELECT)
 	public List<TemplateEntity> templates;
@@ -903,10 +915,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			}
 		}
 		
-		if(this.templates != null) {
-			for(TemplateEntity t : this.templates) {
-				stringBuilder.append(Base64.encodeBase64String(t.getTemplate())).append(";");
-			}
+		@SuppressWarnings("unchecked")
+		List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(this.getId());
+
+		if (templatesBuscados != null && !templatesBuscados.isEmpty()) {
+		    this.setTemplates(templatesBuscados); 
+		    for (TemplateEntity t : this.templates) {
+		        stringBuilder.append(Base64.encodeBase64String(t.getTemplate())).append(";");
+		    }
 		}
 		
 		if(this.equipamentos != null) {
@@ -1015,56 +1031,59 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			}
 		}
 		
-		if (athleteAccessTO.getTemplates() != null
-				&& !athleteAccessTO.getTemplates().isEmpty()) {
-			//verifica antes se alterou templates
-			boolean alterar = false;
-			if(templates != null && !templates.isEmpty()) {
-				if(templates.size() != athleteAccessTO.getTemplates().size()) {
-					//tamanhos diferentes, ja altera
-					alterar = true;
-					if(Main.desenvolvimento)
-						System.out.println("Digitais diferentes");
-				} else {
-					//verifica se lista de digitais existes 
-					//é igual a lista de digitais recebidas
-					List<String> templatesExistentes = new ArrayList<String>();
-					for (TemplateEntity t : templates) {
-						String existente = Base64.encodeBase64String(t.getTemplate());
-						templatesExistentes.add(existente.replaceAll("(?:\\n|\\r)", ""));
-					}
-					
-					if(!templatesExistentes.equals(athleteAccessTO.getTemplates())) {
+		try {
+			if (athleteAccessTO.getTemplates() != null
+					&& !athleteAccessTO.getTemplates().isEmpty()) {
+				//verifica antes se alterou templates
+				boolean alterar = false;
+				if(templates != null && !templates.isEmpty()) {
+					if(templates.size() != athleteAccessTO.getTemplates().size()) {
+						//tamanhos diferentes, ja altera
 						alterar = true;
 						if(Main.desenvolvimento)
 							System.out.println("Digitais diferentes");
-					}else {
-						if(Main.desenvolvimento)
-							System.out.println("Digitais iguais");
+					} else {
+						//verifica se lista de digitais existes 
+						//é igual a lista de digitais recebidas
+						List<String> templatesExistentes = new ArrayList<String>();
+						for (TemplateEntity t : templates) {
+							String existente = Base64.encodeBase64String(t.getTemplate());
+							templatesExistentes.add(existente.replaceAll("(?:\\n|\\r)", ""));
+						}
+						
+						if(!templatesExistentes.equals(athleteAccessTO.getTemplates())) {
+							alterar = true;
+							if(Main.desenvolvimento)
+								System.out.println("Digitais diferentes");
+						}else {
+							if(Main.desenvolvimento)
+								System.out.println("Digitais iguais");
+						}
 					}
+				} else {
+					alterar = true;
+				}
+				
+				if(alterar) {
+					if (templates != null && !templates.isEmpty()) {
+						templates.clear();
+					
+					} else {
+						templates = new ArrayList<TemplateEntity>();
+					}
+					
+					for (String s : athleteAccessTO.getTemplates()) {
+						templates.add(new TemplateEntity(this, Base64.decodeBase64(s), athleteAccessTO.getDataAlteracao()));
+					}
+					
+					novasDigitais = true;
 				}
 			} else {
-				alterar = true;
-			}
-			
-			if(alterar) {
-				if (templates != null && !templates.isEmpty()) {
-					templates.clear();
-				
-				} else {
-					templates = new ArrayList<TemplateEntity>();
+				if (templates != null) {
+						templates.clear();
 				}
-				
-				for (String s : athleteAccessTO.getTemplates()) {
-					templates.add(new TemplateEntity(this, Base64.decodeBase64(s), athleteAccessTO.getDataAlteracao()));
-				}
-				
-				novasDigitais = true;
 			}
-		} else {
-			if (templates != null) {
-				templates.clear();
-			}
+		} catch (Exception e) {
 		}
 		
 		//equipamentos
