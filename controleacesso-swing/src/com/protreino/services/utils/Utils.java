@@ -152,6 +152,11 @@ public class Utils {
 	public static boolean isAcessoRestrito() {
 		return Boolean.valueOf(Utils.getPreference("restrictAccess"));
 	}
+	
+	public static boolean isHikivisionHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("hikiEnable"));
+	}
+
 
 	
 
@@ -568,7 +573,9 @@ public class Utils {
 				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
 
 		//Campo Reconhecimento Facial HIKI
-
+		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
+				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",

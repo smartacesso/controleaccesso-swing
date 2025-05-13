@@ -142,7 +142,7 @@ public class ProcessAccessRequestUseCase {
 			// --- SEPARAÇÃO AQUI ---
 			boolean isVisitante = matchedPedestrianAccess.isVisitante(); // ou qualquer outra verificação
 			if (isVisitante) {
-				return processVisitanteAccess(matchedPedestrianAccess);
+				return processVisitanteAccess(ignoraRegras, origem, matchedPedestrianAccess, location, data, direction, createNotification, equipament, codigo);
 			} else {
 				return processaVerificacoesBasicasPedestre(ignoraRegras, origem, matchedPedestrianAccess, location, data, direction, createNotification, equipament, codigo);
 			}
@@ -582,9 +582,41 @@ public class ProcessAccessRequestUseCase {
 		//return new Object[] { resultadoVerificacao, userName, matchedPedestrianAccess };
 	}
 	
-	private Object[] processVisitanteAccess(PedestrianAccessEntity matchedPedestrianAccess) {
-		// TODO Auto-generated method stub
-		return null;
+	private Object[] processVisitanteAccess(Boolean ignoraRegras, Integer origem, PedestrianAccessEntity visitante, String location, Date data, String direction, boolean createNotification, String equipament, String codigoCartao) {
+		String userName = visitante.getFirstName().toUpperCase();
+		byte[] foto = visitante.getFoto();
+		String motivo = "";
+		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(visitante.getId(),
+				visitante.getQtdAcessoAntesSinc());
+		
+		if (isPedestreInativo(visitante)) {
+			Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
+			motivo = "ACESSO NEGADO - INATIVO";
+			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, visitante, motivo);
+		}
+
+		if (isNaoPermitidoEquipamentoRestrito(equipament, visitante.getEquipamentos())) {
+			Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
+			motivo = "ACESSO NEGADO - EQUIPAMENTO NAO AUTORIZADO";
+			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, visitante, motivo);
+		}
+		
+		if(!isPermitidoNoSensor(ultimoAcesso, origem, visitante)) {
+			Utils.createNotification("Não permitido no sensor.", NotificationType.BAD, foto);
+			motivo = "ACESSO NEGADO - Deposite o carao na urna";
+			return resultadoNegado(VerificationResult.NOT_ALLOWED_SENSOR, userName, visitante, motivo);
+		}
+		
+		if (data == null) {
+			data = new Date();
+		}
+		
+		LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+				visitante.getId(), false , location, motivo,  direction, equipament,  visitante.getCardNumber(), data);
+		
+		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+		
+		return resultadoSucesso(userName, visitante, foto, motivo);
 	}
 
 	
@@ -653,18 +685,16 @@ public class ProcessAccessRequestUseCase {
 			}
 			
 			if (isSempreLiberado(pedestre)) {
-//				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
-//						createNotification, equipament, foto, userName);
+				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
+						createNotification, equipament, foto, userName);
 				return resultadoSucesso(userName, pedestre, foto, motivo);
 			}
+
 			
 			LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
 					pedestre.getId(), pedestre.getStatus(), location, motivo, direction, equipament);
 			
-			if (data != null) {
-				logAccess.setAccessDate(data);
-			}
-
+			
 			VerificationResult resultadoFinal = validaDiasHorarios(createNotification, userName, pedestre, logAccess,
 					VerificationResult.ALLOWED, foto, origem, data);
 
@@ -672,7 +702,7 @@ public class ProcessAccessRequestUseCase {
 				return resultadoNegado(resultadoFinal, userName, pedestre, motivo);
 			}
 			
-//			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 
 			return resultadoSucesso(userName, pedestre, foto, motivo);
 			
@@ -1049,8 +1079,6 @@ public class ProcessAccessRequestUseCase {
 	}
 	
 	private boolean isPermitidoNoSensor(LogPedestrianAccessEntity ultimoAcesso, Integer origem, PedestrianAccessEntity pedestre) {
-		Boolean permitidoSensor = true;
-
 		if (pedestre.getQrCodeParaAcesso() != null 
 				&& pedestre.getQrCodeParaAcesso().contains("_")
 				&& pedestre.temRegraDeAcessoPorPeriodoValido()) {
@@ -1068,7 +1096,7 @@ public class ProcessAccessRequestUseCase {
 			return false;
 		}
 
-		return permitidoSensor;
+		return true;
 	}
 	
 	private Date calculaDataInicialEscala(PedestrianAccessEntity pedestre, String[] escala, int tipoAdicao) {
