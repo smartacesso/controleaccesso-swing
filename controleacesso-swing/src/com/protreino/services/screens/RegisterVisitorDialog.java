@@ -1516,6 +1516,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 
 			visitante.setEditadoNoDesktop(true);
+//			visitante.setDataAlteracao(new Date());
 		}
 
 		// Dados basicos
@@ -1621,7 +1622,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
 
 		}
-		
+		visitante.setDataAlteracao(new Date());
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 	
@@ -2430,7 +2431,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 			boolean valido = validaEmpresaAutoAtendimento();
 			if(valido) {
 				salvarFotoVisitanteHikivision();
-				visitante.setQuantidadeCreditos(1L);
+				Optional<PedestreRegraEntity> regraAtiva = visitante.getRegraAtivaPedestre();
+				if (!regraAtiva.isPresent() || !regraAtiva.get().isPeriodoValido()) {
+					System.out.println("adicionando credito");
+				    visitante.setQuantidadeCreditos(1L);
+				}
 				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante);
 				dialog.dispose();
 			}

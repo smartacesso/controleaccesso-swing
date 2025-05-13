@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.Session;
@@ -41,6 +42,7 @@ import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.TemplateEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.usecase.HikivisionUseCases;
@@ -131,6 +133,38 @@ public class HibernateLocalAccessData {
 				result = null;
 			} else {
 				result = resultList.get(0);
+			}
+			
+			session.getTransaction().commit();
+
+		} catch (Exception e) {
+			result = null;
+			session.getTransaction().rollback();
+			e.printStackTrace();
+
+		} finally {
+			session.close();
+		}
+
+		return result;
+	}
+	
+	public static synchronized <T> Object getAllTemplatesByIdPedestre(Long id) {
+		Session session = getSessionFactory().getCurrentSession();
+		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+			session.beginTransaction();
+		}
+
+		Object result = null;
+		try {
+			Query<?> query = session.createNamedQuery(TemplateEntity.class.getSimpleName() + ".findByIdPedestre",
+					TemplateEntity.class);
+			query.setParameter("ID", id);
+			List<?> resultList = (List<?>) query.getResultList();
+			if (resultList.isEmpty()) {
+				result = null;
+			} else {
+				result = resultList;
 			}
 			
 			session.getTransaction().commit();
@@ -334,6 +368,121 @@ public class HibernateLocalAccessData {
 			
 		return resultList;
 	}
+	
+	public static synchronized <T> List<?> getResultListWithParamsTimeLimited(Class<T> entityClass, String namedQuery,
+			HashMap<String, Object> args, Integer inicio, Integer quantidade) {
+		Session session = getSessionFactory().getCurrentSession();
+		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+			session.beginTransaction();
+		}
+
+		List<?> resultList = null;
+		try {
+			Query<?> query = session.createNamedQuery(namedQuery, entityClass);
+
+			if (args != null) {
+				for (Map.Entry<String, Object> entry : args.entrySet()) {
+					query.setParameter(entry.getKey(), entry.getValue());
+				}
+			}
+
+			if (inicio != null) {
+				query.setFirstResult(inicio);
+			}
+
+			if (quantidade != null) {
+				query.setMaxResults(quantidade);
+			}
+
+			query.setTimeout(5);
+			
+			resultList = (List<?>) query.getResultList();
+			session.getTransaction().commit();
+
+		} catch (Exception e) {
+			resultList = null;
+			session.getTransaction().rollback();
+			e.printStackTrace();
+
+		} finally {
+			session.close();
+		}
+			
+		return resultList;
+	}
+	
+	
+	public static synchronized <T> Object getAllAlterados(Date lastSync, Integer limite) {
+		Session session = getSessionFactory().getCurrentSession();
+		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+			session.beginTransaction();
+		}
+
+		Object result = null;
+		try {
+			Query<?> query = session.createNamedQuery(PedestrianAccessEntity.class.getSimpleName() + ".findAllAlterados",
+					PedestrianAccessEntity.class);
+			query.setParameter("ULTIMA_SINC", lastSync);
+			
+			if(limite != null) {
+				query.setMaxResults(limite);
+			}
+			
+			query.setTimeout(5);
+			
+			Long startConsulta = System.currentTimeMillis();
+			
+			List<?> resultList = (List<?>) query.getResultList();
+			
+			System.out.println("tempo da consulta : " + (System.currentTimeMillis() - startConsulta));
+			if (resultList.isEmpty()) {
+				result = null;
+			} else {
+				result = resultList;
+			}
+			
+			session.getTransaction().commit();
+
+		} catch (Exception e) {
+			result = null;
+			session.getTransaction().rollback();
+			e.printStackTrace();
+
+		} finally {
+			session.close();
+		}
+
+		return result;
+	}
+	
+	public static PedestrianAccessEntity getNextCadastradoOuEditado(Date lastSync, int offset) {
+	    Session session = getSessionFactory().openSession();
+	    PedestrianAccessEntity entity = null;
+	    try {
+	        session.beginTransaction();
+
+	        Query<PedestrianAccessEntity> query = session.createNamedQuery(
+	                "PedestrianAccessEntity.findAllAlterados", PedestrianAccessEntity.class);
+	        query.setParameter("ULTIMA_SINC", lastSync);
+	        query.setFirstResult(offset);
+	        query.setMaxResults(1); // pega 1 por vez
+
+	        List<PedestrianAccessEntity> resultList = query.getResultList();
+	        if (!resultList.isEmpty()) {
+	            entity = resultList.get(0);
+	        }
+
+	        session.getTransaction().commit();
+	    } catch (Exception e) {
+	        session.getTransaction().rollback();
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return entity;
+	}
+
 
 	public static synchronized Integer getResultListWithParamsCount(Class<?> entityClass, String namedQuery, HashMap<String, Object> args) {
 
@@ -833,6 +982,36 @@ public class HibernateLocalAccessData {
 
 		return result;
 	}
+	
+	public static synchronized <T> Object getSingleResultByCardNumberString(Class<T> entityClass, String cardNumber) {
+	    Session session = getSessionFactory().getCurrentSession();
+	    if (session.getTransaction() == null || !session.getTransaction().isActive()) {
+	        session.beginTransaction();
+	    }
+
+	    Object result = null;
+	    try {
+	        Query<T> query = session.createNamedQuery(entityClass.getSimpleName() + ".findByCardNumberString", entityClass);
+	        query.setParameter("CARD_NUMBER", cardNumber);
+	        result = query.getSingleResult();  // Mais eficiente para um único resultado
+	        
+	        session.getTransaction().commit();
+	    } catch (NoResultException e) {
+	        // Caso não encontre nada, retorne null sem erro
+	        result = null;
+	        session.getTransaction().commit();
+	    } catch (Exception e) {
+	        result = null;
+	        session.getTransaction().rollback();
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return result;
+	}
+
+
 
 	public static synchronized <T> Object getSingleResultByRG(Class<T> entityClass, String rg) {
 		Session session = getSessionFactory().getCurrentSession();

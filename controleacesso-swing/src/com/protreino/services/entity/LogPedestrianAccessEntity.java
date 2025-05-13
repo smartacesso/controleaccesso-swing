@@ -8,6 +8,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -21,7 +22,18 @@ import org.hibernate.annotations.Type;
 import com.protreino.services.constants.Tipo;
 
 @Entity
-@Table(name="TB_LOG_PEDESTRIAN_ACCESS")
+@Table(name = "TB_LOG_PEDESTRIAN_ACCESS", 
+indexes = {
+		@Index(name = "idx_access_date", columnList = "ACCESS_DATE"),
+	    @Index(name = "idx_data_criacao", columnList = "DATA_CRIACAO"),
+	    @Index(name = "idx_idpedestrian_id", columnList = "ID_PEDESTRIAN, ID_LOG_ATHLETE_ACCESS DESC"),
+	    @Index(name = "idx_pedestrian_direction_data", columnList = "ID_PEDESTRIAN, DIRECTION, DATA_CRIACAO DESC"),
+	    @Index(name = "idx_offline_onlylocal", columnList = "OFF_LINE, ONLY_LOCAL"),
+	    @Index(name = "idx_failatsync", columnList = "FAIL_AT_SYNC"),
+	    @Index(name = "idx_equipament_id", columnList = "EQUIPAMENT, ID_LOG_ATHLETE_ACCESS DESC"),
+	    @Index(name = "idx_eqp_dir_cartao", columnList = "EQUIPAMENT, DIRECTION, CARTAO_ACESSO_RECEBIDO"),
+	    @Index(name = "idx_status_idpedestrian", columnList = "STATUS, ID_PEDESTRIAN")
+	})
 @NamedQueries({
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findAll", query = "select obj from LogPedestrianAccessEntity obj"),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByDate", 

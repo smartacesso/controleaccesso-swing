@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,6 +28,7 @@ import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.TcpMessageTO;
@@ -119,9 +121,11 @@ public class HikivisionEventsUseCase {
 
 
 	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDeviceName) {
-		
-	    final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
-	            .getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
+
+
+		// Chame sua função aqui
+		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
+				.getSingleResultByCardNumberString(PedestrianAccessEntity.class, cardNumber);
 	    
 	    if (Objects.isNull(pedestre)) {
 	    	System.out.println("pedestre não encontrado");
@@ -154,9 +158,10 @@ public class HikivisionEventsUseCase {
 	private LogPedestrianAccessEntity salvaLogDeAcessoEventoCatracaOffline(final PedestrianAccessEntity pedestre, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDevice) {
 	    String sentido;
 
-	    // Busca o último acesso do pedestre
-	   
-	    final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(), pedestre.getQtdAcessoAntesSinc());
+		// Busca o último acesso do pedestre
+		final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
+				pedestre.getQtdAcessoAntesSinc());
+
 	    // Se houver um último acesso, verifica o tempo
 	    if (Objects.nonNull(lastAccess)) {
 	        long diferencaSegundos = Math.abs(dataAcesso.toEpochSecond() - lastAccess.getAccessDate().toInstant().getEpochSecond());
@@ -175,7 +180,7 @@ public class HikivisionEventsUseCase {
 	        } else if (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida") ) {
 	            sentido = Tipo.SAIDA;
 	        } else {
-	            sentido = Tipo.ENTRADA; // Padrão caso o nome do dispositivo seja inválido
+	            sentido = "FACIAL"; // Padrão caso o nome do dispositivo seja inválido
 	        }
 	    } else {
 	        // Alterna o sentido baseado no último acesso
@@ -217,13 +222,13 @@ public class HikivisionEventsUseCase {
 	    // veriicar regras
 	    System.out.println("direcao : " + logEventoOffline.getDirection());
 	    
-	    if(pedestre.getRegraAtiva().isPresent()) {
-	    	System.out.println("tem pedestre regra");
-	    	boolean permitido =  validaRegraVisitante(pedestre.getRegraAtiva().get());
+
+	    
+	    	boolean permitido =  validaRegraVisitante(pedestre);
 	    	if(permitido) {
 	    		return;
 	    	}
-	    }
+
 	    
 	    //nao tem nenhuma regra ou fora do periodo
 	    //decrementa credito do prorpio visitante
@@ -242,14 +247,32 @@ public class HikivisionEventsUseCase {
 	    }
 	}
 	
-	private boolean validaRegraVisitante(PedestreRegraEntity pedestreRegra) {
-		
-		if(pedestreRegra.isPeriodoValido()) {
-			return true;
-		}
-		
-		return false;
+	/**
+	 * Retorna true para manter a foto, false para apagar.
+	 */
+	private boolean validaRegraVisitante(PedestrianAccessEntity pedestre) {
+	    Optional<PedestreRegraEntity> optionalRegra = pedestre.getRegraAtiva();
+
+	    if (!optionalRegra.isPresent()) {
+	        return false; // Não tem regra ativa → apaga foto
+	    }
+
+	    PedestreRegraEntity regra = optionalRegra.get();
+
+	    if (regra.isPeriodoValido()) {
+	        return true; // Regra válida → mantém foto
+	    }
+
+	    if (regra.temCreditosTotal()) {
+	        regra.decrementaCreditosTotal();
+	        HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+
+	        return !regra.isUltimoCreditoTotal(); // Se ainda tinha mais → mantém; se era o último → apaga
+	    }
+
+	    return false; // Fora do período e sem créditos → apaga
 	}
+
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo,
 			final OffsetDateTime dataAcesso, String hikivisionDeviceName) {
@@ -265,6 +288,7 @@ public class HikivisionEventsUseCase {
 			if (selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);
 			} else {
+				// Chame sua função aqui
 				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso, hikivisionDeviceName);
 			}
 

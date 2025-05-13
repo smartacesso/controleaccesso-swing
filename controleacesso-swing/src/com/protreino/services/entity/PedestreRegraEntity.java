@@ -172,6 +172,10 @@ public class PedestreRegraEntity extends BaseEntity {
 		return Objects.nonNull(qtdeDeCreditos) && qtdeDeCreditos > 0;
 	}
 	
+	public boolean temCreditosTotal() {
+		return Objects.nonNull(qtdeTotalDeCreditos) && qtdeTotalDeCreditos > 0;
+	}
+	
 	public boolean temRegraDeHorariosComCredito() {
 		if(Objects.isNull(horarios) || horarios.isEmpty()) {
 			return false;
@@ -204,8 +208,20 @@ public class PedestreRegraEntity extends BaseEntity {
 		setQtdeDeCreditos(getQtdeDeCreditos() - 1);
 	}
 	
+	public void decrementaCreditosTotal() {
+		if(Objects.isNull(qtdeTotalDeCreditos)) {
+			return;
+		}
+		
+		setQtdeTotalDeCreditos(getQtdeTotalDeCreditos() - 1);
+	}
+	
 	public boolean isUltimoCredito() {
 		return Long.valueOf(1).equals(qtdeDeCreditos);
+	}
+	
+	public boolean isUltimoCreditoTotal() {
+		return Long.valueOf(0).equals(qtdeTotalDeCreditos);
 	}
 	
 	public boolean isPeriodoValido() {
