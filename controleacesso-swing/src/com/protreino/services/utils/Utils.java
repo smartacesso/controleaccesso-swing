@@ -138,6 +138,11 @@ public class Utils {
 		return Utils.getPreferenceAsBoolean("autoAtentimentoHabilitado");
 	}
 	
+	public static boolean isSaidaSemVerificar() {
+		return Utils.getPreferenceAsBoolean("saidaSemVerificar");
+	}
+	
+	
 	public static boolean isAcessoHoraErradoIgnorada() {
 		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
 	}
@@ -146,6 +151,17 @@ public class Utils {
 	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
 		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
 	}
+	
+	public static boolean isAcessoRestrito() {
+		return Boolean.valueOf(Utils.getPreference("restrictAccess"));
+	}
+	
+	public static boolean isHikivisionHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("hikiEnable"));
+	}
+
+
+	
 
 	public static void sleep(long tempo) {
 		try {
@@ -563,7 +579,9 @@ public class Utils {
 
 
 		//Campo Reconhecimento Facial HIKI
-
+		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
+				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
@@ -852,12 +870,14 @@ public class Utils {
 						Gson gson = new GsonBuilder().create();
 						List<AttachedTO> list = gson.fromJson(hikivisionAttachedCameras, new TypeToken<List<AttachedTO>>() {
 						}.getType());
-
-						for (AttachedTO attachedTO : list) {
-							JsonObject attachedHikivisionCamerasObj = new JsonObject();
-							attachedHikivisionCamerasObj.addProperty("nomeDevice", attachedTO.getNomeDevice());
-							attachedHikivisionCamerasObj.addProperty("idDevice", attachedTO.getIdDevice());
-							hikivisionAttachedCamerasArray.add(attachedHikivisionCamerasObj);
+						
+						if(Objects.nonNull(list) && !list.isEmpty()) {
+							for (AttachedTO attachedTO : list) {
+								JsonObject attachedHikivisionCamerasObj = new JsonObject();
+								attachedHikivisionCamerasObj.addProperty("nomeDevice", attachedTO.getNomeDevice());
+								attachedHikivisionCamerasObj.addProperty("idDevice", attachedTO.getIdDevice());
+								hikivisionAttachedCamerasArray.add(attachedHikivisionCamerasObj);
+							}
 						}
 					}
 					deviceObj.add("hikivisionAttachedCameras", hikivisionAttachedCamerasArray);

@@ -44,6 +44,7 @@ import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
 import com.protreino.services.utils.EncryptionUtils;
+import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 @Entity
@@ -1342,7 +1343,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	
 	public void apagarCartao() {
-		if(Objects.nonNull(dataCadastroFotoNaHikivision)) {
+		if(Utils.isHikivisionHabilitada() && Objects.nonNull(dataCadastroFotoNaHikivision)) {
 			return;
 		}
 		
