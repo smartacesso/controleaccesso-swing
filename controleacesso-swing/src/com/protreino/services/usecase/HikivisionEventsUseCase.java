@@ -102,6 +102,8 @@ public class HikivisionEventsUseCase {
 					e.printStackTrace();
 				}
 			}
+			//adicionar configuração para habilitar isso
+			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
 			
 			return;
 		} else {
@@ -141,6 +143,13 @@ public class HikivisionEventsUseCase {
 	        System.out.println("Acesso ignorado catraca offline");
 	        return;
 	    }
+	    
+	    if (Utils.isAcessoLiberado()) {
+	        System.out.println("Acesso ignorado DSR");
+	        return;
+	    }
+	    
+	    
 
 	    final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffline(pedestre, device, dataAcesso, HikivisionDeviceName);
 	    

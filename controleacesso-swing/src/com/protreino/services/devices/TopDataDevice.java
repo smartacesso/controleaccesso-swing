@@ -83,6 +83,7 @@ import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.AttachedTO;
@@ -617,7 +618,6 @@ public class TopDataDevice extends Device {
 	}
 	
 	public boolean isDeviceRestrito() {
-		System.out.println("Device Restrito");
 		return getConfigurationValueAsBoolean(IS_DEVICE_RESTRITO);
 	}
 	
@@ -654,6 +654,11 @@ public class TopDataDevice extends Device {
 			coletandoDadosOffLine = true;
 			
 			for (PedestrianAccessEntity pedestre : pedestres) {
+				
+				@SuppressWarnings("unchecked")
+				List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(pedestre.getId());
+				pedestre.setTemplates(templatesBuscados);
+				
 				if(Objects.isNull(pedestre.getTemplates()) || pedestre.getTemplates().isEmpty()) {
 					removeDigitalLFD(online, pedestre);
 					continue;
@@ -725,6 +730,11 @@ public class TopDataDevice extends Device {
 
 		PedestrianAccessEntity p = (PedestrianAccessEntity) HibernateAccessDataFacade
 				.getSingleResultById(PedestrianAccessEntity.class, pTemplate.getId());
+		
+		@SuppressWarnings("unchecked")
+		List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(p.getId());
+		p.setTemplates(templatesBuscados);
+		
 		if (p.getTemplates() != null && !p.getTemplates().isEmpty()) {
 			List<TemplateEntity> templates = p.getTemplates();
 			
@@ -1025,7 +1035,10 @@ public class TopDataDevice extends Device {
 					}
 				}
 
-				if (!pedestre.temCreditos() && pedestre.isVisitante()) {
+				if (ultimoAcesso.isSaida() 
+						&& (!pedestre.temCreditos()
+								&& pedestre.isVisitante() 
+								&& !(pedestre.getRegraAtiva().get().isRegraComHorarios() || pedestre.temRegraDeAcessoPorPeriodoValido()))) {
 					if (Utils.isHikivisionConfigValid() && Objects.nonNull(pedestre.getFoto())
 							&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
 						if (removeVisitanteCamera) {
@@ -1041,7 +1054,8 @@ public class TopDataDevice extends Device {
 				if (pedestre.isQrCodeUsoDinamico()) {
 					pedestre.decrementaQRCodeUso();
 				}
-
+				pedestre.setEditadoNoDesktop(true);
+				pedestre.setDataAlteracao(new Date());
 				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 			}
 
@@ -1210,7 +1224,7 @@ public class TopDataDevice extends Device {
 			indexSearchEngine = null;
         }
 
-		enviaCartaoCatracaOffline();
+//		enviaCartaoCatracaOffline();
 
 		setStatus(DeviceStatus.DISCONNECTED);
 	}
@@ -1457,52 +1471,52 @@ public class TopDataDevice extends Device {
 		}
 	}
 	
-	public void enviaCartaoCatracaOffline() throws Exception {
-		Integer quantidadeDeDigitos = inner.QtdDigitos;
-		if (!Utils.getPreferenceAsBoolean("enableOfflineCard")) {
-			EasyInner.DefinirTipoListaAcesso(2);
-			EasyInner.DefinirPadraoCartao(1);
-//			EasyInner.DefinirQuantidadeDigitosCartao(8);
-			//para gasmig abatrack
-			EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
-			EasyInner.InserirUsuarioListaAcesso("0", 102);
-			return;
-		}
-		EasyInner.DefinirTipoListaAcesso(1);
-		EasyInner.DefinirPadraoCartao(1);
-		
-//		EasyInner.DefinirQuantidadeDigitosCartao(8);
-		//para gasmig abatrack
-		EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
-		
-		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
-		
-		if(Objects.isNull(pedestresComCartao) || pedestresComCartao.isEmpty()) {
-			return;
-		}
-				
-		for (PedestrianAccessEntity pedestre : pedestresComCartao) {
-			String temp = "";
-			for (int i = 0; i< pedestre.getCardNumber().length(); i++) {
-				if (!pedestre.getCardNumber().substring(i, i + 1).equals("0")) {
-					temp += pedestre.getCardNumber().substring(i, pedestre.getCardNumber().length());
-					break;
-				}
-			}
-			EasyInner.InserirUsuarioListaAcesso(temp, 101);
-			System.out.println("quem esta sendo enviado   " + pedestre.getName());
-			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
-			System.out.println("qual cartao   " + temp);
-		}
-		
-		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateAccessDataFacade.buscaPedestresAtivosComBiometria();
-		for (PedestrianAccessEntity biometria : biometriasNaoRemovidas) {
-			System.out.println("qual usuario está sendo enviado a biometria  " + biometria.getName());
-			EasyInner.InserirUsuarioListaAcesso(biometria.getId()+"", 101);
-		}	
-		
-		EasyInner.EnviarListaAcesso(inner.Numero);
-	}
+//	public void enviaCartaoCatracaOffline() throws Exception {
+//		Integer quantidadeDeDigitos = inner.QtdDigitos;
+////		if (!Utils.getPreferenceAsBoolean("enableOfflineCard")) {
+////			EasyInner.DefinirTipoListaAcesso(2);
+////			EasyInner.DefinirPadraoCartao(1);
+//////			EasyInner.DefinirQuantidadeDigitosCartao(8);
+////			//para gasmig abatrack
+////			EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
+////			EasyInner.InserirUsuarioListaAcesso("0", 102);
+////			return;
+////		}
+//		EasyInner.DefinirTipoListaAcesso(1);
+//		EasyInner.DefinirPadraoCartao(1);
+//		
+////		EasyInner.DefinirQuantidadeDigitosCartao(8);
+//		//para gasmig abatrack
+//		EasyInner.DefinirQuantidadeDigitosCartao(quantidadeDeDigitos);
+//		
+//		List<PedestrianAccessEntity> pedestresComCartao = HibernateAccessDataFacade.buscaPedestresAtivosComCartao();
+//		
+//		if(Objects.isNull(pedestresComCartao) || pedestresComCartao.isEmpty()) {
+//			return;
+//		}
+//				
+//		for (PedestrianAccessEntity pedestre : pedestresComCartao) {
+//			String temp = "";
+//			for (int i = 0; i< pedestre.getCardNumber().length(); i++) {
+//				if (!pedestre.getCardNumber().substring(i, i + 1).equals("0")) {
+//					temp += pedestre.getCardNumber().substring(i, pedestre.getCardNumber().length());
+//					break;
+//				}
+//			}
+//			EasyInner.InserirUsuarioListaAcesso(temp, 101);
+//			System.out.println("quem esta sendo enviado   " + pedestre.getName());
+//			EasyInner.InserirUsuarioListaAcesso(pedestre.getId()+"", 101);
+//			System.out.println("qual cartao   " + temp);
+//		}
+//		
+//		List<PedestrianAccessEntity> biometriasNaoRemovidas = HibernateAccessDataFacade.buscaPedestresAtivosComBiometria();
+//		for (PedestrianAccessEntity biometria : biometriasNaoRemovidas) {
+//			System.out.println("qual usuario está sendo enviado a biometria  " + biometria.getName());
+//			EasyInner.InserirUsuarioListaAcesso(biometria.getId()+"", 101);
+//		}	
+//		
+//		EasyInner.EnviarListaAcesso(inner.Numero);
+//	}
 
 	private void processSampleForEnrollmentLC(Object obj) {
 		if(templates == null) {
@@ -2039,8 +2053,6 @@ public class TopDataDevice extends Device {
 			System.out.print("\n" + sdf.format(new Date()) + "  VALIDAR ACESSO: ");
 			System.out.print(" Origem: " + inner.BilheteInner.Origem);
 			System.out.println("   Cartao: " + inner.BilheteInner.Cartao);
-			System.out.println("Chegou no validada acesso ");
-
 		       
 			if (inner.BilheteInner.Origem == 1 
 					|| inner.BilheteInner.Origem == 2
@@ -2050,7 +2062,6 @@ public class TopDataDevice extends Device {
 		        if (cartao.startsWith("05000")
 		        		|| cartao.startsWith("005000")
 		        		|| cartao.startsWith("00100")) {
-		            // Remover "05000" usando substring
 		        	cartao = cartao.substring(5);
 		        }
 				processAccessRequest(cartao);
@@ -2086,12 +2097,11 @@ public class TopDataDevice extends Device {
 			if (VerificationResult.ALLOWED.equals(getVerificationResult())
 					|| VerificationResult.TOLERANCE_PERIOD.equals(getVerificationResult())) {
 				boolean usaUrna = getConfigurationValueAsBoolean(LOGICA_DE_CATRACA_COM_URNA);
-
+				System.out.println("origem : " + matchedAthleteAccess.getOrigemCatraca());
 				if(usaUrna && matchedAthleteAccess != null 
 	            			&& matchedAthleteAccess.getOrigemCatraca() != null 
 	            			&& matchedAthleteAccess.getOrigemCatraca() == 3) {
 	            	EasyInner.AcionarRele2(inner.Numero);
-
 	            } else {
 	            	allowAccess();
 	            }
@@ -2127,7 +2137,7 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-			if(!this.ignorarAcesso()) {
+			if(!this.ignorarAcesso() || !Utils.isAcessoLiberado()) {
 				processAccessRequest(cardNumber, false);				
 			}else {
 				setVerificationResult(VerificationResult.ALLOWED);
@@ -2650,6 +2660,10 @@ public class TopDataDevice extends Device {
 			if(pedestres != null && !pedestres.isEmpty()) {
 				coletandoDadosOffLine = true;
 				for (PedestrianAccessEntity pedestre : pedestres) {
+					@SuppressWarnings("unchecked")
+					List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(pedestre.getId());
+					pedestre.setTemplates(templatesBuscados);
+					
 					if(Objects.isNull(pedestre.getTemplates()) || pedestre.getTemplates().isEmpty()) {
 						continue;
 					}

@@ -92,6 +92,9 @@ public class TelaAutoAtendimento extends BaseDialog {
 
 		if (visitante != null && visitante.isVisitante()) {
 			cadastroVisitante = new RegisterVisitorDialog(visitante);
+			if(visitante.getCardNumber() == null || visitante.getCardNumber().equals("")) {
+				visitante.setCardNumber(geraCartaoAcessoAleatorio());
+			}
 			EmpresaEntity empresa = cadastroVisitante
 					.mostrarDialogoEscolherEmpresaTouch((Frame) SwingUtilities.getWindowAncestor(this));
 
@@ -124,5 +127,12 @@ public class TelaAutoAtendimento extends BaseDialog {
 		} else {
 			return null;
 		}
+	}
+	
+	private String geraCartaoAcessoAleatorio() {
+		String cardNumber;
+		cardNumber = String.valueOf(System.currentTimeMillis()).substring(5, 13);
+
+		return cardNumber;
 	}
 }

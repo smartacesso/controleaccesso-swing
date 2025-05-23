@@ -54,10 +54,12 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.FacialDevice;
 import com.protreino.services.entity.ParametroEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.TemplateEntity;
 import com.protreino.services.enumeration.DeviceMode;
 import com.protreino.services.enumeration.Manufacturer;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
@@ -730,6 +732,11 @@ public class RegisterUserDialog extends JDialog{
 					&& !limite.equals("Sem limite")
 					&& !limite.equals("Sem limites")) {
 				try {
+					
+					@SuppressWarnings("unchecked")
+					List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(acessoSelecionado.getId());
+					acessoSelecionado.setTemplates(templatesBuscados);
+					
 					Long l = Long.valueOf(limite);
 					if(acessoSelecionado.getTemplates() != null 
 							&& !acessoSelecionado.getTemplates().isEmpty()
@@ -819,6 +826,11 @@ public class RegisterUserDialog extends JDialog{
 			String limite = buscaParametroPeloNome("Limite de cadastro de digitais");
 			if(limite != null && !limite.equals("") && !limite.equals("Sem limite")) {
 				Long l = Long.valueOf(limite);
+				
+				@SuppressWarnings("unchecked")
+				List<TemplateEntity> templatesBuscados = (List<TemplateEntity>) HibernateLocalAccessData.getAllTemplatesByIdPedestre(acessoSelecionado.getId());
+				acessoSelecionado.setTemplates(templatesBuscados);
+				
 				if(acessoSelecionado.getTemplates() != null 
 						&& !acessoSelecionado.getTemplates().isEmpty()
 						&& acessoSelecionado.getTemplates().size() >= l) {

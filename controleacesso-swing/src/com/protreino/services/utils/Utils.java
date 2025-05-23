@@ -146,6 +146,10 @@ public class Utils {
 	public static boolean isAcessoHoraErradoIgnorada() {
 		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
 	}
+	
+	public static boolean isAcessoLiberado() {
+		return Utils.getPreferenceAsBoolean("enableDsr");
+	}
 
 	
 	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
@@ -612,6 +616,8 @@ public class Utils {
 				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
 				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",
+				"Liberar DSR", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

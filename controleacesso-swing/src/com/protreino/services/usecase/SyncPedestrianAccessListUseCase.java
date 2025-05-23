@@ -205,7 +205,7 @@ public class SyncPedestrianAccessListUseCase {
                     if (device instanceof TopDataDevice) {
                         TopDataDevice topDataDevice = (TopDataDevice) device;
                         if (!topDataDevice.isConnected()) {
-                            topDataDevice.enviaCartaoCatracaOffline();
+//                            topDataDevice.enviaCartaoCatracaOffline();
                         }
                     }
                 }
@@ -317,7 +317,7 @@ public class SyncPedestrianAccessListUseCase {
                 for (PedestrianAccessEntity visitante : visitantesLocais) {
                     // se foi criado, envia os dados para o servidor
                     // porque está sem o ID
-                	System.out.println("visitante : " + visitante.getName() + ", cadastrado no desktop : " + visitante.getCadastradoNoDesktop());
+                	System.out.println("visitante : " + visitante.getName() + ", cadastrado no desktop : " + visitante.getCadastradoNoDesktop() + ", editado no desktop : " + visitante.getEditadoNoDesktop());
                     if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
                         visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
 

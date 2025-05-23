@@ -1,6 +1,7 @@
 package com.protreino.services.entity;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -168,6 +169,10 @@ public class PedestreRegraEntity extends BaseEntity {
 		return Objects.nonNull(horarios) && !horarios.isEmpty();
 	}
 	
+	public boolean isRegraComPeriodo() {
+		return Objects.nonNull(dataInicioPeriodo) && Objects.nonNull(dataFimPeriodo);
+	}
+	
 	public boolean temCreditos() {
 		return Objects.nonNull(qtdeDeCreditos) && qtdeDeCreditos > 0;
 	}
@@ -229,9 +234,20 @@ public class PedestreRegraEntity extends BaseEntity {
 			return false;
 		}
 
-		Date dataAtual = new Date();
-		return dataInicioPeriodo.compareTo(dataAtual) >= 0 && dataFimPeriodo.compareTo(dataAtual) <= 0
-				&& Objects.nonNull(validade) ? validade.compareTo(dataAtual) >= 0 : true;
+		Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date dataAtualSemHora = cal.getTime();
+
+        boolean dentroDoPeriodo = !dataAtualSemHora.before(dataInicioPeriodo)
+                                && !dataAtualSemHora.after(dataFimPeriodo);
+
+        boolean validadeOk = validade == null || !dataAtualSemHora.after(validade);
+
+        return dentroDoPeriodo && validadeOk;
 	}
 	
 	public Long getId() {
