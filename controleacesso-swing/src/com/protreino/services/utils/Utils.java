@@ -163,6 +163,12 @@ public class Utils {
 	public static boolean isHikivisionHabilitada() {
 		return Boolean.valueOf(Utils.getPreference("hikiEnable"));
 	}
+	
+	
+	public static boolean sendEditadosLotes() {
+		return Boolean.valueOf(Utils.getPreference("sendEditados"));
+	}
+
 
 
 	
@@ -411,6 +417,8 @@ public class Utils {
 				"Tolerância de entrada e saída (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "minTimeBetweenAccess",
 				"Tempo mánimo entre entradas (em minutos)", FieldType.NUMERIC_LIST, "0", "0;1;20"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "sendEditados",
+				"Buscar editados em lotes", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeAccessList",
 				"Tempo de atualização da lista de acesso (em minutos)", FieldType.TEXT, "2", true, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeUserAccessList",
