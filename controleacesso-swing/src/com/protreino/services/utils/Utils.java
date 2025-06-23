@@ -168,10 +168,16 @@ public class Utils {
 	public static boolean sendEditadosLotes() {
 		return Boolean.valueOf(Utils.getPreference("sendEditados"));
 	}
-
-
-
 	
+	
+	public static boolean sincHikivisionWeb() {
+		return Boolean.valueOf(Utils.getPreference("sincHikivision"));
+	}
+	
+	public static boolean refeitorioHabilitado() {
+		return Boolean.valueOf(Utils.getPreference("enableRefeitorio"));
+	}
+
 
 	public static void sleep(long tempo) {
 		try {
@@ -538,6 +544,8 @@ public class Utils {
 				"Mensagem de cartão não permitido na urna", FieldType.TEXT, "Não permitido;na urna."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "RevistaRequired",
 				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRefeitorio",
+				"Habilitar decrementa refeitorio", FieldType.CHECKBOX, "false"));
 
 		//Campo "Tela de pedestre"
 
@@ -594,6 +602,8 @@ public class Utils {
 		
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
 				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincHikivision",
+				"Buscar editados em lotes", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",

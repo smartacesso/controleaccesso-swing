@@ -1,40 +1,8 @@
 package com.protreino.services.devices;
 
 
-import static com.protreino.services.constants.TopDataDeviceConstants.BLOQUEAR_SAIDA;
-import static com.protreino.services.constants.TopDataDeviceConstants.COLETA_CARTOES_OFFLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.DOIS_LEITORES;
-import static com.protreino.services.constants.TopDataDeviceConstants.ECOAR_ASTERISCOS;
-import static com.protreino.services.constants.TopDataDeviceConstants.ENABLE_IGNORED_ACCESS;
-import static com.protreino.services.constants.TopDataDeviceConstants.ENVIA_DIGITAIS_PARA_CATRACA;
-import static com.protreino.services.constants.TopDataDeviceConstants.HABILITAR_TECLADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_START_IGNORE;
-import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_START_IGNORE_2;
-import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_STOP_IGNORE;
-import static com.protreino.services.constants.TopDataDeviceConstants.HOUR_STOP_IGNORE_2;
-import static com.protreino.services.constants.TopDataDeviceConstants.IDENTIFICACAO_BIOMETRICA;
-import static com.protreino.services.constants.TopDataDeviceConstants.IGNORAR_REGRAS_DE_ACESSO;
-import static com.protreino.services.constants.TopDataDeviceConstants.IS_DEVICE_RESTRITO;
-import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_1;
-import static com.protreino.services.constants.TopDataDeviceConstants.LEITOR_2;
-import static com.protreino.services.constants.TopDataDeviceConstants.LOGICA_DE_CATRACA_COM_URNA;
-import static com.protreino.services.constants.TopDataDeviceConstants.MENSAGEM_ONLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.MODELO_BIOMETRICO;
-import static com.protreino.services.constants.TopDataDeviceConstants.MODO_DE_TRABALHO;
-import static com.protreino.services.constants.TopDataDeviceConstants.NIVEL_RECONHECIMENTO;
-import static com.protreino.services.constants.TopDataDeviceConstants.ONLY_ENABLED_MODE;
-import static com.protreino.services.constants.TopDataDeviceConstants.PADRAO_DE_CARTAO;
-import static com.protreino.services.constants.TopDataDeviceConstants.QUANTIDADE_DIGITOS_CARTAO;
-import static com.protreino.services.constants.TopDataDeviceConstants.SENTIDO_DA_CATRACA;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_LIBERADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_MENSAGEM_NEGADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_DE_PING;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_ESPERA_PARA_CONECTAR;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_MUDANCA_ONLINE_OFFLINE;
-import static com.protreino.services.constants.TopDataDeviceConstants.TEMPO_TECLADO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_BIOMETRICO;
-import static com.protreino.services.constants.TopDataDeviceConstants.TIPO_LEITOR;
-import static com.protreino.services.constants.TopDataDeviceConstants.VERIFICACAO_BIOMETRICA;
+import static com.protreino.services.constants.TopDataDeviceConstants.*;
+
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -925,41 +893,43 @@ public class TopDataDevice extends Device {
 	protected void registraGiro(int sentido, Date data) {
 		String query = "";
 
-		HashMap<String, Object> args = new HashMap<String, Object>();
+		HashMap<String, Object> args = new HashMap<>();
 		args.put("EQUIPAMENTO", getFullIdentifier());
 
-		if (Objects.nonNull(inner.BilheteInner.Cartao)) {
-			String cartaoStr = inner.BilheteInner.Cartao.toString();
+		// DEBUG: Estado inicial do cartão e facial
+		System.out.println(">>> Cartao bruto: " + inner.BilheteInner.Cartao);
+		System.out.println(">>> FacialId: " + matchedFacialId);
+
+		String cartaoStr = (inner.BilheteInner.Cartao != null) ? inner.BilheteInner.Cartao.toString() : null;
+
+		boolean cartaoEhValido = cartaoStr != null && !cartaoStr.isEmpty() && !cartaoStr.replace("0", "").isEmpty();
+
+		if (cartaoEhValido) {
+			// Remove prefixo se existir
 			if (cartaoStr.startsWith("05000") || cartaoStr.startsWith("005000") || cartaoStr.startsWith("00100")) {
-				// Remover "05000" usando substring
 				cartaoStr = cartaoStr.substring(5);
 			}
 
-			if (!cartaoStr.isEmpty() && !"".equals(cartaoStr.replace("0", ""))) {
-				System.out.println("Registra giro com cartao: " + cartaoStr);
+			System.out.println(">>> Registra giro com CARTAO válido: " + cartaoStr);
+			args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
+			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 
-				args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
-				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
-
-			} else if (cartaoStr.isEmpty() || "".equals(cartaoStr.replace("0", ""))) {
-				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
-			}
+		} else if (matchedFacialId != null) {
+			System.out.println(">>> Registra giro com FACIAL ID: " + matchedFacialId);
+			args.put("NUMERO_CARTAO_RECEBIDO", matchedFacialId.toString());
+			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+			matchedFacialId = null;
 
 		} else {
-			if (this.matchedFacialId != null) {
-				String codigoFacial = this.matchedFacialId.toString();
-				args.put("NUMERO_CARTAO_RECEBIDO", codigoFacial);
-				query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+			System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
 
-				this.matchedFacialId = null;
-			} else {
-				System.out.println("Registra giro da liberado manual");
-				inner.BilheteInner.Cartao = new StringBuilder();
-				return;
-			}
+			// Evita manter lixo no campo de cartão
+			inner.BilheteInner.Cartao = null;
+			return;
 		}
 
-		inner.BilheteInner.Cartao = new StringBuilder();
+		// Resetar cartão após uso
+		inner.BilheteInner.Cartao = null;
 
 		if (!this.ignorarAcesso()) {
 
@@ -982,7 +952,8 @@ public class TopDataDevice extends Device {
 			} else if (sentido == 0) {
 				direction = !"anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
 			}
-
+			
+			System.out.println("DIREÇÃO DE GIRO : " + direction);
 			ultimoAcesso.setDirection(direction);
 			ultimoAcesso.setStatus("ATIVO");
 			ultimoAcesso.setBloquearSaida(bloquearSaida);
@@ -1025,7 +996,7 @@ public class TopDataDevice extends Device {
 				// Verifica se deve decrementar na entrada ou na saída
 				if (decrementaEntrada) {
 					// Configuração ativa: decrementar na entrada
-					if (!ultimoAcesso.isSaida()) {
+					if (ultimoAcesso.isEntrada()) {
 						pedestre.decrementaCreditos(data);
 					}
 				} else {
@@ -1054,8 +1025,11 @@ public class TopDataDevice extends Device {
 				if (pedestre.isQrCodeUsoDinamico()) {
 					pedestre.decrementaQRCodeUso();
 				}
-				pedestre.setEditadoNoDesktop(true);
-				pedestre.setDataAlteracao(new Date());
+				
+				if(pedestre.isVisitante()) {
+					pedestre.setEditadoNoDesktop(true);
+					pedestre.setDataAlteracao(new Date());
+				}
 				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 			}
 
@@ -1064,6 +1038,8 @@ public class TopDataDevice extends Device {
 			}
 
 			System.out.println("Registrou giro no equipamento: " + inner.Numero);
+		}else {
+			System.out.println("Acesso ignorado");
 		}
 	}
 	
@@ -1972,11 +1948,51 @@ public class TopDataDevice extends Device {
     	
 		List<ConfigurationTO> customConfigurations = new ArrayList<ConfigurationTO>();
     	customConfigurations.add(new ConfigurationTO(MENSAGEM_ONLINE, nomeAcademia, FieldType.MESSAGE_LINES));
+    	
+    	
+		List<ConfigurationTO> RefeitorioConfigurations = new ArrayList<ConfigurationTO>();
+
+		RefeitorioConfigurations.add(new ConfigurationTO(ENABLE_REFEITORIO_ACCESS, "false", FieldType.CHECKBOX));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE, "05:30", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE, "07:30", FieldType.TEXT));
+		
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_ALMOCO, "10:00", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_ALMOCO, "13:30", FieldType.TEXT));
+		
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE_V, "14:00", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE_V, "15:00", FieldType.TEXT));
+		
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_JANTAR, "18:00", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_JANTAR, "21:00", FieldType.TEXT));
+		
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE_N, "22:00", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE_N, "23:00", FieldType.TEXT));
+		
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_CEIA, "01:00", FieldType.TEXT));
+		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_CEIA, "04:00", FieldType.TEXT));
+		
+//		Matriz 
+//		Lanche Matutino: 05:30 as 07:30
+//		Almoço: 10:00 as 13:30
+//		Lanche vespertino: 14:00 as 15:00
+//		Jantar: 18:00 as 21:00
+//		Lanche noturno: 22:00 as 23:00
+//		Ceia: 01:00 as 04:00
+//
+//		UBV 
+//		Lanche matutino: 05:30 as 08:00
+//		Almoço: 11:00 as 13:00
+//		Lanche vespertino: 14:00 as 15:30
+//		Jantar: 22:00 as 23:30
+//		Ceia: 01:00 as 04:00
 
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
 		configurationGroups.add(new ConfigurationGroupTO("Personalizado", customConfigurations));
+		configurationGroups.add(new ConfigurationGroupTO("Refeitorio", RefeitorioConfigurations));
+		
 	}
+
 	
 	protected void configureInner(){
 		this.inner.Numero = innerNumber;
@@ -2818,7 +2834,43 @@ public class TopDataDevice extends Device {
 
 	    return false;
 	}
+	
+	public Boolean isDentroHorarioRefeitorio() {
+		if (getConfigurationValueAsBoolean(ENABLE_REFEITORIO_ACCESS)) {
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+			LocalTime horaAtual = LocalTime.now();
 
+			// Lista com todos os pares de configurações (início e fim)
+			String[][] intervalos = { { HOUR_START_LANCHE, HOUR_STOP_LANCHE }, { HOUR_START_ALMOCO, HOUR_STOP_ALMOCO },
+					{ HOUR_START_LANCHE_V, HOUR_STOP_LANCHE_V }, { HOUR_START_JANTAR, HOUR_STOP_JANTAR },
+					{ HOUR_START_LANCHE_N, HOUR_STOP_LANCHE_N }, { HOUR_START_CEIA, HOUR_STOP_CEIA } };
+
+			for (String[] intervalo : intervalos) {
+				String inicioStr = getConfigurationValue(intervalo[0]);
+				String fimStr = getConfigurationValue(intervalo[1]);
+
+				LocalTime inicio = LocalTime.parse(inicioStr, dtf);
+				LocalTime fim = LocalTime.parse(fimStr, dtf);
+
+				// Caso o intervalo ultrapasse meia-noite (ex: 01:00 - 04:00)
+				if (fim.isBefore(inicio)) {
+					if (!horaAtual.isBefore(inicio) || !horaAtual.isAfter(fim)) {
+						return true;
+					}
+				} else {
+					if (!horaAtual.isBefore(inicio) && !horaAtual.isAfter(fim)) {
+						return true;
+					}
+				}
+			}
+
+			return false;
+
+		} else {
+			return false;
+		}
+
+	}
 	
 	@Override
 	public String getFullIdentifier() {

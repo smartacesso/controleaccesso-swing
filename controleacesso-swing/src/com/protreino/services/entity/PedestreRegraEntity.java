@@ -1,7 +1,11 @@
 package com.protreino.services.entity;
 
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -198,6 +202,39 @@ public class PedestreRegraEntity extends BaseEntity {
 		horarios.stream()
 			.filter(horario -> horario.isDiaPermitido(date) && horario.isDentroDoHorarioPermitido(date) && Objects.nonNull(horario.getQtdeDeCreditos()))
 			.forEach(horario -> horario.decrementaCreditos());
+		
+	}
+	
+	public void decrementaCreditoRefeitorio(Date date) {
+		if(Objects.isNull(horarios) || horarios.isEmpty()) {
+			return;
+		}
+		
+		if(date == null) {
+			date = new Date();
+		}
+		
+		LocalTime agora = date.toInstant()
+		    .atZone(ZoneId.systemDefault())
+		    .toLocalTime();
+
+		Optional<HorarioEntity> horarioValidoComCredito = horarios.stream()
+			    .filter(h -> h.getHorarioInicio() != null)
+			    .peek(h -> {
+			        LocalTime horario = h.getHorarioInicio().toInstant()
+			            .atZone(ZoneId.systemDefault())
+			            .toLocalTime();
+			        long diff = Math.abs(Duration.between(horario, agora).toMinutes());
+			    })
+			    .min(Comparator.comparingLong(h -> {
+			        LocalTime horario = h.getHorarioInicio().toInstant()
+			            .atZone(ZoneId.systemDefault())
+			            .toLocalTime();
+			        return Math.abs(Duration.between(horario, agora).toMinutes());
+			    }));
+		
+		
+		horarioValidoComCredito.get().decrementaCreditos();
 	}
 	
 	public boolean isNaoRemovidoNoDesktop() {

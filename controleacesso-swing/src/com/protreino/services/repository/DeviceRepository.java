@@ -61,4 +61,22 @@ public class DeviceRepository {
 		return null;
 	}
 	
+	
+	public static Device getDeviceByIdentifierNomeAlterado(String identifier) {
+	    if (Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty() || Objects.isNull(identifier)) {
+	        return null;
+	    }
+
+	    String code = identifier.replaceAll("\\D+", ""); // extrai número
+
+	    for (Device device : Main.devicesList) {
+	        if (device.getIdentifier() != null && device.getIdentifier().contains(code + ";")) {
+	            return device;
+	        }
+	    }
+
+	    return null;
+	}
+
+	
 }

@@ -40,5 +40,24 @@ public class TopDataDeviceConstants {
 	public static final String HOUR_START_IGNORE_2 = "Hora de inicio tarde";
 	public static final String HOUR_STOP_IGNORE_2 = "Hora de fim tarde";
 	
-
+	public static final String ENABLE_REFEITORIO_ACCESS = "Habilita refeitorio";
+	
+	public static final String HOUR_START_LANCHE = "Lanche matutino inicio";
+	public static final String HOUR_STOP_LANCHE = "Lanche matutino fim";
+	
+	public static final String HOUR_START_ALMOCO = "Almoco inicio";
+	public static final String HOUR_STOP_ALMOCO = "Almoco fim";
+	
+	public static final String HOUR_START_LANCHE_V = "Lanche vespertino inicio";
+	public static final String HOUR_STOP_LANCHE_V = "Lanche vespertino fim";
+	
+	public static final String HOUR_START_JANTAR = "Jantar inicio";
+	public static final String HOUR_STOP_JANTAR = "Jantar fim";
+	
+	public static final String HOUR_START_LANCHE_N = "Lanche noturno inicio";
+	public static final String HOUR_STOP_LANCHE_N = "Lanche noturno fim";
+	
+	public static final String HOUR_START_CEIA = "ceia inicio";
+	public static final String HOUR_STOP_CEIA = "ceia fim";
+	
 }

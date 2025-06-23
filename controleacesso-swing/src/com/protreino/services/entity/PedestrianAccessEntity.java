@@ -7,9 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -560,6 +563,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="ULTIMO_ACESSO_HIKIVISION", nullable=true, length=30)
 	private Date lastAccessHikiVision;
 	
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name="ACESSO_LIVRE", nullable=true, length=11)
+	private Boolean acessoLivre;
+	
 	@Transient
 	private Integer origemCatraca;
 	
@@ -1089,38 +1096,39 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		
 		//equipamentos
 		if (athleteAccessTO.getEquipamentos() != null && !athleteAccessTO.getEquipamentos().isEmpty()) {
-			if (equipamentos == null || equipamentos.isEmpty()) {
-				equipamentos = new ArrayList<>();
-				
-				for(PedestrianEquipamentEntity newEquip : athleteAccessTO.getEquipamentos()) {
-					equipamentos.add(new PedestrianEquipamentEntity(this, newEquip));
-				}
-			
-			} else {
-				List<PedestrianEquipamentEntity> equipamentosAux = new ArrayList<>();
-				for (PedestrianEquipamentEntity newEquip : athleteAccessTO.getEquipamentos()) {
-					boolean equipExistente = false;
-					
-					for(PedestrianEquipamentEntity equipamentoExistente : equipamentos) {
-						if(equipamentoExistente.getId().equals(newEquip.getId())) {
-							equipamentosAux.add(equipamentoExistente);
-							equipExistente = true;
-							break;
-						}
-					}
-					
-					if(!equipExistente) {
-						equipamentosAux.add(new PedestrianEquipamentEntity(this, newEquip));
-					}
-				}
-				equipamentos = equipamentosAux;
-			}
-		
+
+		    // Garante que a lista esteja inicializada
+		    if (equipamentos == null) {
+		        equipamentos = new ArrayList<>();
+		    }
+
+		    // Mapeia os equipamentos existentes por ID
+		    Map<String, PedestrianEquipamentEntity> existentes = new HashMap<>();
+		    for (PedestrianEquipamentEntity existente : equipamentos) {
+		        existentes.put(existente.getIdEquipamento(), existente);
+		    }
+
+		    // Limpa a lista para permitir reaproveitamento ou substituição
+		    equipamentos.clear();
+
+		    for (PedestrianEquipamentEntity novoEquip : athleteAccessTO.getEquipamentos()) {
+		        String id = novoEquip.getIdEquipamento();
+		        PedestrianEquipamentEntity reaproveitado = existentes.get(id);
+
+		        if (reaproveitado != null) {
+		            equipamentos.add(reaproveitado); // Reaproveita objeto já existente
+		        } else {
+		            equipamentos.add(new PedestrianEquipamentEntity(this, novoEquip)); // Cria novo
+		        }
+		    }
+
 		} else {
-			if (equipamentos != null)
-				equipamentos.clear();
+		    // Se não vier nenhum equipamento, remove todos
+		    if (equipamentos != null) {
+		        equipamentos.clear();
+		    }
 		}
-		
+
 		//mensagens
 		if (athleteAccessTO.getMensagens() != null && !athleteAccessTO.getMensagens().isEmpty()) {
 			if (mensagens == null || mensagens.isEmpty()) {
@@ -1264,9 +1272,15 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return true;
 	}
 	
+	
+	public boolean temTipoCredito() {
+		return getRegraAtivaPedestre().isPresent() && getRegraAtivaPedestre().get().getRegra().getTipo().equals(TipoRegra.ACESSO_CREDITO);
+	}
+	
 	public boolean temCreditos() {
 		return Objects.nonNull(quantidadeCreditos) && quantidadeCreditos > 0;
 	}
+
 	
 	public boolean temCreditosValidos() {
 		return temCreditosValidos(null);
@@ -1376,6 +1390,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		
 		if(regraAtiva.get().temRegraDeHorariosComCredito()) {
 			regraAtiva.get().decrementaCreditoFromHorario(date);
+			
+			if(Utils.refeitorioHabilitado()) {
+				regraAtiva.get().decrementaCreditoRefeitorio(date);
+			}
 			return;
 		}
 	}
@@ -1423,6 +1441,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		return Objects.nonNull(tipoTurno) && !tipoTurno.isEmpty();
 	}
 	
+	public boolean temTipoPeriodo() {
+		return getRegraAtivaPedestre().isPresent() && getRegraAtivaPedestre().get().getRegra().getTipo().equals(TipoRegra.ACESSO_PERIODO);
+	}
+	
+	
+	public boolean temTipoHorarioCredito() {
+		return getRegraAtivaPedestre().isPresent() && getRegraAtivaPedestre().get().getRegra().getTipo().equals(TipoRegra.ACESSO_HORARIO);
+	}
 	
 	public boolean isInativo() {
 		return "INATIVO".equals(status);
@@ -2061,6 +2087,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setLastAccessHikiVision(Date lastAccessHikiVision) {
 		this.lastAccessHikiVision = lastAccessHikiVision;
+	}
+
+	public Boolean getAcessoLivre() {
+		return acessoLivre;
+	}
+
+	public void setAcessoLivre(Boolean acessoLivre) {
+		this.acessoLivre = acessoLivre;
 	}
 	
 }

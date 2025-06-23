@@ -395,7 +395,7 @@ public class HikiVisionIntegrationService {
 			if (response.isSuccessful()) {
                 final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
                 final boolean isCartaoAdicionado = responseBody.statusString.equalsIgnoreCase("OK");
-                System.out.println(String.format("Foto do usuario %s apagada no device %s com sucesso: %b", idUser, deviceId, isCartaoAdicionado));
+                System.out.println(String.format("Cartao  %s cadastrado no device %s com sucesso: %b", idUser, deviceId, isCartaoAdicionado));
                 
                 return isCartaoAdicionado;
             }

@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -262,35 +263,68 @@ public class AdicionarRegrasPanel extends JPanel {
 		add(pedestreRegraListTablePanel);
 	}
 	
+//	private JButton getRemovePedestreRegraButton() {
+//		JButton removeDocumentButton = new JButton("Remover");
+//		removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
+//		removeDocumentButton.setPreferredSize(new Dimension(100, 40));
+//		
+//		removeDocumentButton.addActionListener(e -> {
+//			if(pedestreRegrasListTable.getSelectedRow() < 0)
+//				return;
+//			
+//			Long idParaExcluir = (Long) dataModel.getValueAt(pedestreRegrasListTable.getSelectedRow(), 0);
+//			
+//			for(int i = 0; i < pedestresRegras.size(); i++) {
+//				if(!idParaExcluir.equals(pedestresRegras.get(i).getId()))
+//					continue;
+//				
+//				if(pedestresRegras.get(i).getCadastradoNoDesktop())
+//					pedestresRegras.remove(i);
+//				else
+//					pedestresRegras.get(i).setRemovidoNoDesktop(true);
+//			}
+//			
+//			dataModel.removeRow(pedestreRegrasListTable.getSelectedRow());
+//			pedestreRegrasListTable.setModel(dataModel);
+//			
+//			Utils.escondeColunaFromTable(pedestreRegrasListTable, 0);
+//		});
+//		
+//		return removeDocumentButton;
+//	}
+	
 	private JButton getRemovePedestreRegraButton() {
-		JButton removeDocumentButton = new JButton("Remover");
-		removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
-		removeDocumentButton.setPreferredSize(new Dimension(100, 40));
-		
-		removeDocumentButton.addActionListener(e -> {
-			if(pedestreRegrasListTable.getSelectedRow() < 0)
-				return;
-			
-			Long idParaExcluir = (Long) dataModel.getValueAt(pedestreRegrasListTable.getSelectedRow(), 0);
-			
-			for(int i = 0; i < pedestresRegras.size(); i++) {
-				if(!idParaExcluir.equals(pedestresRegras.get(i).getId()))
-					continue;
-				
-				if(pedestresRegras.get(i).getCadastradoNoDesktop())
-					pedestresRegras.remove(i);
-				else
-					pedestresRegras.get(i).setRemovidoNoDesktop(true);
-			}
-			
-			dataModel.removeRow(pedestreRegrasListTable.getSelectedRow());
-			pedestreRegrasListTable.setModel(dataModel);
-			
-			Utils.escondeColunaFromTable(pedestreRegrasListTable, 0);
-		});
-		
-		return removeDocumentButton;
+	    JButton removeDocumentButton = new JButton("Remover");
+	    removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
+	    removeDocumentButton.setPreferredSize(new Dimension(100, 40));
+	    
+	    removeDocumentButton.addActionListener(e -> {
+	        int selectedRow = pedestreRegrasListTable.getSelectedRow();
+	        if (selectedRow < 0)
+	            return;
+
+	        Long idParaExcluir = (Long) dataModel.getValueAt(selectedRow, 0);
+
+	        Iterator<PedestreRegraEntity> iterator = pedestresRegras.iterator();
+	        while (iterator.hasNext()) {
+	        	PedestreRegraEntity regra = iterator.next();
+	            if (idParaExcluir.equals(regra.getId())) {
+	                if (regra.getCadastradoNoDesktop()) {
+	                    iterator.remove();
+	                } else {
+	                    regra.setRemovidoNoDesktop(true);
+	                }
+	                break;
+	            }
+	        }
+
+	        dataModel.removeRow(selectedRow);
+	        // NÃO precisa fazer pedestreRegrasListTable.setModel(dataModel);
+	    });
+
+	    return removeDocumentButton;
 	}
+
 	
 	private void populateTable(RegraEntity regraSelecionada) {
 		Object[] item = new Object[4];

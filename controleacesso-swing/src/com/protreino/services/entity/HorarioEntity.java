@@ -121,6 +121,11 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 		return Objects.isNull(qtdeDeCreditos) || qtdeDeCreditos > 0;
 	}
 	
+	public boolean temCreditosValidos() {
+	    return this.qtdeDeCreditos != null && this.qtdeDeCreditos > 0;
+	}
+
+	
 	public void decrementaCreditos() {
 		if(Objects.isNull(qtdeDeCreditos)) {
 			return;

@@ -135,32 +135,36 @@ public class SyncPedestrianAccessListUseCase {
                     
                     Long start1 = System.currentTimeMillis();
                     
-//                   List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
+                    if(Utils.sendEditadosLotes()) {
+                    	System.out.println("Enviando editados em lotes");
+                    	
+                        List<PedestrianAccessEntity> visitantesLocais = enviaPedestresUmPorUm();
+                        System.out.println("fim do envia editados : " + (System.currentTimeMillis() - start1));
+                   
+                        enviaBiometriasColetadasLocalmente();
+                        recebePedestresEBiometriasDaWeb();
+                        buscaFotosDosPedestres(backUpLastSync);
+                        
+                        if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
+                            apagaDadosNovos(visitantesLocais);
+                        }
+                        atualizaListadeAcessoCatracaOffline();
+                    }else {
+                    	System.out.println("Enviando editados em padrão");
+                    	
+                        List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
 
-//                    CompletableFuture.runAsync(() -> {
-//                        try {
-//                            List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
-//                            System.out.println("fim do envia editados : " + (System.currentTimeMillis() - start1));
-//                            if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
-//                                apagaDadosNovos(visitantesLocais);
-//                            }
-//                            System.out.println("fim do apaga dados : " + (System.currentTimeMillis() - start1));
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    });
-                    
-//                  List<PedestrianAccessEntity> visitantesLocais = enviaPedestresCadastradosOuEditadosDesktop();
-                    List<PedestrianAccessEntity> visitantesLocais = enviaPedestresUmPorUm();
-                    System.out.println("fim do envia editados : " + (System.currentTimeMillis() - start1));
-               
-                    enviaBiometriasColetadasLocalmente();
-                    recebePedestresEBiometriasDaWeb();
-                    buscaFotosDosPedestres(backUpLastSync);
-                    if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
-                        apagaDadosNovos(visitantesLocais);
+                        enviaBiometriasColetadasLocalmente();
+                        recebePedestresEBiometriasDaWeb();
+                        buscaFotosDosPedestres(backUpLastSync);
+
+                        if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
+                            apagaDadosNovos(visitantesLocais);
+                        }
+
+                        atualizaListadeAcessoCatracaOffline();
                     }
-                    atualizaListadeAcessoCatracaOffline();
+
 
                 } catch (UnknownHostException | SocketTimeoutException | ConnectException ce) {
                     System.out.println(ce.getMessage());
@@ -212,78 +216,69 @@ public class SyncPedestrianAccessListUseCase {
             }
 
             @SuppressWarnings("unchecked")
-            private List<PedestrianAccessEntity> enviaPedestresCadastradosOuEditadosDesktop() throws IOException {
-                Main.verificaValidandoAcesso();
-                final BiometricRepository biometricRepository = new BiometricRepository();
-                List<PedestrianAccessEntity> visitantesLocais = new ArrayList<>();
-                Long start2 = System.currentTimeMillis();
-                Date lastSync = Main.loggedUser.getLastSync();
+			private List<PedestrianAccessEntity> enviaPedestresCadastradosOuEditadosDesktop() throws IOException {
+				Main.verificaValidandoAcesso();
+				final BiometricRepository biometricRepository = new BiometricRepository();
+				List<PedestrianAccessEntity> visitantesLocais = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
+						.getResultListLimited(PedestrianAccessEntity.class,
+								"PedestrianAccessEntity.findAllCadastradosOuEditadosDesktop", 100L);
 
-				HashMap<String, Object> args = new HashMap<String, Object>();
-				args.put("ULTIMA_SINC", lastSync);
-				
+				if (visitantesLocais == null || visitantesLocais.isEmpty()) {
+					System.out.println(
+							sdf.format(new Date()) + "  PEDESTRES/VISITANTES LOCAIS: sem registros para enviar");
+					return null;
+				}
 
-//				visitantesLocais = (List<PedestrianAccessEntity>) 
-//						HibernateLocalAccessData.getResultListWithParamsTimeLimited(PedestrianAccessEntity.class, "PedestrianAccessEntity.findAllAlterados", args, 0, 100);
-				
-				visitantesLocais = (List<PedestrianAccessEntity>) 
-						HibernateLocalAccessData.getAllAlterados(lastSync, 100);
-				
-				 System.out.println("fim do findAllAlterados: " + (System.currentTimeMillis() - start2));
-                
-                if (visitantesLocais == null || visitantesLocais.isEmpty()) {
-                    System.out.println(sdf.format(new Date()) + "  PEDESTRES/VISITANTES LOCAIS: sem registros para enviar");
-                    return null;
-                }
+				System.out.println("Iniciando sincronismo de pedestres para web");
 
-                System.out.println("Iniciando sincronismo de pedestres para web");
+				JsonArray responseArray = new JsonArray();
+				for (PedestrianAccessEntity visitante : visitantesLocais) {
+					// se foi criado, envia os dados para o servidor
+					// porque está sem o ID
+					if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
+						visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
 
-                JsonArray responseArray = new JsonArray();
-                for (PedestrianAccessEntity visitante : visitantesLocais) {
-                    // se foi criado, envia os dados para o servidor
-                    // porque está sem o ID
-                    if (Boolean.TRUE.equals(visitante.getCadastradoNoDesktop())) {
-                        visitante.setListaAcessosTransient(buscaAcessosVisitante(visitante.getId()));
+						if (visitante.getListaAcessosTransient() != null
+								&& !visitante.getListaAcessosTransient().isEmpty()) {
+							int countAtivos = 0;
+							for (LogPedestrianAccessEntity l : visitante.getListaAcessosTransient()) {
+								if (!"Regras ignoradas".equals(l.getReason()) && l.getStatus() != null
+										&& "ATIVO".equalsIgnoreCase(l.getStatus())) {
+									countAtivos++;
+								}
+							}
+							if (countAtivos > 0) {
+								visitante.setQtdAcessoAntesSinc(countAtivos);
+							}
+						}
 
-                        if (visitante.getListaAcessosTransient() != null
-                                && !visitante.getListaAcessosTransient().isEmpty()) {
-                            int countAtivos = 0;
-                            for (LogPedestrianAccessEntity l : visitante.getListaAcessosTransient()) {
-                                if (!"Regras ignoradas".equals(l.getReason())
-                                        && l.getStatus() != null
-                                        && "ATIVO".equalsIgnoreCase(l.getStatus())) {
-                                    countAtivos++;
-                                }
-                            }
-                            if (countAtivos > 0) {
-                                visitante.setQtdAcessoAntesSinc(countAtivos);
-                            }
-                        }
+						visitante.setListaBiometriasTransient(
+								biometricRepository.buscaBiometriasVisitante(visitante.getId()));
+					}
 
-                        visitante.setListaBiometriasTransient(biometricRepository.buscaBiometriasVisitante(visitante.getId()));
-                    }
+					JsonObject responseObj = getNewVisitanteResponseObj(visitante);
+					responseArray.add(responseObj);
+				}
 
-                    JsonObject responseObj = getNewVisitanteResponseObj(visitante);
-                    responseArray.add(responseObj);
-                }
+				System.out.println("Enviando request com visitantes: " + responseArray.size());
 
-                System.out.println("Enviando request com visitantes: " + responseArray.size());
+				HttpConnection con = new HttpConnection(
+						Main.urlApplication + "/restful-services/access/uploadVisitantes");
+				int responseCode = con.sendResponse(responseArray.toString());
 
-                HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/uploadVisitantes");
-                int responseCode = con.sendResponse(responseArray.toString());
+				if (responseCode != 200) {
+					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR VISITANTES LOCAIS: Response code: "
+							+ responseCode);
+					System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR VISITANTES LOCAIS: Error String: "
+							+ con.getErrorString());
+					return null;
+				}
 
-                if (responseCode != 200) {
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO AO ENVIAR VISITANTES LOCAIS: Response code: " + responseCode);
-                    System.out.println(sdf.format(new Date())
-                            + "  ERRO AO ENVIAR VISITANTES LOCAIS: Error String: " + con.getErrorString());
-                    return null;
-                }
+				atualizaDadosAlterados(visitantesLocais);
 
-                atualizaDadosAlterados(visitantesLocais);
+				return visitantesLocais;
 
-                return visitantesLocais;
-            }
+			}
             
             private List<PedestrianAccessEntity> enviaPedestresUmPorUm() throws IOException {
                 Main.verificaValidandoAcesso();
@@ -586,6 +581,15 @@ public class SyncPedestrianAccessListUseCase {
                         	} catch (Exception e) {
                         		System.out.println(e.getMessage());
 							}
+                        }
+                        if(Utils.sincHikivisionWeb()) {
+                            try {
+                        		hikivisionUseCases = new HikivisionUseCases();
+                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
+
+                        	} catch (Exception e) {
+                        		System.out.println(e.getMessage());
+    						}
                         }
 
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {

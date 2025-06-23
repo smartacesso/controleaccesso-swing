@@ -31,6 +31,7 @@ public class HttpConnection {
 		con = (HttpURLConnection) url.openConnection();
 		con.setConnectTimeout(120000);
 		con.setReadTimeout(120000);
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
 	}
 	
 	public void setTimeout(int timeout) {

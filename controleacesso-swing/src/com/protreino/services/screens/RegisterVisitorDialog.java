@@ -97,6 +97,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JCheckBox habilitarTecladoCheckBox;
 	private JCheckBox enviaSMSdeConfirmacaoEntrada;
 	private JCheckBox sempreLiberado;
+	private JCheckBox acessoLivre;
 
 	private JComboBox<SelectItem> empresaJComboBox;
 	private JComboBox<SelectItem> departamentoJComboBox;
@@ -949,7 +950,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 //		});
 		panelInternoLateral.add(sempreLiberado, getNewGridBag(0, 6, 20, 5));
 		panelExterno.add(panelInternoLateral, BorderLayout.NORTH);
-
+		
+		
+		acessoLivre = new JCheckBox("Acesso Livre");
+		acessoLivre.setVisible(true);
+		panelInternoLateral.add(acessoLivre, getNewGridBag(0, 7, 20, 5));
+		panelExterno.add(panelInternoLateral, BorderLayout.NORTH);
+		
 		JButton geraCartaoAcesso = new JButton("Gerar cartao");
 		geraCartaoAcesso.setBorder(new EmptyBorder(20, 20, 20, 20));
 		geraCartaoAcesso.setPreferredSize(new Dimension(120, 3));
@@ -964,7 +971,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		});
 
 		c = getNewGridBag(0, 1, 0, 0);
-		panelInternoLateral.add(geraCartaoAcesso, getNewGridBag(0, 7, 30, 5));
+		panelInternoLateral.add(geraCartaoAcesso, getNewGridBag(0, 8, 30, 5));
 
 		return panelExterno;
 
@@ -1516,7 +1523,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 
 			visitante.setEditadoNoDesktop(true);
-//			visitante.setDataAlteracao(new Date());
 		}
 
 		// Dados basicos
@@ -1554,6 +1560,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setEnviaSmsAoPassarNaCatraca(enviaSMSdeConfirmacaoEntrada.isSelected());
 		visitante.setSempreLiberado(sempreLiberado.isSelected());
 		visitante.setHabilitarTeclado(habilitarTecladoCheckBox.isSelected());
+		visitante.setAcessoLivre(acessoLivre.isSelected());
 
 		// Dados Endereco
 		visitante.setCep(cepTextField.getText().matches(regex) ? cepTextField.getText() : null);
@@ -1666,6 +1673,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
 		sempreLiberado.setSelected(visitante.getSempreLiberado());
+		acessoLivre.setSelected(Objects.nonNull(visitante.getAcessoLivre()) ?  visitante.getAcessoLivre() : false);
 		enviaSMSdeConfirmacaoEntrada.setSelected(visitante.getEnviaSmsAoPassarNaCatraca());
 
 		// Endereco
