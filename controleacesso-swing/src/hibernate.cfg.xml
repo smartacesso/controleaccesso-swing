@@ -57,6 +57,7 @@
 		<mapping class="com.protreino.services.entity.HikivisionFingerEntity" />
 		<mapping class="com.protreino.services.entity.HikivisonFingerErrorEntity" />
 		<mapping class="com.protreino.services.entity.TopdataFacialErrorEntity" />
+		<mapping class="com.protreino.services.entity.LocalEntity" />
 
 	</session-factory>
 </hibernate-configuration>

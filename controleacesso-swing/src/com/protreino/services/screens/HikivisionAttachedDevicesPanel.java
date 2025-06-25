@@ -33,23 +33,27 @@ import com.protreino.services.utils.Utils;
 @SuppressWarnings("serial")
 public class HikivisionAttachedDevicesPanel extends JPanel {
 
-	private JTable hikivisionCamerasListTable;
-	private String[] columns = {"Nome", "Id"};
+	protected  JTable hikivisionCamerasListTable;
+	protected String[] columns = {"Nome", "Id"};
 	private Integer[] columnWidths = {280, 280};
 	
 	private Font headerFont;
-	private JComboBox<SelectItem> optionsAttachedHikivisionCamerasComboBox;
+	protected  JComboBox<SelectItem> optionsAttachedHikivisionCamerasComboBox;
 	
-	private JButton addHikivisionCameraButton;
-	private JButton removeHikivisionCameraButton;
+	protected  JButton addHikivisionCameraButton;
+	protected  JButton removeHikivisionCameraButton;
 	
 	private Device deviceAtual;
 	
-	private DefaultTableModel dataModel;
+	protected  DefaultTableModel dataModel;
 	
 	private final HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
-	private final List<HikivisionDeviceTO.Device> hikivisionDevices;
+	protected final List<HikivisionDeviceTO.Device> hikivisionDevices;
 	
+    // Construtor especial para uso em heranças que montam a UI diferente
+    protected HikivisionAttachedDevicesPanel(boolean skipUIInit) {
+        this.hikivisionDevices = hikivisionUseCases.listarDispositivos();
+    }
 	public HikivisionAttachedDevicesPanel(Device deviceAtual) {
 		this.deviceAtual = deviceAtual;
 		hikivisionDevices = hikivisionUseCases.listarDispositivos();
@@ -145,7 +149,7 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 		hikivisionCamerasListTable.setModel(dataModel);
 	}
 	
-	private Object[] attachedToToObject(AttachedTO attachedTO) {
+	protected Object[] attachedToToObject(AttachedTO attachedTO) {
 		Object[] obj = new Object[2];
 		obj[0] = attachedTO.getNomeDevice();
 		obj[1] = attachedTO.getIdDevice();
@@ -184,7 +188,7 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 		return removeHikivisionCameraButton;
 	}
 	
-	private JTable getHikivisionCamerasListTable() {
+	protected JTable getHikivisionCamerasListTable() {
 		hikivisionCamerasListTable = new JTable(new DefaultTableModel(columns, 0));
 		hikivisionCamerasListTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		hikivisionCamerasListTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -202,7 +206,7 @@ public class HikivisionAttachedDevicesPanel extends JPanel {
 		return hikivisionCamerasListTable;
 	}
 	
-	private Vector<SelectItem> getOptionHikivisionCameras(){
+	protected  Vector<SelectItem> getOptionHikivisionCameras(){
 		Vector<SelectItem> itens = new Vector<SelectItem>();
 
         if (Utils.isNullOrEmpty(hikivisionDevices)) {

@@ -88,6 +88,7 @@ public class MainScreen extends JFrame {
 	private JMenuItem preferenciasMenuItem;
 	private JMenuItem hikivisionManualSyncMenuItem;
 	private JMenuItem TopDataFacialMenuItem;
+	private JMenuItem localMenuItem;
 	private JMenuItem syncUsersMenuItem;
 	private JMenuItem logsMenuItem;
 	private JMenuItem procurarAtualizacaoMenuItem;
@@ -604,6 +605,33 @@ public class MainScreen extends JFrame {
 			if(Utils.isTopDataFacialEnable()) {
 				menuConfiguracoes.add(TopDataFacialMenuItem);
 			}
+			
+			//
+			
+			localMenuItem = new JMenuItem("Configurar locais");
+			localMenuItem.addActionListener(e -> {
+				try {
+					AutenticationDialog autenticationDialog = new AutenticationDialog(null, true, true, true);
+					Boolean retornoAuthentication = autenticationDialog.authenticate();
+					if (retornoAuthentication == null) {
+						return;
+					}
+					if (retornoAuthentication) {
+						new LocaisScreen();
+						int index = tabbedPane.getSelectedIndex();
+						buildUI();
+						tabbedPane.setSelectedIndex(index);
+					} else {
+						JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao", "Erro na validacao",
+								JOptionPane.PLAIN_MESSAGE);
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					Utils.createNotification("Nao foi possivel abri as preferencias", NotificationType.BAD);
+				}
+			});
+
+			menuConfiguracoes.add(localMenuItem);
 			
 			//
 			
