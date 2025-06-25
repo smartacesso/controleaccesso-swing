@@ -923,13 +923,21 @@ public class TopDataDevice extends Device {
 		} else {
 			System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
 
-			// Evita manter lixo no campo de cartão
-			inner.BilheteInner.Cartao = null;
-			return;
+		    // Limpa cartão sem dar null
+		    if (inner.BilheteInner.Cartao == null) {
+		        inner.BilheteInner.Cartao = new StringBuilder();
+		    } else {
+		        inner.BilheteInner.Cartao.setLength(0);
+		    }
+		    return;
 		}
 
-		// Resetar cartão após uso
-		inner.BilheteInner.Cartao = null;
+		// Limpa cartão no final, sem quebrar quem usa depois
+		if (inner.BilheteInner.Cartao == null) {
+		    inner.BilheteInner.Cartao = new StringBuilder();
+		} else {
+		    inner.BilheteInner.Cartao.setLength(0);
+		}
 
 		if (!this.ignorarAcesso()) {
 
