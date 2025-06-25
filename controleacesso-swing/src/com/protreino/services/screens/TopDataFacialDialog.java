@@ -57,7 +57,7 @@ public class TopDataFacialDialog extends BaseDialog{
 	public TopDataFacialDialog() {
 		setIconImage(Main.favicon); //define icone da janela 
 		setModal(true);
-		setTitle("Topdata facial"); // decrição de qual janela esta
+		setTitle("Sincronismo Topdata facial"); // decrição de qual janela esta
 		setResizable(false);
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(920, 718)); // define o tamanho da janela

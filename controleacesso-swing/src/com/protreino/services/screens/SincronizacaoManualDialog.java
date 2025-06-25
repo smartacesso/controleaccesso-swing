@@ -83,7 +83,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	public SincronizacaoManualDialog() {
 		setIconImage(Main.favicon); //define icone da janela 
 		setModal(true);
-		setTitle("Sincronismo manual de dispositivos"); // decrição de qual janela esta
+		setTitle("Sincronismo Hikivision"); // decrição de qual janela esta
 		setResizable(false);
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(920, 718)); // define o tamanho da janela

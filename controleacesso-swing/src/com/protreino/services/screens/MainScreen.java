@@ -543,7 +543,7 @@ public class MainScreen extends JFrame {
 			});
 			menuConfiguracoes.add(preferenciasMenuItem);
 
-			hikivisionManualSyncMenuItem = new JMenuItem("Sincronismo manual de dispositivos");
+			hikivisionManualSyncMenuItem = new JMenuItem("Sincronismo HIKIVISION");
 			hikivisionManualSyncMenuItem.addActionListener(
 				e -> {
 					try {
@@ -575,7 +575,7 @@ public class MainScreen extends JFrame {
 			}
 			
 			//
-			TopDataFacialMenuItem = new JMenuItem("Sincronismo facial topdata");
+			TopDataFacialMenuItem = new JMenuItem("Sincronismo TOPDATA");
 			TopDataFacialMenuItem.addActionListener(
 				e -> {
 					try {
@@ -606,7 +606,30 @@ public class MainScreen extends JFrame {
 				menuConfiguracoes.add(TopDataFacialMenuItem);
 			}
 			
-			//
+			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
+			syncUsersMenuItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+//						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
+//								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
+						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
+						Boolean retornoAuthentication = autenticationDialog.authenticate();
+						if (retornoAuthentication == null)
+							return;
+						if (retornoAuthentication) {
+							syncUsers();
+						} else {
+							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao",
+									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
+						}
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						Utils.createNotification("Nao foi possivel sincronizar os usuarios", NotificationType.BAD);
+					}
+				}
+			});
+			menuConfiguracoes.add(syncUsersMenuItem);
 			
 			localMenuItem = new JMenuItem("Configurar locais");
 			localMenuItem.addActionListener(e -> {
@@ -632,33 +655,6 @@ public class MainScreen extends JFrame {
 			});
 
 			menuConfiguracoes.add(localMenuItem);
-			
-			//
-			
-			syncUsersMenuItem = new JMenuItem("Sincronizar usuarios");
-			syncUsersMenuItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					try {
-//						AutenticationDialog autenticationDialog = new AutenticationDialog(null,
-//								"Digite a senha do usuario logado", "Aguarde, verificando a senha informada...");
-						AutenticationDialog autenticationDialog = new AutenticationDialog(null,true,true,true);
-						Boolean retornoAuthentication = autenticationDialog.authenticate();
-						if (retornoAuthentication == null)
-							return;
-						if (retornoAuthentication) {
-							syncUsers();
-						} else {
-							JOptionPane.showMessageDialog(null, "Senha invalida ou sem permissao",
-									"Erro na validacao", JOptionPane.PLAIN_MESSAGE);
-						}
-					} catch (Exception e2) {
-						e2.printStackTrace();
-						Utils.createNotification("Nao foi possivel sincronizar os usuarios", NotificationType.BAD);
-					}
-				}
-			});
-			menuConfiguracoes.add(syncUsersMenuItem);
 
 			logsMenuItem = new JMenuItem("Abrir pasta de logs");
 			logsMenuItem.addActionListener(new ActionListener() {
