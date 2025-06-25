@@ -909,56 +909,48 @@ public class ProcessAccessRequestUseCase {
 				pedestre.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()).toInstant()
 				.atZone(ZoneId.systemDefault()).toLocalDate();
 
-		LocalTime horarioInicio = pedestre.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
+		LocalTime turnoBase = pedestre.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
 				.atZone(ZoneId.systemDefault()).toLocalTime();
 
-		horarioInicio = horarioInicio.minusHours(3);
-		System.out.println("Horario inicio turno : " + horarioInicio);
-
-		// Calcular o número de dias entre a data de início da escala e a data de acesso
+// Calcular o dia do ciclo (1 a 12)
 		long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
+		int diaDaEscala = (int) (diasEntre % 12) + 1;
 
-		// Aplicar o ciclo de 12 dias
-		int diaDaEscala = (int) (diasEntre % 12) + 1; // +1 para garantir que o ciclo comece do 1
+// Alternância de turno: a cada 6 dias o turno inverte
+		boolean cicloPar = (diasEntre / 6) % 2 == 0;
 
-		// Ajustar os intervalos com base no horário de início dinâmico
-		LocalTime fimDia = horarioInicio.plusHours(12);
-		// 12 horas após o início
-		LocalTime fimNoite = LocalTime.of(23, 59, 59);
+// Turno atual baseado no ciclo (inverte 12h)
+		LocalTime horarioInicioTurno = cicloPar ? turnoBase
+				: turnoBase.plusHours(12).withHour((turnoBase.getHour() + 12) % 24);
 
-		// Caso o horário de fim do turno passe para o dia seguinte
-		boolean atravessaMeiaNoite = fimDia.isBefore(horarioInicio);
+// Antecipação de 3h (se necessário)
+		LocalTime horarioInicio = horarioInicioTurno.minusHours(3);
+		LocalTime fimTurno = horarioInicio.plusHours(12);
+		boolean atravessaMeiaNoite = fimTurno.isBefore(horarioInicio);
+
+		LocalTime horaAtual = dataAcesso.toLocalTime();
+
 		System.out.println("Data inicio escala : " + dataInicioEscala);
-		System.out.println("hora passagem : " + dataAcesso);
-		System.out.println("diaDaEscala : " + diaDaEscala);
-		System.out.println("horario inicio : " + horarioInicio);
-		System.out.println("fim do dia : " + fimDia);
-		System.out.println("fim da noite : " + fimNoite);
+		System.out.println("Hora do acesso     : " + dataAcesso);
+		System.out.println("Dia da escala      : " + diaDaEscala);
+		System.out.println("Turno base inicial : " + turnoBase);
+		System.out.println("Turno atual ciclo  : " + horarioInicioTurno);
+		System.out.println("Inicio do turno    : " + horarioInicio);
+		System.out.println("Fim do turno       : " + fimTurno);
+		System.out.println("Atravessa meia-noite: " + atravessaMeiaNoite);
 
-		if (diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3) {
+// Verifica se é dia de trabalho
+		boolean diaTrabalho = diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3 || diaDaEscala == 7
+				|| diaDaEscala == 8 || diaDaEscala == 9;
+
+		if (diaTrabalho) {
 			if (atravessaMeiaNoite) {
-				return dataAcesso.toLocalTime().isAfter(horarioInicio) || dataAcesso.toLocalTime().isBefore(fimDia);
+				return horaAtual.isAfter(horarioInicio) || horaAtual.isBefore(fimTurno);
 			} else {
-				return dataAcesso.toLocalTime().isAfter(horarioInicio) && dataAcesso.toLocalTime().isBefore(fimDia);
+				return horaAtual.isAfter(horarioInicio) && horaAtual.isBefore(fimTurno);
 			}
-
-		} else if (diaDaEscala == 7) {
-			return dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite);
-
-		} else if (diaDaEscala == 8 || diaDaEscala == 9) {
-			if (atravessaMeiaNoite) {
-				return (dataAcesso.toLocalTime().isAfter(horarioInicio) || dataAcesso.toLocalTime().isBefore(fimDia))
-						|| (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
-			} else {
-				return (dataAcesso.toLocalTime().isAfter(horarioInicio) && dataAcesso.toLocalTime().isBefore(fimDia))
-						|| (dataAcesso.toLocalTime().isAfter(fimDia) && dataAcesso.toLocalTime().isBefore(fimNoite));
-			}
-
-		} else if (diaDaEscala == 10) {
-			return dataAcesso.toLocalTime().isAfter(LocalTime.MIDNIGHT)
-					&& dataAcesso.toLocalTime().isBefore(horarioInicio);
-
 		} else {
+			// Dias 4-6 e 10-12: folga
 			return false;
 		}
 	}
