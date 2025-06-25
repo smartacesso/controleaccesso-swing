@@ -1274,7 +1274,11 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	
 	public boolean temTipoCredito() {
-		return getRegraAtivaPedestre().isPresent() && getRegraAtivaPedestre().get().getRegra().getTipo().equals(TipoRegra.ACESSO_CREDITO);
+		return getRegraAtivaPedestre()
+			.map(PedestreRegraEntity::getRegra)
+			.map(RegraEntity::getTipo)
+			.map(tipo -> tipo.equals(TipoRegra.ACESSO_CREDITO))
+			.orElse(false);
 	}
 	
 	public boolean temCreditos() {
