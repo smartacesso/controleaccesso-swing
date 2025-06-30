@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +38,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 
+import org.hibernate.Hibernate;
 import org.java_websocket.WebSocket;
 
 import com.protreino.services.entity.LocalEntity;
@@ -191,7 +193,7 @@ public class LocaisScreen extends BaseDialog {
 			
 			LocalEntity local = new LocalEntity();
 			local.setNome(nomeLocalTextField.getText());
-			
+			local.setIdClient(Main.loggedUser.getIdClient());
 			List<String> equipamentosPermitidos = new ArrayList<String>();
 			
 			for (AttachedTO camera : camerasSelecionadas) {
@@ -242,7 +244,7 @@ public class LocaisScreen extends BaseDialog {
 	    };
 
 	    @SuppressWarnings("unchecked")
-		List<LocalEntity> allLocaisCadastrados = (List<LocalEntity>) HibernateAccessDataFacade.getResultList(LocalEntity.class, "LocalEntity.findAll");
+		List<LocalEntity> allLocaisCadastrados = (List<LocalEntity>) HibernateAccessDataFacade.getResultList(LocalEntity.class, "LocalEntity.findAllNaoRemovido");
 
 	    if (Objects.isNull(allLocaisCadastrados) || allLocaisCadastrados.isEmpty()) {
 	        deviceListTable.setModel(dataModel);
@@ -414,7 +416,8 @@ public class LocaisScreen extends BaseDialog {
 
 			local.setNome(nomeLocalTextField.getText());
 			local.setHikivisionDeviceNames(equipamentosPermitidos);
-
+			local.setDataAlteracao(new Date());
+			
 			HibernateAccessDataFacade.update(LocalEntity.class, local);
 
 			populateTable();
@@ -454,9 +457,15 @@ public class LocaisScreen extends BaseDialog {
 
 			@SuppressWarnings("unchecked")
 			List<LocalEntity> local = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByName", args);
-			
+			LocalEntity localSelecionado = local.get(0);
 	        if (local.get(0) != null) {
-	            HibernateAccessDataFacade.remove(local.get(0));
+	        	
+	        	localSelecionado.setDataRemovido(new Date());
+	        	localSelecionado.setRemoved(true);
+	        	localSelecionado.setDataAlteracao(new Date());
+	        	
+	        	HibernateAccessDataFacade.save(LocalEntity.class, localSelecionado);
+	        	
 	            populateTable();
 	        }
 	    }

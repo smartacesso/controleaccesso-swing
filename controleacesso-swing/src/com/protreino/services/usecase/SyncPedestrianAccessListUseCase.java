@@ -40,6 +40,7 @@ import com.protreino.services.devices.Device;
 import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.BiometricEntity;
 import com.protreino.services.entity.DocumentoEntity;
+import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -51,6 +52,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.repository.BiometricRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
+import com.protreino.services.repository.LocalRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.PedestrianAccessTO;
@@ -144,6 +146,7 @@ public class SyncPedestrianAccessListUseCase {
                         enviaBiometriasColetadasLocalmente();
                         recebePedestresEBiometriasDaWeb();
                         buscaFotosDosPedestres(backUpLastSync);
+                        enviaLocais();
                         
                         if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
                             apagaDadosNovos(visitantesLocais);
@@ -157,6 +160,7 @@ public class SyncPedestrianAccessListUseCase {
                         enviaBiometriasColetadasLocalmente();
                         recebePedestresEBiometriasDaWeb();
                         buscaFotosDosPedestres(backUpLastSync);
+                        enviaLocais();
 
                         if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
                             apagaDadosNovos(visitantesLocais);
@@ -200,7 +204,53 @@ public class SyncPedestrianAccessListUseCase {
                 return null;
             }
 
-            private void atualizaListadeAcessoCatracaOffline() throws Exception {
+            private void enviaLocais() {
+				Main.verificaValidandoAcesso();
+				
+                Date lastSync = Main.loggedUser.getLastSync();
+
+				HashMap<String, Object> args = new HashMap<String, Object>();
+				args.put("ULTIMA_SINC", lastSync);
+				
+				@SuppressWarnings("unchecked")
+				List<LocalEntity> locais = (List<LocalEntity>) HibernateAccessDataFacade
+						.getResultListWithParams(LocalEntity.class,
+								"LocalEntity.findAllAlterados", args);
+
+				if (locais == null || locais.isEmpty()) {
+					System.out.println(
+							sdf.format(new Date()) + "   LOCAIS DE ACESSO: sem registros para enviar");
+					return;
+				}
+
+				JsonArray responseArray = new JsonArray();
+				for (LocalEntity local : locais) {
+					JsonObject responseObj = getNewLocalResponseObj(local);
+					responseArray.add(responseObj);
+				}
+
+				System.out.println("Enviando request com locais: " + responseArray.size());
+
+				int responseCode;
+				
+				try {
+					HttpConnection con = new HttpConnection(
+							Main.urlApplication + "/restful-services/access/uploadLocais"); //fazer o endpoint
+					responseCode = con.sendResponse(responseArray.toString());
+
+					if (responseCode != 200) {
+						System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOCAIS: Response code: "
+								+ responseCode);
+						System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOCAIS: Error String: "
+								+ con.getErrorString());
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			private void atualizaListadeAcessoCatracaOffline() throws Exception {
                 if (Objects.isNull(Main.devicesList) || Main.devicesList.isEmpty()) {
                     return;
                 }
@@ -289,7 +339,6 @@ public class SyncPedestrianAccessListUseCase {
 
 				HashMap<String, Object> args = new HashMap<String, Object>();
 				args.put("ULTIMA_SINC", lastSync);
-				System.out.println("last sync : " + lastSync);
                 int offset = 0;
 
                 while (true) {
@@ -526,6 +575,8 @@ public class SyncPedestrianAccessListUseCase {
                 }
 
                 boolean atualizaDigitais = false;
+                hikivisionUseCases = new HikivisionUseCases();
+                LocalRepository localRepository = new LocalRepository();
                 for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
@@ -575,8 +626,8 @@ public class SyncPedestrianAccessListUseCase {
                     		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                     		&& Utils.isHikivisionConfigValid() ) {
                         	try {
-                        		hikivisionUseCases = new HikivisionUseCases();
-                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
+                        		List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);
+                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess, null, devicesName);
 
                         	} catch (Exception e) {
                         		System.out.println(e.getMessage());
@@ -584,8 +635,8 @@ public class SyncPedestrianAccessListUseCase {
                         }
                         if(Utils.sincHikivisionWeb()) {
                             try {
-                        		hikivisionUseCases = new HikivisionUseCases();
-                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess);
+                            	List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);
+                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess, null, devicesName);
 
                         	} catch (Exception e) {
                         		System.out.println(e.getMessage());
@@ -813,6 +864,27 @@ public class SyncPedestrianAccessListUseCase {
         return acessosVisitantesLocais;
     }
 	
+	private JsonObject getNewLocalResponseObj(LocalEntity local) {
+	    JsonObject responseObj = new JsonObject();
+
+	    responseObj.addProperty("id", local.getId() != null ? local.getId().toString() : "");
+	    responseObj.addProperty("idCliente", Main.loggedUser.getIdClient());
+	    responseObj.addProperty("nome", local.getNome() != null ? local.getNome() : "");
+	    responseObj.addProperty("removido", local.getRemoved() != null ?  local.getRemoved().toString() : "");
+
+	    // Adiciona a lista de nomes das câmeras
+	    JsonArray deviceNamesArray = new JsonArray();
+	    if (local.getHikivisionDeviceNames() != null) {
+	        for (String name : local.getHikivisionDeviceNames()) {
+	            deviceNamesArray.add(name);
+	        }
+	    }
+	    responseObj.add("hikvisionDeviceNames", deviceNamesArray);
+
+	    return responseObj;
+	}
+
+	
 	private JsonObject getNewVisitanteResponseObj(PedestrianAccessEntity visitante) {
         JsonObject responseObj = new JsonObject();
 
@@ -841,7 +913,10 @@ public class SyncPedestrianAccessListUseCase {
         responseObj.addProperty("celular", visitante.getCelular() != null ? visitante.getCelular() : "");
         responseObj.addProperty("responsavel", visitante.getResponsavel() != null ? visitante.getResponsavel() : "");
         responseObj.addProperty("observacoes", visitante.getObservacoes() != null ? visitante.getObservacoes() : "");
-
+        
+        //
+        responseObj.addProperty("idLocal", visitante.getIdLocal() != null ? visitante.getIdLocal().toString() : "");
+        
         //Dados empresa
         responseObj.addProperty("idEmpresa", visitante.getIdEmpresa() != null ? visitante.getIdEmpresa().toString() : "");
         responseObj.addProperty("idDepartamento", visitante.getIdDepartamento() != null ? visitante.getIdDepartamento().toString() : "");
@@ -903,7 +978,7 @@ public class SyncPedestrianAccessListUseCase {
 
         return responseObj;
     }
-
+	
     private void adicionaListaDeRegras(JsonObject responseObj, List<PedestreRegraEntity> pedestresRegras) {
         if (pedestresRegras == null || pedestresRegras.isEmpty()) {
             responseObj.add("pedestresRegras", new JsonArray());

@@ -3,36 +3,28 @@
 
 package com.protreino.services.screens;
 
-import com.protreino.services.client.SmartAcessoFotoServiceClient;
-import com.protreino.services.constants.Configurations;
-import com.protreino.services.devices.Device;
-import com.protreino.services.devices.FacialDevice;
-import com.protreino.services.devices.ServerDevice;
-import com.protreino.services.entity.*;
-import com.protreino.services.enumeration.TcpMessageType;
-import com.protreino.services.enumeration.TipoPedestre;
-import com.protreino.services.enumeration.TipoRegra;
-import com.protreino.services.exceptions.InvalidPhotoException;
-import com.protreino.services.main.Main;
-import com.protreino.services.repository.HibernateAccessDataFacade;
-import com.protreino.services.repository.HibernateServerAccessData;
-import com.protreino.services.repository.TopDataFacialErrorRepository;
-import com.protreino.services.screens.dialogs.SimpleMessageDialog;
-import com.protreino.services.to.TcpMessageTO;
-import com.protreino.services.usecase.HikivisionUseCases;
-import com.protreino.services.utils.*;
-import org.apache.commons.lang.StringUtils;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.plaf.DimensionUIResource;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.MaskFormatter;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -41,11 +33,73 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Vector;
 import java.util.function.Consumer;
-import java.util.*;
+
+import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.DimensionUIResource;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.MaskFormatter;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.protreino.services.client.SmartAcessoFotoServiceClient;
+import com.protreino.services.constants.Configurations;
+import com.protreino.services.devices.Device;
+import com.protreino.services.devices.FacialDevice;
+import com.protreino.services.devices.ServerDevice;
+import com.protreino.services.entity.CargoEntity;
+import com.protreino.services.entity.CentroCustoEntity;
+import com.protreino.services.entity.DepartamentoEntity;
+import com.protreino.services.entity.EmpresaEntity;
+import com.protreino.services.entity.LocalEntity;
+import com.protreino.services.entity.ParametroEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
+import com.protreino.services.entity.RegraEntity;
+import com.protreino.services.entity.TopdataFacialErrorEntity;
+import com.protreino.services.enumeration.TipoPedestre;
+import com.protreino.services.enumeration.TipoRegra;
+import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.repository.HibernateServerAccessData;
+import com.protreino.services.repository.LocalRepository;
+import com.protreino.services.repository.TopDataFacialErrorRepository;
+import com.protreino.services.screens.dialogs.SimpleMessageDialog;
+import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.utils.CropImage;
+import com.protreino.services.utils.EncryptionUtils;
+import com.protreino.services.utils.QRCodeUtils;
+import com.protreino.services.utils.SelectItem;
+import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class RegisterVisitorDialog extends BaseDialog {
@@ -167,8 +221,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private JComboBox<SelectItem> tipoAcessoJComboBox;
 	private boolean isFotoModificada = false;
 	private HikivisionUseCases hikivisionUseCases;
+	private LocalRepository localRepository;
 
 	private JButton syncInHikivisionButton;
+
+	private JLabel localLabel;
+
+	private JComboBox<SelectItem> localJComboBox;
 	
 	private final static Map<Long, Vector<SelectItem>> cacheDepartamentos = new HashMap<>();
 	private final static Map<Long, Vector<SelectItem>> cacheCargos = new HashMap<>();
@@ -198,6 +257,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainContentPane.setLayout(new BorderLayout());
 
 		tabbedPane = new JTabbedPane();
+		localRepository = new LocalRepository();
 
 		// campo de Dados Basicos
 
@@ -489,6 +549,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 		JPanel responsavelPanel = getNewMiniPanel(responsavelLabel, responsavelTextField);
 		panel.add(responsavelPanel, getNewGridBag(2, 2, 30, 5));
 
+		localLabel = new JLabel("Local");
+		localJComboBox = new JComboBox<SelectItem>(getAllLocaisSelectItens());
+		criaPainelComboBox(localLabel, localJComboBox, panel, 0, 3);
+		
 		obsLabel = getNewLabel("Observacoes");
 		obsTextArea = new JTextArea();
 		obsTextArea.setColumns(40);
@@ -504,10 +568,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		});
 		obsTextArea.setMinimumSize(new Dimension(300, 70));
-
 		JPanel obsPanel = getNewMiniPanel(obsLabel, obsTextArea);
-		panel.add(obsPanel, getNewGridBag(0, 3, 30, 5));
-
+		panel.add(obsPanel, getNewGridBag(1, 3, 30, 5));
+		
 		criaPanelDadosEmpresa(panel);
 
 		if (habilitaAppPedestre)
@@ -1207,7 +1270,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 
 		try {
-			hikivisionUseCases.syncronizarUsuarioInDevices(visitante);
+			List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
+			hikivisionUseCases.syncronizarUsuarioInDevices(visitante, null, devicesName);
 			visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class,
 					visitante)[0];
 
@@ -1221,7 +1285,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 
 	}
-
+	
 	private void inverteTipoUsuario(PedestrianAccessEntity usuarioExistente) {
 		usuarioExistente.setValidadeCreditos(null);
 		usuarioExistente.setQuantidadeCreditos(null);
@@ -1576,6 +1640,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setIdDepartamento(getValorSelecionado(departamentoJComboBox));
 		visitante.setIdCentroCusto(getValorSelecionado(centroCustoJComboBox));
 		visitante.setIdCargo(getValorSelecionado(cargoJComboBox));
+		
+		//dados local
+		visitante.setIdLocal(getValorSelecionado(localJComboBox));
 
 		// Dados e acesso
 		if (habilitaAppPedestre) {
@@ -1669,6 +1736,19 @@ public class RegisterVisitorDialog extends BaseDialog {
 				cartaoAcessoTextField
 						.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
 			}
+		}
+		
+		LocalEntity nomeLocaL = localRepository.buscaLocalById(visitante.getIdLocal());
+		if (visitante.getIdLocal() != null && nomeLocaL != null) {
+		    for (int i = 0; i < localJComboBox.getItemCount(); i++) {
+		        SelectItem item = localJComboBox.getItemAt(i);
+		        if (item.getLabel().equals(nomeLocaL.getNome())) {
+		            localJComboBox.setSelectedItem(item);
+		            break;
+		        }
+		    }
+		} else {
+		    localJComboBox.setSelectedItem(null);
 		}
 
 		habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
@@ -2239,7 +2319,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 			new Thread() {
 				public void run() {
 					if ("ATIVO".equals(visitante.getStatus())) {
-						hikivisionUseCases.cadastrarUsuarioInDevices(visitante);
+						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
+						hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
 					} else {
 						hikivisionUseCases.removerUsuarioFromDevices(visitante);
 					}
@@ -3173,6 +3254,25 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		return empresaItens;
 	}
+	
+	@SuppressWarnings("unchecked")
+	private Vector<SelectItem> getAllLocaisSelectItens() {
+		Vector<SelectItem> locaisItens = new Vector<SelectItem>();
+		locaisItens.add(new SelectItem("Selecione", null));
+		List<LocalEntity> locais = null;
+
+		locais = (List<LocalEntity>) HibernateAccessDataFacade.getResultList(LocalEntity.class,
+				"LocalEntity.findAllNaoRemovido");
+
+		if (locais == null || locais.isEmpty())
+			return locaisItens;
+
+		locais.forEach(empresa -> {
+			locaisItens.add(new SelectItem(empresa.getNome(), empresa.getId()));
+		});
+
+		return locaisItens;
+	}
 
 	private void restauraFontLabel() {
 		blackAndUnboldFont(nomeLabel);
@@ -3191,6 +3291,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		blackAndUnboldFont(cepLabel);
 		blackAndUnboldFont(cartaoAcessoLabel);
 		blackAndUnboldFont(matriculaLabel);
+		blackAndUnboldFont(localLabel);
 	}
 
 	private boolean isHabilitaCampoMatricula() {

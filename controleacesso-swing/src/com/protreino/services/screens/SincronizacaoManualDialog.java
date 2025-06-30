@@ -60,6 +60,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private Container mainContentPane; //container principal
 	private final HikivisionUseCases hikivisionUseCases; //integração com hikivison
 	private final HikivisionIntegrationErrorRepository hikivisionIntegrationErrorRepository = new HikivisionIntegrationErrorRepository(); // repositorio com erro
+	private final LocalRepository localRepository = new LocalRepository();
 	private SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase;
 	private String[] columns = { "Device Id", "Device Name", "Status", "Sincronizar" }; // colunas da tabela
 	private Integer[] columnWidths = { 280, 200, 150, 80 }; // largura das colunas
@@ -511,7 +512,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 					
 					pedestresParaSicronizar.forEach(pedestre -> {
 						try {
-							hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, devicesToSync);
+							List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(pedestre);
+							hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, Objects.isNull(devicesName) || devicesName.isEmpty() ? devicesToSync : null, devicesName);
 							
 						} catch(Exception ex) {
 							System.out.println(ex.getMessage());

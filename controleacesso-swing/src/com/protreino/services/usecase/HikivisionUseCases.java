@@ -65,16 +65,12 @@ public class HikivisionUseCases {
 		return devices;
 	}
 
-	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre) {
-		syncronizarUsuarioInDevices(pedestre, null);
-	}
-
-	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
+	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesById, List<String> devicesByName) {
 		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
-			removerUsuarioFromDevices(pedestre, devicesToSync);
+			removerUsuarioFromDevices(pedestre, devicesById);
 
 		} else {
-			cadastrarUsuarioInDevices(pedestre, devicesToSync);
+			cadastrarUsuarioInDevices(pedestre, devicesById, devicesByName);
 		}
 	}
 
@@ -132,20 +128,33 @@ public class HikivisionUseCases {
 
 		return isApagadoComSucesso;
 	}
-
-	public void cadastrarUsuarioInDevices(final PedestrianAccessEntity pedestre) {
-		cadastrarUsuarioInDevices(pedestre, null);
-	}
-
-	public void cadastrarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+	
+	private List<String> getDevicesToSync(List<String> devicesById, List<String> devicesByName) {
+		if(Objects.nonNull(devicesById) && !devicesById.isEmpty()) {
+			return devicesById;
+		}
+		
+		if(Objects.nonNull(devicesByName) && !devicesByName.isEmpty()) {
 			final List<Device> devices = listarDispositivos();
 			if (Objects.isNull(devices) || devices.isEmpty()) {
-				return;
+				return new ArrayList<String>();
 			}
 
-			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+			return devices.stream()
+					.filter(device -> devicesByName.contains(device.getDevName()))
+					.map(Device::getDevIndex).collect(Collectors.toList());
 		}
+		
+		final List<Device> devices = listarDispositivos();
+		if (Objects.isNull(devices) || devices.isEmpty()) {
+			return new ArrayList<String>();
+		}
+
+		return devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+	}
+
+	public void cadastrarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesById, List<String> devicesByName) {
+		final List<String> devicesToSync = getDevicesToSync(devicesById, devicesByName);
 
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
 
@@ -207,7 +216,7 @@ public class HikivisionUseCases {
 		});
 		
 		
-		vincularPedestreaoTemplate(pedestre, devicesToSync);
+		vincularPedestreaoTemplate(pedestre, devicesById);
 
 		pedestre.setDataCadastroFotoNaHikivision(new Date());
 
@@ -321,7 +330,6 @@ public class HikivisionUseCases {
 
 	}
 	
-
 	public void processarBiometriasComErros() {
 		Long limit  = 100l;
 		List<HikivisonFingerErrorEntity> biometricsWithErros = hikivisionFingerErrors.findAllLimited(limit);

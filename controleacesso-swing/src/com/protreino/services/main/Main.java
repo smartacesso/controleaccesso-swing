@@ -70,6 +70,7 @@ import com.protreino.services.exceptions.HikivisionIntegrationException; // Sinc
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity; //Hikivision
 import com.protreino.services.enumeration.HikivisionAction; //Hikivision
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository; //Hikivision
+import com.protreino.services.repository.LocalRepository;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO; //Hikivision
 import com.protreino.services.usecase.HikivisionUseCases; //Hikivision
 import com.protreino.services.utils.HikivisionTcpServer; //Hikivision
@@ -1287,6 +1288,7 @@ public class Main {
                 }
 
                 HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+                LocalRepository localRepository = new LocalRepository();
 
                 if (!hikivisionUseCases.getSystemInformation()) {
                     System.out.println(sdf.format(new Date()) + "  Sincronizacao interrompida - Servidor offline");
@@ -1311,7 +1313,8 @@ public class Main {
                 
                 for (PedestrianAccessEntity pedestre : pedestres) {
                 	try {
-                		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre);
+                		List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(pedestre);
+                		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, null, devicesName);
                 		HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
                 	
                 	} catch (HikivisionIntegrationException e) {
