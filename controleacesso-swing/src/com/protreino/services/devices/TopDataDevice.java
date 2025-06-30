@@ -920,16 +920,20 @@ public class TopDataDevice extends Device {
 			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 			matchedFacialId = null;
 
+		} else if (cartaoStr != null && (cartaoStr.isEmpty() || cartaoStr.replace("0", "").isEmpty())) {
+			System.out.println(">>> Registra giro SEM CARTÃO (cartão zerado)");
+			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
+
 		} else {
 			System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
 
-		    // Limpa cartão sem dar null
-		    if (inner.BilheteInner.Cartao == null) {
-		        inner.BilheteInner.Cartao = new StringBuilder();
-		    } else {
-		        inner.BilheteInner.Cartao.setLength(0);
-		    }
-		    return;
+			// Limpa cartão sem dar null
+			if (inner.BilheteInner.Cartao == null) {
+				inner.BilheteInner.Cartao = new StringBuilder();
+			} else {
+				inner.BilheteInner.Cartao.setLength(0);
+			}
+			return;
 		}
 
 		// Limpa cartão no final, sem quebrar quem usa depois
