@@ -61,6 +61,7 @@ import javax.swing.UIManager;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.java_websocket.client.WebSocketClient;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -106,6 +107,7 @@ import com.protreino.services.screens.MainScreen;
 import com.protreino.services.screens.ReleaseReasonDialog;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.services.LuxandService;
+import com.protreino.services.services.WebSocketClientService;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.LocalTo;
 import com.protreino.services.to.RegraTO;
@@ -191,6 +193,7 @@ public class Main {
     public static AlmitecDevice almTCP;
     public static HikivisionTcpServer hikivisionTcpServer;
     public static FacialTopDataIntegrationService facialTopDataIntegrationService;
+    public static WebSocketClientService webSocketClientService;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
     public static SimpleDateFormat sdfWithoutTIme = new SimpleDateFormat("dd/MM/yyyy");
     public static boolean desenvolvimento;
@@ -324,7 +327,14 @@ public class Main {
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableTCPServer"))) {
                     	tcpServer = new TcpServer();
                     }
+                    
                     hikivisionTcpServer = new HikivisionTcpServer();
+                    
+                    if(Utils.webSocketClienteHikivisionHabilitado()) {
+                        webSocketClientService = new WebSocketClientService();
+                        webSocketClientService.conectar(Main.urlApplication, Main.loggedUser.getIdClient());
+                    }
+                    
                     
                     if (Utils.isTopDataFacialEnable()) {
                     	if(!Main.temServidor()) {
@@ -507,7 +517,7 @@ public class Main {
 
         Long periodExpirar = 24L * 3600L * 1000L;
         Calendar inicio = Calendar.getInstance();
-        System.out.println("Hora para reset definido para " + hora + "Hr");
+        System.out.println(sdf.format(new Date()) + "  ... Hora para reset definido para " + hora + "Hr");
 
         inicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hora));
         inicio.set(Calendar.MINUTE, 0);
