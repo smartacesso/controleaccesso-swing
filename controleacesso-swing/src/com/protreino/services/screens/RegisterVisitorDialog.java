@@ -1805,6 +1805,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 			redAndBoldFont(nomeLabel);
 			valido = false;
 		}
+		
+		if (Utils.localObrigatorio() && localJComboBox.getSelectedIndex() < 0) {
+				redAndBoldFont(localLabel);
+				valido = false;
+		}
+		
 		if (Objects.nonNull(camposObrigatorios)) {
 			if (camposObrigatorios.contains("data.nascimento")
 					&& dataNascimentoTextField.getText().replace("/", "").replace(" ", "").equals("")) {
