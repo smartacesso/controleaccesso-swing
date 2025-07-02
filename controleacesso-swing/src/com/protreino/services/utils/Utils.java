@@ -181,6 +181,10 @@ public class Utils {
 	public static boolean saidaEspecificaHabilitada() {
 		return Boolean.valueOf(Utils.getPreference("saidaEspecifica"));
 	}
+	public static boolean localObrigatorio() {
+		return Boolean.valueOf(Utils.getPreference("localObrigatorio"));
+	}
+	
 	
 	public static void sleep(long tempo) {
 		try {
@@ -637,6 +641,8 @@ public class Utils {
 				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "saidaEspecifica",
 				"Decrementa credito apenas em camera especifica", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "localObrigatorio",
+				"Local Obrigatorio", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
 				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",
