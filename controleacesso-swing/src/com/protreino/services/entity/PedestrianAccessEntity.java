@@ -781,6 +781,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.observacoes = athleteAccessTO.getObservacoes();
 		this.responsavel = athleteAccessTO.getResponsavel();
 		
+		this.idLocal = athleteAccessTO.getIdLocal();
+		
 		//Dados Empresa
 		this.idEmpresa = athleteAccessTO.getIdEmpresa();
 		this.idCargo = athleteAccessTO.getIdCargo();
@@ -884,6 +886,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			.append(responsavel != null ? responsavel : "").append(";")
 			.append(observacoes != null ? observacoes : "").append(";")
 
+			.append(idLocal != null ? idLocal: "").append(";")
+			
 			//Dados empresa
 			.append(idEmpresa != null ? idEmpresa : "").append(";")
 			.append(idCargo != null ? idCargo : "").append(";")
@@ -987,6 +991,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.celular = athleteAccessTO.getCelular();
 		this.observacoes = athleteAccessTO.getObservacoes();
 		this.responsavel = athleteAccessTO.getResponsavel();
+
+		this.idLocal = athleteAccessTO.getIdLocal();
 
 		//Dados empresa
 		this.idEmpresa = athleteAccessTO.getIdEmpresa();

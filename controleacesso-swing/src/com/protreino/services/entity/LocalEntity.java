@@ -24,6 +24,8 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Type;
 
+import com.protreino.services.to.LocalTo;
+
 
 @Entity
 @Table(name = "TB_LOCAL")
@@ -74,6 +76,15 @@ public class LocalEntity extends BaseEntity implements ObjectWithId, Serializabl
     @CollectionTable(name = "tb_hikivision_devices_name", joinColumns = @JoinColumn(name = "ID_LOCAL"))
     @Column(name = "DEVICE_NAME", nullable = false)
     private List<String> hikivisionDeviceNames = new ArrayList<>();
+    
+	public void update(LocalTo local) {
+		this.setNome(local.getNome() != null ? local.getNome() : null);
+		this.setIdClient(local.getIdClient());
+		this.setRemoved(local.getRemoved());
+		this.setDataRemovido(local.getDataRemovido());
+		this.setDataAlteracao(new Date());
+		this.setHikivisionDeviceNames(local.getHikivisionDeviceNames());
+	}
 
     @Override
     public Long getId() {

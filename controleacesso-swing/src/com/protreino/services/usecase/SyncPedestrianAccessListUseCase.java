@@ -146,7 +146,7 @@ public class SyncPedestrianAccessListUseCase {
                         enviaBiometriasColetadasLocalmente();
                         recebePedestresEBiometriasDaWeb();
                         buscaFotosDosPedestres(backUpLastSync);
-                        enviaLocais();
+                        enviaLocais(backUpLastSync);
                         
                         if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
                             apagaDadosNovos(visitantesLocais);
@@ -160,7 +160,7 @@ public class SyncPedestrianAccessListUseCase {
                         enviaBiometriasColetadasLocalmente();
                         recebePedestresEBiometriasDaWeb();
                         buscaFotosDosPedestres(backUpLastSync);
-                        enviaLocais();
+                        enviaLocais(backUpLastSync);
 
                         if (visitantesLocais != null && !visitantesLocais.isEmpty()) {
                             apagaDadosNovos(visitantesLocais);
@@ -204,22 +204,18 @@ public class SyncPedestrianAccessListUseCase {
                 return null;
             }
 
-            private void enviaLocais() {
+            private void enviaLocais(final long backUpLastSync) {
 				Main.verificaValidandoAcesso();
 				
-                Date lastSync = Main.loggedUser.getLastSync();
-
 				HashMap<String, Object> args = new HashMap<String, Object>();
-				args.put("ULTIMA_SINC", lastSync);
+				args.put("ULTIMA_SINC", new Date(backUpLastSync));
 				
 				@SuppressWarnings("unchecked")
 				List<LocalEntity> locais = (List<LocalEntity>) HibernateAccessDataFacade
-						.getResultListWithParams(LocalEntity.class,
-								"LocalEntity.findAllAlterados", args);
+						.getResultListWithParams(LocalEntity.class, "LocalEntity.findAllAlterados", args);
 
 				if (locais == null || locais.isEmpty()) {
-					System.out.println(
-							sdf.format(new Date()) + "   LOCAIS DE ACESSO: sem registros para enviar");
+					System.out.println(sdf.format(new Date()) + "   LOCAIS DE ACESSO: sem registros para enviar");
 					return;
 				}
 
@@ -245,7 +241,6 @@ public class SyncPedestrianAccessListUseCase {
 								+ con.getErrorString());
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -567,6 +562,9 @@ public class SyncPedestrianAccessListUseCase {
 
                 if (athleteAccessTOList == null || athleteAccessTOList.isEmpty()) {
                     System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros para receber");
+                    lastSync = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
+                    Main.loggedUser.setLastSync(new Date(lastSync));
+                    Main.loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, Main.loggedUser)[0];
                     return;
                 }
 

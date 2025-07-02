@@ -68,6 +68,7 @@ import org.jnativehook.keyboard.NativeKeyListener;
 
 import com.protreino.services.exceptions.HikivisionIntegrationException; // Sincroniza o sistema com o facial da Hikivision
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity; //Hikivision
+import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.enumeration.HikivisionAction; //Hikivision
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository; //Hikivision
 import com.protreino.services.repository.LocalRepository;
@@ -106,6 +107,7 @@ import com.protreino.services.screens.ReleaseReasonDialog;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.services.LuxandService;
 import com.protreino.services.to.EmpresaTO;
+import com.protreino.services.to.LocalTo;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SincronismoHorariosHikivision;
@@ -136,6 +138,7 @@ public class Main {
     private static Long lastSyncHikivision = 0l;
 
     private static Long lastSyncGetUsers = 0L;
+    private static Long lastSyncGetLocais = 0L;
     private static Long lastSyncGetEmpresas = 0L;
     private static Long lastSyncGetRegras = 0L;
     private static Long lastSyncGetParametros = 0L;
@@ -200,6 +203,7 @@ public class Main {
     private static final SyncPedestrianAccessListUseCase syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();
     private static final ReleaseAccessUseCase releaseAccessUseCase = new ReleaseAccessUseCase();
     private static final SyncTemplatesInTopDataDevices syncTemplatesInTopDataDevices = new SyncTemplatesInTopDataDevices();
+    private static final LocalRepository localRepository = new LocalRepository();
     private HikivisionUseCases hikivisionUseCases;
 
     public static void main(String[] args) {
@@ -480,6 +484,8 @@ public class Main {
 
         lastSyncGetUsers = loggedUser.getLastSyncUser() != null
                 ? loggedUser.getLastSyncUser().getTime() : 0L;
+        lastSyncGetLocais = loggedUser.getLastSyncGetLocais() != null
+        		? loggedUser.getLastSyncGetLocais().getTime() : 0L;
         lastSyncGetEmpresas = loggedUser.getLastSyncEmpresa() != null
                 ? loggedUser.getLastSyncEmpresa().getTime() : 0L;
         lastSyncGetRegras = loggedUser.getLastSyncRegra() != null
@@ -583,6 +589,7 @@ public class Main {
         lastSyncGetUsers = 0L;
         lastSyncGetEmpresas = 0L;
         lastSyncGetRegras = 0L;
+        lastSyncGetLocais = 0L;
         lastSyncGetParametros = 0L;
         lastSyncGetPlanos = 0L;
 
@@ -954,6 +961,8 @@ public class Main {
                     requestAllRegras();
 
                     requestAllPlanos();
+                    
+                    requestAllLocais();
 
                 } catch (ConnectException e) {
                     System.err.println("Nao foi possivel comunicar com o servidor.");
@@ -979,7 +988,40 @@ public class Main {
                 return null;
             }
 
-            private void requestAllUsers() throws IOException {
+            private void requestAllLocais() {
+                List<LocalTo> locaisTo = smartAcessoClient.requestAllLocais(lastSyncGetLocais);
+
+                if (Objects.isNull(locaisTo) || locaisTo.isEmpty()) {
+                    System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de locais para receber");
+                    return;
+                }
+
+                for (LocalTo localTo : locaisTo) {
+                    if (Objects.isNull(loggedUser)) {
+                        break;
+                    }
+                    
+                    Optional<LocalEntity> localExistente = localRepository.getLocalByName(localTo.getNome());
+                    
+                    if(localExistente.isPresent()) {
+                    	localExistente.get().update(localTo);
+                    	HibernateAccessDataFacade.update(LocalEntity.class, localExistente.get());
+                    } else {
+                    	LocalEntity local = localTo.toLocalEntity();
+                    	HibernateAccessDataFacade.save(LocalEntity.class, local);
+                    }
+                    
+                }
+
+                if (loggedUser != null) {
+                    Utils.sleep(1000);
+                    lastSyncGetLocais = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
+                    loggedUser.setLastSyncGetLocais(new Date(lastSyncGetLocais));
+                    loggedUser = (UserEntity) HibernateAccessDataFacade.updateUser(UserEntity.class, loggedUser)[0];
+                }
+            }
+
+			private void requestAllUsers() throws IOException {
                 List<UserEntity> userAccessList = smartAcessoClient.requestAllUsers(lastSyncGetUsers);
 
                 if (Objects.isNull(userAccessList) || userAccessList.isEmpty()) {

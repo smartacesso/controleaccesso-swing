@@ -57,6 +57,7 @@ public class PedestrianAccessTO extends BaseEntity{
 	
 	private Boolean enviaSmsAoPassarNaCatraca;
 	
+	private Long idLocal;
 	private Long idEmpresa;
 	private Long idCargo;
 	private Long idCentroCusto;
@@ -599,6 +600,14 @@ public class PedestrianAccessTO extends BaseEntity{
 
 	public void setDataCadastroFotoNaHikivision(Date dataCadastroFotoNaHikivision) {
 		this.dataCadastroFotoNaHikivision = dataCadastroFotoNaHikivision;
+	}
+
+	public Long getIdLocal() {
+		return idLocal;
+	}
+
+	public void setIdLocal(Long idLocal) {
+		this.idLocal = idLocal;
 	}
 	
 }

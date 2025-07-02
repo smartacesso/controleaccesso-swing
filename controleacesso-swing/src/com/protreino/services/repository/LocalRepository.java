@@ -1,7 +1,9 @@
 package com.protreino.services.repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -28,6 +30,18 @@ public class LocalRepository {
 		}
 		
 		return local.getHikivisionDeviceNames();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Optional<LocalEntity> getLocalByName(final String name) {
+		final HashMap<String, Object> args = new HashMap<>();
+		args.put("NOME", name);
+		
+		final List<LocalEntity> result = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByName", args, 0, 1);
+		
+		return Objects.nonNull(result) && !result.isEmpty() ? 
+				Optional.of(result.get(0))
+				: Optional.empty();
 	}
 	
 }
