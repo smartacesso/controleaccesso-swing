@@ -178,7 +178,10 @@ public class Utils {
 		return Boolean.valueOf(Utils.getPreference("enableRefeitorio"));
 	}
 
-
+	public static boolean saidaEspecificaHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("saidaEspecifica"));
+	}
+	
 	public static void sleep(long tempo) {
 		try {
 			Thread.sleep(tempo);
@@ -632,6 +635,8 @@ public class Utils {
 				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "doisDispositivos",
 				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "saidaEspecifica",
+				"Decrementa credito apenas em camera especifica", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
 				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",

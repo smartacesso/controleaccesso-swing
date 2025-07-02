@@ -159,7 +159,7 @@ public class HikivisionEventsUseCase {
 	            + logEventoOffline.getEquipament() + " | Pedestre : " + logEventoOffline.getIdPedestrian());
 
 	    //decrementa apenas de visitante
-	    decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline);
+	    decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline, HikivisionDeviceName);
 	}
 
 	private LogPedestrianAccessEntity salvaLogDeAcessoEventoCatracaOffline(final PedestrianAccessEntity pedestre, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDevice) {
@@ -204,7 +204,7 @@ public class HikivisionEventsUseCase {
 
 
 	private void decrementaCreditosERemoveUsuarioDaCamera(final PedestrianAccessEntity pedestre,
-			final TopDataDevice device, final LogPedestrianAccessEntity logEventoOffline) {
+			final TopDataDevice device, final LogPedestrianAccessEntity logEventoOffline, final String HikivisionDevice) {
 		if (logEventoOffline == null) {
 			System.out.println("Acesso ignorado: log de evento é nulo.");
 			return;
@@ -222,7 +222,7 @@ public class HikivisionEventsUseCase {
 		Boolean removeVisitanteCamera = Utils.getPreferenceAsBoolean(REMOVE_VISITANTE_CAMERA);
 
 		// Só processa o restante se for uma SAÍDA
-		if (!logEventoOffline.isSaida()) {
+		if (logEventoOffline.isEntrada()) {
 			System.out.println("Não é uma saída. Nenhuma ação realizada.");
 			return;
 		}
@@ -238,22 +238,31 @@ public class HikivisionEventsUseCase {
 
 		// nao tem nenhuma regra ou fora do periodo
 		// decrementa credito do prorpio visitante
-		if(pedestre.isVisitante()) {
-			System.out.println("Decrementando créditos...");
-			pedestre.decrementaCreditos();
+		
+		if (!Utils.saidaEspecificaHabilitada() || isSaidaPortaria(HikivisionDevice)) {
+		    processaSaidaVisitante(pedestre, removeVisitanteCamera);
 		}
+	}
+	
+	private boolean isSaidaPortaria(String dispositivo) {
+	    return dispositivo != null && dispositivo.toLowerCase().contains("portaria");
+	}
 
-		// Após saída, só remove visitante se os créditos forem 0 ou nulos
-		if (pedestre.isVisitante()
-				&& (pedestre.getQuantidadeCreditos() == null || pedestre.getQuantidadeCreditos() <= 0)) {
-			if (removeVisitanteCamera) {
-				System.out.println("Removendo visitante da câmera...");
-				hikivisionUseCases.removerUsuarioFromDevices(pedestre);
-				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
-			}
-		} else {
-			System.out.println("Não será removido: ainda possui créditos ou não é visitante.");
-		}
+	private void processaSaidaVisitante(PedestrianAccessEntity pedestre, boolean removeVisitanteCamera) {
+	    if (pedestre.isVisitante()) {
+	        System.out.println("Decrementando créditos...");
+	        pedestre.decrementaCreditos();
+	    }
+
+	    if (pedestre.isVisitante() && (pedestre.getQuantidadeCreditos() == null || pedestre.getQuantidadeCreditos() <= 0)) {
+	        if (removeVisitanteCamera) {
+	            System.out.println("Removendo visitante da câmera...");
+	            hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+	            HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+	        }
+	    } else {
+	        System.out.println("Não será removido: ainda possui créditos ou não é visitante.");
+	    }
 	}
 	
 	/**
