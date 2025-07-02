@@ -15,11 +15,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.protreino.services.constants.Configurations;
+import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.entity.ParametroEntity;
 import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.to.EmpresaTO;
+import com.protreino.services.to.LocalTo;
 import com.protreino.services.to.RegraTO;
 import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
@@ -126,6 +128,39 @@ public class SmartAcessoClient {
 
 	        BufferedReader bufferedReader = con.getResponseReader();
 	        Type type = new TypeToken<List<RegraTO>>() {
+	        }.getType();
+	        
+	        return gson.fromJson(bufferedReader, type);
+	        
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	
+	public List<LocalTo> requestAllLocais(final Long lastSyncGetLocais) {
+		try {
+			HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/requestAllLocais"
+	                + "?client=" + Main.loggedUser.getIdClient()
+	                + "&lastsync=" + lastSyncGetLocais);
+
+	        Integer responseCode = con.getResponseCode();
+
+	        if (responseCode == 404) {
+	            System.out.println(sdf.format(new Date()) + "  SINCRONIZACAO: sem registros de locais para receber");
+	            return null;
+	        }
+
+	        if (responseCode != 200) {
+	            System.out.println(sdf.format(new Date())
+	                    + "  ERRO NA SINCRONIZACAO DE LOCAIS: Error String: " + con.getErrorString());
+	            return null;
+	        }
+
+	        BufferedReader bufferedReader = con.getResponseReader();
+	        Type type = new TypeToken<List<LocalTo>>() {
 	        }.getType();
 	        
 	        return gson.fromJson(bufferedReader, type);

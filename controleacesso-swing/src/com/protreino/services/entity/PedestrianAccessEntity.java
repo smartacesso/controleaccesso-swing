@@ -274,7 +274,7 @@ import com.protreino.services.utils.Utils;
 						"and obj.tipo = 'PEDESTRE' " + 
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
@@ -288,7 +288,7 @@ import com.protreino.services.utils.Utils;
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
@@ -461,6 +461,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="FOTOS_FORAM_EXCLUIDAS", nullable=true, length=11)
 	private Boolean fotosForamExcluidas;
 	
+	@Column(name="ID_LOCAL", nullable=true, length=15)
+	private Long idLocal;
+	
 	@Column(name="ID_EMPRESA", nullable=true, length=15)
 	private Long idEmpresa;
 	
@@ -608,6 +611,15 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cardNumber = cardNumber;
 		this.name = name;
 		this.removido = removido;
+	}
+	
+	public PedestrianAccessEntity(Long id, byte[] foto, String cardNumber, String name, Boolean removido, Long idLocal) {
+		this.id = id;
+		this.foto = foto;
+		this.cardNumber = cardNumber;
+		this.name = name;
+		this.removido = removido;
+		this.idLocal = idLocal;
 	}
 
 	public PedestrianAccessEntity(Long id, String name) {
@@ -769,6 +781,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.observacoes = athleteAccessTO.getObservacoes();
 		this.responsavel = athleteAccessTO.getResponsavel();
 		
+		this.idLocal = athleteAccessTO.getIdLocal();
+		
 		//Dados Empresa
 		this.idEmpresa = athleteAccessTO.getIdEmpresa();
 		this.idCargo = athleteAccessTO.getIdCargo();
@@ -872,6 +886,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			.append(responsavel != null ? responsavel : "").append(";")
 			.append(observacoes != null ? observacoes : "").append(";")
 
+			.append(idLocal != null ? idLocal: "").append(";")
+			
 			//Dados empresa
 			.append(idEmpresa != null ? idEmpresa : "").append(";")
 			.append(idCargo != null ? idCargo : "").append(";")
@@ -975,6 +991,8 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.celular = athleteAccessTO.getCelular();
 		this.observacoes = athleteAccessTO.getObservacoes();
 		this.responsavel = athleteAccessTO.getResponsavel();
+
+		this.idLocal = athleteAccessTO.getIdLocal();
 
 		//Dados empresa
 		this.idEmpresa = athleteAccessTO.getIdEmpresa();
@@ -2099,6 +2117,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setAcessoLivre(Boolean acessoLivre) {
 		this.acessoLivre = acessoLivre;
+	}
+
+	public Long getIdLocal() {
+		return idLocal;
+	}
+
+	public void setIdLocal(Long idLocal) {
+		this.idLocal = idLocal;
 	}
 	
 }

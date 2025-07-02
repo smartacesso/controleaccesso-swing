@@ -178,7 +178,10 @@ public class Utils {
 		return Boolean.valueOf(Utils.getPreference("enableRefeitorio"));
 	}
 
-
+	public static boolean saidaEspecificaHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("saidaEspecifica"));
+	}
+	
 	public static void sleep(long tempo) {
 		try {
 			Thread.sleep(tempo);
@@ -603,7 +606,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
 				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincHikivision",
-				"Buscar editados em lotes", FieldType.CHECKBOX, "false"));
+				"Sincronizar foto de alterados na web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
@@ -632,6 +635,8 @@ public class Utils {
 				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "doisDispositivos",
 				"Dispositivos geram acesso apenas do sentido dele", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "saidaEspecifica",
+				"Decrementa credito apenas em camera especifica", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
 				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",

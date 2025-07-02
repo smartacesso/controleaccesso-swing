@@ -98,6 +98,10 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 	private Date lastSyncPlano;
 	
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="LAST_SYNC_GET_LOCAIS", nullable = true, length = 11)
+	private Date lastSyncGetLocais;
+	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="LAST_SYNC_UPLOAD_PHOTOS", nullable=true, length=11)
 	private Date lastSyncUploadPhotos;
 	
@@ -485,5 +489,13 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 
 	public void setPerfilAcesso(PerfilAcesso perfilAcesso) {
 		this.perfilAcesso = perfilAcesso;
+	}
+
+	public Date getLastSyncGetLocais() {
+		return lastSyncGetLocais;
+	}
+
+	public void setLastSyncGetLocais(Date lastSyncGetLocais) {
+		this.lastSyncGetLocais = lastSyncGetLocais;
 	}
 }
