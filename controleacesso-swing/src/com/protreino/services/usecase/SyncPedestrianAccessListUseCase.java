@@ -336,13 +336,12 @@ public class SyncPedestrianAccessListUseCase {
 				args.put("ULTIMA_SINC", lastSync);
                 int offset = 0;
 
+                Long lastId = null;
                 while (true) {
-                	Long start = System.currentTimeMillis();
-                    PedestrianAccessEntity visitante = HibernateLocalAccessData.getNextCadastradoOuEditado(lastSync, offset);
-                    System.out.println("tempo de buscar " + offset +  " visitante " + (System.currentTimeMillis() - start));
+                    PedestrianAccessEntity visitante = HibernateLocalAccessData.getNextCadastradoOuEditado(lastSync, lastId);
                     if (visitante == null) break;
-                    offset++; // próximo resultado
                     visitantesLocais.add(visitante);
+                    lastId = visitante.getId();
                 }
                 
                 if (visitantesLocais == null || visitantesLocais.isEmpty()) {
