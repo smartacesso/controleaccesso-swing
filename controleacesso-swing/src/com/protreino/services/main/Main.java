@@ -330,11 +330,11 @@ public class Main {
                     
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
-                    if(Utils.webSocketClienteHikivisionHabilitado()) {
-                        webSocketClientService = new WebSocketClientService();
-                        webSocketClientService.conectar(Main.urlApplication, Main.loggedUser.getIdClient());
+                    if(Utils.webSocketClienteHikivisionHabilitado() && Objects.isNull(Main.servidor)) {
+                    	
+                        webSocketClientService = new WebSocketClientService(Main.urlApplication, Main.loggedUser.getIdClient());
+                        webSocketClientService.conectar();
                     }
-                    
                     
                     if (Utils.isTopDataFacialEnable()) {
                     	if(!Main.temServidor()) {
@@ -901,6 +901,11 @@ public class Main {
             System.out.println(sdf.format(new Date()) + " " + MAQUINA_TEM_SERVER_MESSAGE);
             return;
         }
+        
+        if(Objects.nonNull(webSocketClientService)) {
+        	webSocketClientService.ping();
+        }
+        
         setUpdatingUsersAccessList(true);
 
         SwingWorker<Void, Void> worker = getSyncUsersAccessListWorker();
@@ -1701,7 +1706,7 @@ public class Main {
                 while (SyncPedestrianAccessListUseCase.getUpdatingPedestrianAccessList()) {
                 	Thread.sleep(100);
                 }
-
+                
                 mainScreen.getListaAcessoPanel().cleanFilter();
             }
         } catch (Exception e) {

@@ -1752,7 +1752,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 
 		habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
-		sempreLiberado.setSelected(visitante.getSempreLiberado());
+		sempreLiberado.setSelected(Objects.nonNull(visitante.getSempreLiberado()) ? visitante.getSempreLiberado() : false);
 		acessoLivre.setSelected(Objects.nonNull(visitante.getAcessoLivre()) ?  visitante.getAcessoLivre() : false);
 		enviaSMSdeConfirmacaoEntrada.setSelected(visitante.getEnviaSmsAoPassarNaCatraca());
 
