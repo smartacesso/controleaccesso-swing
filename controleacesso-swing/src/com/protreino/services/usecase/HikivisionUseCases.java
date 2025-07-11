@@ -66,10 +66,13 @@ public class HikivisionUseCases {
 	}
 
 	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<String> devicesById, List<String> devicesByName) {
+		
 		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
+			System.out.println("removendo foto");
 			removerUsuarioFromDevices(pedestre, devicesById);
 
 		} else {
+			System.out.println("cadastrando foto");
 			cadastrarUsuarioInDevices(pedestre, devicesById, devicesByName);
 		}
 	}

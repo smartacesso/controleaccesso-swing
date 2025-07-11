@@ -884,7 +884,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.status = pedestreAccessTo.getStatus();
 		this.cardNumber = pedestreAccessTo.getCardNumber();
 		this.sempreLiberado = pedestreAccessTo.getSempreLiberado();
-
+		
+		byte[] fotoBase64 = Base64.decodeBase64(pedestreAccessTo.getFotoBase64());
+		this.foto =fotoBase64;
 		
 		if(pedestreAccessTo.getPedestreRegras() != null && !pedestreAccessTo.getPedestreRegras().isEmpty()) {
 			this.pedestreRegra = new ArrayList<>();
