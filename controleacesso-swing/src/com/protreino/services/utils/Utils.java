@@ -185,6 +185,10 @@ public class Utils {
 		return Boolean.valueOf(Utils.getPreference("localObrigatorio"));
 	}
 	
+	public static boolean webSocketClienteHikivisionHabilitado() {
+		return Boolean.valueOf(Utils.getPreference("enableWebSocketClient"));
+	}
+	
 	
 	public static void sleep(long tempo) {
 		try {
@@ -444,6 +448,8 @@ public class Utils {
 				"Motivos para liberação de acesso (separados por virgula)", FieldType.TEXT, "", false, 25));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "timeReconectDevices",
 				"Tempo de aguardo para reconectar dispositivos (em segundos)", FieldType.TEXT, "5", true, 10));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableWebSocketClient",
+				"Habilitar webSocket client hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableTCPServer",
 				"Habilitar servidor TCP", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "tcpServerSocketPort",

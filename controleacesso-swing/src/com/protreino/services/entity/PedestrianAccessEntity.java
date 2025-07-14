@@ -46,6 +46,7 @@ import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
+import com.protreino.services.to.hikivision.WebSocketPedestrianAccessTO;
 import com.protreino.services.utils.EncryptionUtils;
 import com.protreino.services.utils.Utils;
 
@@ -79,7 +80,8 @@ import com.protreino.services.utils.Utils;
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllAlterados", 
 				query = "select obj "
 					  + "from PedestrianAccessEntity obj "
-					  + "where obj.dataAlteracao >= :ULTIMA_SINC "),
+					  + "where obj.dataAlteracao >= :ULTIMA_SINC "
+					  + "order by obj.id asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllPedestreAlterados", 
 				query = "select obj "
 					  + "from PedestrianAccessEntity obj "
@@ -766,106 +768,207 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.idUsuario = idUsuario;
 	}
 	
-	public PedestrianAccessEntity(PedestrianAccessTO athleteAccessTO){
+	public PedestrianAccessEntity(PedestrianAccessTO pedestreAccessTo){
 		//Dados basicos
-		this.id = athleteAccessTO.getId();
-		this.idTemp = athleteAccessTO.getIdTemp() != null ? athleteAccessTO.getIdTemp() : null;
-		this.name = athleteAccessTO.getName().toUpperCase();
-		this.dataNascimento = athleteAccessTO.getDataNascimento();
-		this.email = athleteAccessTO.getEmail();
-		this.cpf = athleteAccessTO.getCpf();
-		this.genero = athleteAccessTO.getGenero();
-		this.rg = athleteAccessTO.getRg();
-		this.telefone = athleteAccessTO.getTelefone();
-		this.celular = athleteAccessTO.getCelular();
-		this.observacoes = athleteAccessTO.getObservacoes();
-		this.responsavel = athleteAccessTO.getResponsavel();
+		this.id = pedestreAccessTo.getId();
+		this.idTemp = pedestreAccessTo.getIdTemp() != null ? pedestreAccessTo.getIdTemp() : null;
+		this.name = pedestreAccessTo.getName().toUpperCase();
+		this.dataNascimento = pedestreAccessTo.getDataNascimento();
+		this.email = pedestreAccessTo.getEmail();
+		this.cpf = pedestreAccessTo.getCpf();
+		this.genero = pedestreAccessTo.getGenero();
+		this.rg = pedestreAccessTo.getRg();
+		this.telefone = pedestreAccessTo.getTelefone();
+		this.celular = pedestreAccessTo.getCelular();
+		this.observacoes = pedestreAccessTo.getObservacoes();
+		this.responsavel = pedestreAccessTo.getResponsavel();
 		
-		this.idLocal = athleteAccessTO.getIdLocal();
+		this.idLocal = pedestreAccessTo.getIdLocal();
 		
 		//Dados Empresa
-		this.idEmpresa = athleteAccessTO.getIdEmpresa();
-		this.idCargo = athleteAccessTO.getIdCargo();
-		this.idCentroCusto = athleteAccessTO.getIdCentroCusto();
-		this.idDepartamento = athleteAccessTO.getIdDepartamento();
+		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
+		this.idCargo = pedestreAccessTo.getIdCargo();
+		this.idCentroCusto = pedestreAccessTo.getIdCentroCusto();
+		this.idDepartamento = pedestreAccessTo.getIdDepartamento();
 		
 		//Dados endereco
-		this.cep = athleteAccessTO.getCep();
-		this.logradouro = athleteAccessTO.getLogradouro();
-		this.numero = athleteAccessTO.getNumero();
-		this.complemento = athleteAccessTO.getComplemento();
-		this.bairro = athleteAccessTO.getBairro();
-		this.cidade = athleteAccessTO.getCidade();
-		this.estado = athleteAccessTO.getEstado();
+		this.cep = pedestreAccessTo.getCep();
+		this.logradouro = pedestreAccessTo.getLogradouro();
+		this.numero = pedestreAccessTo.getNumero();
+		this.complemento = pedestreAccessTo.getComplemento();
+		this.bairro = pedestreAccessTo.getBairro();
+		this.cidade = pedestreAccessTo.getCidade();
+		this.estado = pedestreAccessTo.getEstado();
 
 		//Aba lateral
-		this.tipo = athleteAccessTO.getTipo();
-		this.status = athleteAccessTO.getStatus();
-		this.matricula = athleteAccessTO.getMatricula();
-		this.cardNumber = athleteAccessTO.getCardNumber();
-		this.sempreLiberado = athleteAccessTO.getSempreLiberado();
-		this.habilitarTeclado = athleteAccessTO.getHabilitarTeclado();
-		this.cadastroFacialObrigatorio = athleteAccessTO.getCadastroFacialObrigatorio();
-		this.enviaSmsAoPassarNaCatraca = athleteAccessTO.getEnviaSmsAoPassarNaCatraca();
+		this.tipo = pedestreAccessTo.getTipo();
+		this.status = pedestreAccessTo.getStatus();
+		this.matricula = pedestreAccessTo.getMatricula();
+		this.cardNumber = pedestreAccessTo.getCardNumber();
+		this.sempreLiberado = pedestreAccessTo.getSempreLiberado();
+		this.habilitarTeclado = pedestreAccessTo.getHabilitarTeclado();
+		this.cadastroFacialObrigatorio = pedestreAccessTo.getCadastroFacialObrigatorio();
+		this.enviaSmsAoPassarNaCatraca = pedestreAccessTo.getEnviaSmsAoPassarNaCatraca();
 
 		//Outros dados
-		this.removido = athleteAccessTO.getRemovido();
-		this.luxandIdentifier = athleteAccessTO.getLuxandIdentifier();
-		this.qrCodeParaAcesso = athleteAccessTO.getQrCodeParaAcesso();
-		this.idRegra = athleteAccessTO.getIdRegra();
-		this.quantidadeCreditos = athleteAccessTO.getQuantidadeCreditos();
-		this.validadeCreditos = athleteAccessTO.getValidadeCreditos();
-		this.tipoTurno = athleteAccessTO.getTipoTurno();
-		this.inicioTurno = athleteAccessTO.getInicioTurno();
-		this.dataInicioPeriodo = athleteAccessTO.getDataInicioPeriodo();
-		this.dataFimPeriodo = athleteAccessTO.getDataFimPeriodo();
-		this.qtdAcessoAntesSinc = athleteAccessTO.getQtdAcessoAntesSinc();
-		this.idUsuario = athleteAccessTO.getIdUsuario();
-		this.dataCadastroFotoNaHikivision = athleteAccessTO.getDataCadastroFotoNaHikivision();
+		this.removido = pedestreAccessTo.getRemovido();
+		this.luxandIdentifier = pedestreAccessTo.getLuxandIdentifier();
+		this.qrCodeParaAcesso = pedestreAccessTo.getQrCodeParaAcesso();
+		this.idRegra = pedestreAccessTo.getIdRegra();
+		this.quantidadeCreditos = pedestreAccessTo.getQuantidadeCreditos();
+		this.validadeCreditos = pedestreAccessTo.getValidadeCreditos();
+		this.tipoTurno = pedestreAccessTo.getTipoTurno();
+		this.inicioTurno = pedestreAccessTo.getInicioTurno();
+		this.dataInicioPeriodo = pedestreAccessTo.getDataInicioPeriodo();
+		this.dataFimPeriodo = pedestreAccessTo.getDataFimPeriodo();
+		this.qtdAcessoAntesSinc = pedestreAccessTo.getQtdAcessoAntesSinc();
+		this.idUsuario = pedestreAccessTo.getIdUsuario();
+		this.dataCadastroFotoNaHikivision = pedestreAccessTo.getDataCadastroFotoNaHikivision();
 		
 		//Dados de acesso
-		this.login = athleteAccessTO.getLogin();
-		this.senha = athleteAccessTO.getSenha();
-		this.tipoAcesso = athleteAccessTO.getTipoAcesso();
-		this.tipoQRCode = athleteAccessTO.getTipoQRCode();
+		this.login = pedestreAccessTo.getLogin();
+		this.senha = pedestreAccessTo.getSenha();
+		this.tipoAcesso = pedestreAccessTo.getTipoAcesso();
+		this.tipoQRCode = pedestreAccessTo.getTipoQRCode();
 		
-		if (athleteAccessTO.getHorariosPermitidos() != null && !athleteAccessTO.getHorariosPermitidos().isEmpty()) {
+		if (pedestreAccessTo.getHorariosPermitidos() != null && !pedestreAccessTo.getHorariosPermitidos().isEmpty()) {
 			this.horariosPermitidos = new ArrayList<AllowedTimeEntity>();
-			for (AllowedTimeEntity horario : athleteAccessTO.getHorariosPermitidos())
+			for (AllowedTimeEntity horario : pedestreAccessTo.getHorariosPermitidos())
 				horariosPermitidos.add(new AllowedTimeEntity(this,horario.getInicio(), horario.getFim(), horario.getDiasPermitidos()));
 		}
-		if (athleteAccessTO.getTemplates() != null && !athleteAccessTO.getTemplates().isEmpty()){
+		if (pedestreAccessTo.getTemplates() != null && !pedestreAccessTo.getTemplates().isEmpty()){
 			this.templates = new ArrayList<TemplateEntity>();
-			for (String s : athleteAccessTO.getTemplates())
+			for (String s : pedestreAccessTo.getTemplates())
 				templates.add(new TemplateEntity(this, Base64.decodeBase64(s)));
 			novasDigitais = true;
 		}
 
-		if (athleteAccessTO.getEquipamentos() != null && !athleteAccessTO.getEquipamentos().isEmpty()){
+		if (pedestreAccessTo.getEquipamentos() != null && !pedestreAccessTo.getEquipamentos().isEmpty()){
 			this.equipamentos = new ArrayList<PedestrianEquipamentEntity>();
-			for (PedestrianEquipamentEntity eq : athleteAccessTO.getEquipamentos())
+			for (PedestrianEquipamentEntity eq : pedestreAccessTo.getEquipamentos())
 				equipamentos.add(new PedestrianEquipamentEntity(this, eq));
 		}
-		if (athleteAccessTO.getMensagens() != null && !athleteAccessTO.getMensagens().isEmpty()){
+		if (pedestreAccessTo.getMensagens() != null && !pedestreAccessTo.getMensagens().isEmpty()){
 			this.mensagens = new ArrayList<PedestrianMessagesEntity>();
-			for (PedestrianMessagesEntity m : athleteAccessTO.getMensagens())
+			for (PedestrianMessagesEntity m : pedestreAccessTo.getMensagens())
 				mensagens.add(new PedestrianMessagesEntity(this, m));
 		}
-		if (athleteAccessTO.getDocumentos() != null && !athleteAccessTO.getDocumentos().isEmpty()) {
+		if (pedestreAccessTo.getDocumentos() != null && !pedestreAccessTo.getDocumentos().isEmpty()) {
 			this.documentos = new ArrayList<DocumentoEntity>();
-			for(DocumentoTo doc : athleteAccessTO.getDocumentos())
+			for(DocumentoTo doc : pedestreAccessTo.getDocumentos())
 				documentos.add(new DocumentoEntity(this, doc));
 		}
-		if(athleteAccessTO.getPedestreRegras() != null && !athleteAccessTO.getPedestreRegras().isEmpty()) {
+		if(pedestreAccessTo.getPedestreRegras() != null && !pedestreAccessTo.getPedestreRegras().isEmpty()) {
 			this.pedestreRegra = new ArrayList<>();
-			for(PedestreRegraTO pr : athleteAccessTO.getPedestreRegras()) {
+			for(PedestreRegraTO pr : pedestreAccessTo.getPedestreRegras()) {
 				RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, pr.getIdRegra());
 				pedestreRegra.add(new PedestreRegraEntity(this, pr, regra));
 			}
 		}
 		
 	}
+	
+	public PedestrianAccessEntity(WebSocketPedestrianAccessTO pedestreAccessTo){
+		//Dados basicos
+		this.id = pedestreAccessTo.getId();
+		this.name = pedestreAccessTo.getName().toUpperCase();
+		this.cpf = pedestreAccessTo.getCpf();
+		this.rg = pedestreAccessTo.getRg();
+		this.idLocal = pedestreAccessTo.getIdLocal();
+		
+		//Dados Empresa
+		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
 
+		//Aba lateral
+		this.tipo = pedestreAccessTo.getTipo();
+		this.status = pedestreAccessTo.getStatus();
+		this.cardNumber = pedestreAccessTo.getCardNumber();
+		this.sempreLiberado = pedestreAccessTo.getSempreLiberado();
+		
+		byte[] fotoBase64 = Base64.decodeBase64(pedestreAccessTo.getFotoBase64());
+		this.foto =fotoBase64;
+		
+		if(pedestreAccessTo.getPedestreRegras() != null && !pedestreAccessTo.getPedestreRegras().isEmpty()) {
+			this.pedestreRegra = new ArrayList<>();
+			for(PedestreRegraTO pr : pedestreAccessTo.getPedestreRegras()) {
+				RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, pr.getIdRegra());
+				pedestreRegra.add(new PedestreRegraEntity(this, pr, regra));
+			}
+		}
+		
+	}
+	
+	public void updateWenSocketPestrianAccess(WebSocketPedestrianAccessTO pedestreAccessTo) {
+		//Dados basicos
+		this.id = pedestreAccessTo.getId();
+		this.name = pedestreAccessTo.getName().toUpperCase();
+		this.cpf = pedestreAccessTo.getCpf();
+		this.rg = pedestreAccessTo.getRg();
+		this.idLocal = pedestreAccessTo.getIdLocal();
+		
+		//Dados Empresa
+		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
+
+		//Aba lateral
+		this.tipo = pedestreAccessTo.getTipo();
+		this.status = pedestreAccessTo.getStatus();
+		this.cardNumber = pedestreAccessTo.getCardNumber();
+		this.sempreLiberado = pedestreAccessTo.getSempreLiberado();
+		
+		byte[] fotoBase64 = Base64.decodeBase64(pedestreAccessTo.getFotoBase64());
+		this.foto =fotoBase64;
+		
+		//pedestreRegras
+		if(pedestreAccessTo.getPedestreRegras() != null && !pedestreAccessTo.getPedestreRegras().isEmpty()) {
+			if(pedestreRegra == null || pedestreRegra.isEmpty()) {
+				pedestreRegra = new ArrayList<PedestreRegraEntity>();
+				
+				for(PedestreRegraTO newPr : pedestreAccessTo.getPedestreRegras()) {
+					RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
+					pedestreRegra.add(new PedestreRegraEntity(this, newPr, regra));
+				}
+			
+			} else {
+				List<PedestreRegraEntity> naoEcontrados = new ArrayList<>();
+				
+				for(PedestreRegraEntity pedestreRegraExistente : this.pedestreRegra) {
+					Optional<PedestreRegraTO> first = pedestreAccessTo.getPedestreRegras().stream()
+						.filter(pedestreRegraTo -> pedestreRegraTo.getId().equals(pedestreRegraExistente.getId()))
+						.findFirst();
+					
+					if(!first.isPresent()) {
+						naoEcontrados.add(pedestreRegraExistente);
+					}
+				}
+
+				this.pedestreRegra.removeAll(naoEcontrados);
+				
+				for(PedestreRegraTO newPr : pedestreAccessTo.getPedestreRegras()) {
+					boolean pRJaExiste = false;
+					
+					for(PedestreRegraEntity pedestreRegraExistente : this.pedestreRegra) {
+						if(pedestreRegraExistente.getId().equals(newPr.getId())) {
+							pedestreRegraExistente.setQtdeDeCreditos(newPr.getQtdeDeCreditos());
+							
+							pRJaExiste = true;
+							break;
+						}
+					}
+					
+					if(!pRJaExiste) {
+						RegraEntity regra = (RegraEntity) HibernateAccessDataFacade.getSingleResultById(RegraEntity.class, newPr.getIdRegra());
+						this.pedestreRegra.add(new PedestreRegraEntity(this, newPr, regra));
+					}
+				}
+			}
+		
+		} else {
+			if(pedestreRegra != null) {
+				pedestreRegra.clear();
+			}
+		}
+	}
+	
 	public String toString(){
 		Calendar c = Calendar.getInstance();
 		if(validadeCreditos != null)

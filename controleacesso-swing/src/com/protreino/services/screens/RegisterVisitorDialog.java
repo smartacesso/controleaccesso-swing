@@ -1737,24 +1737,28 @@ public class RegisterVisitorDialog extends BaseDialog {
 						.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
 			}
 		}
-		
+
 		LocalEntity nomeLocaL = localRepository.buscaLocalById(visitante.getIdLocal());
 		if (visitante.getIdLocal() != null && nomeLocaL != null) {
-		    for (int i = 0; i < localJComboBox.getItemCount(); i++) {
-		        SelectItem item = localJComboBox.getItemAt(i);
-		        if (item.getLabel().equals(nomeLocaL.getNome())) {
-		            localJComboBox.setSelectedItem(item);
-		            break;
-		        }
-		    }
+			for (int i = 0; i < localJComboBox.getItemCount(); i++) {
+				SelectItem item = localJComboBox.getItemAt(i);
+				if (item.getLabel().equals(nomeLocaL.getNome())) {
+					localJComboBox.setSelectedItem(item);
+					break;
+				}
+			}
 		} else {
-		    localJComboBox.setSelectedItem(null);
+			localJComboBox.setSelectedItem(null);
 		}
 
-		habilitarTecladoCheckBox.setSelected(visitante.getHabilitarTeclado());
-		sempreLiberado.setSelected(visitante.getSempreLiberado());
-		acessoLivre.setSelected(Objects.nonNull(visitante.getAcessoLivre()) ?  visitante.getAcessoLivre() : false);
-		enviaSMSdeConfirmacaoEntrada.setSelected(visitante.getEnviaSmsAoPassarNaCatraca());
+		habilitarTecladoCheckBox.setSelected(
+				Objects.nonNull(visitante.getHabilitarTeclado()) ? visitante.getHabilitarTeclado() : false);
+		sempreLiberado
+				.setSelected(Objects.nonNull(visitante.getSempreLiberado()) ? visitante.getSempreLiberado() : false);
+		acessoLivre.setSelected(Objects.nonNull(visitante.getAcessoLivre()) ? visitante.getAcessoLivre() : false);
+		enviaSMSdeConfirmacaoEntrada.setSelected(
+				Objects.nonNull(visitante.getEnviaSmsAoPassarNaCatraca()) ? visitante.getEnviaSmsAoPassarNaCatraca()
+						: false);
 
 		// Endereco
 		cepTextField.setText(visitante.getCep() != null ? visitante.getCep() : "");
