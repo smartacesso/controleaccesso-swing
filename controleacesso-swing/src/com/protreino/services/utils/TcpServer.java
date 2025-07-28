@@ -133,7 +133,7 @@ public class TcpServer {
 		            System.out.println(sdf.format(new Date()) + "  ... Novo cliente conectado no canal de eventos: "
 		                    + socket.getInetAddress().getHostAddress());
 		            
-		            new ProcessEventosThread(socket).start();
+//		            new ProcessEventosThread(socket).start();
 		        }
 
 		    } catch (IOException ex) {

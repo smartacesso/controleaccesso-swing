@@ -599,6 +599,8 @@ public class Utils {
 				"Habilita busca por CPF", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg",
 				"Habilita busca por RG", FieldType.CHECKBOX, "true"));		
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "reenvioDeMensagemPadraoOnline",
+				"Reenvio de mensagem PADRAO online", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "doisSentidos",
 				"Dois sentidos da catraca liberados", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "porcentagemRevista",
@@ -1983,6 +1985,10 @@ public class Utils {
         
         return dataComFusoDesejado;
     }
+
+	public static boolean isReenvioMensagemPadrao() {
+		return Utils.getPreferenceAsBoolean("reenvioDeMensagemPadraoOnline");
+	}
 
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {

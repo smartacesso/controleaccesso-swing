@@ -102,22 +102,17 @@ public class HikivisionEventsUseCase {
 					e.printStackTrace();
 				}
 			}
-			//adicionar configuração para habilitar isso
-			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime, eventListnerTO.getAccessControllerEvent().getDeviceName());
-			
-			return;
+			// adicionar configuração para habilitar isso
+			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime,
+					eventListnerTO.getAccessControllerEvent().getDeviceName());
 		} else {
-			new Thread() {
-				public void run() {
-				TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
-				message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
-				message.getParans().put("facial", hikivisionCameraId);
-				TcpServer.enviarMensagemParaClientesEventos(message);
-				
-				liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
-						eventListnerTO.getAccessControllerEvent().getDeviceName());
-				}
-			}.start();
+			TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+			message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+			message.getParans().put("facial", hikivisionCameraId);
+			TcpServer.enviarMensagemParaClientesEventos(message);
+
+			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
+					eventListnerTO.getAccessControllerEvent().getDeviceName());
 		}
 	}
 

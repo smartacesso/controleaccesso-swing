@@ -1469,16 +1469,22 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	
 	public boolean temTipoEscala3x3() {
-		if (Objects.isNull(pedestreRegra)) {
-			return false;
-		}
+	    if (Objects.isNull(pedestreRegra)) {
+	        return false;
+	    }
 
-		final Optional<PedestreRegraEntity> regraAtiva = getRegraAtivaPedestre();
-		
-		return regraAtiva.isPresent() 
-				? TipoRegra.ACESSO_ESCALA_3_3.equals(regraAtiva.get().getRegra().getTipo())
-				: false;
+	    final Optional<PedestreRegraEntity> regraAtiva = getRegraAtivaPedestre();
+
+	    if (regraAtiva.isPresent()) {
+	        PedestreRegraEntity regra = regraAtiva.get();
+	        if (regra.getRegra() != null && regra.getRegra().getTipo() != null) {
+	            return TipoRegra.ACESSO_ESCALA_3_3.equals(regra.getRegra().getTipo());
+	        }
+	    }
+
+	    return false;
 	}
+
 	
 	
 	public void apagarCartao() {
