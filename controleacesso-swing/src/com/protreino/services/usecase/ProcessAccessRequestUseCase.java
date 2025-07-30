@@ -51,7 +51,6 @@ public class ProcessAccessRequestUseCase {
 
 	private final LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
 	private final PedestrianAccessRepository pedestrianAccessRepository = new PedestrianAccessRepository();
-	private final RegraRepository regraRepository = new RegraRepository();
 
 	/**
 	 * @param codigo
@@ -69,7 +68,7 @@ public class ProcessAccessRequestUseCase {
 	public Object[] processAccessRequest(String codigo, String equipamento, Integer origem, String location,
 			boolean usaUrna, boolean createNotification, Date data, Boolean digitaisCatraca, Boolean ignoraRegras) {
 		return processAccessRequest(codigo, location, null, equipamento, origem, usaUrna, createNotification, data,
-				digitaisCatraca, ignoraRegras);
+				digitaisCatraca, ignoraRegras, true);
 	}
 
 	/**
@@ -79,17 +78,17 @@ public class ProcessAccessRequestUseCase {
 	public Object[] processAccessRequest(String codigo, String equipamento, Integer origem, String location,
 			boolean usaUrna, boolean createNotification, boolean ignoraRegras) {
 		return processAccessRequest(codigo, location, null, equipamento, origem, usaUrna, createNotification, null,
-				false, ignoraRegras);
+				false, ignoraRegras, true);
+	}
+	
+	public Object[] processAccessRequest(String codigo, Integer origem, Date date) {
+		return processAccessRequest(codigo, null, null, "", origem, false, false, date,
+				false, false, false);
 	}
 
-	/**
-	 * @param codigo
-	 * @return Object[] { resultadoVerificacao, userName, matchedPedestrianAccess }
-	 */
-	@SuppressWarnings("unchecked")
 	private Object[] processAccessRequest(String codigo, String location, String direction, String equipament,
 			Integer origem, Boolean usaUrna, boolean createNotification, Date data, Boolean digitaisCatraca,
-			Boolean ignoraRegras) {
+			Boolean ignoraRegras, Boolean registerLog) {
 
 		VerificationResult resultadoVerificacao = VerificationResult.NOT_FOUND;
 		String userName = "";
@@ -122,8 +121,7 @@ public class ProcessAccessRequestUseCase {
 			// se nao for encontrado
 			if (matchedPedestrianAccess == null) {
 				if (createNotification) {
-					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD,
-							foto);
+					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD, foto);
 				}
 
 				return new Object[] { VerificationResult.NOT_FOUND, userName, null };
@@ -131,7 +129,6 @@ public class ProcessAccessRequestUseCase {
 
 			// se a catraca estiver marcada como ignorarRegras
 			if (!Boolean.TRUE.equals(ignoraRegras)) {
-
 				if (isObrigatorioPassagemViaLeitorFacial(matchedPedestrianAccess, origem)) {
 					if (createNotification) {
 						Utils.createNotification(userName + " deve cadastrar sua face.", NotificationType.BAD, foto);
@@ -152,11 +149,10 @@ public class ProcessAccessRequestUseCase {
 			boolean isVisitante = matchedPedestrianAccess.isVisitante(); // ou qualquer outra verificação
 			if (isVisitante) {
 				return processVisitanteAccess(ignoraRegras, origem, matchedPedestrianAccess, location, data, direction,
-						createNotification, equipament, codigo, usaUrna);
+						createNotification, equipament, codigo, usaUrna, registerLog);
 			} else {
-
 				return processaVerificacoesBasicasPedestre(ignoraRegras, origem, matchedPedestrianAccess, location,
-						data, direction, createNotification, equipament, codigo);
+						data, direction, createNotification, equipament, codigo, registerLog);
 			}
 
 		} catch (Exception e) {
@@ -167,7 +163,7 @@ public class ProcessAccessRequestUseCase {
 
 	private Object[] processVisitanteAccess(Boolean ignoraRegras, Integer origem, PedestrianAccessEntity visitante,
 			String location, Date data, String direction, boolean createNotification, String equipament,
-			String codigoCartao, Boolean usaUrna) {
+			String codigoCartao, Boolean usaUrna, boolean registerLog) {
 		String userName = visitante.getFirstName().toUpperCase();
 		byte[] foto = visitante.getFoto();
 		String motivo = "";
@@ -185,19 +181,25 @@ public class ProcessAccessRequestUseCase {
 		Boolean permitidoSensor = isPermitidoNoSensor(ultimoAcesso, origem, visitante);
 
 		if (isPedestreInativo(visitante)) {
-			Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - INATIVO";
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, visitante, motivo);
 		}
 
 		if (isNaoPermitidoEquipamentoRestrito(equipament, visitante.getEquipamentos())) {
-			Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);				
+			}
 			motivo = "ACESSO NEGADO - EQUIPAMENTO NAO AUTORIZADO";
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, visitante, motivo);
 		}
 
 		if (regraPeriodo && !visitante.temRegraDeAcessoPorPeriodoValido()) {
-			Utils.createNotification("Fora do periodo.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Fora do periodo.", NotificationType.BAD, foto);				
+			}
 			motivo = "ACESSO NEGADO - Fora do periodo";
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, visitante, motivo);
 		}
@@ -205,7 +207,9 @@ public class ProcessAccessRequestUseCase {
 		System.out.println("Usa urna : " + usaUrna);
 		if (usaUrna) {
 			if (!permitidoSensor && acessoUnico) {
-				Utils.createNotification("Não permitido no sensor.", NotificationType.BAD, foto);
+				if(createNotification) {
+					Utils.createNotification("Não permitido no sensor.", NotificationType.BAD, foto);					
+				}
 				motivo = "ACESSO NEGADO - Deposite o carao na urna";
 				return resultadoNegado(VerificationResult.NOT_ALLOWED_SENSOR, userName, visitante, motivo);
 			}
@@ -235,9 +239,11 @@ public class ProcessAccessRequestUseCase {
 			}
 		}
 
-		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+		if(registerLog) {
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+		}
 
-		return resultadoSucesso(userName, visitante, foto, motivo);
+		return resultadoSucesso(userName, visitante, foto, motivo, createNotification);
 	}
 
 	private Boolean isRegraHorario(PedestrianAccessEntity visitante) {
@@ -261,7 +267,7 @@ public class ProcessAccessRequestUseCase {
 
 	private Object[] processaVerificacoesBasicasPedestre(Boolean ignoraRegras, Integer origem,
 			PedestrianAccessEntity pedestre, String location, Date data, String direction, boolean createNotification,
-			String equipament, String codigoCartao) {
+			String equipament, String codigoCartao, boolean registerLog) {
 
 		String userName = pedestre.getFirstName().toUpperCase();
 		byte[] foto = pedestre.getFoto();
@@ -270,9 +276,11 @@ public class ProcessAccessRequestUseCase {
 		if (data == null) {
 			data = new Date();
 		}
-
+		
+		System.out.println("validando acesso pedestre : " + codigoCartao);
+		
 		if (isHorarioIgnorado(equipament)) {
-			return resultadoSucesso(userName, pedestre, foto, motivo);
+			return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 		}
 
 		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
@@ -300,60 +308,81 @@ public class ProcessAccessRequestUseCase {
 
 		if (isPedestreInativo(pedestre)) {
 			System.out.println("LOG - Parou: pedestre inativo.");
-			Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);				
+			}
 			motivo = "ACESSO NEGADO - INATIVO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(Boolean.TRUE.equals(registerLog)) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (isTecladoBloqueado(pedestre, origem)) {
 			System.out.println("LOG - Parou: teclado bloqueado.");
-			Utils.createNotification("Teclado bloqueado.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Teclado bloqueado.", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - TECLADO BLOQUEADO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(Boolean.TRUE.equals(registerLog)) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (precisaRevista(ultimoAcesso)) {
 			System.out.println("LOG - Parou: revista obrigatória.");
-			Utils.createNotification("Revista obrigatória.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Revista obrigatória.", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - REVISTA";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			}
 			return resultadoNegado(VerificationResult.REVISTA_REQUIRED, userName, pedestre, motivo);
 		}
 
 		if (isNaoPermitidoEquipamentoRestrito(equipament, pedestre.getEquipamentos())) {
 			System.out.println("LOG - Parou: equipamento não autorizado.");
-			Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);				
+			}
 			motivo = "ACESSO NEGADO - EQUIPAMENTO NAO AUTORIZADO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (Utils.isAcessoRestrito() && !isPermitidoHoje(pedestre)) {
 			System.out.println("LOG - Parou: acesso restrito.");
-			Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);				
+			}
 			motivo = "ACESSO NEGADO - DIA NÃO PERMITIDO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (liberado != null) {
 			System.out.println("LOG - Parou: " + liberado);
-			criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
-					createNotification, equipament, foto, userName);
-			logAccess.setReason(motivo);
-			return resultadoSucesso(userName, pedestre, foto, motivo);
+			if(registerLog) {
+				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
+						createNotification, equipament, foto, userName);				
+			}
+			return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 		}
 		
 		if (isHorarioRefeitorio(equipament)) {
@@ -386,51 +415,92 @@ public class ProcessAccessRequestUseCase {
 					Utils.createNotification(userName + " sem creditos.", NotificationType.BAD, foto);
 				}
 
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				if(registerLog) {
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				}
 				return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 			} else {
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-				return resultadoSucesso(userName, pedestre, foto, motivo);
+				if(registerLog) {
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				}
+				return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 			}
 		}
 
 		if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
 			System.out.println("LOG - Parou: sem créditos.");
-			Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - SEM CREDITOS";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 		}
 
-		if (pedestre.temTipoEscala3x3() && !isPermitidoPorEscala3x3(pedestre)) {
-			System.out.println("LOG - Parou: fora da escala.");
-			Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
-			motivo = "ACESSO NEGADO - FORA DA ESCALA";
-			logAccess.setReason(motivo);
-			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-			return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
+		if (pedestre.temTipoEscala3x3()) {
+			Boolean permitido = false;
+			if(pedestre.temEscala3x3Fixa() && !isPermitidoPorEscala3x3Fixo(pedestre)) {
+				System.out.println("LOG - Parou: fora da escala.");
+				if(createNotification) {
+					Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
+				}
+				motivo = "ACESSO NEGADO - FORA DA ESCALA";
+				logAccess.setReason(motivo);
+				logAccess.setStatus("INATIVO");
+				if(registerLog) {
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				}
+				return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
+			}else {
+				if(!isPermitidoPorEscala3x3(pedestre, data)) {
+
+					System.out.println("LOG - Parou: fora da escala.");
+					if(createNotification) {
+						Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
+					}
+					motivo = "ACESSO NEGADO - FORA DA ESCALA";
+					logAccess.setReason(motivo);
+					logAccess.setStatus("INATIVO");
+					if(registerLog) {
+						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					}
+					return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
+				
+				}
+			}
+			
+		
 		}
 
 		if (pedestre.temTipoTurno() && !isPermitidoPorTurno(pedestre)) {
 			System.out.println("LOG - Parou: fora do turno.");
-			Utils.createNotification("Fora do turno", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Fora do turno", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - FORA DO TURNO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
 		}
 
 		if (pedestre.temTipoPeriodo() && !pedestre.temRegraDeAcessoPorPeriodoValido()) {
 			System.out.println("LOG - Parou: fora do periodo.");
-			Utils.createNotification("Fora do periodo", NotificationType.BAD, foto);
+			if(createNotification) {
+				Utils.createNotification("Fora do periodo", NotificationType.BAD, foto);
+			}
 			motivo = "ACESSO NEGADO - FORA DO PERIODO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
 		}
 
@@ -441,24 +511,27 @@ public class ProcessAccessRequestUseCase {
 					VerificationResult.ALLOWED, foto, origem, data);
 
 			System.out.println("LOG - Resultado final da validação: " + resultadoFinal);
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
 
 			if (!VerificationResult.ALLOWED.equals(resultadoFinal)
 					&& !VerificationResult.TOLERANCE_PERIOD.equals(resultadoFinal)) {
 				System.out.println("LOG - Parou: não permitido após validação de dias e horários.");
 				return resultadoNegado(resultadoFinal, userName, pedestre, motivo);
 			} else {
-				return resultadoSucesso(userName, pedestre, foto, motivo);
+				return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 			}
 		}
 
-		HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+		if(registerLog) {
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+		}
 
-		return resultadoSucesso(userName, pedestre, foto, motivo);
+		return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 	}
 
 	private boolean isAcessoLivre(PedestrianAccessEntity pedestre) {
-		// TODO Auto-generated method stub
 		if (Objects.nonNull(pedestre.getAcessoLivre())) {
 			return Boolean.TRUE.equals(pedestre.getAcessoLivre());
 		}
@@ -471,9 +544,8 @@ public class ProcessAccessRequestUseCase {
 				&& Objects.nonNull(pedestre.getCardNumber());
 	}
 
-	private boolean isPermitidoPorEscala3x3(PedestrianAccessEntity pedestre) {
+	private boolean isPermitidoPorEscala3x3(PedestrianAccessEntity pedestre, Date data) {
 		System.out.println("Tipo de regra - Escala 3x3");
-
 		LocalDateTime dataAcesso = LocalDateTime.now();
 		LocalDate dataInicioEscala = new java.util.Date(
 				pedestre.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime()).toInstant()
@@ -482,18 +554,18 @@ public class ProcessAccessRequestUseCase {
 		LocalTime turnoBase = pedestre.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
 				.atZone(ZoneId.systemDefault()).toLocalTime();
 
-// Calcular o dia do ciclo (1 a 12)
+		// Calcular o dia do ciclo (1 a 12)
 		long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
 		int diaDaEscala = (int) (diasEntre % 12) + 1;
 
-// Alternância de turno: a cada 6 dias o turno inverte
+		// Alternância de turno: a cada 6 dias o turno inverte
 		boolean cicloPar = (diasEntre / 6) % 2 == 0;
 
-// Turno atual baseado no ciclo (inverte 12h)
+		// Turno atual baseado no ciclo (inverte 12h)
 		LocalTime horarioInicioTurno = cicloPar ? turnoBase
 				: turnoBase.plusHours(12).withHour((turnoBase.getHour() + 12) % 24);
 
-// Antecipação de 3h (se necessário)
+		// Antecipação de 3h (se necessário)
 		LocalTime horarioInicio = horarioInicioTurno.minusHours(3);
 		LocalTime fimTurno = horarioInicio.plusHours(12);
 		boolean atravessaMeiaNoite = fimTurno.isBefore(horarioInicio);
@@ -524,6 +596,52 @@ public class ProcessAccessRequestUseCase {
 			return false;
 		}
 	}
+	
+	private boolean isPermitidoPorEscala3x3Fixo(PedestrianAccessEntity pedestre) {
+		System.out.println("Tipo de regra - Escala 3x3 FIXA");
+
+		LocalDateTime dataAcesso = LocalDateTime.now();
+		LocalDate dataInicioEscala = new java.util.Date(
+				pedestre.getRegraAtivaPedestre().get().getDataInicioPeriodo().getTime())
+				.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		LocalTime turnoBase = pedestre.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno()
+				.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+
+		// Calcular o dia do ciclo (1 a 6)
+		long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
+		int diaDaEscala = (int) (diasEntre % 6) + 1;
+
+		// Janela de acesso
+		LocalTime horarioInicio = turnoBase.minusHours(3);
+		LocalTime fimTurno = turnoBase.plusHours(12);
+		boolean atravessaMeiaNoite = fimTurno.isBefore(horarioInicio);
+
+		LocalTime horaAtual = dataAcesso.toLocalTime();
+
+		System.out.println("Data inicio escala : " + dataInicioEscala);
+		System.out.println("Hora do acesso     : " + dataAcesso);
+		System.out.println("Dia da escala      : " + diaDaEscala);
+		System.out.println("Turno base fixo    : " + turnoBase);
+		System.out.println("Inicio do turno    : " + horarioInicio);
+		System.out.println("Fim do turno       : " + fimTurno);
+		System.out.println("Atravessa meia-noite: " + atravessaMeiaNoite);
+
+		// Dias 1, 2, 3 = trabalho | Dias 4, 5, 6 = folga
+		boolean diaTrabalho = diaDaEscala == 1 || diaDaEscala == 2 || diaDaEscala == 3;
+
+		if (diaTrabalho) {
+			boolean permitido = atravessaMeiaNoite
+					? horaAtual.isAfter(horarioInicio) || horaAtual.isBefore(fimTurno)
+					: horaAtual.isAfter(horarioInicio) && horaAtual.isBefore(fimTurno);
+
+			System.out.println("Acesso permitido?   : " + permitido);
+			return permitido;
+		} else {
+			return false;
+		}
+	}
+
 
 	private boolean isPermitidoPorTurno(PedestrianAccessEntity pedestre) {
 		System.out.println("Tipo escala - Turno ");
@@ -1012,8 +1130,10 @@ public class ProcessAccessRequestUseCase {
 		return new Object[] { status, user, pedestre };
 	}
 
-	private Object[] resultadoSucesso(String user, PedestrianAccessEntity pedestre, byte[] foto, String motivo) {
-		Utils.createNotification(String.format("Liberado %s", user), NotificationType.GOOD, foto);
+	private Object[] resultadoSucesso(String user, PedestrianAccessEntity pedestre, byte[] foto, String motivo, boolean createNotification) {
+		if(createNotification) {
+			Utils.createNotification(String.format("Liberado %s", user), NotificationType.GOOD, foto);
+		}
 		return new Object[] { VerificationResult.ALLOWED, user, pedestre };
 	}
 }
