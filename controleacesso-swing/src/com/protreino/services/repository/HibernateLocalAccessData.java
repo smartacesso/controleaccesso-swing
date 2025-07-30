@@ -1018,7 +1018,7 @@ public class HibernateLocalAccessData {
 		return result;
 	}
 
-	public static synchronized <T> Object getSingleResultByCardNumberString(Class<T> entityClass, String cardNumber) {
+	public static  <T> Object getSingleResultByCardNumberString(Class<T> entityClass, String cardNumber) {
 		Session session = getSessionFactory().getCurrentSession();
 		if (session.getTransaction() == null || !session.getTransaction().isActive()) {
 			session.beginTransaction();
@@ -1026,15 +1026,19 @@ public class HibernateLocalAccessData {
 
 		Object result = null;
 		try {
+			long inicio = System.currentTimeMillis();
 			Query<T> query = session.createNamedQuery(entityClass.getSimpleName() + ".findByCardNumberString",
 					entityClass);
 			query.setParameter("CARD_NUMBER", cardNumber);
-
+			query.setMaxResults(1);
+			
 			List<T> resultList = query.getResultList(); // Busca todos os resultados
 
 			result = resultList.isEmpty() ? null : resultList.get(0); // Retorna o primeiro, se houver
 
 			session.getTransaction().commit();
+			long fim = System.currentTimeMillis();
+			System.out.println("tempo busca cartao : " + (fim - inicio) + "ms");
 		} catch (Exception e) {
 			result = null;
 			session.getTransaction().rollback();
