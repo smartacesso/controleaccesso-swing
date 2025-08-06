@@ -482,18 +482,18 @@ public class ProcessAccessRequestUseCase {
 		LocalTime turnoBase = pedestre.getRegraAtivaPedestre().get().getRegra().getHorarioInicioTurno().toInstant()
 				.atZone(ZoneId.systemDefault()).toLocalTime();
 
-// Calcular o dia do ciclo (1 a 12)
+		// Calcular o dia do ciclo (1 a 12)
 		long diasEntre = ChronoUnit.DAYS.between(dataInicioEscala, dataAcesso.toLocalDate());
 		int diaDaEscala = (int) (diasEntre % 12) + 1;
 
-// Alternância de turno: a cada 6 dias o turno inverte
+		// Alternância de turno: a cada 6 dias o turno inverte
 		boolean cicloPar = (diasEntre / 6) % 2 == 0;
 
-// Turno atual baseado no ciclo (inverte 12h)
+		// Turno atual baseado no ciclo (inverte 12h)
 		LocalTime horarioInicioTurno = cicloPar ? turnoBase
 				: turnoBase.plusHours(12).withHour((turnoBase.getHour() + 12) % 24);
 
-// Antecipação de 3h (se necessário)
+		// Antecipação de 3h (se necessário)
 		LocalTime horarioInicio = horarioInicioTurno.minusHours(3);
 		LocalTime fimTurno = horarioInicio.plusHours(12);
 		boolean atravessaMeiaNoite = fimTurno.isBefore(horarioInicio);

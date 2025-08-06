@@ -959,26 +959,26 @@ public class TcpServer {
 	}
 	
 	
-	class ProcessEventosThread extends Thread {
-	    private Socket socket;
-
-	    public ProcessEventosThread(Socket socket) {
-	        this.socket = socket;
-	    }
-
-	    @Override
-	    public void run() {
-	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-	            String message;
-	            while ((message = reader.readLine()) != null) {
-	                System.out.println("Evento recebido: " + message);
-	                // Aqui você pode adicionar lógica para processar o evento
-	            }
-	        } catch (IOException e) {
-	            System.err.println("Erro na thread de eventos: " + e.getMessage());
-	        }
-	    }
-	}
+//	class ProcessEventosThread extends Thread {
+//	    private Socket socket;
+//
+//	    public ProcessEventosThread(Socket socket) {
+//	        this.socket = socket;
+//	    }
+//
+//	    @Override
+//	    public void run() {
+//	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+//	            String message;
+//	            while ((message = reader.readLine()) != null) {
+//	                System.out.println("Evento recebido: " + message);
+//	                // Aqui você pode adicionar lógica para processar o evento
+//	            }
+//	        } catch (IOException e) {
+//	            System.err.println("Erro na thread de eventos: " + e.getMessage());
+//	        }
+//	    }
+//	}
 
 	public static void enviarMensagemParaClientesEventos(Object mensagem) {
 	    synchronized (clientesEventos) {

@@ -189,6 +189,14 @@ public class Utils {
 		return Boolean.valueOf(Utils.getPreference("enableWebSocketClient"));
 	}
 	
+	public static boolean isHabilitadoEnviarEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
+	}
+	
+	public static boolean isHabilitadoReceberEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));
+	}
+	
 	
 	public static void sleep(long tempo) {
 		try {
@@ -655,6 +663,10 @@ public class Utils {
 				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",
 				"Liberar DSR", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableRecevierEvents",
+				"Habilita CLIENTE receber eventos hikivision", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableSendEvents", 
+				"Habilita SERVER enviar eventos hikivion", FieldType.CHECKBOX, "false"));
 		
 		//Campo Reconhecimento Facial TOPDATA
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.TOPDATA_FACE_RECOGONIZER, "enableTopDataFacial",

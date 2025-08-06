@@ -121,7 +121,9 @@ public class ServerDevice extends Device {
 			sendConfiguration();
 			
 			// Inicia a thread de escuta de mensagens
-			startEventListener();
+			if(Utils.isHabilitadoReceberEventos()) {
+				startEventListener();
+			}
 			
 			watchDog = new SwingWorker<Void, Void>(){
 				@Override
