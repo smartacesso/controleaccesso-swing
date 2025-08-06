@@ -3,10 +3,8 @@ package com.protreino.services.usecase;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
@@ -106,10 +104,12 @@ public class HikivisionEventsUseCase {
 			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime,
 					eventListnerTO.getAccessControllerEvent().getDeviceName());
 		} else {
-			TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
-			message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
-			message.getParans().put("facial", hikivisionCameraId);
-			TcpServer.enviarMensagemParaClientesEventos(message);
+			if(Utils.isHabilitadoEnviarEventos()) {
+				TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
+				message.getParans().put("card", eventListnerTO.getAccessControllerEvent().getCardNo());
+				message.getParans().put("facial", hikivisionCameraId);
+				TcpServer.enviarMensagemParaClientesEventos(message);
+			}
 
 			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
 					eventListnerTO.getAccessControllerEvent().getDeviceName());
@@ -118,7 +118,6 @@ public class HikivisionEventsUseCase {
 
 
 	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDeviceName) {
-
 
 		// Chame sua função aqui
 		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
@@ -222,17 +221,12 @@ public class HikivisionEventsUseCase {
 			return;
 		}
 
-		// SAÍDA: decrementa créditos
-		// veriicar regras
 		System.out.println("direcao : " + logEventoOffline.getDirection());
 
 		boolean permitido = validaRegraVisitante(pedestre);
 		if (permitido) {
 			return;
 		}
-
-		// nao tem nenhuma regra ou fora do periodo
-		// decrementa credito do prorpio visitante
 		
 		if (!Utils.saidaEspecificaHabilitada() || isSaidaPortaria(HikivisionDevice)) {
 		    processaSaidaVisitante(pedestre, removeVisitanteCamera);
