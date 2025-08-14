@@ -188,6 +188,22 @@ public class Utils {
 	public static boolean webSocketClienteHikivisionHabilitado() {
 		return Boolean.valueOf(Utils.getPreference("enableWebSocketClient"));
 	}
+
+	public static boolean isHabilitadoEnviarEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
+	}
+	
+	public static boolean isHabilitadoReceberEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));
+	}
+	
+	public static boolean isBloqueadaVisualizar() {
+		return Boolean.valueOf(Utils.getPreference("hasBlockVisualizar"));
+	}
+	
+	public static boolean isBloqueadoForaHorarioRefeitorio() {
+		return Boolean.valueOf(Utils.getPreference("hasBlockForaHorario"));
+	}
 	
 	
 	public static void sleep(long tempo) {
@@ -476,6 +492,8 @@ public class Utils {
 				"Registrar acesso mesmo que não haja dispositivos conectados", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "pedestrianAlwaysOpen",
 				"Cadastro de pedestre/visitante em série", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hasBlockVisualizar",
+				"Bloquear visualizar cadastro PEDESTRE para perfil", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hourAutomaticRoutines",
 				"Hora para execução das rotinas automáticas", FieldType.NUMERIC_LIST, "00", "0;1;23"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardAcessClear",
@@ -559,6 +577,8 @@ public class Utils {
 				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRefeitorio",
 				"Habilitar decrementa refeitorio", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hasBlockForaHorario",
+				"Bloquear fora do horario REFEITORIO", FieldType.CHECKBOX, "false"));
 
 		//Campo "Tela de pedestre"
 
