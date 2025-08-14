@@ -1008,15 +1008,17 @@ public class TopDataDevice extends Device {
 				if (decrementaEntrada) {
 					// Configuração ativa: decrementar na entrada
 					if (ultimoAcesso.isEntrada()) {
+						System.out.println(">> Apagando credito");
 						pedestre.decrementaCreditos(data);
 					}
 				} else {
 					// Configuração inativa: decrementar na saída
 					if (ultimoAcesso.isSaida() || !bloquearSaida) {
+						System.out.println(">> Apagando credito");
 						pedestre.decrementaCreditos(data);
 					}
 				}
-
+				//para apagar foto visitante
 				if (ultimoAcesso.isSaida() 
 						&& (!pedestre.temCreditos()
 								&& pedestre.isVisitante() 
