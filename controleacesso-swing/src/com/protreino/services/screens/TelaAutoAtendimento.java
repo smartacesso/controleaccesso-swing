@@ -91,7 +91,7 @@ public class TelaAutoAtendimento extends BaseDialog {
 		PedestrianAccessEntity visitante = buscarVisitantePorCpf(cpf);
 
 		if (visitante != null && visitante.isVisitante()) {
-			cadastroVisitante = new RegisterVisitorDialog(visitante);
+			cadastroVisitante = new RegisterVisitorDialog(visitante, true);
 			if(visitante.getCardNumber() == null || visitante.getCardNumber().equals("")) {
 				visitante.setCardNumber(geraCartaoAcessoAleatorio());
 			}
