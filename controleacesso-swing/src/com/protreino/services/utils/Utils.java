@@ -193,9 +193,6 @@ public class Utils {
 		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
 	}
 	
-	public static boolean isHabilitadoReceberEventos() {
-		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));
-	}
 	
 	public static boolean isBloqueadaVisualizar() {
 		return Boolean.valueOf(Utils.getPreference("hasBlockVisualizar"));
@@ -204,10 +201,7 @@ public class Utils {
 	public static boolean isBloqueadoForaHorarioRefeitorio() {
 		return Boolean.valueOf(Utils.getPreference("hasBlockForaHorario"));
 	}
-	
-	public static boolean isHabilitadoEnviarEventos() {
-		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
-	}
+
 	
 	public static boolean isHabilitadoReceberEventos() {
 		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));

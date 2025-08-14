@@ -6,8 +6,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,13 +37,18 @@ import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
+import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
+import com.protreino.services.screens.dialogs.SimpleMessageDialog;
+import com.protreino.services.usecase.TestePedestreRegraUseCase;
 import com.protreino.services.utils.SelectItem;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial")
 public class AdicionarRegrasPanel extends JPanel {
+
+	private final SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy HH:mm"); 
 
 	private JTable pedestreRegrasListTable;
 	private String[] columns = {"Id", "Nome", "Validade", "Tipo de Regra"};
@@ -71,6 +78,8 @@ public class AdicionarRegrasPanel extends JPanel {
 	private JPanel dataFimPeriodoPanel;
 	
 //	private JPanel dataInicioEscalaPanel;
+	
+	private final TestePedestreRegraUseCase testePedestreRegraUseCase = new TestePedestreRegraUseCase();
 
 	
 	public AdicionarRegrasPanel(TipoPedestre tipoPedestre) {
@@ -222,6 +231,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		
 		JButton addPedestreRegraButton = getAddPedestreRegraButton();
 		JButton removePedestreRegraButton = getRemovePedestreRegraButton();
+		JButton testePedestreRegraButton = getTestePedestreRegraButton();
 		
 		JPanel addPedestreRegraPanel = new JPanel();
 		addPedestreRegraPanel.setLayout(new BoxLayout(addPedestreRegraPanel, BoxLayout.Y_AXIS));
@@ -232,6 +242,11 @@ public class AdicionarRegrasPanel extends JPanel {
 		removePedestreRegraPanel.setLayout(new BoxLayout(removePedestreRegraPanel, BoxLayout.Y_AXIS));
 		removePedestreRegraPanel.add(Box.createVerticalStrut(25));
 		removePedestreRegraPanel.add(removePedestreRegraButton);
+		
+		JPanel testePedestreRegraPanel = new JPanel();
+		testePedestreRegraPanel.setLayout(new BoxLayout(testePedestreRegraPanel, BoxLayout.Y_AXIS));
+		testePedestreRegraPanel.add(Box.createVerticalStrut(25));
+		testePedestreRegraPanel.add(testePedestreRegraButton);
 		
 		JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		headerPanel.setMaximumSize(new Dimension(10000, 60));
@@ -251,6 +266,7 @@ public class AdicionarRegrasPanel extends JPanel {
 //		headerPanel.add(Box.createHorizontalStrut(10));
 		headerPanel.add(addPedestreRegraPanel);
 		headerPanel.add(removePedestreRegraPanel);
+		headerPanel.add(testePedestreRegraPanel);
 		
 		JScrollPane scrollPane = new JScrollPane(pedestreRegrasListTable);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
@@ -262,36 +278,6 @@ public class AdicionarRegrasPanel extends JPanel {
 		add(Box.createRigidArea(new Dimension(0,5)));
 		add(pedestreRegraListTablePanel);
 	}
-	
-//	private JButton getRemovePedestreRegraButton() {
-//		JButton removeDocumentButton = new JButton("Remover");
-//		removeDocumentButton.setBorder(new EmptyBorder(5, 10, 5, 10));
-//		removeDocumentButton.setPreferredSize(new Dimension(100, 40));
-//		
-//		removeDocumentButton.addActionListener(e -> {
-//			if(pedestreRegrasListTable.getSelectedRow() < 0)
-//				return;
-//			
-//			Long idParaExcluir = (Long) dataModel.getValueAt(pedestreRegrasListTable.getSelectedRow(), 0);
-//			
-//			for(int i = 0; i < pedestresRegras.size(); i++) {
-//				if(!idParaExcluir.equals(pedestresRegras.get(i).getId()))
-//					continue;
-//				
-//				if(pedestresRegras.get(i).getCadastradoNoDesktop())
-//					pedestresRegras.remove(i);
-//				else
-//					pedestresRegras.get(i).setRemovidoNoDesktop(true);
-//			}
-//			
-//			dataModel.removeRow(pedestreRegrasListTable.getSelectedRow());
-//			pedestreRegrasListTable.setModel(dataModel);
-//			
-//			Utils.escondeColunaFromTable(pedestreRegrasListTable, 0);
-//		});
-//		
-//		return removeDocumentButton;
-//	}
 	
 	private JButton getRemovePedestreRegraButton() {
 	    JButton removeDocumentButton = new JButton("Remover");
@@ -324,8 +310,89 @@ public class AdicionarRegrasPanel extends JPanel {
 
 	    return removeDocumentButton;
 	}
-
 	
+	private JButton getTestePedestreRegraButton() {
+	    JButton testaRegraButton = new JButton("Testar Regra");
+	    testaRegraButton.setBorder(new EmptyBorder(5, 10, 5, 10));
+	    testaRegraButton.setPreferredSize(new Dimension(100, 40));
+	    
+	    testaRegraButton.addActionListener(e -> {
+	    	createDialogTestaPedestreRegra();
+	    });
+
+	    return testaRegraButton;
+	}
+	
+	private void createDialogTestaPedestreRegra() {
+		JDialog testPedestreRegraDialog = new JDialog();
+		testPedestreRegraDialog.setIconImage(Main.favicon);
+		testPedestreRegraDialog.setModal(true);
+		testPedestreRegraDialog.setTitle("Testar Regra");
+		testPedestreRegraDialog.setResizable(false);
+		testPedestreRegraDialog.setLayout(new BorderLayout());
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		
+		JLabel dataLabel = new JLabel("Data do Acesso");
+		dataLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		
+		JFormattedTextField dataAcessoTextField = Utils.getNewJFormattedTextField(5);
+		MaskFormatter maskFormatter = Utils.getNewMaskFormatter("##/##/#### ##:##");
+		maskFormatter.install(dataAcessoTextField);
+		
+		JButton testButton = new JButton("Testar");
+		testButton.setBorder(new EmptyBorder(10, 20, 10, 20));
+		testButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		testButton.addActionListener(e -> {
+			if(Objects.isNull(pedestresRegras) || pedestresRegras.isEmpty()) {
+				return;
+			}
+			
+			final String cardnumber = pedestresRegras.get(0).getPedestrianAccess().getCardNumber();
+			final String dateText = dataAcessoTextField.getText();
+			
+			try {
+				VerificationResult result = testePedestreRegraUseCase.execute(cardnumber, formato.parse(dateText));
+				
+				if(result == VerificationResult.ALLOWED) {
+					criarDialogoResultadoTesteRegraPedetre("Pasou", "Liberado");
+				} else {
+					criarDialogoResultadoTesteRegraPedetre("Negado", "Negado");
+				}
+				
+			} catch (ParseException ex) {
+				ex.printStackTrace();
+				criarDialogoResultadoTesteRegraPedetre("Erro", "Erro ao converter data: " + ex.getMessage());
+			}
+			
+			testPedestreRegraDialog.dispose();
+		});
+
+		JPanel confirmarPanel = new JPanel();
+		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.Y_AXIS));
+		confirmarPanel.add(dataLabel);
+		confirmarPanel.add(Box.createVerticalStrut(10));
+		confirmarPanel.add(dataAcessoTextField);
+		confirmarPanel.add(Box.createVerticalStrut(10));
+		confirmarPanel.add(testButton);
+		confirmarPanel.add(Box.createHorizontalStrut(10));
+
+		mainPanel.add(Box.createVerticalStrut(10));
+		mainPanel.add(confirmarPanel);
+
+		testPedestreRegraDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		testPedestreRegraDialog.pack();
+		testPedestreRegraDialog.setLocationRelativeTo(null);
+		testPedestreRegraDialog.setVisible(true);
+	}
+	
+	private void criarDialogoResultadoTesteRegraPedetre(final String title, final String text) {
+		new SimpleMessageDialog(title, text, "Ok");
+	}
+
 	private void populateTable(RegraEntity regraSelecionada) {
 		Object[] item = new Object[4];
 		Long idTemp = Utils.getRandomNumber();

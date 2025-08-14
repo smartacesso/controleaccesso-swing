@@ -1487,6 +1487,21 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	
 	
+	public boolean temEscala3x3Fixa() {
+		if (Objects.isNull(pedestreRegra)) {
+			return false;
+		}
+
+		final Optional<PedestreRegraEntity> regraAtiva = getRegraAtivaPedestre();
+		if(regraAtiva.isPresent()) {
+			if(Objects.nonNull( regraAtiva.get().getRegra().getDescricao())) {
+				return regraAtiva.get().getRegra().getDescricao().contains("FIXO");
+			}
+		}
+		return false;
+	}
+	
+	
 	public void apagarCartao() {
 		if(Utils.isHikivisionHabilitada() && Objects.nonNull(dataCadastroFotoNaHikivision)) {
 			return;
