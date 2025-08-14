@@ -1501,6 +1501,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	
 	public void decrementaCreditos(final Date date) {
 		if (temRegraDeAcessoPorPeriodoValido()) {
+			System.out.println("Tem acesso por periodo!");
 			return;
 		}
 		
@@ -1511,21 +1512,22 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		Optional<PedestreRegraEntity> regraAtiva = getRegraAtiva();
 		
 		if(!regraAtiva.isPresent()) {
+			System.out.println(" >> Sem regra ativa");
 			return;
 		}
 		
 		if(regraAtiva.get().temCreditos()) {
+			System.out.println(">> Decrementa creditos pedestre regra");
 			regraAtiva.get().decrementaCreditos();
-			return;
 		}
 		
 		if(regraAtiva.get().temRegraDeHorariosComCredito()) {
+			System.out.println(">> Tem horario com credito:");
 			regraAtiva.get().decrementaCreditoFromHorario(date);
 			
 			if(Utils.refeitorioHabilitado()) {
 				regraAtiva.get().decrementaCreditoRefeitorio(date);
 			}
-			return;
 		}
 	}
 	

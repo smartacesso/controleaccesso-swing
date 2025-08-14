@@ -196,9 +196,11 @@ public class PedestreRegraEntity extends BaseEntity {
 	
 	public void decrementaCreditoFromHorario(final Date date) {
 		if(Objects.isNull(horarios) || horarios.isEmpty()) {
+			System.out.println(">> Horario vazio ou nulo!");
 			return;
 		}
 		
+		System.out.println(" >> Decremetando");
 		horarios.stream()
 			.filter(horario -> horario.isDiaPermitido(date) && horario.isDentroDoHorarioPermitido(date) && Objects.nonNull(horario.getQtdeDeCreditos()))
 			.forEach(horario -> horario.decrementaCreditos());
@@ -206,35 +208,36 @@ public class PedestreRegraEntity extends BaseEntity {
 	}
 	
 	public void decrementaCreditoRefeitorio(Date date) {
-		if(Objects.isNull(horarios) || horarios.isEmpty()) {
-			return;
-		}
-		
-		if(date == null) {
-			date = new Date();
-		}
-		
-		LocalTime agora = date.toInstant()
-		    .atZone(ZoneId.systemDefault())
-		    .toLocalTime();
+	    if (Objects.isNull(horarios) || horarios.isEmpty()) {
+	        System.out.println(">> Horario vazio ou nulo!");
+	        return;
+	    }
 
-		Optional<HorarioEntity> horarioValidoComCredito = horarios.stream()
-			    .filter(h -> h.getHorarioInicio() != null)
-			    .peek(h -> {
-			        LocalTime horario = h.getHorarioInicio().toInstant()
-			            .atZone(ZoneId.systemDefault())
-			            .toLocalTime();
-			        long diff = Math.abs(Duration.between(horario, agora).toMinutes());
-			    })
-			    .min(Comparator.comparingLong(h -> {
-			        LocalTime horario = h.getHorarioInicio().toInstant()
-			            .atZone(ZoneId.systemDefault())
-			            .toLocalTime();
-			        return Math.abs(Duration.between(horario, agora).toMinutes());
-			    }));
-		
-		
-		horarioValidoComCredito.get().decrementaCreditos();
+	    if (date == null) {
+	        date = new Date();
+	    }
+
+	    LocalTime agora = date.toInstant()
+	        .atZone(ZoneId.systemDefault())
+	        .toLocalTime();
+
+	    Optional<HorarioEntity> horarioValidoComCredito = horarios.stream()
+	        .filter(h -> h.getHorarioInicio() != null)
+	        .min(Comparator.comparingLong(h -> {
+	            LocalTime horario = h.getHorarioInicio().toInstant()
+	                .atZone(ZoneId.systemDefault())
+	                .toLocalTime();
+	            return Math.abs(Duration.between(horario, agora).toMinutes());
+	        }));
+
+	    if (horarioValidoComCredito.isPresent()) {
+	        HorarioEntity h = horarioValidoComCredito.get();
+	        System.out.println(">> Quantidade de creditos ANTES : " + h.getQtdeDeCreditos());
+	        h.decrementaCreditos();
+	        System.out.println(">> Quantidade de creditos DEPOIS : " + h.getQtdeDeCreditos());
+	    } else {
+	        System.out.println(">> Nenhum horário com horárioInicio válido encontrado.");
+	    }
 	}
 	
 	public boolean isNaoRemovidoNoDesktop() {
@@ -244,9 +247,10 @@ public class PedestreRegraEntity extends BaseEntity {
 	
 	public void decrementaCreditos() {
 		if(Objects.isNull(qtdeDeCreditos)) {
+			System.out.println(" >> sem creditos para decrementar");
 			return;
 		}
-		
+		System.out.println(" >> Decremetando");
 		setQtdeDeCreditos(getQtdeDeCreditos() - 1);
 	}
 	

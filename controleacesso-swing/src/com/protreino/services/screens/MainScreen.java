@@ -761,7 +761,7 @@ public class MainScreen extends JFrame {
 		}
 		if(!RegisterVisitorDialog.abertoPeloAtalho) {
 			RegisterVisitorDialog.abertoPeloAtalho = true;
-			cadastroVisitante = new RegisterVisitorDialog(visitante);
+			cadastroVisitante = new RegisterVisitorDialog(visitante, true);
 			SwingUtilities.invokeLater( 
 			    new Runnable() { 
 			        @Override public void run() {
@@ -773,40 +773,47 @@ public class MainScreen extends JFrame {
 	}
 
 	public void abreCadastroPedestre(PedestrianAccessEntity p) {
-		if(Objects.isNull(Main.internoLoggedUser)) {
+		Boolean isPermitidoEditar = true;
+		if (Objects.isNull(Main.internoLoggedUser)) {
+			if(Utils.isBloqueadaVisualizar()) {
 			 JOptionPane.showMessageDialog(null, "Necessário realizar: LOGIN INTERNO");
 			 return;
+			}
+			isPermitidoEditar = false;
 		}
-		
+
 		PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
-	    // Verifica se o usuario tem um perfil de acesso
-	    if(Objects.nonNull(perfil)) {	
-	        if(perfil.equals(PerfilAcesso.PORTEIRO)) {
+		// Verifica se o usuario tem um perfil de acesso
+		if (Objects.nonNull(perfil)) {
+			if (perfil.equals(PerfilAcesso.PORTEIRO)) {
+				if(Utils.isBloqueadaVisualizar()) {
 	            JOptionPane.showMessageDialog(null, "Usuario nao possui acesso");
-	            return;
-	        }
-	    }
+					return;
+				}
+				isPermitidoEditar = false;
+			}
+		}
 
-	    // Caso o perfil seja diferente de PORTEIRO, continua para abrir o cadastro
-	    PedestrianAccessEntity pedestre = p;
-	    if (pedestre == null) {
-	        pedestre = new PedestrianAccessEntity();
-	        pedestre.setTipo("PEDESTRE");
-	    }
+		// Caso o perfil seja diferente de PORTEIRO, continua para abrir o cadastro
+		PedestrianAccessEntity pedestre = p;
+		if (pedestre == null) {
+			pedestre = new PedestrianAccessEntity();
+			pedestre.setTipo("PEDESTRE");
+		}
 
-	    // Verifica se o cadastro ja foi aberto pelo atalho
-	    if (!RegisterVisitorDialog.abertoPeloAtalho) {
-	        RegisterVisitorDialog.abertoPeloAtalho = true;
-	        cadastroPedestre = new RegisterVisitorDialog(pedestre);
-	        
-	        // Mostra a tela do cadastro em uma thread separada
-	        SwingUtilities.invokeLater(new Runnable() { 
-	            @Override
-	            public void run() {
-	                cadastroPedestre.setVisible(true);
-	            }
-	        });
-	    }
+		// Verifica se o cadastro ja foi aberto pelo atalho
+		if (!RegisterVisitorDialog.abertoPeloAtalho) {
+			RegisterVisitorDialog.abertoPeloAtalho = true;
+			cadastroPedestre = new RegisterVisitorDialog(pedestre, isPermitidoEditar);
+
+			// Mostra a tela do cadastro em uma thread separada
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					cadastroPedestre.setVisible(true);
+				}
+			});
+		}
 	}
 	
 	public void abreCadastroCartoComanda(CartaoComandaEntity c) {

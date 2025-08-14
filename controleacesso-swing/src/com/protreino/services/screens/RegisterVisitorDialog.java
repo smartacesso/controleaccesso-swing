@@ -85,6 +85,7 @@ import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.entity.TopdataFacialErrorEntity;
+import com.protreino.services.enumeration.PerfilAcesso;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.exceptions.InvalidPhotoException;
@@ -236,7 +237,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 	// Tela de cadastro de pedestre
 
-	public RegisterVisitorDialog(PedestrianAccessEntity visitante) {
+	public RegisterVisitorDialog(PedestrianAccessEntity visitante, Boolean isPermitodoEditar) {
 		loadImages();
 
 		this.visitante = visitante;
@@ -336,6 +337,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		if (Utils.isHikivisionConfigValid()) {
 			hikivisionUseCases = new HikivisionUseCases();
 		}
+		
+		bloquearEdicaoSeNecessario(isPermitodoEditar);
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -350,10 +353,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 				}
 			}
 		});
+		
 
 		getContentPane().add(mainContentPane, BorderLayout.CENTER);
 		pack();
 		setLocationRelativeTo(null);
+		
 	}
 
 	private void verificaRegrasBusca() {
@@ -575,8 +580,60 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		if (habilitaAppPedestre)
 			criaPanelDadosAcesso(panel);
+		
+		
+//		bloquearEdicaoSeNecessario(isPermitidoEditar);
 
 		return panel;
+	}
+	
+	
+	private void bloquearEdicaoSeNecessario(Boolean isPermitidoEditar) {
+		PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
+		// Verifica se o usuario tem um perfil de acesso
+		if (Boolean.FALSE.equals(isPermitidoEditar)) {
+
+			// Desativa campos de texto
+			nomeTextField.setEditable(false);
+			dataNascimentoTextField.setEditable(false);
+			emailTextField.setEditable(false);
+			cpfTextField.setEditable(false);
+			rgTextField.setEditable(false);
+			telefoneTextField.setEditable(false);
+			celularTextField.setEditable(false);
+			responsavelTextField.setEditable(false);
+			obsTextArea.setEditable(false);
+			cartaoAcessoTextField.setEditable(false);
+			
+			matriculaTextField.setEditable(false);
+			cepTextField.setEditable(false);
+			logradouroTextField.setEditable(false);
+			numeroTextField.setEditable(false);
+			complementoTextField.setEditable(false);
+			bairroTextField.setEditable(false);
+			cidadeTextField.setEditable(false);
+			estadoTextField.setEditable(false);
+			
+			// Desativa combo boxes
+			localJComboBox.setEnabled(false);
+			generoJComboBox.setEnabled(false);
+			generoJComboBox.setEnabled(false);
+			statusJComboBox.setEnabled(false);
+			
+			
+			habilitarTecladoCheckBox.setEnabled(false);
+			sempreLiberado.setEnabled(false);
+			acessoLivre.setEnabled(false);
+
+			empresaJComboBox.setEnabled(false);
+			departamentoJComboBox.setEnabled(false);
+			centroCustoJComboBox.setVisible(false);
+			cargoJComboBox.setEnabled(false);
+
+			// Se houver botões ou outros campos que queira bloquear, adicione aqui
+			// Exemplo: btnSalvar.setEnabled(false);
+			return;
+		}
 	}
 	
 	private boolean validarCPF(String cpf) {
@@ -1036,6 +1093,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		c = getNewGridBag(0, 1, 0, 0);
 		panelInternoLateral.add(geraCartaoAcesso, getNewGridBag(0, 8, 30, 5));
 
+		
 		return panelExterno;
 
 	}
@@ -1412,7 +1470,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				pedestre.setTipo(visitante.getTipo());
 				new Thread() {
 					public void run() {
-						new RegisterVisitorDialog(pedestre);
+						new RegisterVisitorDialog(pedestre, true);
 					}
 				}.start();
 
@@ -1439,7 +1497,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				pedestre.setTipo(visitante.getTipo());
 				new Thread() {
 					public void run() {
-						new RegisterVisitorDialog(pedestre);
+						new RegisterVisitorDialog(pedestre, true);
 					}
 				}.start();
 
