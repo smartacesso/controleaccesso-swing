@@ -29,7 +29,6 @@ import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianEquipamentEntity;
-import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.BroadcastMessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.TipoEscala;
@@ -41,7 +40,6 @@ import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
-import com.protreino.services.repository.RegraRepository;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.utils.Utils;
@@ -277,12 +275,6 @@ public class ProcessAccessRequestUseCase {
 			data = new Date();
 		}
 		
-		System.out.println("validando acesso pedestre : " + codigoCartao);
-		
-		if (isHorarioIgnorado(equipament)) {
-			return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
-		}
-
 		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
 				pedestre.getQtdAcessoAntesSinc());
 
@@ -304,6 +296,8 @@ public class ProcessAccessRequestUseCase {
 			liberado = "Saida liberada";
 		} else if (isAcessoLivre(pedestre)) {
 			liberado = "Acesso livre";
+		}else if(isHorarioIgnorado(equipament)) {
+			liberado = "horario liberado";
 		}
 
 		if (isPedestreInativo(pedestre)) {
@@ -386,45 +380,45 @@ public class ProcessAccessRequestUseCase {
 		}
 		
 		if (isHorarioRefeitorio(equipament)) {
-			Optional<PedestreRegraEntity> regraAtivaPedestre = pedestre.getRegraAtivaPedestre();
-
-			Date dataAcesso = new Date();
-			LocalTime agora = dataAcesso.toInstant()
-			    .atZone(ZoneId.systemDefault())
-			    .toLocalTime();
-
-			Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios().stream()
-			    .filter(h -> h.getHorarioInicio() != null)
-			    .peek(h -> {
-			        LocalTime horario = h.getHorarioInicio().toInstant()
-			            .atZone(ZoneId.systemDefault())
-			            .toLocalTime();
-			        long diff = Math.abs(Duration.between(horario, agora).toMinutes());
-			    })
-			    .min(Comparator.comparingLong(h -> {
-			        LocalTime horario = h.getHorarioInicio().toInstant()
-			            .atZone(ZoneId.systemDefault())
-			            .toLocalTime();
-			        return Math.abs(Duration.between(horario, agora).toMinutes());
-			    }));
-
-			if (!horarioValidoComCredito.isPresent() || !horarioValidoComCredito.get().temCreditos()) {
-				logAccess.setStatus("INATIVO");
-				logAccess.setReason("Não permitido, sem creditos");
-				if (createNotification) {
-					Utils.createNotification(userName + " sem creditos.", NotificationType.BAD, foto);
-				}
-
-				if(registerLog) {
-					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-				}
-				return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
+			if (!pedestre.temTipoHorarioCredito()) {
+				System.out.println(">> Ignorando regra de créditos (não se aplica ao pedestre)");
 			} else {
-				if(registerLog) {
-					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				Optional<PedestreRegraEntity> regraAtivaPedestre = pedestre.getRegraAtivaPedestre();
+
+				LocalTime agora = toLocalTime(new Date());
+
+				Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios().stream()
+						.filter(h -> h.getHorarioInicio() != null).min(Comparator.comparingLong(h -> {
+							LocalTime horario = toLocalTime(h.getHorarioInicio());
+							return Math.abs(Duration.between(horario, agora).toMinutes());
+						}));
+
+				if (horarioValidoComCredito.map(HorarioEntity::temCreditos).orElse(false)) {
+//					logAccess.setStatus("INATIVO");
+//					logAccess.setReason("Não permitido, sem créditos");
+					if(registerLog) {
+						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					}
+					return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
+				}else {
+					logAccess.setStatus("INATIVO");
+					logAccess.setReason("Não permitido, sem créditos");
+					if (createNotification) {
+						Utils.createNotification(userName + " sem créditos.", NotificationType.BAD, foto);
+					}
+					if(registerLog) {
+						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					}
+					return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 				}
-				return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 			}
+
+		}else if(Utils.isBloqueadoForaHorarioRefeitorio()) {
+			if (createNotification) {
+				Utils.createNotification(userName + " refeitorio fechado.", NotificationType.BAD, foto);
+			}
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
@@ -472,8 +466,6 @@ public class ProcessAccessRequestUseCase {
 				
 				}
 			}
-			
-		
 		}
 
 		if (pedestre.temTipoTurno() && !isPermitidoPorTurno(pedestre)) {
@@ -530,6 +522,11 @@ public class ProcessAccessRequestUseCase {
 
 		return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 	}
+	
+	private LocalTime toLocalTime(Date date) {
+	    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+	}
+
 
 	private boolean isAcessoLivre(PedestrianAccessEntity pedestre) {
 		if (Objects.nonNull(pedestre.getAcessoLivre())) {
@@ -543,8 +540,9 @@ public class ProcessAccessRequestUseCase {
 		return pedestre.temCreditos() && pedestre.temCreditosValidos(data) && !isPermitidoPedestreRegra(pedestre)
 				&& Objects.nonNull(pedestre.getCardNumber());
 	}
-
+	
 	private boolean isPermitidoPorEscala3x3(PedestrianAccessEntity pedestre, Date data) {
+
 		System.out.println("Tipo de regra - Escala 3x3");
 		LocalDateTime dataAcesso = LocalDateTime.now();
 		LocalDate dataInicioEscala = new java.util.Date(
@@ -958,12 +956,14 @@ public class ProcessAccessRequestUseCase {
 		return Utils.isPodeEntrarNovamente(ultimoAcesso);
 	}
 
+	
+	
 	private boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
 		final Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
 		return regraAtiva.isPresent() && regraAtiva.get().temCreditos();
 	}
-
+	
 	private boolean isPermitidoNoSensor(LogPedestrianAccessEntity ultimoAcesso, Integer origem,
 			PedestrianAccessEntity pedestre) {
 		if (pedestre.getQrCodeParaAcesso() != null && pedestre.getQrCodeParaAcesso().contains("_")
