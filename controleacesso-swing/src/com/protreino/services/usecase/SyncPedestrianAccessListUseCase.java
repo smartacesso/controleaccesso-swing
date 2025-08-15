@@ -578,6 +578,7 @@ public class SyncPedestrianAccessListUseCase {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
                     }
+                   
                     //System.out.println("sempre liberado que chegou da web : " + athleteAccessTO.getSempreLiberado());
                     // TODO : criar novo m�todo para pegar pedestre removido ou nao
                     //        isso pode resolver v�rios bugs
@@ -927,6 +928,7 @@ public class SyncPedestrianAccessListUseCase {
         responseObj.addProperty("matricula", visitante.getMatricula() != null ? visitante.getMatricula() : "");
         responseObj.addProperty("numeroCartao", visitante.getCardNumber() != null ? visitante.getCardNumber() : "");
         responseObj.addProperty("sempreLiberado", visitante.getSempreLiberado() != null ? visitante.getSempreLiberado().toString() : "false");
+        responseObj.addProperty("acessoLivre", visitante.getAcessoLivre() != null ? visitante.getAcessoLivre().toString() : "false");
         responseObj.addProperty("habilitarTeclado", visitante.getHabilitarTeclado() != null
                 ? visitante.getHabilitarTeclado().toString() : "false");
         responseObj.addProperty("enviaSmsAoPassarNaCatraca", visitante.getEnviaSmsAoPassarNaCatraca() != null

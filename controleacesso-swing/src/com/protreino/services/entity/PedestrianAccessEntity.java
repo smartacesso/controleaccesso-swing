@@ -806,6 +806,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.matricula = pedestreAccessTo.getMatricula();
 		this.cardNumber = pedestreAccessTo.getCardNumber();
 		this.sempreLiberado = pedestreAccessTo.getSempreLiberado();
+		this.acessoLivre = pedestreAccessTo.getAcessoLivre();
 		this.habilitarTeclado = pedestreAccessTo.getHabilitarTeclado();
 		this.cadastroFacialObrigatorio = pedestreAccessTo.getCadastroFacialObrigatorio();
 		this.enviaSmsAoPassarNaCatraca = pedestreAccessTo.getEnviaSmsAoPassarNaCatraca();
