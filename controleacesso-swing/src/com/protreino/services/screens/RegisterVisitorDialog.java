@@ -1739,9 +1739,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setDocumentos(panelAdicionarDocumento.getDocumentos());
 
 		if (panelAdicionarRegras.getPedestresRegras() != null && !panelAdicionarRegras.getPedestresRegras().isEmpty()) {
-			panelAdicionarRegras.getPedestresRegras().forEach(pr -> {
+//			panelAdicionarRegras.getPedestresRegras().forEach(pr -> {
+//				pr.setPedestrianAccess(visitante);
+//			});
+			for(PedestreRegraEntity pr : panelAdicionarRegras.getPedestresRegras()) {
 				pr.setPedestrianAccess(visitante);
-			});
+			}
 
 			visitante.setPedestreRegra(panelAdicionarRegras.getPedestresRegras());
 

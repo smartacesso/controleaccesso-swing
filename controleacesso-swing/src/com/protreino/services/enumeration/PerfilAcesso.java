@@ -7,7 +7,9 @@ public enum PerfilAcesso {
 	ADMINISTRADOR,
 	GERENTE,
 	OPERADOR,
-	PORTEIRO;
+	PORTEIRO,
+	RESPONSAVEL,
+	CUIDADOR;
 	
 	public static PerfilAcesso get(final String perfilAcesso) {
 		return Stream.of(values())

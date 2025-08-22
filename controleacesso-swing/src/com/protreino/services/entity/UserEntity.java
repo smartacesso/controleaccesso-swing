@@ -227,6 +227,7 @@ public class UserEntity extends BaseEntity implements ObjectWithId, Serializable
 		this.setDataRemovido(user.getDataRemovido());
 		this.setDataAlteracao(new Date());
 		this.setHabilitaPedestre(user.getHabilitaPedestre());;
+		this.setPerfilAcesso(user.getPerfilAcesso() != null ? user.getPerfilAcesso() : PerfilAcesso.PORTEIRO);
 	}
 	
 	public boolean temChaveIntegracaoComtele() {

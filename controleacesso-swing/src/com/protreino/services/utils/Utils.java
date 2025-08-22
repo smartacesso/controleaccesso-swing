@@ -124,90 +124,6 @@ public class Utils {
 
 	private static final DeviceRepository deviceRepository = new DeviceRepository();
 	
-	public static boolean isHikivisionConfigValid() {
-		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
-
-		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
-	}
-	
-	public static boolean isTopDataFacialEnable() {
-		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
-	}
-	
-	public static boolean isAutoAtendimentoHabilitado() {
-		return Utils.getPreferenceAsBoolean("autoAtentimentoHabilitado");
-	}
-	
-	public static boolean isSaidaSemVerificar() {
-		return Utils.getPreferenceAsBoolean("saidaSemVerificar");
-	}
-	
-	
-	public static boolean isAcessoHoraErradoIgnorada() {
-		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
-	}
-	
-	public static boolean isAcessoLiberado() {
-		return Utils.getPreferenceAsBoolean("enableDsr");
-	}
-
-	
-	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
-		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
-	}
-	
-	public static boolean isAcessoRestrito() {
-		return Boolean.valueOf(Utils.getPreference("restrictAccess"));
-	}
-	
-	public static boolean isHikivisionHabilitada() {
-		return Boolean.valueOf(Utils.getPreference("hikiEnable"));
-	}
-	
-	
-	public static boolean sendEditadosLotes() {
-		return Boolean.valueOf(Utils.getPreference("sendEditados"));
-	}
-	
-	
-	public static boolean sincHikivisionWeb() {
-		return Boolean.valueOf(Utils.getPreference("sincHikivision"));
-	}
-	
-	public static boolean refeitorioHabilitado() {
-		return Boolean.valueOf(Utils.getPreference("enableRefeitorio"));
-	}
-
-	public static boolean saidaEspecificaHabilitada() {
-		return Boolean.valueOf(Utils.getPreference("saidaEspecifica"));
-	}
-	public static boolean localObrigatorio() {
-		return Boolean.valueOf(Utils.getPreference("localObrigatorio"));
-	}
-	
-	public static boolean webSocketClienteHikivisionHabilitado() {
-		return Boolean.valueOf(Utils.getPreference("enableWebSocketClient"));
-	}
-
-	public static boolean isHabilitadoEnviarEventos() {
-		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
-	}
-	
-	
-	public static boolean isBloqueadaVisualizar() {
-		return Boolean.valueOf(Utils.getPreference("hasBlockVisualizar"));
-	}
-	
-	public static boolean isBloqueadoForaHorarioRefeitorio() {
-		return Boolean.valueOf(Utils.getPreference("hasBlockForaHorario"));
-	}
-
-	
-	public static boolean isHabilitadoReceberEventos() {
-		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));
-	}
-	
-	
 	public static void sleep(long tempo) {
 		try {
 			Thread.sleep(tempo);
@@ -2012,6 +1928,90 @@ public class Utils {
         return dataComFusoDesejado;
     }
 
+	public static boolean isHikivisionConfigValid() {
+		final String hikivisionServerRecognizerURL = getPreference("hikivisionServerRecognizerURL");
+
+		return hikivisionServerRecognizerURL != null && !hikivisionServerRecognizerURL.isEmpty();
+	}
+	
+	public static boolean isTopDataFacialEnable() {
+		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
+	}
+	
+	public static boolean isAutoAtendimentoHabilitado() {
+		return Utils.getPreferenceAsBoolean("autoAtentimentoHabilitado");
+	}
+	
+	public static boolean isSaidaSemVerificar() {
+		return Utils.getPreferenceAsBoolean("saidaSemVerificar");
+	}
+	
+	
+	public static boolean isAcessoHoraErradoIgnorada() {
+		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
+	}
+	
+	public static boolean isAcessoLiberado() {
+		return Utils.getPreferenceAsBoolean("enableDsr");
+	}
+
+	
+	public static boolean adicionaZeroEsquerdaNoCartaoHikivision() {
+		return Utils.getPreferenceAsBoolean("adicionaZeroEsquerda");
+	}
+	
+	public static boolean isAcessoRestrito() {
+		return Boolean.valueOf(Utils.getPreference("restrictAccess"));
+	}
+	
+	public static boolean isHikivisionHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("hikiEnable"));
+	}
+	
+	
+	public static boolean sendEditadosLotes() {
+		return Boolean.valueOf(Utils.getPreference("sendEditados"));
+	}
+	
+	
+	public static boolean sincHikivisionWeb() {
+		return Boolean.valueOf(Utils.getPreference("sincHikivision"));
+	}
+	
+	public static boolean refeitorioHabilitado() {
+		return Boolean.valueOf(Utils.getPreference("enableRefeitorio"));
+	}
+
+	public static boolean saidaEspecificaHabilitada() {
+		return Boolean.valueOf(Utils.getPreference("saidaEspecifica"));
+	}
+	public static boolean localObrigatorio() {
+		return Boolean.valueOf(Utils.getPreference("localObrigatorio"));
+	}
+	
+	public static boolean webSocketClienteHikivisionHabilitado() {
+		return Boolean.valueOf(Utils.getPreference("enableWebSocketClient"));
+	}
+
+	public static boolean isHabilitadoEnviarEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableSendEvents"));
+	}
+	
+	
+	public static boolean isBloqueadaVisualizar() {
+		return Boolean.valueOf(Utils.getPreference("hasBlockVisualizar"));
+	}
+	
+	public static boolean isBloqueadoForaHorarioRefeitorio() {
+		return Boolean.valueOf(Utils.getPreference("hasBlockForaHorario"));
+	}
+
+	
+	public static boolean isHabilitadoReceberEventos() {
+		return Boolean.valueOf(Utils.getPreference("enableRecevierEvents"));
+	}
+	
+	
 	public static boolean isReenvioMensagemPadrao() {
 		return Utils.getPreferenceAsBoolean("reenvioDeMensagemPadraoOnline");
 	}

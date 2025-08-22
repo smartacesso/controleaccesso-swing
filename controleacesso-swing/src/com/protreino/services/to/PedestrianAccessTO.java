@@ -33,6 +33,7 @@ public class PedestrianAccessTO extends BaseEntity{
 	private String matricula;
 	private Boolean removido;
 	private Boolean sempreLiberado;
+	private Boolean acessoLivre;
 	private Boolean habilitarTeclado;
 	private String qrCodeParaAcesso;
 	private Boolean cadastroFacialObrigatorio;
@@ -116,6 +117,7 @@ public class PedestrianAccessTO extends BaseEntity{
 			.append(cardNumber).append(";")
 			.append(habilitarTeclado).append(";")
 			.append(sempreLiberado).append(";")
+			.append(acessoLivre).append(";")
 			.append(enviaSmsAoPassarNaCatraca != null ? enviaSmsAoPassarNaCatraca : "").append(";")
 			.append(cadastroFacialObrigatorio).append(";")
 			
@@ -146,6 +148,7 @@ public class PedestrianAccessTO extends BaseEntity{
 			.append(tipoAcesso != null ? tipoAcesso : "").append(";")
 			.append(tipoQRCode != null ? tipoQRCode : "").append(";")
 			.append(dataCadastroFotoNaHikivision != null ? dataCadastroFotoNaHikivision.getTime() : "");
+		
 		
 		if(this.mensagens != null) {
 			for(PedestrianMessagesEntity m : this.mensagens)
@@ -469,6 +472,13 @@ public class PedestrianAccessTO extends BaseEntity{
 	public void setSempreLiberado(Boolean sempreLiberado) {
 		this.sempreLiberado = sempreLiberado;
 	}
+	public Boolean getAcessoLivre() {
+		return acessoLivre;
+	}
+
+	public void setAcessoLivre(Boolean acessoLivre) {
+		this.acessoLivre = acessoLivre;
+	}
 	public Boolean getHabilitarTeclado() {
 		return habilitarTeclado;
 	}
@@ -609,5 +619,4 @@ public class PedestrianAccessTO extends BaseEntity{
 	public void setIdLocal(Long idLocal) {
 		this.idLocal = idLocal;
 	}
-	
 }

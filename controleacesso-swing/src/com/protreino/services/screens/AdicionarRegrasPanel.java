@@ -6,10 +6,19 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +42,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
+import com.protreino.services.constants.Tipo;
+import com.protreino.services.entity.HorarioEntity;
 import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
@@ -324,69 +335,78 @@ public class AdicionarRegrasPanel extends JPanel {
 	}
 	
 	private void createDialogTestaPedestreRegra() {
-		JDialog testPedestreRegraDialog = new JDialog();
-		testPedestreRegraDialog.setIconImage(Main.favicon);
-		testPedestreRegraDialog.setModal(true);
-		testPedestreRegraDialog.setTitle("Testar Regra");
-		testPedestreRegraDialog.setResizable(false);
-		testPedestreRegraDialog.setLayout(new BorderLayout());
+	    JDialog testPedestreRegraDialog = new JDialog();
+	    testPedestreRegraDialog.setIconImage(Main.favicon);
+	    testPedestreRegraDialog.setModal(true);
+	    testPedestreRegraDialog.setTitle("Testar Regra");
+	    testPedestreRegraDialog.setResizable(false);
 
-		JPanel mainPanel = new JPanel();
-		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-		
-		JLabel dataLabel = new JLabel("Data do Acesso");
-		dataLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		
-		JFormattedTextField dataAcessoTextField = Utils.getNewJFormattedTextField(5);
-		MaskFormatter maskFormatter = Utils.getNewMaskFormatter("##/##/#### ##:##");
-		maskFormatter.install(dataAcessoTextField);
-		
-		JButton testButton = new JButton("Testar");
-		testButton.setBorder(new EmptyBorder(10, 20, 10, 20));
-		testButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		testButton.addActionListener(e -> {
-			if(Objects.isNull(pedestresRegras) || pedestresRegras.isEmpty()) {
-				return;
-			}
-			
-			final String cardnumber = pedestresRegras.get(0).getPedestrianAccess().getCardNumber();
-			final String dateText = dataAcessoTextField.getText();
-			
-			try {
-				VerificationResult result = testePedestreRegraUseCase.execute(cardnumber, formato.parse(dateText));
-				
-				if(result == VerificationResult.ALLOWED) {
-					criarDialogoResultadoTesteRegraPedetre("Pasou", "Liberado");
-				} else {
-					criarDialogoResultadoTesteRegraPedetre("Negado", "Negado");
-				}
-				
-			} catch (ParseException ex) {
-				ex.printStackTrace();
-				criarDialogoResultadoTesteRegraPedetre("Erro", "Erro ao converter data: " + ex.getMessage());
-			}
-			
-			testPedestreRegraDialog.dispose();
-		});
+	    JPanel mainPanel = new JPanel(new GridBagLayout());
+	    mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(10, 10, 10, 10); // Espaçamento interno
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    gbc.anchor = GridBagConstraints.CENTER;
+	    gbc.fill = GridBagConstraints.NONE;
 
-		JPanel confirmarPanel = new JPanel();
-		confirmarPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-		confirmarPanel.setLayout(new BoxLayout(confirmarPanel, BoxLayout.Y_AXIS));
-		confirmarPanel.add(dataLabel);
-		confirmarPanel.add(Box.createVerticalStrut(10));
-		confirmarPanel.add(dataAcessoTextField);
-		confirmarPanel.add(Box.createVerticalStrut(10));
-		confirmarPanel.add(testButton);
-		confirmarPanel.add(Box.createHorizontalStrut(10));
+	    // Label
+	    JLabel dataLabel = new JLabel("Data do Acesso");
+	    mainPanel.add(dataLabel, gbc);
 
-		mainPanel.add(Box.createVerticalStrut(10));
-		mainPanel.add(confirmarPanel);
+	    // Campo de texto
+	    gbc.gridy++;
+	    JFormattedTextField dataAcessoTextField = Utils.getNewJFormattedTextField(5);
+	    MaskFormatter maskFormatter = Utils.getNewMaskFormatter("##:##");
+	    maskFormatter.install(dataAcessoTextField);
+	    dataAcessoTextField.setColumns(12);
+	    mainPanel.add(dataAcessoTextField, gbc);
 
-		testPedestreRegraDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
-		testPedestreRegraDialog.pack();
-		testPedestreRegraDialog.setLocationRelativeTo(null);
-		testPedestreRegraDialog.setVisible(true);
+	    // Botão
+	    gbc.gridy++;
+	    JButton testButton = new JButton("Testar");
+	    testButton.setPreferredSize(new Dimension(120, 35));
+	    testButton.addActionListener(e -> {
+	        if (Objects.isNull(pedestresRegras) || pedestresRegras.isEmpty()) {
+	            return;
+	        }
+
+	        final String cardnumber = pedestresRegras.get(0).getPedestrianAccess().getCardNumber();
+	        final String timeText = dataAcessoTextField.getText(); // Ex: "14:35"
+
+	        try {
+	            // Pega a data de hoje
+	            LocalDate hoje = LocalDate.now();
+
+	            // Converte a string da hora para LocalTime
+	            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+	            LocalTime horaDigitada = LocalTime.parse(timeText, timeFormatter);
+
+	            // Junta data de hoje + hora digitada
+	            LocalDateTime dataHora = LocalDateTime.of(hoje, horaDigitada);
+
+	            // Converte para Date (se seu useCase ainda usa java.util.Date)
+	            Date date = Date.from(dataHora.atZone(ZoneId.systemDefault()).toInstant());
+
+	            VerificationResult result = testePedestreRegraUseCase.execute(cardnumber, date);
+	            if (result == VerificationResult.ALLOWED) {
+	                criarDialogoResultadoTesteRegraPedetre("Passou", "Liberado");
+	            } else {
+	                criarDialogoResultadoTesteRegraPedetre("Negado", "Negado");
+	            }
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	            criarDialogoResultadoTesteRegraPedetre("Erro", "Erro ao processar hora: " + ex.getMessage());
+	        }
+
+	        testPedestreRegraDialog.dispose();
+	    });
+	    mainPanel.add(testButton, gbc);
+
+	    testPedestreRegraDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+	    testPedestreRegraDialog.pack();
+	    testPedestreRegraDialog.setLocationRelativeTo(null);
+	    testPedestreRegraDialog.setVisible(true);
 	}
 	
 	private void criarDialogoResultadoTesteRegraPedetre(final String title, final String text) {
@@ -442,7 +462,21 @@ public class AdicionarRegrasPanel extends JPanel {
 			} catch (Exception e) {}
 			
 		}
-
+		
+		if (TipoRegra.ACESSO_HORARIO.equals(regraSelecionada.getTipo())) {
+			if(Objects.isNull(pedestreRegra.getHorarios())) {
+				pedestreRegra.setHorarios(new ArrayList<>());
+			}
+			pedestreRegra.getHorarios().clear(); // limpa a coleção atual
+		    pedestreRegra.getHorarios().addAll(regraSelecionada.getHorarios()); // adiciona os novos
+		    
+		    for(HorarioEntity horarioRegraPedestre : regraSelecionada.getHorarios()) {
+		    	HorarioEntity newHorarioPedestre = horarioRegraPedestre;
+		    	newHorarioPedestre.setPedestreRegra(pedestreRegra);
+		    	
+//		    	HibernateAccessDataFacade.save(HorarioEntity.class, newHorarioPedestre);
+		    }
+		}
 		
 //		try {
 //			pedestreRegra.setDataInicioEscala3_3(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioEscalaTextField.getText())));

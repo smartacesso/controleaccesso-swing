@@ -899,48 +899,69 @@ public class TopDataDevice extends Device {
 		System.out.println(">>> Cartao bruto: " + inner.BilheteInner.Cartao);
 		System.out.println(">>> FacialId: " + matchedFacialId);
 
-		String cartaoStr = (inner.BilheteInner.Cartao != null) ? inner.BilheteInner.Cartao.toString() : null;
+		String cartaoStr = (inner.BilheteInner.Cartao != null) 
+		        ? inner.BilheteInner.Cartao.toString() 
+		        : null;
 
-		boolean cartaoEhValido = cartaoStr != null && !cartaoStr.isEmpty() && !cartaoStr.replace("0", "").isEmpty();
+		// Um cartão é válido se não for nulo, não for vazio e não for só zeros
+		boolean cartaoEhValido = cartaoStr != null 
+		        && !cartaoStr.isEmpty() 
+		        && !cartaoStr.replace("0", "").isEmpty();
 
 		if (cartaoEhValido) {
-			// Remove prefixo se existir
-			if (cartaoStr.startsWith("05000") || cartaoStr.startsWith("005000") || cartaoStr.startsWith("00100")) {
-				cartaoStr = cartaoStr.substring(5);
-			}
+		    // Remove prefixo se existir
+		    if (cartaoStr.startsWith("05000") 
+		            || cartaoStr.startsWith("005000") 
+		            || cartaoStr.startsWith("00100")) {
+		        cartaoStr = cartaoStr.substring(5);
+		    }
 
-			System.out.println(">>> Registra giro com CARTAO válido: " + cartaoStr);
-			args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
-			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+		    System.out.println(">>> Registra giro com CARTAO válido: " + cartaoStr);
+		    args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
+		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 
 		} else if (matchedFacialId != null) {
-			System.out.println(">>> Registra giro com FACIAL ID: " + matchedFacialId);
-			args.put("NUMERO_CARTAO_RECEBIDO", matchedFacialId.toString());
-			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
-			matchedFacialId = null;
+		    // Caso facial reconhecido
+		    System.out.println(">>> Registra giro com FACIAL ID: " + matchedFacialId);
+		    args.put("NUMERO_CARTAO_RECEBIDO", matchedFacialId.toString());
+		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+		    matchedFacialId = null;
 
-		} else if (cartaoStr != null && (cartaoStr.isEmpty() || cartaoStr.replace("0", "").isEmpty())) {
-			System.out.println(">>> Registra giro SEM CARTÃO (cartão zerado)");
-			query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
+		} else if (cartaoStr != null && cartaoStr.isEmpty()) {
+		    // Cartão veio vazio -> Liberação manual
+		    System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
+
+		    if (inner.BilheteInner.Cartao == null) {
+		        inner.BilheteInner.Cartao = new StringBuilder();
+		    } else {
+		        inner.BilheteInner.Cartao.setLength(0);
+		    }
+		    return;
+
+		} else if (cartaoStr != null && cartaoStr.replace("0", "").isEmpty()) {
+		    // Cartão só com zeros -> Sem cartão
+		    System.out.println(">>> Registra giro SEM CARTÃO (cartão zerado)");
+		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
 
 		} else {
-			System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
+		    // Qualquer outro cenário não previsto -> trata como liberação manual
+		    System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (caso alternativo)");
 
-			// Limpa cartão sem dar null
-			if (inner.BilheteInner.Cartao == null) {
-				inner.BilheteInner.Cartao = new StringBuilder();
-			} else {
-				inner.BilheteInner.Cartao.setLength(0);
-			}
-			return;
+		    if (inner.BilheteInner.Cartao == null) {
+		        inner.BilheteInner.Cartao = new StringBuilder();
+		    } else {
+		        inner.BilheteInner.Cartao.setLength(0);
+		    }
+		    return;
 		}
 
-		// Limpa cartão no final, sem quebrar quem usa depois
+		// Sempre limpa o cartão no final (defensivo)
 		if (inner.BilheteInner.Cartao == null) {
 		    inner.BilheteInner.Cartao = new StringBuilder();
 		} else {
 		    inner.BilheteInner.Cartao.setLength(0);
 		}
+
 
 		if (!this.ignorarAcesso()) {
 
@@ -1457,6 +1478,11 @@ public class TopDataDevice extends Device {
 
 		} finally {
 			allowedUserName = "";
+			if (inner.BilheteInner.Cartao == null) {
+			    inner.BilheteInner.Cartao = new StringBuilder();
+			} else {
+			    inner.BilheteInner.Cartao.setLength(0);
+			}
 		}
 	}
 	
@@ -2848,42 +2874,45 @@ public class TopDataDevice extends Device {
 	    return false;
 	}
 	
-	public Boolean isDentroHorarioRefeitorio() {
-		if (getConfigurationValueAsBoolean(ENABLE_REFEITORIO_ACCESS)) {
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
-			LocalTime horaAtual = LocalTime.now();
-
-			// Lista com todos os pares de configurações (início e fim)
-			String[][] intervalos = { { HOUR_START_LANCHE, HOUR_STOP_LANCHE }, { HOUR_START_ALMOCO, HOUR_STOP_ALMOCO },
-					{ HOUR_START_LANCHE_V, HOUR_STOP_LANCHE_V }, { HOUR_START_JANTAR, HOUR_STOP_JANTAR },
-					{ HOUR_START_LANCHE_N, HOUR_STOP_LANCHE_N }, { HOUR_START_CEIA, HOUR_STOP_CEIA } };
-
-			for (String[] intervalo : intervalos) {
-				String inicioStr = getConfigurationValue(intervalo[0]);
-				String fimStr = getConfigurationValue(intervalo[1]);
-
-				LocalTime inicio = LocalTime.parse(inicioStr, dtf);
-				LocalTime fim = LocalTime.parse(fimStr, dtf);
-
-				// Caso o intervalo ultrapasse meia-noite (ex: 01:00 - 04:00)
-				if (fim.isBefore(inicio)) {
-					if (!horaAtual.isBefore(inicio) || !horaAtual.isAfter(fim)) {
-						return true;
-					}
-				} else {
-					if (!horaAtual.isBefore(inicio) && !horaAtual.isAfter(fim)) {
-						return true;
-					}
-				}
-			}
-
-			return false;
-
-		} else {
-			return false;
-		}
-
+	public Boolean isCatracaRefeitorio() {
+		return getConfigurationValueAsBoolean(ENABLE_REFEITORIO_ACCESS);
 	}
+	
+	public Boolean isDentroHorarioRefeitorio() {
+	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+	    LocalTime horaAtual = LocalTime.now();
+
+	    String[][] intervalos = {
+	        { HOUR_START_LANCHE, HOUR_STOP_LANCHE },
+	        { HOUR_START_ALMOCO, HOUR_STOP_ALMOCO },
+	        { HOUR_START_LANCHE_V, HOUR_STOP_LANCHE_V },
+	        { HOUR_START_JANTAR, HOUR_STOP_JANTAR },
+	        { HOUR_START_LANCHE_N, HOUR_STOP_LANCHE_N },
+	        { HOUR_START_CEIA, HOUR_STOP_CEIA }
+	    };
+
+	    for (String[] intervalo : intervalos) {
+	        String inicioStr = getConfigurationValue(intervalo[0]);
+	        String fimStr = getConfigurationValue(intervalo[1]);
+
+	        LocalTime inicio = LocalTime.parse(inicioStr, dtf);
+	        LocalTime fim = LocalTime.parse(fimStr, dtf);
+
+	        if (fim.isBefore(inicio)) { // Intervalo cruza meia-noite
+	            if (horaAtual.isAfter(inicio) || horaAtual.equals(inicio) ||
+	                horaAtual.isBefore(fim) || horaAtual.equals(fim)) {
+	                return true;
+	            }
+	        } else { // Intervalo normal
+	            if ((horaAtual.isAfter(inicio) || horaAtual.equals(inicio)) &&
+	                (horaAtual.isBefore(fim) || horaAtual.equals(fim))) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
+	}
+
 	
 	@Override
 	public String getFullIdentifier() {
