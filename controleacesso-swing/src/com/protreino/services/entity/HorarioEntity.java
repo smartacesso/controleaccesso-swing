@@ -91,7 +91,7 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 	}
 	
 	public boolean isDentroDoHorarioPermitido(final Date data) {
-		if(!isDiaPermitido(dataRemovido)) {
+		if(Objects.nonNull(dataRemovido)) {
 			return false;
 		}
 		

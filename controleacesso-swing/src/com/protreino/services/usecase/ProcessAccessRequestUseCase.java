@@ -379,64 +379,63 @@ public class ProcessAccessRequestUseCase {
 			return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 		}
 		
-		if (isHorarioRefeitorio(equipament)) {
-			if (!pedestre.temTipoHorarioCredito()) {
-				System.out.println(">> Ignorando regra de créditos (não se aplica ao pedestre)");
-			} else {
-				Optional<PedestreRegraEntity> regraAtivaPedestre = pedestre.getRegraAtivaPedestre();
+		if(isCatracaRefeitorio(equipament)) {
+			if (isHorarioRefeitorio(equipament)) {
+				if (!pedestre.temTipoHorarioCredito()) {
+					System.out.println(">> Ignorando regra de créditos (não se aplica ao pedestre)");
+				} else {
+					Optional<PedestreRegraEntity> regraAtivaPedestre = pedestre.getRegraAtivaPedestre();
 
-				LocalTime agora = toLocalTime(new Date());
+					LocalTime agora = toLocalTime(new Date());
 
-				Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios().stream()
-						.filter(h -> h.getHorarioInicio() != null).min(Comparator.comparingLong(h -> {
-							LocalTime horario = toLocalTime(h.getHorarioInicio());
-							return Math.abs(Duration.between(horario, agora).toMinutes());
-						}));
+					Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios().stream()
+							.filter(h -> h.getHorarioInicio() != null).min(Comparator.comparingLong(h -> {
+								LocalTime horario = toLocalTime(h.getHorarioInicio());
+								return Math.abs(Duration.between(horario, agora).toMinutes());
+							}));
 
-				if (horarioValidoComCredito.map(HorarioEntity::temCreditos).orElse(false)) {
-//					logAccess.setStatus("INATIVO");
-//					logAccess.setReason("Não permitido, sem créditos");
-					if(registerLog) {
-						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					if (horarioValidoComCredito.map(HorarioEntity::temCreditos).orElse(false)) {
+						if(registerLog) {
+							HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+						}
+						return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
+					}else {
+						logAccess.setStatus("INATIVO");
+						logAccess.setReason("Não permitido, sem créditos");
+						if (createNotification) {
+							Utils.createNotification(userName + " sem créditos.", NotificationType.BAD, foto);
+						}
+						if(registerLog) {
+							HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+						}
+						return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 					}
-					return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
-				}else {
-					logAccess.setStatus("INATIVO");
-					logAccess.setReason("Não permitido, sem créditos");
-					if (createNotification) {
-						Utils.createNotification(userName + " sem créditos.", NotificationType.BAD, foto);
-					}
-					if(registerLog) {
-						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-					}
-					return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 				}
-			}
 
-		}else if(Utils.isBloqueadoForaHorarioRefeitorio()) {
-			if (createNotification) {
-				Utils.createNotification(userName + " refeitorio fechado.", NotificationType.BAD, foto);
-			}
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
-		}
-
-		if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
-			System.out.println("LOG - Parou: sem créditos.");
-			if(createNotification) {
-				Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
-			}
-			motivo = "ACESSO NEGADO - SEM CREDITOS";
-			logAccess.setReason(motivo);
-			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			}else if(Utils.isBloqueadoForaHorarioRefeitorio()) {
+				if (createNotification) {
+					Utils.createNotification(userName + " refeitorio fechado.", NotificationType.BAD, foto);
+				}
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 			}
-			return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
+
+			if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
+				System.out.println("LOG - Parou: sem créditos.");
+				if(createNotification) {
+					Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
+				}
+				motivo = "ACESSO NEGADO - SEM CREDITOS";
+				logAccess.setReason(motivo);
+				logAccess.setStatus("INATIVO");
+				if(registerLog) {
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+				}
+				return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
+			}
 		}
 
 		if (pedestre.temTipoEscala3x3()) {
-			Boolean permitido = false;
 			if(pedestre.temEscala3x3Fixa() && !isPermitidoPorEscala3x3Fixo(pedestre)) {
 				System.out.println("LOG - Parou: fora da escala.");
 				if(createNotification) {
@@ -850,6 +849,20 @@ public class ProcessAccessRequestUseCase {
 
 		return false;
 	}
+	
+	private Boolean isCatracaRefeitorio(String equipament) {
+		if(equipament.isEmpty()) {
+			return false;
+		}
+		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
+
+		if (Objects.isNull(device)) {
+			System.out.println("Device não encontrado");
+			return false;
+		}
+
+		return ((TopDataDevice) device).isCatracaRefeitorio();
+	}
 
 	private Boolean isHorarioRefeitorio(String equipament) {
 		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
@@ -956,8 +969,6 @@ public class ProcessAccessRequestUseCase {
 		return Utils.isPodeEntrarNovamente(ultimoAcesso);
 	}
 
-	
-	
 	private boolean isPermitidoPedestreRegra(PedestrianAccessEntity pedestre) {
 		final Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
 
@@ -1040,7 +1051,7 @@ public class ProcessAccessRequestUseCase {
 			}
 
 			Optional<HorarioEntity> horarioValido = regraAtivaPedestre.get().getHorarios().stream()
-					.filter(horario -> horario.isDiaPermitido(data) && horario.isDentroDoHorarioPermitido(data))
+					.filter(horario -> horario.isDentroDoHorarioPermitido(data))
 					.findFirst();
 			if (!horarioValido.isPresent()) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
@@ -1054,8 +1065,7 @@ public class ProcessAccessRequestUseCase {
 			}
 
 			Optional<HorarioEntity> horarioValidoComCredito = regraAtivaPedestre.get().getHorarios().stream()
-					.filter(horario -> horario.isDiaPermitido(data) && horario.isDentroDoHorarioPermitido(data)
-							&& horario.temCreditos())
+					.filter(horario -> horario.temCreditos())
 					.findFirst();
 
 			if (!horarioValidoComCredito.isPresent()) {
