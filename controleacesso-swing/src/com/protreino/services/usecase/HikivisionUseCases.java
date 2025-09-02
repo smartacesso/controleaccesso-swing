@@ -174,6 +174,19 @@ public class HikivisionUseCases {
 					}
 				}
 
+				final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId,
+						pedestre.getCardNumber());
+
+				if (!isCartaoJaCadastrado) {
+					final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId,
+							pedestre.getCardNumber());
+					if (Boolean.FALSE.equals(isCartaoAdicionado)) {
+						final String message = String.format("Erro ao adicioar cartao do usuario %s na camera %s",
+								pedestre.getCardNumber(), deviceId);
+						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
+					}
+				}
+
 				if (hikiVisionIntegrationService.isFotoUsuarioJaCadastrada(deviceId, pedestre.getCardNumber())) {
 					final boolean isFotoApagada = hikiVisionIntegrationService.apagarFotoUsuario(deviceId,
 							pedestre.getCardNumber());
@@ -192,19 +205,6 @@ public class HikivisionUseCases {
 					logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
 				}
 
-				final boolean isCartaoJaCadastrado = hikiVisionIntegrationService.isCartaoJaCadastrado(deviceId,
-						pedestre.getCardNumber());
-
-				if (!isCartaoJaCadastrado) {
-					final boolean isCartaoAdicionado = hikiVisionIntegrationService.adicionarCartaoDePedestre(deviceId,
-							pedestre.getCardNumber());
-					if (Boolean.FALSE.equals(isCartaoAdicionado)) {
-						final String message = String.format("Erro ao adicioar cartao do usuario %s na camera %s",
-								pedestre.getCardNumber(), deviceId);
-						logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.CREATE);
-					}
-				}
-				
 			} catch (HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
 						ex.getDeviceId(), ex.getHikivisionAction()));
