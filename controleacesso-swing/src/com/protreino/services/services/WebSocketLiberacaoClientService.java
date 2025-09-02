@@ -3,6 +3,7 @@ package com.protreino.services.services;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 import org.java_websocket.client.WebSocketClient;
@@ -11,20 +12,20 @@ import org.java_websocket.handshake.ServerHandshake;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.protreino.services.to.PedestrianAccessTO;
+import com.protreino.services.to.hikivision.HikivisionDeviceSimplificadoTO;
 import com.protreino.services.to.hikivision.WebSocketPedestrianAccessTO;
-import com.protreino.services.usecase.RecebePedestreWebSocketUseCase;
+import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.to.hikivision.HikivisionDeviceTO.Device;
 
-public class WebSocketClientService {
-	
+public class WebSocketLiberacaoClientService {
 	private WebSocketClient client;
     private String urlAtual;
     private String idClientAtual;
     private ObjectMapper mapper = new ObjectMapper();
     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy h:mm:ss a", Locale.US);
-    private final RecebePedestreWebSocketUseCase recebePedestreWebSocketUseCase = new RecebePedestreWebSocketUseCase();
+    private HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
     
-    public WebSocketClientService(String urlServer, String idClient) {
+    public WebSocketLiberacaoClientService(String urlServer, String idClient) {
     	this.urlAtual = urlServer;
     	this.idClientAtual = idClient;    	
     }
@@ -33,7 +34,7 @@ public class WebSocketClientService {
         try {
         	String protocoloWebSocket = urlAtual.startsWith("https") ? "wss" : "ws";
         	String host = urlAtual.replaceFirst("^https?://", ""); // Remove http:// ou https://
-        	String urlFinal = protocoloWebSocket + "://" + host + "/ws/local/" + idClientAtual;
+        	String urlFinal = protocoloWebSocket + "://" + host + "/ws/liberacao/" + idClientAtual;
 
             client = new WebSocketClient(new URI(urlFinal)) {
 				@Override
@@ -43,16 +44,8 @@ public class WebSocketClientService {
 				
 				@Override
 				public void onMessage(String message) {
-					try {
-					    mapper.setDateFormat(sdf);
-					    WebSocketPedestrianAccessTO pedestre = mapper.readValue(message, WebSocketPedestrianAccessTO.class);
-						recebePedestreWebSocketUseCase.execute(pedestre);
-					} catch (JsonMappingException e) {
-						e.printStackTrace();
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-					
+					hikivisionUseCases.liberaCameraRemoto(message);
+					System.out.println("acesso liberado");
 				}
 				
 				@Override
@@ -81,5 +74,21 @@ public class WebSocketClientService {
 		
 		System.out.println("Conexão com webSocket ainda aberta: " + LocalDateTime.now());
 	}
+	
+	
+	public void enviarEquipamentos(List<HikivisionDeviceSimplificadoTO> devicesSimplificados) {
+	    if (client != null && client.isOpen()) {
+	        try {
+	            String json = mapper.writeValueAsString(devicesSimplificados);
+	            client.send(json);
+	            System.out.println("Lista de equipamentos enviada: " + json);
+	        } catch (JsonProcessingException e) {
+	            e.printStackTrace();
+	        }
+	    } else {
+	        System.out.println("Cliente WebSocket não está conectado.");
+	    }
+	}
+
 
 }

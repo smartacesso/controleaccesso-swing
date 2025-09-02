@@ -73,6 +73,7 @@ import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.enumeration.HikivisionAction; //Hikivision
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository; //Hikivision
 import com.protreino.services.repository.LocalRepository;
+import com.protreino.services.to.hikivision.HikivisionDeviceSimplificadoTO;
 import com.protreino.services.to.hikivision.HikivisionDeviceTO; //Hikivision
 import com.protreino.services.usecase.HikivisionUseCases; //Hikivision
 import com.protreino.services.utils.HikivisionTcpServer; //Hikivision
@@ -96,6 +97,7 @@ import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.DeviceStatus;
 import com.protreino.services.enumeration.NotificationType;
+import com.protreino.services.enumeration.TcpMessageType;
 import com.protreino.services.exceptions.ErrorOnSendLogsToWebException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
@@ -107,10 +109,12 @@ import com.protreino.services.screens.MainScreen;
 import com.protreino.services.screens.ReleaseReasonDialog;
 import com.protreino.services.screens.SplashScreen;
 import com.protreino.services.services.LuxandService;
-import com.protreino.services.services.WebSocketClientService;
+import com.protreino.services.services.WebSocketCadastroClientService;
+import com.protreino.services.services.WebSocketLiberacaoClientService;
 import com.protreino.services.to.EmpresaTO;
 import com.protreino.services.to.LocalTo;
 import com.protreino.services.to.RegraTO;
+import com.protreino.services.to.TcpMessageTO;
 import com.protreino.services.usecase.ReleaseAccessUseCase;
 import com.protreino.services.usecase.SincronismoHorariosHikivision;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
@@ -193,7 +197,8 @@ public class Main {
     public static AlmitecDevice almTCP;
     public static HikivisionTcpServer hikivisionTcpServer;
     public static FacialTopDataIntegrationService facialTopDataIntegrationService;
-    public static WebSocketClientService webSocketClientService;
+    public static WebSocketCadastroClientService webSocketClientCadastroService;
+    public static WebSocketLiberacaoClientService webSocketClientLiberacaoService;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
     public static SimpleDateFormat sdfWithoutTIme = new SimpleDateFormat("dd/MM/yyyy");
     public static boolean desenvolvimento;
@@ -331,10 +336,21 @@ public class Main {
                     hikivisionTcpServer = new HikivisionTcpServer();
                     
                     if(Utils.webSocketClienteHikivisionHabilitado() && Objects.isNull(Main.servidor)) {
+                    	hikivisionUseCases = new HikivisionUseCases();
                     	
-                        webSocketClientService = new WebSocketClientService(Main.urlApplication, Main.loggedUser.getIdClient());
-                        webSocketClientService.conectar();
+                        webSocketClientCadastroService = new WebSocketCadastroClientService(Main.urlApplication, Main.loggedUser.getIdClient());
+                        webSocketClientCadastroService.conectar();
+                        
+                        webSocketClientLiberacaoService = new WebSocketLiberacaoClientService(Main.urlApplication, Main.loggedUser.getIdClient());
+                        webSocketClientLiberacaoService.conectar();
+                        
+                        List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
+                        List<HikivisionDeviceSimplificadoTO> devicesSimplificados = devices.stream().map(device -> new HikivisionDeviceSimplificadoTO(device.getDevName(),device.getDevIndex()))
+                        .collect(Collectors.toList());
+                       
+                        webSocketClientLiberacaoService.enviarEquipamentos(devicesSimplificados);
                     }
+                    
                     
                     if (Utils.isTopDataFacialEnable()) {
                     	if(!Main.temServidor()) {
@@ -902,9 +918,22 @@ public class Main {
             return;
         }
         
-        if(Objects.nonNull(webSocketClientService)) {
-        	webSocketClientService.ping();
+        if(Objects.nonNull(webSocketClientCadastroService)) {
+        	webSocketClientCadastroService.ping();
         }
+        
+		if (Objects.nonNull(webSocketClientLiberacaoService)) {
+			HikivisionUseCases hikivisionUseCases = new HikivisionUseCases();
+			
+			webSocketClientLiberacaoService.ping();
+			
+			List<HikivisionDeviceTO.Device> devices = hikivisionUseCases.listarDispositivos();
+			List<HikivisionDeviceSimplificadoTO> devicesSimplificados = devices.stream()
+					.map(device -> new HikivisionDeviceSimplificadoTO(device.getDevName(), device.getDevIndex()))
+					.collect(Collectors.toList());
+
+			webSocketClientLiberacaoService.enviarEquipamentos(devicesSimplificados);
+		}
         
         setUpdatingUsersAccessList(true);
 

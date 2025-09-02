@@ -34,6 +34,8 @@ import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -233,6 +235,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private final static Map<Long, Vector<SelectItem>> cacheDepartamentos = new HashMap<>();
 	private final static Map<Long, Vector<SelectItem>> cacheCargos = new HashMap<>();
 	private final static Map<Long, Vector<SelectItem>> cacheCentroCustos = new HashMap<>();
+	
+	private LocalDate dataAtual = LocalDate.now(); 
 
 
 	// Tela de cadastro de pedestre
@@ -781,7 +785,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private JPanel montaPainelAdicionarRegra() {
-		panelAdicionarRegras = new AdicionarRegrasPanel(TipoPedestre.valueOf(visitante.getTipo()));
+		panelAdicionarRegras = new AdicionarRegrasPanel(visitante);
 		return panelAdicionarRegras;
 	}
 
@@ -3415,11 +3419,18 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 
 	private String geraCartaoAcessoAleatorio() {
-		String cardNumber;
-		cardNumber = String.valueOf(System.currentTimeMillis()).substring(5, 13);
+		int anoAtual = dataAtual.getYear(); // ex: 2025
+    String prefixoAno = String.valueOf(anoAtual);
 
-		return cardNumber;
-	}
+    // Pega parte do System.currentTimeMillis para garantir unicidade
+    String millis = String.valueOf(System.currentTimeMillis());
+
+    // Garante que o resultado tenha exatamente 16 dígitos
+    // Usando os últimos dígitos do millis
+    String sufixo = millis.substring(millis.length() - (16 - prefixoAno.length()));
+
+    return prefixoAno + sufixo;
+    }
 
 	@Override
 	public void dispose() {

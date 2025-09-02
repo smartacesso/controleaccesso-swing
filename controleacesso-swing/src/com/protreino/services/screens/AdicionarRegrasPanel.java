@@ -45,6 +45,7 @@ import javax.swing.text.MaskFormatter;
 import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.HorarioEntity;
 import com.protreino.services.entity.PedestreRegraEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.TipoPedestre;
 import com.protreino.services.enumeration.TipoRegra;
@@ -62,7 +63,7 @@ public class AdicionarRegrasPanel extends JPanel {
 	private final SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy HH:mm"); 
 
 	private JTable pedestreRegrasListTable;
-	private String[] columns = {"Id", "Nome", "Validade", "Tipo de Regra"};
+	private String[] columns = {"Id", "Nome","Descricao", "Validade", "Tipo de Regra"};
 	
 	private Font headerFont;
 	
@@ -93,7 +94,7 @@ public class AdicionarRegrasPanel extends JPanel {
 	private final TestePedestreRegraUseCase testePedestreRegraUseCase = new TestePedestreRegraUseCase();
 
 	
-	public AdicionarRegrasPanel(TipoPedestre tipoPedestre) {
+	public AdicionarRegrasPanel(PedestrianAccessEntity visitante) {
 		if(this.pedestresRegras == null) {
 			this.pedestresRegras = new ArrayList<>();
 		}
@@ -116,7 +117,7 @@ public class AdicionarRegrasPanel extends JPanel {
 		regrasPanel.add(regrasLabel);
 		regrasPanel.add(Box.createVerticalStrut(2));
 		
-		regrasJComboBox = new JComboBox<SelectItem>(getAllRegrasDisponiveis(tipoPedestre));
+		regrasJComboBox = new JComboBox<SelectItem>(getAllRegrasDisponiveis(TipoPedestre.valueOf(visitante.getTipo())));
 		regrasJComboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		regrasJComboBox.setPreferredSize(new Dimension(200, 25));
 		
@@ -288,6 +289,8 @@ public class AdicionarRegrasPanel extends JPanel {
 		add(headerPanel);
 		add(Box.createRigidArea(new Dimension(0,5)));
 		add(pedestreRegraListTablePanel);
+		
+		
 	}
 	
 	private JButton getRemovePedestreRegraButton() {
@@ -414,13 +417,14 @@ public class AdicionarRegrasPanel extends JPanel {
 	}
 
 	private void populateTable(RegraEntity regraSelecionada) {
-		Object[] item = new Object[4];
+		Object[] item = new Object[5];
 		Long idTemp = Utils.getRandomNumber();
 		
 		item[0] = idTemp;
 		item[1] = regraSelecionada.getNome();
-		item[2] = validadePedestreRegraTextField.getText();
-		item[3] = regraSelecionada.getTipo().getDescricao();
+		item[2] = regraSelecionada.getDescricao();
+		item[3] = validadePedestreRegraTextField.getText();
+		item[4] = regraSelecionada.getTipo().getDescricao();
 		
 		PedestreRegraEntity pedestreRegra = new PedestreRegraEntity();
 		pedestreRegra.setId(idTemp);
@@ -473,8 +477,6 @@ public class AdicionarRegrasPanel extends JPanel {
 		    for(HorarioEntity horarioRegraPedestre : regraSelecionada.getHorarios()) {
 		    	HorarioEntity newHorarioPedestre = horarioRegraPedestre;
 		    	newHorarioPedestre.setPedestreRegra(pedestreRegra);
-		    	
-//		    	HibernateAccessDataFacade.save(HorarioEntity.class, newHorarioPedestre);
 		    }
 		}
 		
@@ -601,16 +603,17 @@ public class AdicionarRegrasPanel extends JPanel {
 		this.pedestresRegras.stream()
 				.filter(p -> p.getRemovidoNoDesktop() == null || p.getRemovidoNoDesktop() == false)
 				.forEach(p -> {
-					Object[] item = new Object[4];
+					Object[] item = new Object[5];
 
 					item[0] = p.getId();
 					item[1] = p.getRegra() != null ? p.getRegra().getNome() : "";
+					item[2] = p.getRegra() != null ? p.getRegra().getDescricao() : "";
 					try {
-						item[2] = new SimpleDateFormat("dd/MM/yyyy").format(p.getValidade());
+						item[3] = new SimpleDateFormat("dd/MM/yyyy").format(p.getValidade());
 					} catch (Exception e) {
-						item[2] = "";
+						item[3] = "";
 					}
-					item[3] = p.getRegra() != null ? p.getRegra().getTipo().getDescricao() : "";
+					item[4] = p.getRegra() != null ? p.getRegra().getTipo().getDescricao() : "";
 
 					dataModel.addRow(item);
 				});
