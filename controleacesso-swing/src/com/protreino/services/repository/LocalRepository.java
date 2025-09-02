@@ -15,8 +15,6 @@ public class LocalRepository {
 	}
 	
 	public List<String> getDevicesNameByPedestreLocal(final PedestrianAccessEntity pedestre) {
-		System.out.println("id local :" + pedestre.getIdLocal());
-		
 		if(Objects.isNull(pedestre.getIdLocal())) {
 			return null;
 		}
