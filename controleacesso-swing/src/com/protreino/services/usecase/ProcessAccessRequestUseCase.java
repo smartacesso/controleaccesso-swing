@@ -1101,7 +1101,7 @@ public class ProcessAccessRequestUseCase {
 			matched = (PedestrianAccessEntity) HibernateAccessDataFacade
 					.getSingleResultByRegistration(PedestrianAccessEntity.class, codigoUsuario);
 
-		} else if (Objects.equals(origem, Origens.ORIGEM_LEITOR_1) || Objects.equals(origem, Origens.ORIGEM_LEITOR_2)) {
+		} else if (Objects.equals(origem, Origens.ORIGEM_LEITOR_1) || Objects.equals(origem, Origens.ORIGEM_LEITOR_2) ||  Objects.equals(origem, Origens.ORIGEM_TESTE_PEDESTRE_REGRA)) {
 			matched = (PedestrianAccessEntity) HibernateLocalAccessData
 					.getSingleResultByCardNumberString(PedestrianAccessEntity.class, codigoUsuario.toString());
 			if (matched == null) {
