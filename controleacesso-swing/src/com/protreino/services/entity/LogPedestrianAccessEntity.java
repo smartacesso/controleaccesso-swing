@@ -151,23 +151,30 @@ indexes = {
 					  + "and obj.cartaoAcessoRecebido = :NUMERO_CARTAO_RECEBIDO "
 					  + "order by obj.id desc "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrian",
-	query = "select obj from LogPedestrianAccessEntity obj "
-		  + "where obj.idPedestrian = :ID_PEDESTRE "
-		  + "and obj.direction is not null "
-		  + "and obj.dataCriacao is not null "
-		  + "order by obj.dataCriacao desc "),
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + "where obj.idPedestrian = :ID_PEDESTRE "
+					  + "and obj.direction is not null "
+					  + "and obj.dataCriacao is not null "
+					  + "order by obj.dataCriacao desc "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrianAndDate",
-	query = "select obj from LogPedestrianAccessEntity obj "
-		  + "where obj.idPedestrian = :ID_PEDESTRE "
-		  + "and obj.direction is not null "
-		  + "and obj.dataCriacao is not null "
-		  + "and obj.dataCriacao >= :DATE "
-		  + "order by obj.dataCriacao desc "),
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + "where obj.idPedestrian = :ID_PEDESTRE "
+					  + "and obj.direction is not null "
+					  + "and obj.dataCriacao is not null "
+					  + "and obj.dataCriacao >= :DATE "
+					  + "order by obj.dataCriacao desc "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCurrentDate",
-	query = "select obj from LogPedestrianAccessEntity obj "
-		  + "where obj.dataCriacao is not null "
-		  + "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM "
-		  + "order by obj.dataCriacao desc ")
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + "where obj.dataCriacao is not null "
+					  + "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM "
+					  + "order by obj.dataCriacao desc "),
+	@NamedQuery(name = "LogPedestrianAccessEntity.findByPedestreAndIntervaloHoje",
+			    query = "select obj from LogPedestrianAccessEntity obj " +
+			            "where obj.cartaoAcessoRecebido = :CARTAO " +
+			            "and obj.intervalo = :INTERVALO " +
+			            "and obj.status = 'ATIVO' " +
+			            "and  obj.dataCriacao between :CURRENT_DATE_INICIO and :CURRENT_DATE_FIM " + // próximo dia
+			            "order by obj.accessDate desc")
 })
 public class LogPedestrianAccessEntity implements ObjectWithId {
 	
@@ -228,6 +235,9 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 	@Type(type = "org.hibernate.type.NumericBooleanType")
 	@Column(name="FAIL_AT_SYNC", nullable=true, length=30)
 	private Boolean failAtSync = false;
+	
+    @Column(name = "INTERVALO", nullable = true, length = 20)
+    private String intervalo;
 	
 	public LogPedestrianAccessEntity(){
 	}
@@ -434,6 +444,18 @@ public class LogPedestrianAccessEntity implements ObjectWithId {
 
 	public void setFailAtSync(Boolean failAtSync) {
 		this.failAtSync = failAtSync;
+	}
+
+	public String getIntervalo() {
+		return intervalo;
+	}
+
+	public void setIntervalo(String intervalo) {
+		this.intervalo = intervalo;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 	
 	

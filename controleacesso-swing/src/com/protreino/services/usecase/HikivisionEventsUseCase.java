@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -166,9 +168,11 @@ public class HikivisionEventsUseCase {
 	    // Se houver um último acesso, verifica o tempo
 	    if (Objects.nonNull(lastAccess)) {
 	        long diferencaSegundos = Math.abs(dataAcesso.toEpochSecond() - lastAccess.getAccessDate().toInstant().getEpochSecond());
-
+	        
+	        System.out.println("Data ultimo acesso : " + lastAccess.getAccessDate() + ", diferença : " + diferencaSegundos);
+	        
 	        if (diferencaSegundos < 20) {
-	            System.out.println("Acesso ignorado: tentativa repetida em menos de 10 segundos.");
+	            System.out.println("Acesso ignorado: tentativa repetida em menos de 20 segundos.");
 	            return null;
 	        }
 	    }

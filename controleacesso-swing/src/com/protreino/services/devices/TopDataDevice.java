@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -54,6 +55,8 @@ import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.repository.PedestrianAccessRepository;
+import com.protreino.services.screens.RefeitorioIntervalsPanel;
+import com.protreino.services.screens.RefeitorioIntervalsPanel.IntervaloTO;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.BroadcastMessageTO;
 import com.protreino.services.to.ConfigurationGroupTO;
@@ -134,9 +137,16 @@ public class TopDataDevice extends Device {
 		Gson gson = new GsonBuilder().create();
 		List<AttachedTO> attachedDevices = gson.fromJson(deviceEntity.getAttachedDevices(), new TypeToken<List<AttachedTO>>() {}.getType());
 		List<AttachedTO> attachedHikivisionCameras = gson.fromJson(deviceEntity.getAttachedHikivisionCameras(), new TypeToken<List<AttachedTO>>() {}.getType());
+	    // Se existe outro tipo, troque "get()" pelo método certo no DeviceEntity
+	    List<IntervaloTO> attachedRefeitorioIntervals = gson.fromJson(
+	        deviceEntity.getAttachedRefeitorioIntervals(),
+	        new TypeToken<List<IntervaloTO>>() {}.getType()
+	    );
 
-		this.setAttachedDevices(attachedDevices);
-		this.setAttachedHikivisionCameras(attachedHikivisionCameras);
+	    this.setAttachedDevices(attachedDevices);
+	    this.setAttachedHikivisionCameras(attachedHikivisionCameras);
+	    this.setAttachedRefeitorioIntervals(attachedRefeitorioIntervals);
+
 	}
 	
 	public TopDataDevice(String identifier){
@@ -998,6 +1008,9 @@ public class TopDataDevice extends Device {
 			}
 
 			ultimoAcesso.setDataCriacao(new Date());
+			if(ultimoAcesso.isEntrada()) {
+				ultimoAcesso.setIntervalo(getIntervaloRefeitorioAtivo());
+			}
 			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 
 			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
@@ -1064,6 +1077,7 @@ public class TopDataDevice extends Device {
 					pedestre.setEditadoNoDesktop(true);
 					pedestre.setDataAlteracao(new Date());
 				}
+				
 				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
 			}
 
@@ -1074,6 +1088,13 @@ public class TopDataDevice extends Device {
 			System.out.println("Registrou giro no equipamento: " + inner.Numero);
 		}else {
 			System.out.println("Acesso ignorado");
+			LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
+					.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+			
+			ultimoAcesso.setStatus("ATIVO");
+			ultimoAcesso.setDirection("ACESSO HORARIO LIVRE");
+			
+			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 		}
 	}
 	
@@ -1935,6 +1956,7 @@ public class TopDataDevice extends Device {
 	@Override
 	public void createDefaultConfiguration(){
 		List<ConfigurationTO> geralConfigurations = new ArrayList<ConfigurationTO>();
+		geralConfigurations.add(new ConfigurationTO(ENABLE_REFEITORIO_ACCESS, "false", FieldType.CHECKBOX));
 		geralConfigurations.add(new ConfigurationTO(MODO_DE_TRABALHO, "Digitais no servidor_noServidor", FieldType.COMBOBOX, 
 				"Digitais na catraca_naCatraca;Digitais no servidor_noServidor"));
 		geralConfigurations.add(new ConfigurationTO(ENVIA_DIGITAIS_PARA_CATRACA, "false", FieldType.CHECKBOX));
@@ -1988,48 +2010,9 @@ public class TopDataDevice extends Device {
 		List<ConfigurationTO> customConfigurations = new ArrayList<ConfigurationTO>();
     	customConfigurations.add(new ConfigurationTO(MENSAGEM_ONLINE, nomeAcademia, FieldType.MESSAGE_LINES));
     	
-    	
-		List<ConfigurationTO> RefeitorioConfigurations = new ArrayList<ConfigurationTO>();
-
-		RefeitorioConfigurations.add(new ConfigurationTO(ENABLE_REFEITORIO_ACCESS, "false", FieldType.CHECKBOX));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE, "05:30", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE, "07:30", FieldType.TEXT));
-		
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_ALMOCO, "10:00", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_ALMOCO, "13:30", FieldType.TEXT));
-		
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE_V, "14:00", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE_V, "15:00", FieldType.TEXT));
-		
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_JANTAR, "18:00", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_JANTAR, "21:00", FieldType.TEXT));
-		
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_LANCHE_N, "22:00", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_LANCHE_N, "23:00", FieldType.TEXT));
-		
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_START_CEIA, "01:00", FieldType.TEXT));
-		RefeitorioConfigurations.add(new ConfigurationTO(HOUR_STOP_CEIA, "04:00", FieldType.TEXT));
-		
-//		Matriz 
-//		Lanche Matutino: 05:30 as 07:30
-//		Almoço: 10:00 as 13:30
-//		Lanche vespertino: 14:00 as 15:00
-//		Jantar: 18:00 as 21:00
-//		Lanche noturno: 22:00 as 23:00
-//		Ceia: 01:00 as 04:00
-//
-//		UBV 
-//		Lanche matutino: 05:30 as 08:00
-//		Almoço: 11:00 as 13:00
-//		Lanche vespertino: 14:00 as 15:30
-//		Jantar: 22:00 as 23:30
-//		Ceia: 01:00 as 04:00
-
 		configurationGroups = new ArrayList<ConfigurationGroupTO>();
 		configurationGroups.add(new ConfigurationGroupTO("Geral", geralConfigurations));
 		configurationGroups.add(new ConfigurationGroupTO("Personalizado", customConfigurations));
-		configurationGroups.add(new ConfigurationGroupTO("Refeitorio", RefeitorioConfigurations));
-		
 	}
 
 	
@@ -2878,41 +2861,69 @@ public class TopDataDevice extends Device {
 		return getConfigurationValueAsBoolean(ENABLE_REFEITORIO_ACCESS);
 	}
 	
-	public Boolean isDentroHorarioRefeitorio() {
+	public boolean isDentroDeAlgumIntervaloRefeitorio() {
+	    return getIntervaloRefeitorioAtivo() != null;
+	}
+
+	public String getIntervaloRefeitorioAtivo() {
 	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
 	    LocalTime horaAtual = LocalTime.now();
 
-	    String[][] intervalos = {
-	        { HOUR_START_LANCHE, HOUR_STOP_LANCHE },
-	        { HOUR_START_ALMOCO, HOUR_STOP_ALMOCO },
-	        { HOUR_START_LANCHE_V, HOUR_STOP_LANCHE_V },
-	        { HOUR_START_JANTAR, HOUR_STOP_JANTAR },
-	        { HOUR_START_LANCHE_N, HOUR_STOP_LANCHE_N },
-	        { HOUR_START_CEIA, HOUR_STOP_CEIA }
-	    };
+	    if (getAttachedRefeitorioIntervals() == null) {
+	        return null;
+	    }
 
-	    for (String[] intervalo : intervalos) {
-	        String inicioStr = getConfigurationValue(intervalo[0]);
-	        String fimStr = getConfigurationValue(intervalo[1]);
+	    for (RefeitorioIntervalsPanel.IntervaloTO intervalo : getAttachedRefeitorioIntervals()) {
+	        LocalTime inicio = LocalTime.parse(intervalo.getInicio(), dtf);
+	        LocalTime fim = LocalTime.parse(intervalo.getFim(), dtf);
 
-	        LocalTime inicio = LocalTime.parse(inicioStr, dtf);
-	        LocalTime fim = LocalTime.parse(fimStr, dtf);
-
-	        if (fim.isBefore(inicio)) { // Intervalo cruza meia-noite
+	        // Caso o intervalo atravesse a meia-noite
+	        if (fim.isBefore(inicio)) {
 	            if (horaAtual.isAfter(inicio) || horaAtual.equals(inicio) ||
 	                horaAtual.isBefore(fim) || horaAtual.equals(fim)) {
-	                return true;
+	                return intervalo.getNome();
 	            }
-	        } else { // Intervalo normal
+	        } else {
 	            if ((horaAtual.isAfter(inicio) || horaAtual.equals(inicio)) &&
 	                (horaAtual.isBefore(fim) || horaAtual.equals(fim))) {
-	                return true;
+	                return intervalo.getNome();
 	            }
 	        }
 	    }
-	    return false;
-	}
 
+	    return null; // nenhum intervalo ativo
+	}
+	
+	
+	public IntervaloTO getIntervaloRefeitorioAtivoTO() {
+	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+	    LocalTime horaAtual = LocalTime.now();
+
+	    if (getAttachedRefeitorioIntervals() == null) {
+	        return null;
+	    }
+
+	    for (IntervaloTO intervalo : getAttachedRefeitorioIntervals()) {
+	        LocalTime inicio = LocalTime.parse(intervalo.getInicio(), dtf);
+	        LocalTime fim = LocalTime.parse(intervalo.getFim(), dtf);
+
+	        // Caso o intervalo atravesse a meia-noite
+	        if (fim.isBefore(inicio)) {
+	            if (horaAtual.equals(inicio) || horaAtual.isAfter(inicio) ||
+	                horaAtual.equals(fim)    || horaAtual.isBefore(fim)) {
+	                return intervalo; // retorna o próprio intervalo
+	            }
+	        } else {
+	            if ((horaAtual.equals(inicio) || horaAtual.isAfter(inicio)) &&
+	                (horaAtual.equals(fim)    || horaAtual.isBefore(fim))) {
+	                return intervalo; // retorna o próprio intervalo
+	            }
+	        }
+	    }
+
+	    return null; // nenhum intervalo ativo
+	}
+	
 	
 	@Override
 	public String getFullIdentifier() {

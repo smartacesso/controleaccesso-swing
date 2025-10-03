@@ -21,6 +21,7 @@ import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.screens.PedestrianScreen;
+import com.protreino.services.screens.RefeitorioIntervalsPanel.IntervaloTO;
 import com.protreino.services.screens.BiometricDialog;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.to.ConfigurationGroupTO;
@@ -88,7 +89,8 @@ public abstract class Device implements IDevice {
 	
 	private List<AttachedTO> attachedDevices = new ArrayList<>();
 	private List<AttachedTO> attachedHikivisionCameras = new ArrayList<>();
-	
+	private List<IntervaloTO> attachedRefeitorioIntervals = new ArrayList<>();
+
 	protected SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	public boolean coletandoDadosOffLine = false;
@@ -335,6 +337,7 @@ public abstract class Device implements IDevice {
 		
 		deviceEntity.setAttachedDevices(gson.toJson(attachedDevices));
 		deviceEntity.setAttachedHikivisionCameras(gson.toJson(attachedHikivisionCameras));
+		deviceEntity.setAttachedRefeitorioIntervals(gson.toJson(attachedRefeitorioIntervals));
 		
 		saveEntity();
 	}
@@ -540,6 +543,14 @@ public abstract class Device implements IDevice {
 
 	public void setAttachedHikivisionCameras(List<AttachedTO> attachedHikivisionCameras) {
 		this.attachedHikivisionCameras = attachedHikivisionCameras;
+	}
+
+	public List<IntervaloTO> getAttachedRefeitorioIntervals() {
+	    return attachedRefeitorioIntervals;
+	}
+
+	public void setAttachedRefeitorioIntervals(List<IntervaloTO> intervals) {
+	    this.attachedRefeitorioIntervals = intervals;
 	}
 
 }

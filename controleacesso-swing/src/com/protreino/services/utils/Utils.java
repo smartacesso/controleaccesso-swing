@@ -557,6 +557,8 @@ public class Utils {
 				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincHikivision",
 				"Sincronizar foto de alterados na web", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincRegraHorarioHikivision",
+				"Sincronizar horario com regras da web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
@@ -1497,47 +1499,47 @@ public class Utils {
 	 * @return True se a hora atual esta dentro dos limites enviados
 	 */
 	public static boolean isDentroDoHorario(String inicio, String fim, Date data) {
-		Calendar agora = Calendar.getInstance();
-		if (data != null) {
-			agora.setTime(data);
-		}
-		agora.set(Calendar.SECOND, 0);
+	    // hora atual
+	    LocalTime agora = (data != null) 
+	            ? data.toInstant().atZone(ZoneId.systemDefault()).toLocalTime() 
+	            : LocalTime.now();
 
-		if (inicio != null) {
-			String[] parts = inicio.split(":");
-			Calendar horaInicio = Calendar.getInstance();
-			horaInicio.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
-			horaInicio.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
-			horaInicio.set(Calendar.SECOND, 0);
+	    // normaliza string e aplica fuso (-3h)
+	    LocalTime horaInicio = (inicio != null) 
+	            ? ajustaFuso(LocalTime.parse(normalizaHora(inicio)), -3) 
+	            : null;
+	    LocalTime horaFim = (fim != null) 
+	            ? ajustaFuso(LocalTime.parse(normalizaHora(fim)), -3) 
+	            : null;
 
-			// verifica se esta dentro da tolerancia
-			Long tolerancia = getPreferenceAsLong("toleranceAccess");
-			if (tolerancia != null && tolerancia != 0) {
-				horaInicio.add(Calendar.MINUTE, tolerancia.intValue() * -1);
-			}
+	    // tolerância
+	    Long tolerancia = getPreferenceAsLong("toleranceAccess");
+	    int tol = (tolerancia != null ? tolerancia.intValue() : 0);
 
-			if (agora.before(horaInicio)) {
-				return false;
-			}
-		}
+	    if (horaInicio != null) horaInicio = horaInicio.minusMinutes(tol);
+	    if (horaFim != null) horaFim = horaFim.plusMinutes(tol);
 
-		if (fim != null) {
-			String[] parts = fim.split(":");
-			Calendar horaFim = Calendar.getInstance();
-			horaFim.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
-			horaFim.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
-			horaFim.set(Calendar.SECOND, 0);
+	    System.out.println("Agora: " + agora);
+	    System.out.println("Hora início ajustada: " + horaInicio);
+	    System.out.println("Hora fim ajustada: " + horaFim);
 
-			Long tolerancia = getPreferenceAsLong("toleranceAccess");
-			if (tolerancia != null && tolerancia != 0) {
-				horaFim.add(Calendar.MINUTE, tolerancia.intValue());
-			}
+	    if (horaInicio != null && agora.isBefore(horaInicio)) return false;
+	    if (horaFim != null && agora.isAfter(horaFim)) return false;
 
-			if (agora.after(horaFim)) {
-				return false;
-			}
-		}
-		return true;
+	    return true;
+	}
+
+	// ajusta fuso (-3h)
+	private static LocalTime ajustaFuso(LocalTime time, int horas) {
+	    return time.minusHours(Math.abs(horas));
+	}
+
+	// normaliza hora: 3:0 -> 03:00
+	private static String normalizaHora(String hora) {
+	    String[] parts = hora.split(":");
+	    int h = Integer.parseInt(parts[0]);
+	    int m = Integer.parseInt(parts[1]);
+	    return String.format("%02d:%02d", h, m);
 	}
 
 	public static boolean isPodeEntrarNovamente(Date ultimoAcesso) {
@@ -2015,7 +2017,17 @@ public class Utils {
 	public static boolean isReenvioMensagemPadrao() {
 		return Utils.getPreferenceAsBoolean("reenvioDeMensagemPadraoOnline");
 	}
+	
+	public static boolean isSincronismoRegraHorarioHikivision() {
+		return Utils.getPreferenceAsBoolean("sincRegraHorarioHikivision");
+	}
+	
+	public static boolean desconectarCatracaEventoOffline() {
+		return Utils.getPreferenceAsBoolean("reconectDeviceOnReceiveCurrentEvent");
+	}
 
+	
+	
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {
 //			if(Cartao.startsWith("00")) {

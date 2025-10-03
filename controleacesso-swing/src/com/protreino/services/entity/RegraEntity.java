@@ -30,124 +30,107 @@ import com.protreino.services.enumeration.TipoRegra;
 import com.protreino.services.to.RegraTO;
 
 @Entity
-@Table(name="TB_REGRA")
+@Table(name = "TB_REGRA")
 @NamedQueries({
-	@NamedQuery(name  = "RegraEntity.findAll", 
-				query = "select obj "
-				      + "from RegraEntity obj "
-					  + "order by obj.id asc"),
-	@NamedQuery(name  = "RegraEntity.findById", 
-				query = "select obj from RegraEntity obj "
-					  + "where obj.id = :ID order by obj.id asc"),
-	@NamedQuery(name  = "RegraEntity.findAllByTipoPedestre",
-				query = "select obj from RegraEntity obj "
-					  + "where (obj.tipoPedestre = :TIPO_PEDESTRE "
-					  + "			or obj.tipoPedestre = 'AMBOS') "
-					  + "and obj.status = 'ATIVO' "
-					  + "and (obj.removed = false or obj.removed is null) "
-					  + "order by obj.id asc"),
-	@NamedQuery(name  = "RegraEntity.findByNome",
-				query = "select obj from RegraEntity obj "
-					  + "where obj.nome = :NOME_REGRA "
-					  + "and (obj.cadastradoNoDesktop = :CADASTRADO_NO_DESKTOP "
-					  + "		or obj.cadastradoNoDesktop is null) "
-					  + "order by obj.id asc"),
-	@NamedQuery(name  = "RegraEntity.findAllComHorario", 
-				query = "select distinct obj from RegraEntity obj "
-				      + "join fetch obj.horarios "
-				      + "where (obj.removed is null or obj.removed = false) "
-					  + "order by obj.id asc"),
-	@NamedQuery(name  = "RegraEntity.findAllComPlanoETemplate", 
-				query = "select obj from RegraEntity obj "
-				      + "where (obj.removed is null or obj.removed = false) "
-				      + "and obj.idPlano is not null "
-				      + "and obj.idTemplate is not null  "
-					  + "order by obj.id asc")
-})
+		@NamedQuery(name = "RegraEntity.findAll", query = "select obj " + "from RegraEntity obj "
+				+ "order by obj.id asc"),
+		@NamedQuery(name = "RegraEntity.findById", query = "select obj from RegraEntity obj "
+				+ "where obj.id = :ID order by obj.id asc"),
+		@NamedQuery(name = "RegraEntity.findAllByTipoPedestre", query = "select obj from RegraEntity obj "
+				+ "where (obj.tipoPedestre = :TIPO_PEDESTRE " + "			or obj.tipoPedestre = 'AMBOS') "
+				+ "and obj.status = 'ATIVO' " + "and (obj.removed = false or obj.removed is null) "
+				+ "order by obj.id asc"),
+		@NamedQuery(name = "RegraEntity.findByNome", query = "select obj from RegraEntity obj "
+				+ "where obj.nome = :NOME_REGRA " + "and (obj.cadastradoNoDesktop = :CADASTRADO_NO_DESKTOP "
+				+ "		or obj.cadastradoNoDesktop is null) " + "order by obj.id asc"),
+		@NamedQuery(name = "RegraEntity.findAllComHorario", query = "select distinct obj from RegraEntity obj "
+				+ "join fetch obj.horarios h " + "where (obj.removed is null or obj.removed = false) "
+				+ "and (h.removed is null or h.removed = false) " + "order by obj.id asc"),
+		@NamedQuery(name = "RegraEntity.findAllComPlanoETemplate", query = "select obj from RegraEntity obj "
+				+ "where (obj.removed is null or obj.removed = false) " + "and obj.idPlano is not null "
+				+ "and obj.idTemplate is not null  " + "order by obj.id asc") })
 @SuppressWarnings("serial")
 public class RegraEntity extends BaseEntity implements ObjectWithId {
 
 	@Id
-	@Column(name="ID_REGRA", nullable=false, length=4)
+	@Column(name = "ID_REGRA", nullable = false, length = 4)
 	private Long id;
-	
-	@Column(name="NOME", nullable=true, length=255)
+
+	@Column(name = "NOME", nullable = true, length = 255)
 	private String nome;
-	
+
 	@Temporal(TemporalType.DATE)
-	@Column(name="VALIDADE", nullable=true, length=11)
+	@Column(name = "VALIDADE", nullable = true, length = 11)
 	private Date validade;
-	
-	@ManyToOne(cascade={}, fetch=FetchType.LAZY)
-	@JoinColumn(name="ID_EMPRESA", nullable=true)
+
+	@ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_EMPRESA", nullable = true)
 	private EmpresaEntity empresa;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name="TIPO", nullable=true, length=100)
+	@Column(name = "TIPO", nullable = true, length = 100)
 	private TipoRegra tipo;
-	
+
 	@Enumerated(EnumType.STRING)
-	@Column(name="TIPO_PEDESTRE", nullable=true, length=100)
+	@Column(name = "TIPO_PEDESTRE", nullable = true, length = 100)
 	private TipoPedestre tipoPedestre;
-	
-	@Column(name="DESCRICAO", nullable=true, length=255)
+
+	@Column(name = "DESCRICAO", nullable = true, length = 255)
 	private String descricao;
-	
+
 	@Temporal(TemporalType.DATE)
-	@Column(name="DATA_INICIO_PERIODO", nullable=true, length=11)
+	@Column(name = "DATA_INICIO_PERIODO", nullable = true, length = 11)
 	private Date dataInicioPeriodo;
-	
+
 	@Temporal(TemporalType.DATE)
-	@Column(name="DATA_FIM_PERIODO", nullable=true, length=11)
+	@Column(name = "DATA_FIM_PERIODO", nullable = true, length = 11)
 	private Date dataFimPeriodo;
-	
+
 	@Enumerated(EnumType.STRING)
-	@Column(name="TIPO_ESCALA", nullable=true, length=100)
+	@Column(name = "TIPO_ESCALA", nullable = true, length = 100)
 	private TipoEscala tipoEscala;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="HORARIO_INICIO_TURNO", nullable=true, length=11)
+	@Column(name = "HORARIO_INICIO_TURNO", nullable = true, length = 11)
 	private Date horarioInicioTurno;
-	
-	@Column(name="QTDE_CREDITOS", nullable=true, length=10)
+
+	@Column(name = "QTDE_CREDITOS", nullable = true, length = 10)
 	private Long qtdeDeCreditos;
-	
-	@Column(name="DIAS_VALIDADE_CREDITO", nullable=true, length=10)
+
+	@Column(name = "DIAS_VALIDADE_CREDITO", nullable = true, length = 10)
 	private Long diasValidadeCredito;
-	
-	@Column(name="ID_CLIENT", nullable=false, length=10)
+
+	@Column(name = "ID_CLIENT", nullable = false, length = 10)
 	private String idClient;
-	
-	@Column(name="ID_TEMPLATE", nullable=true, length=10)
+
+	@Column(name = "ID_TEMPLATE", nullable = true, length = 10)
 	private Integer idTemplate;
-	
-	@Column(name="ID_PLANO", nullable=true, length=10)
+
+	@Column(name = "ID_PLANO", nullable = true, length = 10)
 	private Integer idPlano;
-	
-	@Type(type="org.hibernate.type.NumericBooleanType")
-	@Column(name="CADASTRADO_NO_DESKTOP", nullable=true, length=30)
+
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name = "CADASTRADO_NO_DESKTOP", nullable = true, length = 30)
 	private Boolean cadastradoNoDesktop;
-	
-	@Column(name="STATUS", nullable=true, length=20)
+
+	@Column(name = "STATUS", nullable = true, length = 20)
 	private String status;
-	
-	@Type(type="org.hibernate.type.NumericBooleanType")
-	@Column(name="REMOVED", nullable=true, length=30)
+
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name = "REMOVED", nullable = true, length = 30)
 	private Boolean removed;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="DATA_REMOVIDO", nullable=true, length=11)
+	@Column(name = "DATA_REMOVIDO", nullable = true, length = 11)
 	private Date dataRemovido = null;
-	
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, 
-			   orphanRemoval=true, targetEntity=HorarioEntity.class,
-			   mappedBy="regra")
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = HorarioEntity.class, mappedBy = "regra")
 	@Fetch(FetchMode.SUBSELECT)
 	private List<HorarioEntity> horarios;
-	
+
 	public RegraEntity() {
 	}
-	
+
 	public RegraEntity(RegraTO regraTO) {
 		this.id = regraTO.getId();
 		this.nome = regraTO.getNome();
@@ -166,17 +149,17 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 		this.dataRemovido = regraTO.getDataRemovido();
 		this.idPlano = regraTO.getIdPlano();
 		this.idTemplate = regraTO.getIdTemplate();
-		
-		if(regraTO.getHorarios() != null && !regraTO.getHorarios().isEmpty()) {
+
+		if (regraTO.getHorarios() != null && !regraTO.getHorarios().isEmpty()) {
 			this.horarios = new ArrayList<>();
 			this.horarios.addAll(regraTO.getHorarios());
-			
+
 			horarios.forEach(horario -> {
 				horario.setRegra(this);
 			});
 		}
 	}
-	
+
 	public void update(RegraEntity regra) {
 		this.nome = regra.getNome();
 		this.validade = regra.getValidade();
@@ -194,26 +177,26 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 		this.dataRemovido = regra.getDataRemovido();
 		this.idPlano = regra.getIdPlano();
 		this.idTemplate = regra.getIdTemplate();
-		
-		if(regra.getHorarios() != null && !regra.getHorarios().isEmpty()) {
-			if(this.horarios == null) {
+
+		if (regra.getHorarios() != null && !regra.getHorarios().isEmpty()) {
+			if (this.horarios == null) {
 				this.horarios = new ArrayList<>();
 			}
-			
+
 			atualizaHorarios(regra.getHorarios());
 		}
-		
+
 		this.setDataAlteracao(new Date());
 	}
 
 	private void atualizaHorarios(List<HorarioEntity> novosHorarios) {
-		for(HorarioEntity newHorario : novosHorarios) {
+		for (HorarioEntity newHorario : novosHorarios) {
 			boolean horarioExiste = false;
-			
-			for(HorarioEntity oldHorario : this.getHorarios()) {
-				if(!oldHorario.getId().equals(newHorario.getId()))
+
+			for (HorarioEntity oldHorario : this.getHorarios()) {
+				if (!oldHorario.getId().equals(newHorario.getId()))
 					continue;
-				
+
 				oldHorario.setNome(newHorario.getNome());
 				oldHorario.setDiasSemana(newHorario.getDiasSemana());
 				oldHorario.setHorarioInicio(newHorario.getHorarioInicio());
@@ -221,12 +204,12 @@ public class RegraEntity extends BaseEntity implements ObjectWithId {
 				oldHorario.setStatus(newHorario.getStatus());
 				oldHorario.setRemoved(newHorario.getRemoved());
 				oldHorario.setDataRemovido(newHorario.getDataRemovido());
-				
+
 				horarioExiste = true;
 				break;
 			}
-			
-			if(!horarioExiste) {
+
+			if (!horarioExiste) {
 				newHorario.setRegra(this);
 				this.getHorarios().add(newHorario);
 			}

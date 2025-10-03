@@ -1,5 +1,8 @@
 package com.protreino.services.entity;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
@@ -18,6 +21,7 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Type;
 
+import com.protreino.services.screens.RefeitorioIntervalsPanel.IntervaloTO;
 import com.protreino.services.utils.Utils;
 
 @Entity
@@ -73,6 +77,20 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 	@ManyToOne(cascade={}, fetch=FetchType.LAZY)
 	@JoinColumn(name="ID_PEDESTRE_REGRA", nullable=true)
 	private PedestreRegraEntity pedestreRegra;
+	
+	public HorarioEntity() {}
+	
+	public HorarioEntity(HorarioEntity original) {
+	    this.nome = original.getNome();
+	    this.diasSemana = original.getDiasSemana();
+	    this.horarioInicio = original.getHorarioInicio();
+	    this.horarioFim = original.getHorarioFim();
+	    this.status = original.getStatus();
+	    this.removed = original.getRemoved();
+	    this.dataRemovido = original.getDataRemovido();
+	    this.qtdeDeCreditos = original.getQtdeDeCreditos();
+	    // não copiamos o id, nem as associações regra/pedestreRegra
+	}
 	
 	public boolean isDiaPermitido(final Date data) {
 		Calendar cHoje = Calendar.getInstance();

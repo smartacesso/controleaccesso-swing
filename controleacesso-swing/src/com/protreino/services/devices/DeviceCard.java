@@ -57,6 +57,7 @@ import com.protreino.services.screens.AutenticationDialog;
 import com.protreino.services.screens.EscolherSentidoLiberarAcessoDialog;
 import com.protreino.services.screens.HikivisionAttachedDevicesPanel;
 import com.protreino.services.screens.PedestrianScreen;
+import com.protreino.services.screens.RefeitorioIntervalsPanel;
 import com.protreino.services.screens.RegisterUserDialog;
 import com.protreino.services.screens.ReleaseReasonDialog;
 import com.protreino.services.to.BroadcastMessageTO;
@@ -808,6 +809,23 @@ public class DeviceCard extends JPanel {
 				
 				tabbedPane.addTab("Cameras Hikivision", scrollCamerasHikivisionPane);
 			}
+			
+			
+			boolean exibeAbaIntervalosRefeitorio = true; // ou alguma condição
+			if (exibeAbaIntervalosRefeitorio) {
+			    JPanel refeitorioIntervalsPanel = new RefeitorioIntervalsPanel(device);
+			    refeitorioIntervalsPanel.setLayout(new BoxLayout(refeitorioIntervalsPanel, BoxLayout.Y_AXIS));
+			    refeitorioIntervalsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+			    
+			    JScrollPane scrollRefeitorioPane = new JScrollPane(refeitorioIntervalsPanel,
+			            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+			            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			    scrollRefeitorioPane.getVerticalScrollBar()
+			            .setUnitIncrement(Integer.valueOf(Utils.getPreference("scrollSpeed")));
+
+			    tabbedPane.addTab("Intervalos Refeitório", scrollRefeitorioPane);
+			}
+
 			
 			erroConfigurationLabel = new PanelWithLabel(" ", FlowLayout.LEFT, true, 10, 0);
 			erroConfigurationLabel.setLabelColor(Color.RED);

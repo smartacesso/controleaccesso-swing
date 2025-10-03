@@ -340,7 +340,9 @@ public class SyncPedestrianAccessListUseCase {
                 while (true) {
                     PedestrianAccessEntity visitante = HibernateLocalAccessData.getNextCadastradoOuEditado(lastSync, lastId);
                     if (visitante == null) break;
-                    visitantesLocais.add(visitante);
+                    if(Boolean.TRUE.equals(visitante.getEditadoNoDesktop())) {
+                    	visitantesLocais.add(visitante);
+                    }
                     lastId = visitante.getId();
                 }
                 
@@ -634,7 +636,7 @@ public class SyncPedestrianAccessListUseCase {
                         if(Utils.sincHikivisionWeb()) {
                             try {
                             	List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);
-                        		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess, null, devicesName);
+                        		hikivisionUseCases.cadastrarRegraUsuarioInDevices(existentAthleteAccess, null, devicesName);
 
                         	} catch (Exception e) {
                         		System.out.println(e.getMessage());

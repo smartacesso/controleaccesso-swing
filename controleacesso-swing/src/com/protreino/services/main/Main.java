@@ -1171,8 +1171,12 @@ public class Main {
                     }
                 }
                 
-                SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
-                sincronismoHorariosHikivision.execute();
+                if(Utils.isSincronismoRegraHorarioHikivision()) {
+                    SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
+                    sincronismoHorariosHikivision.execute();
+                }
+                
+
 
                 if (loggedUser != null) {
                     Utils.sleep(1000);
