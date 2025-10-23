@@ -1258,19 +1258,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 				|| "PEDESTRE".equals(visitante.getTipo());
 	}
 
-	private boolean exibeCartaoAcesso() {
-		System.out.println("cartao : " + cartaoAcessoTextField);
-		System.out.println("cartao : " + cartaoAcessoTextField.getText());
-		System.out.println("Cartao : " + cartaoAcessoTextField.getText().replace("0", "").equals(""));
-		if ("PEDESTRE".equals(visitante.getTipo()) && visitante.getDataCadastroFotoNaHikivision() != null
-				&& (cartaoAcessoTextField != null && !cartaoAcessoTextField.getText().isEmpty()
-						&& !cartaoAcessoTextField.getText().replace("0", "").equals(""))) {
-			return false;
-		} else {
-			return true;
-		}
-
-	}
 
 	private JPanel montarPainelAcoes() {
 		syncInHikivisionButton = new JButton("Sincronizar nas cameras");
