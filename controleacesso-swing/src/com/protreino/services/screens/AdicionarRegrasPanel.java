@@ -468,22 +468,18 @@ public class AdicionarRegrasPanel extends JPanel {
 		}
 		
 		if (TipoRegra.ACESSO_HORARIO.equals(regraSelecionada.getTipo())) {
-			if(Objects.isNull(pedestreRegra.getHorarios())) {
-				pedestreRegra.setHorarios(new ArrayList<>());
-			}
-			pedestreRegra.getHorarios().clear(); // limpa a coleção atual
-		    pedestreRegra.getHorarios().addAll(regraSelecionada.getHorarios()); // adiciona os novos
-		    
-		    for(HorarioEntity horarioRegraPedestre : regraSelecionada.getHorarios()) {
-		    	HorarioEntity newHorarioPedestre = horarioRegraPedestre;
-		    	newHorarioPedestre.setPedestreRegra(pedestreRegra);
+		    if (Objects.isNull(pedestreRegra.getHorarios())) {
+		        pedestreRegra.setHorarios(new ArrayList<>());
+		    }
+		    pedestreRegra.getHorarios().clear();
+
+		    for (HorarioEntity horarioRegra : regraSelecionada.getHorarios()) {
+		        HorarioEntity novoHorario = new HorarioEntity(horarioRegra);
+		        novoHorario.setId(gerarIdUnico());
+		        novoHorario.setPedestreRegra(pedestreRegra); // vínculo correto
+		        pedestreRegra.getHorarios().add(novoHorario);
 		    }
 		}
-		
-//		try {
-//			pedestreRegra.setDataInicioEscala3_3(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(dataInicioEscalaTextField.getText())));
-//		} catch (Exception e) {}
-		
 		
 		pedestresRegras.add(pedestreRegra);
 		
@@ -661,4 +657,15 @@ public class AdicionarRegrasPanel extends JPanel {
 		defaultDialog.setVisible(true);
 	}
 	
+	private static long lastTimestamp = 0;
+
+	public synchronized static Long gerarIdUnico() {
+	    long timestamp = System.currentTimeMillis();
+	    if (timestamp <= lastTimestamp) {
+	        timestamp = lastTimestamp + 1;
+	    }
+	    lastTimestamp = timestamp;
+	    return timestamp;
+	}
+
 }

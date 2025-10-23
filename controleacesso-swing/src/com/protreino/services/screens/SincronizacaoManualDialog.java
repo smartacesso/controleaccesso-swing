@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -50,6 +51,7 @@ import com.protreino.services.usecase.SincronismoHorariosHikivision;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
 import com.protreino.services.repository.*;
 import com.protreino.services.utils.Utils;
+import com.protreino.services.to.hikivision.*;
 
 //Classe para exibir o diálogo de sincronização manual de dispositivos
 @SuppressWarnings("serial") // Ignora avisos de serialização
@@ -361,7 +363,10 @@ public class SincronizacaoManualDialog extends BaseDialog {
 
 	//campo sincronizar listeners dentro de sincronismo manual de dispositivos
 	private void syncCameraListners() {
-		List<String> devicesToSync = getDevicesToSync();
+		List<HikivisionDeviceSimplificadoTO> devicesToSyncTo = getDevicesToSync();
+		
+		List<String> devicesToSync = devicesToSyncTo.stream().map(HikivisionDeviceSimplificadoTO::getDevIndex).collect(Collectors.toList());
+		
 		if (devicesToSync.isEmpty()) {
 			return;
 		}
@@ -467,7 +472,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private void syncDevices(final Date inicio, final Date fim) {
 		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
 		// fazer a busca paginada
-		List<String> devicesToSync = getDevicesToSync();
+		List<HikivisionDeviceSimplificadoTO> devicesToSync = getDevicesToSync();
 		if (devicesToSync.isEmpty()) {
 			return;
 		}
@@ -614,16 +619,26 @@ public class SincronizacaoManualDialog extends BaseDialog {
 				"PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred", null, offset, pageSize);
 	}
 
-	private List<String> getDevicesToSync() {
-		TableModel model = deviceListTable.getModel();
-		List<String> devicesToSync = new ArrayList<>();
-		for (int i = 0; i < model.getRowCount(); i++) {
-			if (Boolean.valueOf(model.getValueAt(i, 3).toString())) {
-				devicesToSync.add(model.getValueAt(i, 0).toString());
-			}
-		}
+	private List<HikivisionDeviceSimplificadoTO> getDevicesToSync() {
+	    TableModel model = deviceListTable.getModel();
+	    List<HikivisionDeviceSimplificadoTO> devicesToSync = new ArrayList<>();
 
-		return devicesToSync;
+	    for (int i = 0; i < model.getRowCount(); i++) {
+	        // Verifica se a coluna 3 está marcada como true
+	        if (Boolean.valueOf(model.getValueAt(i, 3).toString())) {
+	            // Pega valores da primeira e segunda coluna
+	            String coluna1 = model.getValueAt(i, 0).toString();
+	            String coluna2 = model.getValueAt(i, 1).toString();
+
+	            // Cria o TO com esses valores
+	            HikivisionDeviceSimplificadoTO device = new HikivisionDeviceSimplificadoTO(coluna2, coluna1);
+
+	            // Adiciona à lista
+	            devicesToSync.add(device);
+	        }
+	    }
+
+	    return devicesToSync;
 	}
 
 	private void formatTable() {

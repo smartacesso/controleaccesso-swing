@@ -95,6 +95,9 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 	@Column(name="ATTACHED_HIKIVISION_CAMERAS", nullable=true, length=10000)
 	private String attachedHikivisionCameras;
 	
+	@Column(name="ATTACHED_HORARIOS_CAMERAS", nullable=true, length=10000)
+	private String attachedRefeitorioIntervals;
+	
 	@Temporal( TemporalType.TIMESTAMP)
 	@Column(name="LAST_SYNC", nullable=true, length=11)
 	private Date ultimaAtualizacao;
@@ -298,6 +301,14 @@ public class DeviceEntity extends BaseEntity implements ObjectWithId, Serializab
 
 	public void setAttachedHikivisionCameras(String attachedHikivisionCameras) {
 		this.attachedHikivisionCameras = attachedHikivisionCameras;
+	}
+
+	public String getAttachedRefeitorioIntervals() {
+		return attachedRefeitorioIntervals;
+	}
+
+	public void setAttachedRefeitorioIntervals(String attachedRefeitorioIntervals) {
+		this.attachedRefeitorioIntervals = attachedRefeitorioIntervals;
 	}
 
 }

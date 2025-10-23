@@ -319,10 +319,10 @@ public class AccessListPanel extends PaginedListPanel {
 		}
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFilter() {
+	    fimDosDados = false; // <-- garante que só será true se detectado no if abaixo
 		
 		if(args == null) {
 			args = new HashMap<>();

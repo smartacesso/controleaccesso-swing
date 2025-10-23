@@ -40,6 +40,7 @@ public class SincronismoHorariosHikivision {
 			adicionaRegraDefault();
 
 			regrasComHorario.forEach(regra -> {
+				System.out.println("Enviando horarios da regra : " + regra.getNome());
 				PlanoHorarioHikivision planoHorarios = montaPlanoHorario(regra.getHorarios());
 
 				Integer idPlanoHorario = getIdPlanoHorario(regra, regrasComHorario);

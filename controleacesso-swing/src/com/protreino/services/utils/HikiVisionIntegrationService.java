@@ -490,8 +490,8 @@ public class HikiVisionIntegrationService {
 		 		+ "                \"ipAddress\": \""+ applicationIp +"\","
 		 		+ "                \"portNo\": " + portNumber + ","
 		 		+ "					\"SubscribeEvent\": {"
-		 		+ "						\"eventMode\": \"list\","
-		 		+ "						\"minorEvent\": \"75\""
+		 		+ "						\"eventMode\": \"all\","
+		 		+ "						\"minorEvent\": \"1,38,75,153,181\""
 		 		+ "					}"
 		 		+ "            }"
 		 		+ "        }"
@@ -681,6 +681,7 @@ public class HikiVisionIntegrationService {
 	}
 	
 	public void criarPlanoDeHorario(final String deviceId, final int weekPlanId, PlanoHorarioHikivision config) {
+		System.out.println("Criando intervalos de horarios");
 		Gson gson = new Gson();
 
 		String bodyInterno = gson.toJson(config);
@@ -711,6 +712,8 @@ public class HikiVisionIntegrationService {
 	}
 	 
 	public void criarTemplateComHorario(final String deviceId, final int planTemplateId, final int weekPlanId, final String nome) {
+		System.out.println("Criando templates");
+		
 		final String body = "{" 
 								+ "\"UserRightPlanTemplate\": {" 
 									+ "\"enable\": " + true + "," 
@@ -777,7 +780,7 @@ public class HikiVisionIntegrationService {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                System.out.println(String.format("Configuração de acesso do usuario atualizada no dispositivo com sucesso! no template %d", planTemplateId));
+                System.out.println(String.format("Configuração de horario do usuario atualizada no dispositivo com sucesso! no template %d", planTemplateId));
             } else {
                 System.err.println("Erro ao atualizar configuração de vinculo de usuario: " + response.code() + " - " + response.message());
             }
@@ -794,26 +797,4 @@ public class HikiVisionIntegrationService {
 				.addInterceptor(new AuthenticationCacheInterceptor(authCache)).readTimeout(10000, TimeUnit.MILLISECONDS)
 				.writeTimeout(10000, TimeUnit.MILLISECONDS).build();
 	}
-	
-	public static void main(String[] args) throws InterruptedException, SocketException {
-		 	url = "http://localhost:8082";
-		    user = "admin";
-		    password = "0000smart";
-
-		    HikiVisionIntegrationService service = new HikiVisionIntegrationService();
-
-		    List<DiaHIkivision> dias = Arrays.asList(
-		           // new DiaHIkivision(DiaSemana.Monday.name(), 1, true, new TimeSegment("08:00:00", "18:00:00")),
-		         //  new DiaHIkivision("Tuesday", 1, true, new TimeSegment("08:00:00", "18:00:00")),
-		          //  new DiaHIkivision("Friday", 1, true, new TimeSegment("08:00:00", "17:00:00"))
-		    );
-		  
-		    PlanoHorarioHikivision config = new PlanoHorarioHikivision(true, dias);
-
-		   
-		    service.criarPlanoDeHorario("B637DAF8-EA94-4A99-9BE5-1BB658174032", 1, config);
-		    service.criarTemplateComHorario("B637DAF8-EA94-4A99-9BE5-1BB658174032", 10, 1, "teste 2");
-		    service.vincularTemplateNoUsuario("B637DAF8-EA94-4A99-9BE5-1BB658174032", "13903910", 10);
-	}
-
 }
