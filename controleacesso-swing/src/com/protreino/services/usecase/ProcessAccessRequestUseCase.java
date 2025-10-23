@@ -270,6 +270,7 @@ public class ProcessAccessRequestUseCase {
 			String equipament, String codigoCartao, boolean registerLog) {
 
 		String userName = pedestre.getFirstName().toUpperCase();
+		System.out.println("Acesso de : " + pedestre.getName());
 		byte[] foto = pedestre.getFoto();
 		String motivo = "";
 		pedestre.setOrigemCatraca(origem);
@@ -381,6 +382,21 @@ public class ProcessAccessRequestUseCase {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+		}
+		
+		if(!isPedestrePermitidoRetornar(pedestre)) {
+			System.out.println("LOG - Parou: não permitido voltar.");
+			if(createNotification) {
+				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);				
+			}
+			motivo = "ACESSO NEGADO - NÃO PERMITIDO VOLTAR";
+			logAccess.setReason(motivo);
+			logAccess.setStatus("INATIVO");
+			if(registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
+			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
+			
 		}
 
 		if(isCatracaRefeitorio(device)) {
@@ -577,16 +593,16 @@ public class ProcessAccessRequestUseCase {
 	    }
 
 	    Optional<Boolean> permitido = pedestre.getRegraAtiva()
-	    	    .flatMap(regraAtiva -> {
-	    	        List<HorarioEntity> horarios = regraAtiva.getHorarios();
-	    	        boolean result = horarios.stream()
-	    	            .map(this::toIntervaloTO)
-	    	            .anyMatch(interno -> intervaloContido(interno, intervaloExterno));
-	    	        return Optional.of(result);
-	    	    });
+	        .flatMap(regraAtiva -> {
+	            List<HorarioEntity> horarios = regraAtiva.getHorarios();
+	            boolean result = horarios.stream()
+	                .filter(h -> h.getNome() != null && !h.getNome().toLowerCase().contains("termino")) // <<< nova validação
+	                .map(this::toIntervaloTO)
+	                .anyMatch(interno -> intervaloContido(interno, intervaloExterno));
+	            return Optional.of(result);
+	        });
 
-	    	return permitido.orElse(true);
-
+	    return permitido.orElse(true);
 	}
 	
 	private IntervaloTO toIntervaloTO(HorarioEntity horario) {
@@ -1029,6 +1045,11 @@ public class ProcessAccessRequestUseCase {
 			PedestrianAccessEntity matchedPedestrianAccess, String location, String direction, Date data, String codigo,
 			boolean createNotification, String equipament, byte[] foto, String userName) {
 		String motivo = ignoraRegras ? "Regras ignoradas" : "Sempre liberado";
+		
+		String justificativa = matchedPedestrianAccess != null ? matchedPedestrianAccess.getJustificativa() : null;
+		if (justificativa != null && !justificativa.isEmpty()) {
+		    motivo += " - " + justificativa;
+		}
 
 		if (Origens.ORIGEM_LIBERADO_SISTEMA.equals(origem)) {
 			return;

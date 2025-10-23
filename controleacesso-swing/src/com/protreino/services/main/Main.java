@@ -40,6 +40,8 @@ import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -68,6 +70,7 @@ import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
 import com.protreino.services.exceptions.HikivisionIntegrationException; // Sincroniza o sistema com o facial da Hikivision
+import com.protreino.services.exceptions.InvalidPhotoException;
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity; //Hikivision
 import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.enumeration.HikivisionAction; //Hikivision
@@ -326,6 +329,11 @@ public class Main {
                     configureTimers();
                     registerNativeHook();
                     recoverLoggedUser();
+                    
+                    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+                    scheduler.scheduleAtFixedRate(() -> verificarAgendamentos(), 0, 1, TimeUnit.MINUTES);
+
+                    
                     if (Boolean.TRUE.equals(Utils.getPreferenceAsBoolean("enableBroadcastServer"))) {
                     	broadcastServer = new BroadcastServer();
                     }
@@ -379,8 +387,106 @@ public class Main {
                         splash.dispose();
                 }
             }
+            
+
+            private void verificarAgendamentos() {
+            	System.out.println("buscando agendamentos inicio");
+            	Long inicio = System.currentTimeMillis();
+            	List<PedestrianAccessEntity> pedestresAgendados = new ArrayList<>();
+            	
+//               List<PedestrianAccessEntity> pedestresAgendados = buscarTodosAgendamentos();
+                
+                Long lastId = null;
+                while (true) {
+                    PedestrianAccessEntity pedestre = HibernateLocalAccessData.getNextAgendamentoAtivo(lastId);
+                    if (pedestre == null) break;
+                    pedestresAgendados.add(pedestre);
+                    lastId = pedestre.getId();
+                }
+                
+                if (pedestresAgendados == null || pedestresAgendados.isEmpty()) return;
+
+                for (PedestrianAccessEntity pedestre : pedestresAgendados) {
+                    processarAgendamento(pedestre);
+                }
+                
+            	
+            	Long fim = System.currentTimeMillis();
+            	System.out.println("agendamentos ms : " + (fim- inicio));
+            }
+
+            private void processarAgendamento(PedestrianAccessEntity pedestre) {
+                Date inicio = pedestre.getDataInicioPeriodoAgendamento();
+                Date fim = pedestre.getDataFimPeriodoAgendamento();
+                Date agora = new Date();
+
+                // se não tiver datas, não faz nada
+                if (inicio == null || fim == null) {
+                    return;
+                }
+
+                // Caso 1: Agendamento futuro (agendamento ainda não começou)
+                // início depois de agora -> manter para verificação posterior
+                if (agora.before(inicio)) {
+                    // opcional: você pode garantir que não esteja marcado como sempre liberado
+                    // mas geralmente só manter o estado atual é suficiente
+                    return;
+                }
+
+                // Caso 2: Agendamento ativo (entre início e fim) ou início == fim (mesmo minuto)
+                boolean dentroDoPeriodo = !agora.before(inicio) && !agora.after(fim);
+
+                if (dentroDoPeriodo) {
+                    // se já está liberado, nada a fazer
+                    if (Boolean.TRUE.equals(pedestre.getAgendamentoLiberado())) {
+                        return;
+                    }
+
+                    pedestre.setSempreLiberado(true);
+                    pedestre.setAgendamentoLiberado(true);
+                    salvarRegraHikivision(pedestre);
+                    HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+                    return;
+                }
+
+                // Caso 3: Agendamento expirado (já passou do fim) -> remover agendamento
+                if (agora.after(fim)) {
+                    pedestre.setSempreLiberado(false);
+                    pedestre.setDataInicioPeriodoAgendamento(null);
+                    pedestre.setDataFimPeriodoAgendamento(null);
+                    pedestre.setAgendamentoLiberado(null);
+                    
+                    
+                    salvarRegraHikivision(pedestre);
+                    HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+                    System.out.println("finalizou");
+                }
+            }
         });
     }
+    
+	private void salvarRegraHikivision(PedestrianAccessEntity pedestre) {
+		System.out.println("reenviando horaios");
+		try {
+			new Thread() {
+				public void run() {
+					if ("ATIVO".equals(pedestre.getStatus())) {
+						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(pedestre);
+						hikivisionUseCases = new HikivisionUseCases();
+						hikivisionUseCases.cadastrarRegraUsuarioInDevices(pedestre, null, devicesName);
+					} else {
+						hikivisionUseCases.removerUsuarioFromDevices(pedestre);
+					}
+				}
+			}.start();
+
+		} catch (InvalidPhotoException ife) {
+			System.out.println("Foto invalida");
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
     private void recoverArgs(String[] args) {
         desenvolvimento = args != null && args.length > 0 && "dev".equals(args[0]);
@@ -2085,6 +2191,22 @@ public class Main {
             }
         }
     }
+    
+//	private List<PedestrianAccessEntity> buscarTodosAgendamentos() {
+////		@SuppressWarnings("unchecked")
+////		List<PedestrianAccessEntity> pedestresAgendados = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
+////				.getResultListLimited(PedestrianAccessEntity.class,
+////						"PedestrianAccessEntity.findAllVisitantesWhithWhithAgendamento", 100L);
+//		
+//		List<PedestrianAccessEntity> pedestresAgendados =  HibernateLocalAccessData.buscarAgendamentosAtivos(100);
+//
+//		if (pedestresAgendados == null || pedestresAgendados.isEmpty()) {
+//			System.out.println(sdf.format(new Date()) + "  PEDESTRES: sem agendados");
+//			return null;
+//		}
+//		
+//		return pedestresAgendados;
+//	}
     
     public static synchronized boolean temServidor() {
     	return Objects.nonNull(servidor);

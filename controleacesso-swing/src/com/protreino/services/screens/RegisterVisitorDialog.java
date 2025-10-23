@@ -37,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,11 +61,14 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.JTextComponent;
@@ -1096,10 +1100,154 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		c = getNewGridBag(0, 1, 0, 0);
 		panelInternoLateral.add(geraCartaoAcesso, getNewGridBag(0, 8, 30, 5));
+		
+		
+		
+		JButton liberacaoAgendada = new JButton("liberacao agendada");
+		liberacaoAgendada.setBorder(new EmptyBorder(20, 20, 20, 20));
+		liberacaoAgendada.setPreferredSize(new Dimension(120, 3));
+		liberacaoAgendada.addActionListener(e -> {
+			liberaracaoAgendada();
+		});
+
+		c = getNewGridBag(0, 1, 0, 0);
+		panelInternoLateral.add(liberacaoAgendada, getNewGridBag(0, 9, 30, 5));
 
 		
 		return panelExterno;
 
+	}
+
+	private void liberaracaoAgendada() {
+	    if (visitante == null) {
+	        JOptionPane.showMessageDialog(null, "Nenhum visitante selecionado.");
+	        return;
+	    }
+
+	    if (TipoPedestre.valueOf(visitante.getTipo()) == TipoPedestre.PEDESTRE) {
+	        abrirDialogoAgendamento();
+	    }
+	}
+
+	private void abrirDialogoAgendamento() {
+		JDialog dialog = new JDialog((Frame) null, "Agendamento de Liberação", true);
+		dialog.setSize(400, 300);
+		dialog.setLayout(new GridBagLayout());
+		dialog.setLocationRelativeTo(null);
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.insets = new Insets(5, 5, 5, 5);
+		c.anchor = GridBagConstraints.WEST;
+
+		JLabel lblInicio = new JLabel("Data de Início:");
+		JLabel lblFim = new JLabel("Data de Fim:");
+		JLabel lblJust = new JLabel("Justificativa:");
+
+		Date agora = new Date();
+
+		JSpinner spinnerInicio = new JSpinner(new SpinnerDateModel(agora, null, null, Calendar.MINUTE));
+		spinnerInicio.setEditor(new JSpinner.DateEditor(spinnerInicio, "dd/MM/yyyy HH:mm"));
+
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR_OF_DAY, 1); // padrão: 1 hora depois
+		Date umaHoraDepois = cal.getTime();
+
+		JSpinner spinnerFim = new JSpinner(new SpinnerDateModel(umaHoraDepois, null, null, Calendar.MINUTE));
+		spinnerFim.setEditor(new JSpinner.DateEditor(spinnerFim, "dd/MM/yyyy HH:mm"));
+
+		JTextArea txtJustificativa = new JTextArea(3, 20);
+		txtJustificativa.setLineWrap(true);
+		JScrollPane scroll = new JScrollPane(txtJustificativa);
+
+		JButton btnSalvar = new JButton("Salvar");
+		btnSalvar.addActionListener(e -> {
+			Date inicio = (Date) spinnerInicio.getValue();
+			Date fim = (Date) spinnerFim.getValue();
+			String justificativa = txtJustificativa.getText();
+
+			if (inicio.after(fim)) {
+				JOptionPane.showMessageDialog(dialog, "A data de início deve ser antes da data de fim.");
+				return;
+			}
+
+			salvarAgendamento(inicio, fim, justificativa);
+			dialog.dispose();
+		});
+
+		// layout
+		c.gridx = 0;
+		c.gridy = 0;
+		dialog.add(lblInicio, c);
+		c.gridx = 1;
+		dialog.add(spinnerInicio, c);
+		c.gridx = 0;
+		c.gridy = 1;
+		dialog.add(lblFim, c);
+		c.gridx = 1;
+		dialog.add(spinnerFim, c);
+		c.gridx = 0;
+		c.gridy = 2;
+		dialog.add(lblJust, c);
+		c.gridx = 1;
+		dialog.add(scroll, c);
+		c.gridx = 1;
+		c.gridy = 3;
+		dialog.add(btnSalvar, c);
+
+		dialog.setVisible(true);
+	}
+	
+	private void salvarAgendamento(Date inicio, Date fim, String justificativa) {
+	    visitante.setDataInicioPeriodoAgendamento(inicio);
+	    visitante.setDataFimPeriodoAgendamento(fim);
+	    visitante.setJustificativa(justificativa);
+	    visitante.setDataAlteracao(new Date());
+
+	    Date agora = new Date();
+
+	    boolean inicioIgualFim = mesmoMinuto(inicio, fim);
+	    boolean dentroDoPeriodo = !agora.before(inicio) && !agora.after(fim);
+
+	    if (inicioIgualFim || dentroDoPeriodo) {
+	        System.out.println("Está dentro do período agendado ou início = fim (liberado)");
+	        visitante.setSempreLiberado(true);
+	        visitante.setAgendamentoLiberado(true);
+	        salvarRegraHikivision();
+	    } else {
+	        System.out.println("❌ Fora do período agendado");
+	    }
+
+	    visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
+	        .save(PedestrianAccessEntity.class, visitante)[0];
+
+	    JOptionPane.showMessageDialog(null, "Agendamento salvo com sucesso!");
+	}
+
+	private boolean mesmoMinuto(Date d1, Date d2) {
+	    long minutos1 = d1.getTime() / (60 * 1000);
+	    long minutos2 = d2.getTime() / (60 * 1000);
+	    return minutos1 == minutos2;
+	}
+
+	private void salvarRegraHikivision() {
+		try {
+			new Thread() {
+				public void run() {
+					if ("ATIVO".equals(visitante.getStatus())) {
+						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
+						hikivisionUseCases.cadastrarRegraUsuarioInDevices(visitante, null, devicesName);
+					} else {
+						hikivisionUseCases.removerUsuarioFromDevices(visitante);
+					}
+				}
+			}.start();
+
+		} catch (InvalidPhotoException ife) {
+			criarDialogoFotoInvalida();
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
 	private boolean exibeBotaoSempreLiberado() {
@@ -1445,8 +1593,14 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private void gerarQRCode(String tipo, JDialog qrCodeDialog) {
 		if (tipo == null || "ESTATICO".equals(tipo)) {
 			// gera QRCode estático
-			visitante.setQrCodeParaAcesso(
-					Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
+			
+			if (Utils.isHikivisionHabilitada()) {
+				visitante.setQrCodeParaAcesso(visitante.getCardNumber());
+			}else {
+				visitante.setQrCodeParaAcesso(
+						Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
+			}
+			
 		} else {
 			// gera QRCode genêrico
 			String qrCode = EncryptionUtils.getRandomString(4);
@@ -1468,6 +1622,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 			qrCodeDialog.dispose();
 			this.dispose();
 			Main.mainScreen.refreshAll();
+			
+			SwingUtilities.invokeLater(() -> {
+			    criarDialogoGeraQRCode(); // chama de novo, agora já com QRCode existente
+			});
 
 			if (Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
 				PedestrianAccessEntity pedestre = new PedestrianAccessEntity();

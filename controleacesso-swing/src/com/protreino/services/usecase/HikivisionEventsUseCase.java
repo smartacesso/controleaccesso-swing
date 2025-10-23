@@ -181,9 +181,9 @@ public class HikivisionEventsUseCase {
 	    if (Utils.getPreferenceAsBoolean("doisDispositivos") && Objects.nonNull(HikivisionDevice)) {
 	        String dispositivoNormalizado = HikivisionDevice.toLowerCase();
 	        if (dispositivoNormalizado.contains("entrada")) {
-	            sentido = Tipo.ENTRADA;
+	            sentido = "ENTROU";
 	        } else if (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida") ) {
-	            sentido = Tipo.SAIDA;
+	            sentido = "SAIU";
 	        } else {
 	            sentido = "FACIAL"; // Padrão caso o nome do dispositivo seja inválido
 	        }

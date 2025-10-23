@@ -517,6 +517,37 @@ public class HibernateLocalAccessData {
 
 	    return entity;
 	}
+	
+	public static PedestrianAccessEntity getNextAgendamentoAtivo(Long lastId) {
+	    Session session = getSessionFactory().openSession();
+	    PedestrianAccessEntity entity = null;
+
+	    try {
+	        // Query incremental
+	        Query<PedestrianAccessEntity> query = session.createQuery(
+	            "SELECT obj FROM PedestrianAccessEntity obj " +
+	            "WHERE obj.removido = false " +
+	            "AND obj.dataInicioPeriodoAgendamento IS NOT NULL " +
+	            "AND obj.dataFimPeriodoAgendamento IS NOT NULL " +
+	            "AND obj.id > :LAST_ID " +
+	            "ORDER BY obj.dataInicioPeriodoAgendamento ASC, obj.id ASC",
+	            PedestrianAccessEntity.class
+	        );
+
+	        query.setParameter("LAST_ID", lastId == null ? 0L : lastId);
+	        query.setMaxResults(1); // apenas 1 registro por vez
+
+	        entity = query.uniqueResultOptional().orElse(null);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return entity;
+	}
+
 
 	public static synchronized Integer getResultListWithParamsCount(Class<?> entityClass, String namedQuery,
 			HashMap<String, Object> args) {

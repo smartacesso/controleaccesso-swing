@@ -69,7 +69,8 @@ import com.protreino.services.utils.Utils;
            @Index(name = "idx_fotos_excluidas", columnList = "FOTOS_FORAM_EXCLUIDAS"),
            @Index(name = "idx_cadastrado_editado", columnList = "CADASTRADO_NO_DESKTOP, EDITADO_NO_DESKTOP"),
            @Index(name = "idx_cadastrado", columnList = "CADASTRADO_NO_DESKTOP"),
-           @Index(name = "idx_editado", columnList = "EDITADO_NO_DESKTOP")
+           @Index(name = "idx_editado", columnList = "EDITADO_NO_DESKTOP"),
+           @Index(name = "idx_agendamento", columnList = "DATA_INICIO_PERIODO_AGENDAMENTO, DATA_FIM_PERIODO_AGENDAMENTO, REMOVIDO")
        })
 @NamedQueries({
 	@NamedQuery(name = "PedestrianAccessEntity.findAll", query = "select obj from PedestrianAccessEntity obj"),
@@ -274,6 +275,7 @@ import com.protreino.services.utils.Utils;
 				query = "select count(obj) from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
+						"and obj.status = 'ATIVO' " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal) " +
@@ -281,12 +283,14 @@ import com.protreino.services.utils.Utils;
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
 						"and obj.tipo = 'PEDESTRE' " +
+						"and obj.status = 'ATIVO' " +
 						"order by obj.id asc"),
 	@NamedQuery(name = "PedestrianAccessEntity.countAllWithHikiVisionImageOnRegistredBeteenDate",
 				query = "select count(obj) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
+						"and obj.status = 'ATIVO' " +
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
@@ -294,6 +298,7 @@ import com.protreino.services.utils.Utils;
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
+						"and obj.status = 'ATIVO' " +
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null " +
 						"order by obj.id asc"),
@@ -325,7 +330,14 @@ import com.protreino.services.utils.Utils;
 				query = "select obj from PedestrianAccessEntity obj " +
 						"where obj.fotoEnviada != null " +
 						"and obj.tipo = 'VISITANTE' " + 
-						"and obj.cardNumber != null ")
+						"and obj.cardNumber != null "),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllVisitantesWhithWhithAgendamento",
+			    query = "select obj from PedestrianAccessEntity obj " +
+			            "where obj.dataInicioPeriodoAgendamento is not null " +
+			            "and obj.dataFimPeriodoAgendamento is not null " +
+			            "and obj.removido = false " +
+			            "order by obj.dataInicioPeriodoAgendamento desc")
+
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
 	
@@ -571,6 +583,21 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Type(type = "org.hibernate.type.NumericBooleanType")
 	@Column(name="ACESSO_LIVRE", nullable=true, length=11)
 	private Boolean acessoLivre;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "DATA_INICIO_PERIODO_AGENDAMENTO", nullable = true, length = 30)
+	private Date dataInicioPeriodoAgendamento;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "DATA_FIM_PERIODO_AGENDAMENTO", nullable = true, length = 30)
+	private Date dataFimPeriodoAgendamento;
+	
+	@Column(name = "JUSTIFICATIVA_LIBERADO", nullable = true, length = 30)
+	private String justificativa;
+	
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@Column(name="AGENDAMENTO_LIBERADO", nullable=true, length=11)
+	private Boolean agendamentoLiberado;
 	
 	@Transient
 	private Integer origemCatraca;
@@ -2252,6 +2279,38 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setIdLocal(Long idLocal) {
 		this.idLocal = idLocal;
+	}
+
+	public Date getDataInicioPeriodoAgendamento() {
+		return dataInicioPeriodoAgendamento;
+	}
+
+	public void setDataInicioPeriodoAgendamento(Date dataInicioPeriodoAgendamento) {
+		this.dataInicioPeriodoAgendamento = dataInicioPeriodoAgendamento;
+	}
+
+	public Date getDataFimPeriodoAgendamento() {
+		return dataFimPeriodoAgendamento;
+	}
+
+	public void setDataFimPeriodoAgendamento(Date dataFimPeriodoAgendamento) {
+		this.dataFimPeriodoAgendamento = dataFimPeriodoAgendamento;
+	}
+
+	public String getJustificativa() {
+		return justificativa;
+	}
+
+	public void setJustificativa(String justificativa) {
+		this.justificativa = justificativa;
+	}
+
+	public Boolean getAgendamentoLiberado() {
+		return agendamentoLiberado;
+	}
+
+	public void setAgendamentoLiberado(Boolean agendamentoLiberado) {
+		this.agendamentoLiberado = agendamentoLiberado;
 	}
 	
 }

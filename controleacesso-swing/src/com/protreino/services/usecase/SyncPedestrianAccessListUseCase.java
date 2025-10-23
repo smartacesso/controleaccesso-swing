@@ -623,8 +623,8 @@ public class SyncPedestrianAccessListUseCase {
 
                         if((existentAthleteAccess.isRemovido() 
                     			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
-                    		&& Objects.nonNull(athleteAccessTO.getDataCadastroFotoNaHikivision()) 
                     		&& Utils.isHikivisionConfigValid() ) {
+                        	System.out.println("Status alterado");
                         	try {
                         		List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);
                         		hikivisionUseCases.syncronizarUsuarioInDevices(existentAthleteAccess, null, devicesName);

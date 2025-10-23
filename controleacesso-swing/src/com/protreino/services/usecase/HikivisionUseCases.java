@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.JOptionPane;
+
 import com.protreino.services.entity.HikivisionFingerEntity;
 import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.HikivisonFingerErrorEntity;
@@ -70,8 +72,7 @@ public class HikivisionUseCases {
 		
 		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
 			System.out.println("removendo foto");
-			List<String> devicesById = devicesToSync.stream().map(HikivisionDeviceSimplificadoTO::getDevIndex).collect(Collectors.toList());
-			removerUsuarioFromDevices(pedestre, devicesById);
+			removerUsuarioFromDevices(pedestre, devicesToSync);
 
 		} else {
 			System.out.println("cadastrando foto");
@@ -90,26 +91,26 @@ public class HikivisionUseCases {
 		removerUsuarioFromDevices(pedestre, null);
 	}
 
-	public void removerUsuarioFromDevices(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-		if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
+	public void removerUsuarioFromDevices(final PedestrianAccessEntity pedestre, List<HikivisionDeviceSimplificadoTO> devicesToSyncTo) {
+		if (Objects.isNull(devicesToSyncTo) || devicesToSyncTo.isEmpty()) {
 			final List<Device> devices = listarDispositivos();
 			if (Objects.isNull(devices) || devices.isEmpty()) {
 				return;
 			}
 
-			devicesToSync = devices.stream().map(Device::getDevIndex).collect(Collectors.toList());
+			devicesToSyncTo = devices.stream().map(device -> new HikivisionDeviceSimplificadoTO(device.getDevName(), device.getDevIndex())).collect(Collectors.toList());
 		}
 
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
 
-		devicesToSync.forEach(deviceId -> {
+		devicesToSyncTo.forEach(device -> {
 			try {
-				final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(deviceId,
+				final boolean isApagadoComSucesso = hikiVisionIntegrationService.apagarUsuario(device.getDevIndex(),
 						pedestre.getCardNumber());
 				if (!isApagadoComSucesso) {
 					final String message = String.format("Erro ao apagar pedestre %s no device %s",
-							pedestre.getCardNumber(), deviceId);
-					logAndThrowException(message, pedestre.getCardNumber(), deviceId, HikivisionAction.REMOVE);
+							pedestre.getCardNumber(), device.getDevIndex());
+					logAndThrowException(message, pedestre.getCardNumber(), device.getDevIndex(), HikivisionAction.REMOVE);
 				}
 
 			} catch (HikivisionIntegrationException ex) {
@@ -367,6 +368,11 @@ public class HikivisionUseCases {
 			try {
 				// Vincular Template (já no mesmo loop)
 				if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
+					if(Objects.isNull(regraFinal.getIdTemplate())) {
+						System.out.println("Sincronizar templates antes");
+						return;
+					}
+					
 				    int idTemplate = (regraFinal != null) ? regraFinal.getIdTemplate() : 1; // 1 = default
 
 				    String nomeNormalizado = (deviceTo.getDevName() != null) 
