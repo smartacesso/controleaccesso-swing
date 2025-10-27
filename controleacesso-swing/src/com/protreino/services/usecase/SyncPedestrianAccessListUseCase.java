@@ -935,11 +935,17 @@ public class SyncPedestrianAccessListUseCase {
                 ? visitante.getHabilitarTeclado().toString() : "false");
         responseObj.addProperty("enviaSmsAoPassarNaCatraca", visitante.getEnviaSmsAoPassarNaCatraca() != null
                 ? visitante.getEnviaSmsAoPassarNaCatraca().toString() : "false");
+        responseObj.addProperty("justificativa", visitante.getJustificativa() != null ? visitante.getJustificativa() : "");
+        responseObj.addProperty("agendamentoLiberado", visitante.getAgendamentoLiberado() != null ? visitante.getAgendamentoLiberado().toString() : "false");
 
         try {
             responseObj.addProperty("dataCadastroFotoNaHikivision", sdf.format(visitante.getDataCadastroFotoNaHikivision()));
+            responseObj.addProperty("dataInicioPeriodoAgendamento", sdf.format(visitante.getDataInicioPeriodoAgendamento()));
+            responseObj.addProperty("dataFimPeriodoAgendamento", sdf.format(visitante.getDataFimPeriodoAgendamento()));
         } catch (Exception e) {
             responseObj.addProperty("dataCadastroFotoNaHikivision", "");
+            responseObj.addProperty("dataInicioPeriodoAgendamento", "");
+            responseObj.addProperty("dataFimPeriodoAgendamento", "");
         }
         
         //Dados endereco
