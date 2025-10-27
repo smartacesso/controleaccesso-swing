@@ -1217,6 +1217,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	        System.out.println("❌ Fora do período agendado");
 	    }
 
+	    visitante.setEditadoNoDesktop(true);
 	    visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
 	        .save(PedestrianAccessEntity.class, visitante)[0];
 
