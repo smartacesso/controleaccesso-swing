@@ -445,6 +445,7 @@ public class Main {
                     pedestre.setSempreLiberado(true);
                     pedestre.setAgendamentoLiberado(true);
                     salvarRegraHikivision(pedestre);
+                    pedestre.setEditadoNoDesktop(true);
                     HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
                     return;
                 }
@@ -455,6 +456,7 @@ public class Main {
                     pedestre.setDataInicioPeriodoAgendamento(null);
                     pedestre.setDataFimPeriodoAgendamento(null);
                     pedestre.setAgendamentoLiberado(null);
+                    pedestre.setEditadoNoDesktop(true);
                     
                     
                     salvarRegraHikivision(pedestre);
