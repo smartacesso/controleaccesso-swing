@@ -404,7 +404,10 @@ public class Main {
                     lastId = pedestre.getId();
                 }
                 
-                if (pedestresAgendados == null || pedestresAgendados.isEmpty()) return;
+                if (pedestresAgendados == null || pedestresAgendados.isEmpty()) {
+                	System.out.println("Sem agendamentos");
+                	return;
+                }
 
                 for (PedestrianAccessEntity pedestre : pedestresAgendados) {
                     processarAgendamento(pedestre);
@@ -444,8 +447,9 @@ public class Main {
 
                     pedestre.setSempreLiberado(true);
                     pedestre.setAgendamentoLiberado(true);
-                    salvarRegraHikivision(pedestre);
+                    pedestre.setEditadoNoDesktop(true);
                     HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+                    salvarRegraHikivision(pedestre);
                     return;
                 }
 
@@ -455,11 +459,13 @@ public class Main {
                     pedestre.setDataInicioPeriodoAgendamento(null);
                     pedestre.setDataFimPeriodoAgendamento(null);
                     pedestre.setAgendamentoLiberado(null);
+                    pedestre.setJustificativa("");
+                    pedestre.setEditadoNoDesktop(true);
                     
                     
-                    salvarRegraHikivision(pedestre);
                     HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
-                    System.out.println("finalizou");
+                    salvarRegraHikivision(pedestre);
+                    System.out.println("removendo agendamento: " + pedestre.getName());
                 }
             }
         });

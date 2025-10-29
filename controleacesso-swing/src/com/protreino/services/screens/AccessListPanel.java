@@ -537,14 +537,30 @@ public class AccessListPanel extends PaginedListPanel {
 	            int crow = table.rowAtPoint(pt);
 	            String idPedestre = String.valueOf(table.getValueAt(crow, 0));
 	            
-	            if(Main.getDefaultDevice() != null 
-            		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
-            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saida"))) {
-	            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
+	            if(Main.temServidor()) {
+					String idVisitante = String.valueOf(table.getValueAt(crow, 0));
 
-	            } else {
-	            	releaseAccessUseCase.execute(idPedestre, null);
+					HashMap<String, Object> args = new HashMap<>();
+					args.put("ID", Long.valueOf(idVisitante));
+
+					PedestrianAccessEntity visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.getUniqueResultWithParams(
+							PedestrianAccessEntity.class, "PedestrianAccessEntity.findById", args);
+	            	
+	            	RegisterVisitorDialog diolog = new RegisterVisitorDialog(visitante, false);
+	            	diolog.abrirDialogoAgendamento(visitante);
 	            }
+	            
+	            if(!Main.temServidor()) {
+		            if(Main.getDefaultDevice() != null 
+	            		    && Boolean.TRUE.equals(Main.getDefaultDevice().isConnected())
+	            			&& Boolean.TRUE.equals(Main.getDefaultDevice().getConfigurationValueAsBoolean("Bloquear saida"))) {
+		            	new EscolherSentidoLiberarAcessoDialog(Main.getDefaultDevice(), "Liberado pelo sistema", idPedestre);
+
+		            } else {
+		            	releaseAccessUseCase.execute(idPedestre, null);
+		            }
+	            }
+
 	            
 	        }
 	    }
