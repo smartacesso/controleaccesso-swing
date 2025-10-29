@@ -597,7 +597,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 	
 	
 	private void bloquearEdicaoSeNecessario(Boolean isPermitidoEditar) {
-		PerfilAcesso perfil = Main.internoLoggedUser.getPerfilAcesso();
 		// Verifica se o usuario tem um perfil de acesso
 		if (Boolean.FALSE.equals(isPermitidoEditar)) {
 
@@ -1125,11 +1124,11 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    }
 
 	    if (TipoPedestre.valueOf(visitante.getTipo()) == TipoPedestre.PEDESTRE) {
-	        abrirDialogoAgendamento();
+	        abrirDialogoAgendamento(visitante);
 	    }
 	}
 
-	private void abrirDialogoAgendamento() {
+	public void abrirDialogoAgendamento(PedestrianAccessEntity pedestre) {
 		JDialog dialog = new JDialog((Frame) null, "Agendamento de Liberação", true);
 		dialog.setSize(400, 300);
 		dialog.setLayout(new GridBagLayout());
@@ -1149,7 +1148,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		spinnerInicio.setEditor(new JSpinner.DateEditor(spinnerInicio, "dd/MM/yyyy HH:mm"));
 
 		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.HOUR_OF_DAY, 1); // padrão: 1 hora depois
+		cal.add(Calendar.MINUTE, 10);
 		Date umaHoraDepois = cal.getTime();
 
 		JSpinner spinnerFim = new JSpinner(new SpinnerDateModel(umaHoraDepois, null, null, Calendar.MINUTE));
@@ -1170,7 +1169,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 				return;
 			}
 
-			salvarAgendamento(inicio, fim, justificativa);
+			salvarAgendamento(pedestre, inicio, fim, justificativa);
 			dialog.dispose();
 		});
 
@@ -1197,7 +1196,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		dialog.setVisible(true);
 	}
 	
-	private void salvarAgendamento(Date inicio, Date fim, String justificativa) {
+	private void salvarAgendamento(PedestrianAccessEntity visitante, Date inicio, Date fim, String justificativa) {
 	    visitante.setDataInicioPeriodoAgendamento(inicio);
 	    visitante.setDataFimPeriodoAgendamento(fim);
 	    visitante.setJustificativa(justificativa);
@@ -1578,56 +1577,141 @@ public class RegisterVisitorDialog extends BaseDialog {
 		mainPanel.add(confirmarPanel);
 	}
 
+//	private void gerarQRCode(String tipo, JDialog qrCodeDialog) {
+//		if (tipo == null || "ESTATICO".equals(tipo)) {
+//			// gera QRCode estático
+//			
+//			if (Utils.isHikivisionHabilitada()) {
+//				visitante.setQrCodeParaAcesso(visitante.getCardNumber());
+//			}else {
+//				visitante.setQrCodeParaAcesso(
+//						Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
+//			}
+//			
+//		} else {
+//			// gera QRCode genêrico
+//			String qrCode = EncryptionUtils.getRandomString(4);
+//			if ("DINAMICO_USO".equals(tipo)) {
+//				// adiciona primeiro giro
+//				qrCode = "U_" + qrCode + "_0";
+//			} else {
+//				qrCode = "T_" + qrCode;
+//			}
+//			visitante.setQrCodeParaAcesso(qrCode);
+//		}
+//
+//		visitante.setTipoQRCode(tipo);
+//
+//		boolean valido = validarCampos();
+//		if (valido) {
+//			adicionarVisitante();
+//			limparTodosOsCampos();
+//			qrCodeDialog.dispose();
+//			this.dispose();
+//			Main.mainScreen.refreshAll();
+//			
+//			SwingUtilities.invokeLater(() -> {
+//			    criarDialogoGeraQRCode(); // chama de novo, agora já com QRCode existente
+//			});
+//
+//			if (Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
+//				PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
+//				pedestre.setTipo(visitante.getTipo());
+//				new Thread() {
+//					public void run() {
+//						new RegisterVisitorDialog(pedestre, true);
+//					}
+//				}.start();
+//
+//			}
+//		}
+//
+//	}
+	
 	private void gerarQRCode(String tipo, JDialog qrCodeDialog) {
-		if (tipo == null || "ESTATICO".equals(tipo)) {
-			// gera QRCode estático
-			
-			if (Utils.isHikivisionHabilitada()) {
-				visitante.setQrCodeParaAcesso(visitante.getCardNumber());
-			}else {
-				visitante.setQrCodeParaAcesso(
-						Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(visitante.getId().toString(), 5));
-			}
-			
-		} else {
-			// gera QRCode genêrico
-			String qrCode = EncryptionUtils.getRandomString(4);
-			if ("DINAMICO_USO".equals(tipo)) {
-				// adiciona primeiro giro
-				qrCode = "U_" + qrCode + "_0";
-			} else {
-				qrCode = "T_" + qrCode;
-			}
-			visitante.setQrCodeParaAcesso(qrCode);
-		}
+	    // checagens rápidas
+	    if (visitante == null) {
+	        // tratar erro: visitante não inicializado
+	        JOptionPane.showMessageDialog(qrCodeDialog, "Erro interno: visitante não definido.", "Erro", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		visitante.setTipoQRCode(tipo);
+	    // 1) validar antes de alterar estado
+	    boolean valido = validarCampos();
+	    if (!valido) {
+	        // validarCampos deve mostrar mensagens de erro apropriadas
+	        return;
+	    }
 
-		boolean valido = validarCampos();
-		if (valido) {
-			adicionarVisitante();
-			limparTodosOsCampos();
-			qrCodeDialog.dispose();
-			this.dispose();
-			Main.mainScreen.refreshAll();
-			
-			SwingUtilities.invokeLater(() -> {
-			    criarDialogoGeraQRCode(); // chama de novo, agora já com QRCode existente
-			});
+	    // 2) persistir/Adicionar visitante primeiro para garantir ID (se necessário)
+	    // Se adicionarVisitante já chama o repositório e popula o ID no objeto visitante, ok.
+	    adicionarVisitante();
 
-			if (Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
-				PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
-				pedestre.setTipo(visitante.getTipo());
-				new Thread() {
-					public void run() {
-						new RegisterVisitorDialog(pedestre, true);
-					}
-				}.start();
+	    // Agora que visitante provavelmente tem ID, gerar o QR com segurança
+	    if (tipo == null || "ESTATICO".equals(tipo)) {
+	    	
+	    	if(Objects.isNull(tipo)) {
+	    		tipo = "ESTATICO";
+	    	}
+	    	
+	        // gera QRCode estático
+	        if (Utils.isHikivisionHabilitada()) {
+	            visitante.setQrCodeParaAcesso(visitante.getCardNumber());
+	        } else {
+	            // garante que id exista; se getId() for nulo, trate adequadamente
+	            String idStr = visitante.getId() != null ? visitante.getId().toString() : "00000";
+	            visitante.setQrCodeParaAcesso(Main.internoLoggedUser.getIdClient() + "_" + padLeftZeros(idStr, 5));
+	        }
+	    } else {
+	    	
+	        // gera QRCode genérico
+	        String qr = EncryptionUtils.getRandomString(4);
+	        if ("DINAMICO_USO".equals(tipo)) {
+	            qr = "U_" + qr + "_0";
+	        } else {
+	            qr = "T_" + qr;
+	        }
+	        visitante.setQrCodeParaAcesso(qr);
+	    }
+	    
+	    visitante.setTipoQRCode(tipo);
+	    
+		visitante.setDataAlteracao(new Date());
+		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
+	    
+	    // 3) atualizar visitante com QR (se necessário atualizar no DB)
+	    // Se adicionarVisitante já persistiu, aqui pode ser necessário um update:
+	    // visitanteService.atualizar(visitante); // chame seu método de update se precisar
 
-			}
-		}
+	    // 4) limpar UI e fechar janelas — tudo na EDT
+	    SwingUtilities.invokeLater(() -> {
+	        limparTodosOsCampos();
 
+	        // Feche apenas a janela que deve ser fechada. 
+	        if (qrCodeDialog != null && qrCodeDialog.isShowing()) {
+	            qrCodeDialog.dispose();
+	        }
+	        // Se 'this' for um JDialog/Frame relacionado e precisa ser fechado, mantenha; caso contrário remova.
+	        // this.dispose(); // comente/descomente conforme necessidade real
+
+	        Main.mainScreen.refreshAll();
+
+	        // Reabrir (ou abrir) o diálogo que mostra o QR já existente
+	        criarDialogoGeraQRCode();
+	    });
+
+	    // 5) Se preferência para abrir registro do pedestre:
+	    if (Utils.getPreferenceAsBoolean("pedestrianAlwaysOpen")) {
+	        // Se RegisterVisitorDialog é um componente Swing, crie na EDT:
+	        SwingUtilities.invokeLater(() -> {
+	            PedestrianAccessEntity pedestre = new PedestrianAccessEntity();
+	            pedestre.setTipo(visitante.getTipo());
+	            new RegisterVisitorDialog(pedestre, true);
+	        });
+	        // Se for operação custosa (não-UI), execute em background e abra o dialog na EDT quando pronto.
+	    }
 	}
+
 
 	private void apagarQRCode(JDialog qrCodeDialog) {
 
