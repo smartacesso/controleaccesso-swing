@@ -940,11 +940,20 @@ public class SyncPedestrianAccessListUseCase {
 
         try {
             responseObj.addProperty("dataCadastroFotoNaHikivision", sdf.format(visitante.getDataCadastroFotoNaHikivision()));
-            responseObj.addProperty("dataInicioPeriodoAgendamento", sdf.format(visitante.getDataInicioPeriodoAgendamento()));
-            responseObj.addProperty("dataFimPeriodoAgendamento", sdf.format(visitante.getDataFimPeriodoAgendamento()));
         } catch (Exception e) {
             responseObj.addProperty("dataCadastroFotoNaHikivision", "");
+        }
+        
+        
+        try {
+            responseObj.addProperty("dataInicioPeriodoAgendamento", sdf.format(visitante.getDataInicioPeriodoAgendamento()));
+        } catch (Exception e) {
             responseObj.addProperty("dataInicioPeriodoAgendamento", "");
+        }
+        
+        try {
+            responseObj.addProperty("dataFimPeriodoAgendamento", sdf.format(visitante.getDataFimPeriodoAgendamento()));
+        } catch (Exception e) {
             responseObj.addProperty("dataFimPeriodoAgendamento", "");
         }
         

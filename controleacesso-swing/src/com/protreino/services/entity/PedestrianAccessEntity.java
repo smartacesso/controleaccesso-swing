@@ -1170,6 +1170,11 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.senha = athleteAccessTO.getSenha();
 		this.tipoAcesso = athleteAccessTO.getTipoAcesso();
 		this.tipoQRCode = athleteAccessTO.getTipoQRCode();
+		
+		this.dataInicioPeriodoAgendamento = athleteAccessTO.getDataInicioPeriodoAgendamento();
+		this.dataFimPeriodoAgendamento = athleteAccessTO.getDataFimPeriodoAgendamento();
+		this.justificativa = athleteAccessTO.getJustificativa();
+		this.agendamentoLiberado = athleteAccessTO.getAgendamentoLiberado();
 	    
 		if (athleteAccessTO.getHorariosPermitidos() != null
 				&& !athleteAccessTO.getHorariosPermitidos().isEmpty()) {

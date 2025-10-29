@@ -80,6 +80,11 @@ public class PedestrianAccessTO extends BaseEntity{
 	private String tipoAcesso;
 	private String tipoQRCode;
 	private Date dataCadastroFotoNaHikivision;
+	
+	private Date dataInicioPeriodoAgendamento;
+	private Date dataFimPeriodoAgendamento;
+	private String justificativa;
+	private Boolean agendamentoLiberado;
 
 	public PedestrianAccessTO() {
 	}
@@ -618,5 +623,54 @@ public class PedestrianAccessTO extends BaseEntity{
 
 	public void setIdLocal(Long idLocal) {
 		this.idLocal = idLocal;
+	}
+
+	public Date getDataInicioPeriodoAgendamento() {
+		 if (dataInicioPeriodoAgendamento == null) {
+		        return dataInicioPeriodoAgendamento; // Retorna null se inicioTurno for nulo
+		    }
+
+		    Calendar calendar = Calendar.getInstance();
+		    calendar.setTime(dataInicioPeriodoAgendamento);
+		    // Ajuste a hora, por exemplo, subtraindo 3 horas
+		    calendar.add(Calendar.HOUR_OF_DAY, -3);
+		    return calendar.getTime();
+	}
+
+	public void setDataInicioPeriodoAgendamento(Date dataInicioPeriodoAgendamento) {
+		this.dataInicioPeriodoAgendamento = dataInicioPeriodoAgendamento;
+	}
+
+	public Date getDataFimPeriodoAgendamento() {
+		  if (dataFimPeriodoAgendamento == null) {
+		        return dataFimPeriodoAgendamento; // Retorna null se inicioTurno for nulo
+		    }
+
+		    Calendar calendar = Calendar.getInstance();
+		    calendar.setTime(dataFimPeriodoAgendamento);
+		    // Ajuste a hora, por exemplo, subtraindo 3 horas
+		    calendar.add(Calendar.HOUR_OF_DAY, -3);
+		    return calendar.getTime();
+		
+	}
+
+	public void setDataFimPeriodoAgendamento(Date dataFimPeriodoAgendamento) {
+		this.dataFimPeriodoAgendamento = dataFimPeriodoAgendamento;
+	}
+
+	public String getJustificativa() {
+		return justificativa;
+	}
+
+	public void setJustificativa(String justificativa) {
+		this.justificativa = justificativa;
+	}
+
+	public Boolean getAgendamentoLiberado() {
+		return agendamentoLiberado;
+	}
+
+	public void setAgendamentoLiberado(Boolean agendamentoLiberado) {
+		this.agendamentoLiberado = agendamentoLiberado;
 	}
 }
