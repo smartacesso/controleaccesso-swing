@@ -2,8 +2,10 @@ package com.protreino.services.usecase;
 
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -66,11 +68,12 @@ public class SincronismoHorariosHikivision {
 		List<HorarioEntity> horarios = new ArrayList<HorarioEntity>();
 		HorarioEntity horarioEntity = new HorarioEntity();
 		horarioEntity.setDiasSemana("1234567");
-		LocalTime inicio = LocalTime.of(3, 0, 0);
-		LocalTime fim = LocalTime.of(2, 59, 59);
 		
-		horarioEntity.setHorarioInicio(Utils.toDate(inicio));
-		horarioEntity.setHorarioFim(Utils.toDate(fim));
+	    horarioEntity.setHorarioInicio(Utils.toDate(LocalTime.of(3, 0, 0)));
+	    horarioEntity.setHorarioFim(Utils.toDate(LocalTime.of(2, 59, 59)));
+		
+		horarioEntity.setStatus("ATIVO");
+		horarioEntity.setRemoved(false);
 		horarios.add(horarioEntity);
 		
 		PlanoHorarioHikivision planoHorarios = montaPlanoHorario(horarios);
@@ -82,32 +85,172 @@ public class SincronismoHorariosHikivision {
 		hikivisionUseCases.sincronizarTemplateHIkivision(idTemplate, idPlanoHorario, "Regra Default");
 	}
 
+//	private PlanoHorarioHikivision montaPlanoHorario(List<HorarioEntity> horarios) {
+//        Map<String, AtomicInteger> idCounterByDay = new HashMap<>();
+//        List<DiaHIkivision> dias = new ArrayList<>();
+//
+//        for (HorarioEntity horario : horarios) {
+//        	
+//        	if (horario == null || !"ATIVO".equals(horario.getStatus()) || Boolean.TRUE.equals(horario.getRemoved())) {
+//        	    continue;
+//        	}
+//        	
+//            String horarioInicio = formataHora(horario.getHorarioInicio());
+//            String horarioFim = formataHora(horario.getHorarioFim());
+//
+//            for (char c : horario.getDiasSemana().toCharArray()) {
+//                String diaSemana = DiaSemana.intForDia(Character.getNumericValue(c)).name();
+//
+//                // Obtém o contador de ID para o dia da semana
+//                idCounterByDay.putIfAbsent(diaSemana, new AtomicInteger(1));
+//                int id = idCounterByDay.get(diaSemana).getAndIncrement();
+//
+//                dias.add(new DiaHIkivision(
+//                    diaSemana,
+//                    id,
+//                    true,
+//                    new TimeSegment(horarioInicio, horarioFim)
+//                ));
+//            }
+//        }
+//
+//        return new PlanoHorarioHikivision(true, dias);
+//    }
+	
+//	
+//	private PlanoHorarioHikivision montaPlanoHorario(List<HorarioEntity> horarios) {
+//
+//	    Map<String, Integer> idPorHorario = new HashMap<>();
+//	    AtomicInteger idGerador = new AtomicInteger(1);
+//
+//	    List<DiaHIkivision> dias = new ArrayList<>();
+//
+//	    for (HorarioEntity horario : horarios) {
+//	    	
+//	        if (horario == null || !"ATIVO".equals(horario.getStatus()) || Boolean.TRUE.equals(horario.getRemoved())) {
+//	            continue;
+//	        }
+//
+//	        String horarioInicio = formataHora(horario.getHorarioInicio());
+//	        String horarioFim = formataHora(horario.getHorarioFim());
+//
+//	        String chave = horarioInicio + "-" + horarioFim;
+//
+//	        // Se este horário ainda não tem ID → cria um
+//	        idPorHorario.putIfAbsent(chave, idGerador.getAndIncrement());
+//	        int id = idPorHorario.get(chave);
+//
+//	        for (char c : horario.getDiasSemana().toCharArray()) {
+//	            String diaSemana = DiaSemana.intForDia(Character.getNumericValue(c)).name();
+//
+//	            dias.add(new DiaHIkivision(
+//	                diaSemana,
+//	                id,
+//	                true,
+//	                new TimeSegment(horarioInicio, horarioFim)
+//	            ));
+//	        }
+//	    }
+//
+//	    return new PlanoHorarioHikivision(true, dias);
+//	}
+	
+//	private PlanoHorarioHikivision montaPlanoHorario(List<HorarioEntity> horarios) {
+//
+//	    // Agrupar horários por dia da semana
+//	    Map<String, List<HorarioEntity>> porDia = new HashMap<>();
+//
+//	    for (HorarioEntity horario : horarios) {
+//
+//	        if (horario == null || !"ATIVO".equals(horario.getStatus()) || Boolean.TRUE.equals(horario.getRemoved())) {
+//	            continue;
+//	        }
+//
+//	        for (char c : horario.getDiasSemana().toCharArray()) {
+//	            String diaSemana = DiaSemana.intForDia(Character.getNumericValue(c)).name();
+//	            porDia.computeIfAbsent(diaSemana, d -> new ArrayList<>()).add(horario);
+//	        }
+//	    }
+//
+//	    List<DiaHIkivision> dias = new ArrayList<>();
+//
+//	    for (Map.Entry<String, List<HorarioEntity>> entry : porDia.entrySet()) {
+//
+//	        String dia = entry.getKey();
+//	        List<HorarioEntity> lista = entry.getValue();
+//
+//	        // ORDENA por horário
+//	        lista.sort(Comparator.comparing(HorarioEntity::getHorarioInicio));
+//
+//	        int id = 1;
+//
+//	        for (HorarioEntity h : lista) {
+//	            String inicio = formataHora(h.getHorarioInicio());
+//	            String fim = formataHora(h.getHorarioFim());
+//
+//	            dias.add(new DiaHIkivision(
+//	                dia,
+//	                id++, // ID gerado NA ORDEM CORRETA
+//	                true,
+//	                new TimeSegment(inicio, fim)
+//	            ));
+//	        }
+//	    }
+//
+//	    return new PlanoHorarioHikivision(true, dias);
+//	}
+
+	
 	private PlanoHorarioHikivision montaPlanoHorario(List<HorarioEntity> horarios) {
-        Map<String, AtomicInteger> idCounterByDay = new HashMap<>();
-        List<DiaHIkivision> dias = new ArrayList<>();
 
-        for (HorarioEntity horario : horarios) {
-            String horarioInicio = formataHora(horario.getHorarioInicio());
-            String horarioFim = formataHora(horario.getHorarioFim());
+	    Map<String, List<HorarioEntity>> porDia = new HashMap<>();
 
-            for (char c : horario.getDiasSemana().toCharArray()) {
-                String diaSemana = DiaSemana.intForDia(Character.getNumericValue(c)).name();
+	    for (HorarioEntity horario : horarios) {
 
-                // Obtém o contador de ID para o dia da semana
-                idCounterByDay.putIfAbsent(diaSemana, new AtomicInteger(1));
-                int id = idCounterByDay.get(diaSemana).getAndIncrement();
+	        if (horario == null || !"ATIVO".equals(horario.getStatus()) || Boolean.TRUE.equals(horario.getRemoved())) {
+	            continue;
+	        }
 
-                dias.add(new DiaHIkivision(
-                    diaSemana,
-                    id,
-                    true,
-                    new TimeSegment(horarioInicio, horarioFim)
-                ));
-            }
-        }
+	        for (char c : horario.getDiasSemana().toCharArray()) {
+	            String diaSemana = DiaSemana.intForDia(Character.getNumericValue(c)).name();
+	            porDia.computeIfAbsent(diaSemana, d -> new ArrayList<>()).add(horario);
+	        }
+	    }
 
-        return new PlanoHorarioHikivision(true, dias);
-    }
+	    List<DiaHIkivision> dias = new ArrayList<>();
+
+	    // ORDEM CORRETA QUE HIKVISION EXIGE
+	    List<String> ordemSemana = Arrays.asList(
+	        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+	    );
+
+	    for (String dia : ordemSemana) {
+
+	        if (!porDia.containsKey(dia)) continue;
+
+	        List<HorarioEntity> lista = porDia.get(dia);
+
+	        lista.sort(Comparator.comparing(HorarioEntity::getHorarioInicio));
+
+	        int id = 1;
+
+	        for (HorarioEntity h : lista) {
+	            String inicio = formataHora(h.getHorarioInicio());
+	            String fim = formataHora(h.getHorarioFim());
+
+	            dias.add(new DiaHIkivision(
+	                dia,
+	                id++,
+	                true,
+	                new TimeSegment(inicio, fim)
+	            ));
+	        }
+	    }
+
+	    return new PlanoHorarioHikivision(true, dias);
+	}
+
+
 	
 	private Integer getIdPlanoHorario(RegraEntity regraAtual, List<RegraEntity> regras) {
 		if(Objects.nonNull(regraAtual.getIdPlano())) {

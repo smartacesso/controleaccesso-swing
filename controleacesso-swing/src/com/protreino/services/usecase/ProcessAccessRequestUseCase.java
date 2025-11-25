@@ -294,17 +294,18 @@ public class ProcessAccessRequestUseCase {
 		}
 
 		String liberado = null;
-
+		
+		
 		if (isSempreLiberado(pedestre)) {
 			liberado = "Sempre liberado";
 		} else if (isSaidaLiberada(ultimoAcesso)) {
 			liberado = "Saida liberada";
 		} else if (isAcessoLivre(pedestre)) {
 			liberado = "Acesso livre";
-		}else if(isHorarioIgnorado(device)) {
+		} else if (isHorarioIgnorado(device)) {
 			liberado = "horario liberado";
 		}
-
+		
 		if (isPedestreInativo(pedestre)) {
 			System.out.println("LOG - Parou: pedestre inativo.");
 			if(createNotification) {
@@ -432,6 +433,7 @@ public class ProcessAccessRequestUseCase {
 				return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 
 			}else if(Utils.isBloqueadoForaHorarioRefeitorio()) {
+				System.out.println("REFEITORIO fora do horario");
 				if (createNotification) {
 					Utils.createNotification(userName + " refeitorio fechado.", NotificationType.BAD, foto);
 				}
@@ -589,18 +591,21 @@ public class ProcessAccessRequestUseCase {
 	    // intervalo do refeitório em vigor agora
 	    IntervaloTO intervaloExterno = ((TopDataDevice) equipament).getIntervaloRefeitorioAtivoTO();
 	    if (intervaloExterno == null) {
-	        return false; // não tem intervalo vigente -> não libera
+	    	System.out.println("LIBERANDO - SEM INTERVALO DE REFEITORIO");
+	        return true; // não tem intervalo vigente -> libera
 	    }
-
+	    
 	    Optional<Boolean> permitido = pedestre.getRegraAtiva()
-	        .flatMap(regraAtiva -> {
-	            List<HorarioEntity> horarios = regraAtiva.getHorarios();
-	            boolean result = horarios.stream()
-	                .filter(h -> h.getNome() != null && !h.getNome().toLowerCase().contains("termino")) // <<< nova validação
-	                .map(this::toIntervaloTO)
-	                .anyMatch(interno -> intervaloContido(interno, intervaloExterno));
-	            return Optional.of(result);
-	        });
+	    	    .flatMap(regraAtiva -> {
+	    	        List<HorarioEntity> horarios = regraAtiva.getHorarios();
+	    	        boolean result = horarios.stream()
+//	    	            .filter(h -> h.getNome() != null && !h.getNome().toLowerCase().contains("termino"))
+	    	            .peek(h -> System.out.println("Horário avaliado: " + h.getNome() + " | " + h.getHorarioInicio() + " | " + h.getHorarioFim()))
+	    	            .map(this::toIntervaloTO)
+	    	            .anyMatch(interno -> intervaloSobrepoe(interno, intervaloExterno));
+	    	        return Optional.of(result);
+	    	    });
+
 
 	    return permitido.orElse(true);
 	}
@@ -620,28 +625,45 @@ public class ProcessAccessRequestUseCase {
 	}
 	
 	
-	public static boolean intervaloContido(IntervaloTO interno, IntervaloTO externo) {
+//	public static boolean intervaloContido(IntervaloTO interno, IntervaloTO externo) {
+//	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+//	    LocalTime i1 = LocalTime.parse(interno.getInicio(), dtf);
+//	    LocalTime f1 = LocalTime.parse(interno.getFim(), dtf);
+//	    LocalTime i2 = LocalTime.parse(externo.getInicio(), dtf);
+//	    LocalTime f2 = LocalTime.parse(externo.getFim(), dtf);
+//
+//	    // Normaliza caso atravesse a meia-noite
+//	    if (f1.isBefore(i1)) {
+//	        f1 = f1.plusHours(24);
+//	        if (i2.isBefore(i1)) i2 = i2.plusHours(24);
+//	        if (f2.isBefore(i1)) f2 = f2.plusHours(24);
+//	    }
+//	    if (f2.isBefore(i2)) {
+//	        f2 = f2.plusHours(24);
+//	        if (i1.isBefore(i2)) i1 = i1.plusHours(24);
+//	        if (f1.isBefore(i2)) f1 = f1.plusHours(24);
+//	    }
+//
+//	    // [i1, f1] está contido em [i2, f2] ?
+//	    return !i1.isBefore(i2) && !f1.isAfter(f2);
+//	}
+	
+	public static boolean intervaloSobrepoe(IntervaloTO interno, IntervaloTO externo) {
 	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
 	    LocalTime i1 = LocalTime.parse(interno.getInicio(), dtf);
 	    LocalTime f1 = LocalTime.parse(interno.getFim(), dtf);
 	    LocalTime i2 = LocalTime.parse(externo.getInicio(), dtf);
 	    LocalTime f2 = LocalTime.parse(externo.getFim(), dtf);
 
-	    // Normaliza caso atravesse a meia-noite
-	    if (f1.isBefore(i1)) {
-	        f1 = f1.plusHours(24);
-	        if (i2.isBefore(i1)) i2 = i2.plusHours(24);
-	        if (f2.isBefore(i1)) f2 = f2.plusHours(24);
-	    }
-	    if (f2.isBefore(i2)) {
-	        f2 = f2.plusHours(24);
-	        if (i1.isBefore(i2)) i1 = i1.plusHours(24);
-	        if (f1.isBefore(i2)) f1 = f1.plusHours(24);
-	    }
+	    // Normaliza intervalos que passam da meia-noite
+	    if (f1.isBefore(i1)) f1 = f1.plusHours(24);
+	    if (f2.isBefore(i2)) f2 = f2.plusHours(24);
 
-	    // [i1, f1] está contido em [i2, f2] ?
-	    return !i1.isBefore(i2) && !f1.isAfter(f2);
+	    // Sobreposição existe se o início de um é antes do fim do outro, e o fim é depois do início do outro
+	    System.out.println("Intervalo sobreposto : liberado : " + (!f1.isBefore(i2) && !f2.isBefore(i1)));
+	    return !f1.isBefore(i2) && !f2.isBefore(i1);
 	}
+
 
 	private LocalTime toLocalTime(Date date) {
 	    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
@@ -953,12 +975,14 @@ public class ProcessAccessRequestUseCase {
 		if (device instanceof TopDataDevice && ((TopDataDevice) device).isDeviceRestrito()) {
 
 			if (Objects.isNull(equipamentosPedestre) || equipamentosPedestre.isEmpty()) {
-				System.out.println("Pedestre não possui permissão para equipamento restrito: " + device.getName());
+				System.out.println("Pedestre não possui EQUIPAMENTOS vinculados: " + device.getName());
 				return true;
 			}
-
+			
+			String numeroInner = device.getIdentifier().split(";")[0];
+			
 			for (PedestrianEquipamentEntity equipamentoPedestre : equipamentosPedestre) {
-				if (equipamentoPedestre.getNomeEquipamento().equals(device.getName())) {
+				if (equipamentoPedestre.getIdEquipamento().equals(numeroInner)) {
 					System.out.println("Pedestre possui permissão para equipamento restrito: " + device.getName());
 					return false;
 				}
@@ -973,6 +997,10 @@ public class ProcessAccessRequestUseCase {
 	
 	
 	private TopDataDevice equipamentoPassado(String equipament) {
+		if(Objects.isNull(equipament)) {
+			return null;
+		}
+		
 		if(equipament.isEmpty()) {
 			return null;
 		}

@@ -45,7 +45,7 @@ import com.protreino.services.to.RegraTO;
 				+ "		or obj.cadastradoNoDesktop is null) " + "order by obj.id asc"),
 		@NamedQuery(name = "RegraEntity.findAllComHorario", query = "select distinct obj from RegraEntity obj "
 				+ "join fetch obj.horarios h " + "where (obj.removed is null or obj.removed = false) "
-				+ "and (h.removed is null or h.removed = false) " + "order by obj.id asc"),
+				+ "and (h.removed is null or h.removed = false or h.status = 'ATIVO') " + "order by obj.id asc"),
 		@NamedQuery(name = "RegraEntity.findAllComPlanoETemplate", query = "select obj from RegraEntity obj "
 				+ "where (obj.removed is null or obj.removed = false) " + "and obj.idPlano is not null "
 				+ "and obj.idTemplate is not null  " + "order by obj.id asc") })

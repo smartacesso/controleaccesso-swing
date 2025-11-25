@@ -576,6 +576,7 @@ public class SyncPedestrianAccessListUseCase {
                 boolean atualizaDigitais = false;
                 hikivisionUseCases = new HikivisionUseCases();
                 LocalRepository localRepository = new LocalRepository();
+                System.out.println("Quantidae de recebidos da web : " + athleteAccessTOList.size());
                 for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
@@ -633,6 +634,7 @@ public class SyncPedestrianAccessListUseCase {
                         		System.out.println(e.getMessage());
 							}
                         }
+                        
                         if(Utils.sincHikivisionWeb()) {
                             try {
                             	List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);

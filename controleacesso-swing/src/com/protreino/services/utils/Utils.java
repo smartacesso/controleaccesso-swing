@@ -50,6 +50,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,6 +138,7 @@ public class Utils {
 
 		return Date.from(instant);
 	}
+	
 
 	public static class SoundPlayer extends SwingWorker<Void, Void> {
 		@Override
@@ -494,7 +496,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.MESSAGES, "RevistaRequired",
 				"Mensagem de revista obrigatoria", FieldType.TEXT, "Revista obrigatoria."));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableRefeitorio",
-				"Habilitar decrementa refeitorio", FieldType.CHECKBOX, "false"));
+				"Habilitar decrementa refeitorio GRANVITA", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "hasBlockForaHorario",
 				"Bloquear fora do horario REFEITORIO", FieldType.CHECKBOX, "false"));
 
@@ -552,13 +554,6 @@ public class Utils {
 
 
 		//Campo Reconhecimento Facial HIKI
-		
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
-				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincHikivision",
-				"Sincronizar foto de alterados na web", FieldType.CHECKBOX, "false"));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincRegraHorarioHikivision",
-				"Sincronizar horario com regras da web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionServerRecognizerURL",
 				"URL do servidor Device Gateway", FieldType.TEXT, "http://localhost:8082", false, 15));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionUserServerConnection",
@@ -567,6 +562,17 @@ public class Utils {
 				"Senha para conexão ao Servidor", FieldType.TEXT, "123456", false, 10));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "tcpServerHikivisionSocketPort",
 				"Porta do servidor TCP Hikivision para receber os eventos", FieldType.TEXT, "2025", true, 10));
+	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiEnable",
+				"Habilitar hikivision", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionPlanHorario",
+				"Habilitar horario hikivision", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincHikivisionHorarioPedestre",
+				"Sincronizar horario hikivision de pedestre alterados na web", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "sincRegraHorarioHikivision",
+				"Sincronizar horario hkivision de regras alteradas na web", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeInativos",
+				"Remover da camera totalmente inativos", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
 				"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
@@ -581,8 +587,6 @@ public class Utils {
 				"Cadastro de digital Hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikivisionTimeProcessing",
 				"Tempo de processamento de digital hikivision", FieldType.TEXT, "5", true, 5));
-		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "hikiVisionPlanHorario",
-				"Habilitar horario hikivision", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "adicionaZeroEsquerda",
 				"Adiciona Zero Esquerda Cartao Hikivision (Clubes 12 digitos)", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "doisDispositivos",
@@ -592,7 +596,7 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "localObrigatorio",
 				"Local Obrigatorio", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "ignorarAcessosHorarioErrado",
-				"Ignorar acessos com horario errado", FieldType.CHECKBOX, "false"));
+				"Ignorar acessos", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableDsr",
 				"Liberar DSR", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "enableRecevierEvents",
@@ -1523,10 +1527,16 @@ public class Utils {
 	    System.out.println("Hora início ajustada: " + horaInicio);
 	    System.out.println("Hora fim ajustada: " + horaFim);
 
-	    if (horaInicio != null && agora.isBefore(horaInicio)) return false;
-	    if (horaFim != null && agora.isAfter(horaFim)) return false;
+	    boolean cruzaMeiaNoite = horaFim.isBefore(horaInicio);
 
-	    return true;
+	    if (!cruzaMeiaNoite) {
+	        // intervalo normal
+	        return !agora.isBefore(horaInicio) && !agora.isAfter(horaFim);
+	    } else {
+	        // intervalo atravessa meia-noite (ex: 18:55 → 07:05)
+	        return !agora.isBefore(horaInicio) || !agora.isAfter(horaFim);
+	    }
+
 	}
 
 	// ajusta fuso (-3h)
@@ -1977,7 +1987,7 @@ public class Utils {
 	
 	
 	public static boolean sincHikivisionWeb() {
-		return Boolean.valueOf(Utils.getPreference("sincHikivision"));
+		return Boolean.valueOf(Utils.getPreference("sincHikivisionHorarioPedestre"));
 	}
 	
 	public static boolean refeitorioHabilitado() {
@@ -2025,7 +2035,10 @@ public class Utils {
 	public static boolean desconectarCatracaEventoOffline() {
 		return Utils.getPreferenceAsBoolean("reconectDeviceOnReceiveCurrentEvent");
 	}
-
+	
+	public static boolean removeInativos() {
+		return Utils.getPreferenceAsBoolean("removeInativos");
+	}
 	
 	
 //	public static String conversorHexaDeciimal(String Cartao) {

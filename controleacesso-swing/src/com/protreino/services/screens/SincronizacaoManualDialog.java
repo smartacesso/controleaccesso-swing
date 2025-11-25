@@ -73,6 +73,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private JButton syncByDate; //botao de sincronização por data
 	
 	private JButton syncHorario; //botao de sincronização por data
+	
+	private JButton libRegras; //botao de sincronização por data
 
 	private JButton addDevice; // botao de adicionar dispositivos
 	private JButton syncCameraListners; // botao de sincronizar camera
@@ -89,7 +91,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		setTitle("Sincronismo Hikivision"); // decrição de qual janela esta
 		setResizable(false);
 		setLayout(new BorderLayout());
-		setPreferredSize(new Dimension(920, 718)); // define o tamanho da janela
+		setPreferredSize(new Dimension(1280, 718)); // define o tamanho da janela
 		setMinimumSize(getPreferredSize());
 
 		this.hikivisionUseCases = new HikivisionUseCases();
@@ -158,8 +160,6 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		syncHorario.addActionListener(e -> {
 			syncHorario();
 		});
-		
-		
 
 		syncCameraListners = new JButton("Sincronizar listeners");
 		syncCameraListners.setBorder(new EmptyBorder(10, 15, 10, 15));
@@ -177,6 +177,15 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		requestFotos.addActionListener(e -> {
 			baixarFotos();
 		});
+		
+		
+		libRegras = new JButton("Liberar regras pedestres");
+		libRegras.setBorder(new EmptyBorder(10, 15, 10, 15));
+		libRegras.setPreferredSize(new Dimension(120, 40));
+		libRegras.addActionListener(e -> {
+			liberarPedestres();
+		});
+		
 
 		//ação dos botoes 
 		JPanel actionsPanel = new JPanel();
@@ -186,7 +195,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		actionsPanel.add(addDevice);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncCameraListners);
-		actionsPanel.add(Box.createHorizontalGlue());
+		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncAll);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(syncByDate);
@@ -194,6 +203,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		actionsPanel.add(syncHorario);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(requestFotos);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(libRegras);
 
 		populateTable();
 
@@ -207,6 +218,72 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+
+	private void liberarPedestres() {
+		// fazer uma query de connt para contar quantos pedestres vao ser sincronizados.
+		// fazer a busca paginada
+		List<HikivisionDeviceSimplificadoTO> devicesToSync = getDevicesToSync();
+		if (devicesToSync.isEmpty()) {
+			return;
+		}
+
+		final int pageSize = 500;
+		final Integer countPedestresParaSincronizar = countPesdestresParaSincronizar(null, null);
+		if (Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
+			return;
+		}
+
+		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
+
+		JDialog progressBarDialog = new JDialog();
+		progressBarDialog.setIconImage(Main.favicon);
+
+		progressBarDialog.setTitle("Sincronizando");
+		progressBarDialog.setResizable(false);
+		progressBarDialog.setLayout(new BorderLayout());
+
+		JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, countPedestresParaSincronizar);
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.add(progressBar);
+
+		mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+		progressBarDialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		progressBarDialog.pack();
+		progressBarDialog.setSize(500, 100);
+		progressBarDialog.setLocationRelativeTo(null);
+		progressBarDialog.setModal(true);
+
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				int offset = 0;
+				do {
+					List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(null, null,
+							offset, pageSize);
+
+					pedestresParaSicronizar.forEach(pedestre -> {
+						try {
+							List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(pedestre);
+							hikivisionUseCases.liberarRegraUsuarioInDevices(pedestre, devicesToSync, devicesName);
+
+						} catch (Exception ex) {
+							System.out.println(ex.getMessage());
+						}
+
+						progressBar.setValue(progressBar.getValue() + 1);
+					});
+
+					offset += pageSize;
+				} while (offset < countPedestresParaSincronizar);
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+		progressBarDialog.setVisible(true);
 	}
 
 	private void baixarFotos() {

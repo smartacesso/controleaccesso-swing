@@ -197,6 +197,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private Integer qtdeDigitosCartao;
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	 public static SimpleDateFormat sdfHour = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	private AvailableDevicesPanel panelEquipamentosDisponiveis;
 
@@ -364,6 +365,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 
 		getContentPane().add(mainContentPane, BorderLayout.CENTER);
+		setMinimumSize(new Dimension(1280, 700));
+
 		pack();
 		setLocationRelativeTo(null);
 		
@@ -1126,6 +1129,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    if (TipoPedestre.valueOf(visitante.getTipo()) == TipoPedestre.PEDESTRE) {
 	        abrirDialogoAgendamento(visitante);
 	    }
+	    
 	}
 
 	public void abrirDialogoAgendamento(PedestrianAccessEntity pedestre) {
@@ -1215,12 +1219,15 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    } else {
 	        System.out.println("❌ Fora do período agendado");
 	    }
-
+	    
+	    
+	    visitante.setObservacoes("Agendamento liberado | " + "inicio : " + sdfHour.format(inicio) + ", fim : " + sdfHour.format(fim) + " | JUSTIFICATIVA: " + justificativa);
 	    visitante.setEditadoNoDesktop(true);
 	    visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
 	        .save(PedestrianAccessEntity.class, visitante)[0];
 
 	    JOptionPane.showMessageDialog(null, "Agendamento salvo com sucesso!");
+	    this.dispose();
 	}
 
 	private boolean mesmoMinuto(Date d1, Date d2) {
@@ -2627,7 +2634,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
 						hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
 					} else {
-						hikivisionUseCases.removerUsuarioFromDevices(visitante);
+//						hikivisionUseCases.removerUsuarioFromDevices(visitante);
+						if(Utils.removeInativos()) {
+							System.out.println("Deletando da camera");
+							hikivisionUseCases.removerUsuarioFromDevices(visitante);
+						}else {
+							hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
+						}
 					}
 				}
 			}.start();

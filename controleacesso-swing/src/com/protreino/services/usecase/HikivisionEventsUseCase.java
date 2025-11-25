@@ -7,6 +7,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -52,6 +54,15 @@ public class HikivisionEventsUseCase {
 			return null;
 		}
 	}).create();
+	
+	
+	// Define o mapa uma única vez (pode ser estático, fora do método)
+	private static final Map<Integer, String> EVENTOS_BLOQUEADOS = new HashMap<>();
+
+	static {
+	    EVENTOS_BLOQUEADOS.put(6, "INATIVO (AFASTADO OU DEMITIDO)");
+	    EVENTOS_BLOQUEADOS.put(7, "FORA DO HORARIO");
+	}
 
 	public void execute(final String requestBody) { // Alterado de StringBuilder para String
 		final String objectPayload = Utils.getFirstJsonFromString(requestBody);
@@ -66,6 +77,7 @@ public class HikivisionEventsUseCase {
 
 		final String hikivisionCameraId = requestBody.substring(startIndex, endIndex);
 		final EventListnerTO eventListnerTO = gson.fromJson(objectPayload, EventListnerTO.class);
+		final Integer subEvent = eventListnerTO.getAccessControllerEvent().getSubEventType();
 
 		if (Objects.isNull(eventListnerTO) || Objects.isNull(eventListnerTO.getAccessControllerEvent())
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
@@ -104,7 +116,7 @@ public class HikivisionEventsUseCase {
 			}
 			// adicionar configuração para habilitar isso
 			processaEventoDePassagemComCatracaOffiline(cardNumber, attachedDevice, offsetDateTime,
-					eventListnerTO.getAccessControllerEvent().getDeviceName());
+					eventListnerTO.getAccessControllerEvent().getDeviceName(), subEvent);
 		} else {
 			if(Utils.isHabilitadoEnviarEventos()) {
 				TcpMessageTO message = new TcpMessageTO(TcpMessageType.EVENTO_HIKIVISION);
@@ -114,12 +126,12 @@ public class HikivisionEventsUseCase {
 			}
 
 			liberarAcessoPedestre(attachedDevice, cardNumber, offsetDateTime,
-					eventListnerTO.getAccessControllerEvent().getDeviceName());
+					eventListnerTO.getAccessControllerEvent().getDeviceName(), subEvent);
 		}
 	}
 
 
-	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDeviceName) {
+	private void processaEventoDePassagemComCatracaOffiline(final String cardNumber, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDeviceName, final int subEvento) {
 
 		// Chame sua função aqui
 		final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
@@ -145,7 +157,7 @@ public class HikivisionEventsUseCase {
 	        return;
 	    }
 	    
-	    final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffline(pedestre, device, dataAcesso, HikivisionDeviceName);
+	    final LogPedestrianAccessEntity logEventoOffline = salvaLogDeAcessoEventoCatracaOffline(pedestre, device, dataAcesso, HikivisionDeviceName, subEvento);
 	    
 	    if(Objects.isNull(logEventoOffline)) {
 	    	return;
@@ -158,47 +170,78 @@ public class HikivisionEventsUseCase {
 	    decrementaCreditosERemoveUsuarioDaCamera(pedestre, device, logEventoOffline, HikivisionDeviceName);
 	}
 
-	private LogPedestrianAccessEntity salvaLogDeAcessoEventoCatracaOffline(final PedestrianAccessEntity pedestre, final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDevice) {
-	    String sentido;
+	private LogPedestrianAccessEntity salvaLogDeAcessoEventoCatracaOffline(final PedestrianAccessEntity pedestre,
+			final TopDataDevice device, final OffsetDateTime dataAcesso, final String HikivisionDevice,
+			final int subEvento) {
+
+		String sentido;
+		String motivoBloqueio;
+		String motivoLiberado = "FACIAL";
 
 		// Busca o último acesso do pedestre
 		final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
 				pedestre.getQtdAcessoAntesSinc());
 
-	    // Se houver um último acesso, verifica o tempo
-	    if (Objects.nonNull(lastAccess)) {
-	        long diferencaSegundos = Math.abs(dataAcesso.toEpochSecond() - lastAccess.getAccessDate().toInstant().getEpochSecond());
-	        
-	        System.out.println("Data ultimo acesso : " + lastAccess.getAccessDate() + ", diferença : " + diferencaSegundos);
-	        
-	        if (diferencaSegundos < 20) {
-	            System.out.println("Acesso ignorado: tentativa repetida em menos de 20 segundos.");
-	            return null;
-	        }
-	    }
+		// Se houver um último acesso, verifica o tempo
+		if (Objects.nonNull(lastAccess)) {
+			long diferencaSegundos = Math
+					.abs(dataAcesso.toEpochSecond() - lastAccess.getAccessDate().toInstant().getEpochSecond());
 
-	    // Determina o sentido do acesso
-	    if (Utils.getPreferenceAsBoolean("doisDispositivos") && Objects.nonNull(HikivisionDevice)) {
-	        String dispositivoNormalizado = HikivisionDevice.toLowerCase();
-	        if (dispositivoNormalizado.contains("entrada")) {
-	            sentido = "ENTROU";
-	        } else if (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida") ) {
-	            sentido = "SAIU";
-	        } else {
-	            sentido = "FACIAL"; // Padrão caso o nome do dispositivo seja inválido
-	        }
-	    } else {
-	        // Alterna o sentido baseado no último acesso
-	        sentido = (Objects.nonNull(lastAccess) && Objects.equals(Tipo.ENTRADA.toString(), lastAccess.getDirection()))
-	                ? Tipo.SAIDA : Tipo.ENTRADA;
-	    }
+			System.out.println(
+					"Data ultimo acesso : " + lastAccess.getAccessDate() + ", diferença : " + diferencaSegundos);
 
-	    LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-	            pedestre.getId(), true, "", "Facial", sentido, device.getFullIdentifier(), pedestre.getCardNumber(), new Date(dataAcesso.toInstant().toEpochMilli()));
+			if (diferencaSegundos < 20) {
+				System.out.println("Acesso ignorado: tentativa repetida em menos de 20 segundos.");
+				return null;
+			}
+		}
+		
+	    // Verifica se é evento bloqueado
+	    motivoBloqueio = getMotivoEvento(subEvento);
 
-	    return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logEventoOffline)[0];
+		if (motivoBloqueio == null) {
+			// Determina o sentido do acesso
+			if (Utils.getPreferenceAsBoolean("doisDispositivos") && Objects.nonNull(HikivisionDevice)) {
+				String dispositivoNormalizado = HikivisionDevice.toLowerCase();
+				if (dispositivoNormalizado.contains("entrada")) {
+					sentido = "ENTROU";
+				} else if (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida")) {
+					sentido = "SAIU";
+				} else {
+					sentido = "FACIAL"; // Padrão caso o nome do dispositivo seja inválido
+				}
+			} else {
+				// Alterna o sentido baseado no último acesso
+				sentido = (Objects.nonNull(lastAccess)
+						&& Objects.equals(Tipo.ENTRADA.toString(), lastAccess.getDirection())) ? Tipo.SAIDA
+								: Tipo.ENTRADA;
+			}
+
+			LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+					pedestre.getId(), true, "", motivoLiberado, sentido, device.getFullIdentifier(), pedestre.getCardNumber(),
+					new Date(dataAcesso.toInstant().toEpochMilli()));
+
+			return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class,
+					logEventoOffline)[0];
+		} else {
+			
+			sentido = "";
+
+			LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+					pedestre.getId(), true, "", motivoBloqueio, sentido, device.getFullIdentifier(), pedestre.getCardNumber(),
+					new Date(dataAcesso.toInstant().toEpochMilli()));
+
+			logEventoOffline.setStatus("INATIVO");
+
+			return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class,
+					logEventoOffline)[0];
+		}
+
 	}
-
+	
+	private String getMotivoEvento(int subEvento) {
+	    return EVENTOS_BLOQUEADOS.get(subEvento); // retorna null se for liberado
+	}
 
 
 	private void decrementaCreditosERemoveUsuarioDaCamera(final PedestrianAccessEntity pedestre,
@@ -286,7 +329,7 @@ public class HikivisionEventsUseCase {
 
 
 	private void liberarAcessoPedestre(final TopDataDevice selectedDevice, final String cardNo,
-			final OffsetDateTime dataAcesso, String hikivisionDeviceName) {
+			final OffsetDateTime dataAcesso, String hikivisionDeviceName, final Integer subEvent) {
 		if (selectedDevice.getStatus() == DeviceStatus.DISCONNECTED
 				|| selectedDevice.getStatus() == DeviceStatus.ONLY_ENABLED) {
 			System.out.println("Evento online, catraca desconectada, cartao : " + cardNo + " | data : " + dataAcesso
@@ -299,7 +342,7 @@ public class HikivisionEventsUseCase {
 			if (selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
 				selectedDevice.validaAcessoHikivision(cardNo);
 			} else {
-				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso, hikivisionDeviceName);
+				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso, hikivisionDeviceName, subEvent);
 			}
 
 		} else {
@@ -356,4 +399,5 @@ public class HikivisionEventsUseCase {
 	    // Qualquer evento com mais de 20 segundos de diferença é considerado offline
 	    return Math.abs(diferenca.getSeconds()) > 20;
 	}
+	
 }

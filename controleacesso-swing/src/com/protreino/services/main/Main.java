@@ -448,6 +448,7 @@ public class Main {
                     pedestre.setSempreLiberado(true);
                     pedestre.setAgendamentoLiberado(true);
                     pedestre.setEditadoNoDesktop(true);
+                    pedestre.setObservacoes("Agendamento liberado | " + "inicio : " + inicio + ", fim : " + fim + " | JUSTIFICATIVA: " + pedestre.getJustificativa());
                     HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
                     salvarRegraHikivision(pedestre);
                     return;
@@ -460,6 +461,7 @@ public class Main {
                     pedestre.setDataFimPeriodoAgendamento(null);
                     pedestre.setAgendamentoLiberado(null);
                     pedestre.setJustificativa("");
+                    pedestre.setObservacoes("Atualizado : " + sdf.format(agora));
                     pedestre.setEditadoNoDesktop(true);
                     
                     
@@ -472,7 +474,7 @@ public class Main {
     }
     
 	private void salvarRegraHikivision(PedestrianAccessEntity pedestre) {
-		System.out.println("reenviando horaios");
+		System.out.println("Agendamento recebido para : " + pedestre.getName());
 		try {
 			new Thread() {
 				public void run() {
@@ -984,6 +986,11 @@ public class Main {
     						"PedestrianAccessEntity.findAllVisitantesWhithWhithPassagemHikivision", args, offset, pageSize);
     		
     		visitantes.forEach(visitante -> {
+    			
+    			//validar se a regra é de acesso unico
+    			//validar se teve passagem
+    			//se sim remover
+    			
     			hikivisionUseCases.removerUsuarioFromDevices(visitante);
     			visitante.setFotoEnviada(null);
     			HibernateLocalAccessData.update(PedestrianAccessEntity.class, visitante);

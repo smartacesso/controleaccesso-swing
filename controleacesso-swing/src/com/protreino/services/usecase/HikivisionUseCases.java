@@ -72,8 +72,14 @@ public class HikivisionUseCases {
 		
 		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
 			System.out.println("removendo foto");
-			removerUsuarioFromDevices(pedestre, devicesToSync);
-
+			
+			if(Utils.removeInativos()) {
+				System.out.println("Deletando da camera");
+				removerUsuarioFromDevices(pedestre, devicesToSync);
+			}else {
+				cadastrarUsuarioInDevices(pedestre, devicesToSync, devicesByName);
+			}
+			
 		} else {
 			System.out.println("cadastrando foto");
 			cadastrarUsuarioInDevices(pedestre, devicesToSync, devicesByName);
@@ -155,7 +161,7 @@ public class HikivisionUseCases {
 
 			return devices.stream()
 					.filter(device -> devicesByName.contains(device.getDevName()))
-					.map(device -> new HikivisionDeviceSimplificadoTO(device.getDevIndex(), device.getDevName())).collect(Collectors.toList());
+					.map(device -> new HikivisionDeviceSimplificadoTO(device.getDevName(), device.getDevIndex())).collect(Collectors.toList());
 		}
 		
 		final List<Device> devices = listarDispositivos();
@@ -243,10 +249,12 @@ public class HikivisionUseCases {
 
 		final List<HikivisionDeviceSimplificadoTO> devicesToSync = getDevicesToSync(devicesToSyncTo, devicesByName);
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
+		
+		String tipoPedestre = tipoPedestre(pedestre);
 
 		// Pré-carregar regra ativa para não buscar a cada device
 		Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
-		if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
+		if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra()) ||Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
 			PedestreRegraEntity pedestreRegra = PedestreRegraRepository.buscarRegraPedestre(pedestre.getId());
 			if (pedestreRegra != null) {
 				regraAtiva = Optional.of(pedestreRegra);
@@ -258,12 +266,16 @@ public class HikivisionUseCases {
 			regraFinal = regraRepository.buscaRegraById(regraFinal.getId());
 		}
 
+		if(Objects.nonNull(devicesByName) && !devicesByName.isEmpty()) {
+			removerUsuarioFromDevices(pedestre);
+		}
+		
 		for (HikivisionDeviceSimplificadoTO deviceTo : devicesToSync) {
 			try {
 				// Usuário
 				if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceTo.getDevIndex(), pedestre.getCardNumber())) {
 					if (!hikiVisionIntegrationService.adicionarUsuario(deviceTo.getDevIndex(), pedestre.getCardNumber(),
-							pedestre.getName())) {
+							pedestre.getName(), tipoPedestre)) {
 						logAndThrowException("Erro ao cadastrar pedestre %s no device %s", pedestre.getCardNumber(),
 								deviceTo.getDevIndex(), HikivisionAction.CREATE);
 					}
@@ -308,7 +320,8 @@ public class HikivisionUseCases {
 				                hikiVisionIntegrationService.vincularTemplateNoUsuario(
 				                        deviceTo.getDevIndex(),
 				                        pedestre.getCardNumber(),
-				                        1
+				                        1,
+				                        tipoPedestre
 				                );
 				            }
 				            continue;
@@ -318,7 +331,8 @@ public class HikivisionUseCases {
 				            hikiVisionIntegrationService.vincularTemplateNoUsuario(
 				                    deviceTo.getDevIndex(),
 				                    pedestre.getCardNumber(),
-				                    idTemplate
+				                    idTemplate,
+				                    tipoPedestre
 				            );
 				        }
 
@@ -344,11 +358,25 @@ public class HikivisionUseCases {
 		}
 	}
 	
+	private String tipoPedestre(PedestrianAccessEntity pedestre) {
+		if(pedestre.isInativo()) {
+			return "blackList";
+		}	
+		
+		if(pedestre.isVisitante()) {
+			return "visitor";
+		}
+		
+		return "normal";
+	}
+
 	public void cadastrarRegraUsuarioInDevices(final PedestrianAccessEntity pedestre, List<HikivisionDeviceSimplificadoTO> devicesToSyncTo,
 			List<String> devicesByName) {
 
 		final List<HikivisionDeviceSimplificadoTO> devicesToSync = getDevicesToSync(devicesToSyncTo, devicesByName);
 		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
+		
+		String tipoPedestre = tipoPedestre(pedestre);
 
 		// Pré-carregar regra ativa para não buscar a cada device
 		Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
@@ -368,6 +396,11 @@ public class HikivisionUseCases {
 			try {
 				// Vincular Template (já no mesmo loop)
 				if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
+					if(Objects.isNull(regraFinal)){
+						System.out.println("Sincronizar regra antes");
+						return;
+					}
+					
 					if(Objects.isNull(regraFinal.getIdTemplate())) {
 						System.out.println("Sincronizar templates antes");
 						return;
@@ -389,7 +422,8 @@ public class HikivisionUseCases {
 				                hikiVisionIntegrationService.vincularTemplateNoUsuario(
 				                        deviceTo.getDevIndex(),
 				                        pedestre.getCardNumber(),
-				                        1
+				                        1,
+				                        tipoPedestre
 				                );
 				            }
 				            continue;
@@ -399,7 +433,8 @@ public class HikivisionUseCases {
 				            hikiVisionIntegrationService.vincularTemplateNoUsuario(
 				                    deviceTo.getDevIndex(),
 				                    pedestre.getCardNumber(),
-				                    idTemplate
+				                    idTemplate,
+				                    tipoPedestre
 				            );
 				        }
 
@@ -418,7 +453,62 @@ public class HikivisionUseCases {
 			}
 		}
 
-		pedestre.setDataCadastroFotoNaHikivision(new Date());
+		if (!integrationErrors.isEmpty()) {
+			hikivisionIntegrationErrorRepository.saveAll(integrationErrors);
+		}
+	}
+	
+	
+	public void liberarRegraUsuarioInDevices(final PedestrianAccessEntity pedestre, List<HikivisionDeviceSimplificadoTO> devicesToSyncTo,
+			List<String> devicesByName) {
+
+		final List<HikivisionDeviceSimplificadoTO> devicesToSync = getDevicesToSync(devicesToSyncTo, devicesByName);
+		final List<HikivisionIntegrationErrorEntity> integrationErrors = new ArrayList<>();
+		
+		String tipoPedestre = tipoPedestre(pedestre);
+
+		// Pré-carregar regra ativa para não buscar a cada device
+		Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
+		if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
+			PedestreRegraEntity pedestreRegra = PedestreRegraRepository.buscarRegraPedestre(pedestre.getId());
+			if (pedestreRegra != null) {
+				regraAtiva = Optional.of(pedestreRegra);
+			}
+		}
+
+		RegraEntity regraFinal = regraAtiva.map(PedestreRegraEntity::getRegra).orElse(null);
+		if (regraFinal != null && Objects.isNull(regraFinal.getIdTemplate())) {
+			regraFinal = regraRepository.buscaRegraById(regraFinal.getId());
+		}
+
+		for (HikivisionDeviceSimplificadoTO deviceTo : devicesToSync) {
+			try {
+				// Vincular Template (já no mesmo loop)
+				if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
+				    String nomeNormalizado = (deviceTo.getDevName() != null) 
+				                                ? deviceTo.getDevName().trim().toLowerCase()
+				                                : "";
+
+					if (!nomeNormalizado.contains("refeitorio") && !nomeNormalizado.contains("refeitório")) {
+
+						if (pedestre.getCardNumber() != null) {
+							hikiVisionIntegrationService.vincularTemplateNoUsuario(deviceTo.getDevIndex(),
+									pedestre.getCardNumber(), 1, tipoPedestre);
+						}
+					} else {
+				        System.out.println("Horário não enviado para device, pois não faz parte");
+				    }
+				}
+
+			} catch (HikivisionIntegrationException ex) {
+				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
+						ex.getDeviceId(), ex.getHikivisionAction()));
+			} catch (InvalidPhotoException ife) {
+				throw ife;
+			} catch (Exception e) {
+				System.out.println("Erro inesperado no device {}: {}");
+			}
+		}
 
 		if (!integrationErrors.isEmpty()) {
 			hikivisionIntegrationErrorRepository.saveAll(integrationErrors);
@@ -427,9 +517,12 @@ public class HikivisionUseCases {
 
 
 	public boolean reprocessarCadastroInDevice(final PedestrianAccessEntity pedestre, String deviceId) {
+		String tipoPedestre = tipoPedestre(pedestre);
+		
+		
 		if (!hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceId, pedestre.getCardNumber())) {
 			final boolean isUsuarioCadastrado = hikiVisionIntegrationService.adicionarUsuario(deviceId,
-					pedestre.getCardNumber(), pedestre.getName());
+					pedestre.getCardNumber(), pedestre.getName(), tipoPedestre);
 
 			if (Boolean.FALSE.equals(isUsuarioCadastrado)) {
 				return false;
@@ -622,159 +715,4 @@ public class HikivisionUseCases {
 		});
 
 	}
-	
-//	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-//		if(Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
-//			if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
-//				final List<Device> devices = listarDispositivos();
-//				if (Objects.isNull(devices) || devices.isEmpty()) {
-//					return;
-//				}				
-//				
-//				devicesToSync = devices.stream().filter(device -> !device.getDevName().toLowerCase().trim().contains("refeitorio") ||
-//						!device.getDevName().toLowerCase().trim().contains("refeitorio"))
-//						.map(Device::getDevIndex).collect(Collectors.toList());
-//			}
-//			
-//			final List<Device> devices = listarDispositivos();
-//			if (Objects.isNull(devices) || devices.isEmpty()) {
-//				return;
-//			}				
-//			
-//			System.out.println("devices to sync : " + devicesToSync.size());
-//			//nao quero sync os devices do refeitorio como fazer isso? posso pegar a lista dos que tem nome refeitorio e remover da lista tosync
-//			
-//		    Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
-//		    
-//
-//		    if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
-//		        System.out.println("sem regras de horarios");
-//		        devicesToSync.forEach(device -> {
-//
-//			        hikiVisionIntegrationService.vincularTemplateNoUsuario(
-//			            device,
-//			            pedestre.getCardNumber(),
-//			            1
-//			        );
-//			    });
-//		        return;
-//		    }
-//
-//		    // Pegamos a regra inicial
-//		    RegraEntity regra = regraAtiva.get().getRegra();
-//
-//		    if (Objects.isNull(regra.getIdTemplate())) {
-//		        SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
-//		        sincronismoHorariosHikivision.execute();
-//
-//		        // Buscar a regra atualizada do banco
-//		        regra = regraRepository.buscaRegraById(regra.getId());
-//		    }
-//
-//		    // A regra usada nos dispositivos será sempre a mais atual
-//		    final RegraEntity regraFinal = regra;
-//
-//		    devicesToSync.forEach(device -> {
-//		        hikiVisionIntegrationService.vincularTemplateNoUsuario(
-//		            device,
-//		            pedestre.getCardNumber(),
-//		            regraFinal.getIdTemplate()
-//		        );
-//		    });
-//
-//		    System.out.println("regra atualizada com sucesso");
-//		}else {
-//			 System.out.println("Horario hikivision desabilitado");
-//		}
-//	}
-	
-//	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre, List<String> devicesToSync) {
-//	    if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
-//	        final List<Device> devices = listarDispositivos();
-//	        if (Objects.isNull(devices) || devices.isEmpty()) {
-//	            return;
-//	        }
-//
-//	        // Se devicesToSync vier nulo ou vazio, inicializamos com todos os dispositivos disponíveis
-//	        if (Objects.isNull(devicesToSync) || devicesToSync.isEmpty()) {
-//	            devicesToSync = devices.stream()
-//	                .map(Device::getDevIndex)
-//	                .collect(Collectors.toList());
-//	        }
-//
-//	        // Removendo dispositivos que contenham "refeitório" no nome
-//	        Set<String> devicesRefeitorio = devices.stream()
-//	            .filter(device -> device.getDevName().toLowerCase().trim().contains("refeitorio")
-//	            		|| device.getDevName().toLowerCase().trim().contains("refeitório"))
-//	            .map(Device::getDevIndex)
-//	            .collect(Collectors.toSet());
-//
-//	        devicesToSync.removeAll(devicesRefeitorio);
-//	        
-//	        if(devicesToSync.size() == 0) {
-//	        	System.out.println("Sem devices para sincronizar");
-//	        	return;
-//	        }
-//
-//	        System.out.println("Devices para vincular horarios: " + devicesToSync.size());
-//
-//	        Optional<PedestreRegraEntity> regraAtiva = pedestre.getRegraAtiva();
-//
-//	        if (!regraAtiva.isPresent() || Objects.isNull(regraAtiva.get().getRegra().getHorarios())) {
-//	            System.out.println("Sem regras de horários");
-//
-//	            // Buscar regra associada ao pedestre, caso ela exista
-//	            PedestreRegraEntity pedestreRegra = PedestreRegraRepository.buscarRegraPedestre(pedestre.getId());
-//	            
-//	            if (pedestreRegra != null) {
-//	            	regraAtiva = Optional.of(pedestreRegra);
-//	                System.out.println("Regra carregada do banco");
-//	            } else {
-//	                System.out.println("Nenhuma regra encontrada no banco");
-//		            devicesToSync.forEach(device -> {
-//		                hikiVisionIntegrationService.vincularTemplateNoUsuario(
-//		                    device,
-//		                    pedestre.getCardNumber(),
-//		                    1 // ID padrão quando não há regra
-//		                );
-//		            });
-//		            return;
-//	            }
-//	           
-//	        }
-//
-//	        // Pegamos a regra inicial
-//	        RegraEntity regra = regraAtiva.get().getRegra();
-//
-//	        if (Objects.isNull(regra.getIdTemplate())) {
-//	            SincronismoHorariosHikivision sincronismoHorariosHikivision = new SincronismoHorariosHikivision();
-//	            sincronismoHorariosHikivision.execute();
-//
-//	            // Buscar a regra atualizada do banco
-//	            regra = regraRepository.buscaRegraById(regra.getId());
-//	        }
-//
-//	        // A regra usada nos dispositivos será sempre a mais atual
-//	        final RegraEntity regraFinal = regra;
-//
-//	        devicesToSync.forEach(device -> {
-//	            hikiVisionIntegrationService.vincularTemplateNoUsuario(
-//	                device,
-//	                pedestre.getCardNumber(),
-//	                regraFinal.getIdTemplate()
-//	            );
-//	        });
-//
-//	        System.out.println("Regra atualizada com sucesso");
-//	    } else {
-//	        System.out.println("Horário Hikivision desabilitado");
-//	    }
-//	}
-//
-//
-//	
-//	public void vincularPedestreaoTemplate(final PedestrianAccessEntity pedestre) {
-//		vincularPedestreaoTemplate(pedestre, null);
-//	}
-
 }

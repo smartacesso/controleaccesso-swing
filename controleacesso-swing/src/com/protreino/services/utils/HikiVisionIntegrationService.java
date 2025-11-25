@@ -19,8 +19,11 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.text.Format;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -288,24 +291,34 @@ public class HikiVisionIntegrationService {
 	
 
 
-	public boolean adicionarUsuario(final String deviceId, final String idUser, final String name) {
-		final String body = "{" 
-				+ "\"UserInfo\" : [{" 
-					+ "\"employeeNo\": \"" + idUser + "\"," 
-					+ "\"name\": \"" + name+ "\"," 
-					+ "\"Valid\" : {"
-						+ "\"beginTime\": \"2017-08-01T17:30:08\","
-						+ "\"endTime\": \"2037-12-31T23:59:59\""
-						+ "}" 
-					+ "}]" 
-				+ "}";
+	public boolean adicionarUsuario(final String deviceId, final String idUser, final String name, String tipoUsuario) {
+		Map<String, Object> valid = new LinkedHashMap<>();
+		valid.put("enable", false);
+		valid.put("beginTime", "2017-08-01T17:30:08");
+		valid.put("endTime", "2037-12-31T23:59:59");
 
-		RequestBody requestBody = RequestBody.create(body, MediaType.parse("application/json"));
+		Map<String, Object> userInfo = new LinkedHashMap<>();
+		userInfo.put("employeeNo", idUser);
+		userInfo.put("name", name);
+		userInfo.put("userType", tipoUsuario); // forçado
+		userInfo.put("Valid", valid);
+
+		Map<String, Object> bodyMap = new LinkedHashMap<>();
+		bodyMap.put("UserInfo", Collections.singletonList(userInfo));
+
+		String body = gson.toJson(bodyMap);
+
+	    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+	    RequestBody requestBody = RequestBody.create(body, JSON);
+	    
 		OkHttpClient client = getOkHttpClient();
 
-		Request request = new Request.Builder()
-				.url(url + "/ISAPI/AccessControl/UserInfo/Record?format=json&devIndex=" + deviceId).post(requestBody)
-				.addHeader("Content-Type", "application/json").build();
+	    Request request = new Request.Builder()
+	            .url(url + "/ISAPI/AccessControl/UserInfo/Record?format=json&devIndex=" + deviceId)
+	            .addHeader("Content-Type", "application/json; charset=utf-8")
+	            .addHeader("Accept", "application/json")
+	            .post(requestBody)
+	            .build();
 
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
@@ -722,7 +735,7 @@ public class HikiVisionIntegrationService {
 									+ "\"holidayGroupNo\": \"\"" 
 								+ "}" 
 							+ "}";
-
+		
 		RequestBody requestBody = RequestBody.create(body, MediaType.get("application/json"));
 		OkHttpClient client = getOkHttpClient();
 
@@ -743,8 +756,7 @@ public class HikiVisionIntegrationService {
 		}
 	}
 	 
-	public void vincularTemplateNoUsuario(final String deviceId, final String idUser, final int planTemplateId) {
-		String userType = "normal";
+	public void vincularTemplateNoUsuario(final String deviceId, final String idUser, final int planTemplateId, String userType) {
 		boolean validEnable = false;
 		String beginTime = "2025-12-01T17:30:08";
 		String endTime = "2032-08-01T17:30:08";

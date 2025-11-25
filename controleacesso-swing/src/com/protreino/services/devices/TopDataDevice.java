@@ -1315,39 +1315,76 @@ public class TopDataDevice extends Device {
 			mensagemPermitido = formatMessage(verificationResult.getMessage());
 	}
 	
+//	@Override
+//	public void allowAccess() {
+//		try {
+//			definiMensagemExibidaNoDisplay();
+//			String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
+//			boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
+//			int ret = 0;
+//
+//			ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+//			
+//			EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
+//			
+//			int countTentativasEnvioComando = 0;
+//			while (ret != Enumeradores.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
+//				Utils.sleep(tempoEspera);
+//				ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+//				countTentativasEnvioComando++;
+//			}
+//			
+//			if (ret != Enumeradores.RET_COMANDO_OK) {
+//				Main.mainScreen.addEvento(name + ": Nao foi possivel enviar liberar a catraca");
+//				setStatus(DeviceStatus.DISCONNECTED);
+//			}
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		
+//		} finally{
+//			allowedUserName = "";
+//			messagePersonalizedInDevice = "";
+//			matchedAthleteAccess = null;
+//			mensagemPermitido = null;
+//		}
+//	}
+	
 	@Override
 	public void allowAccess() {
-		try {
-			definiMensagemExibidaNoDisplay();
-			String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
-			boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
-			int ret = 0;
+	    synchronized (this) {  // ← trava apenas esta catraca
+	        try {
+	            definiMensagemExibidaNoDisplay();
+	            String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
+	            boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 
-			ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
-			
-			EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
-			
-			int countTentativasEnvioComando = 0;
-			while (ret != Enumeradores.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
-				Utils.sleep(tempoEspera);
-				ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
-				countTentativasEnvioComando++;
-			}
-			
-			if (ret != Enumeradores.RET_COMANDO_OK) {
-				Main.mainScreen.addEvento(name + ": Nao foi possivel enviar liberar a catraca");
-				setStatus(DeviceStatus.DISCONNECTED);
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		
-		} finally{
-			allowedUserName = "";
-			messagePersonalizedInDevice = "";
-			matchedAthleteAccess = null;
-			mensagemPermitido = null;
-		}
+	            if (mensagemPermitido == null || mensagemPermitido.trim().isEmpty())
+	                mensagemPermitido = "Acesso Liberado";
+
+	            int ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	            EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
+
+	            int countTentativasEnvioComando = 0;
+	            while (ret != Enumeradores.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
+	                Utils.sleep(tempoEspera);
+	                ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	                countTentativasEnvioComando++;
+	            }
+
+	            if (ret != Enumeradores.RET_COMANDO_OK) {
+	                Main.mainScreen.addEvento(name + ": Não foi possível liberar a catraca");
+	                setStatus(DeviceStatus.DISCONNECTED);
+	            }
+
+	        } catch (Throwable t) {
+	            t.printStackTrace();
+	        } finally {
+	            allowedUserName = "";
+	            messagePersonalizedInDevice = "";
+	            matchedAthleteAccess = null;
+	            mensagemPermitido = "";
+	        }
+	    }
 	}
 
 	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida) {

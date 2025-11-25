@@ -592,7 +592,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name = "DATA_FIM_PERIODO_AGENDAMENTO", nullable = true, length = 30)
 	private Date dataFimPeriodoAgendamento;
 	
-	@Column(name = "JUSTIFICATIVA_LIBERADO", nullable = true, length = 30)
+	@Column(name = "JUSTIFICATIVA_LIBERADO", nullable = true, length = 300)
 	private String justificativa;
 	
 	@Type(type = "org.hibernate.type.NumericBooleanType")
@@ -1572,10 +1572,6 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		if(regraAtiva.get().temRegraDeHorariosComCredito()) {
 			System.out.println(">> Tem horario com credito:");
 			regraAtiva.get().decrementaCreditoFromHorario(date);
-			
-			if(Utils.refeitorioHabilitado()) {
-				regraAtiva.get().decrementaCreditoRefeitorio(date);
-			}
 		}
 	}
 	

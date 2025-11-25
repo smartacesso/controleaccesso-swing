@@ -108,32 +108,71 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 		return Objects.nonNull(diasSemana) && diasSemana.contains(hoje.toString());
 	}
 	
+//	public boolean isDentroDoHorarioPermitido(final Date data) {
+//		if(Objects.nonNull(dataRemovido)) {
+//			return false;
+//		}
+//		
+//		Calendar cHoje = Calendar.getInstance();
+//		if (data != null) {
+//			cHoje.setTime(data);
+//		}
+//
+//		Integer hoje = cHoje.get(Calendar.DAY_OF_WEEK);
+//
+//		hoje--; // ajusta a numeracao dos dias para coincidir com a numeracao do pro-treino
+//		if (hoje == 0)  {
+//			hoje = 7;
+//		}
+//		
+//		Calendar c = Calendar.getInstance();
+//		c.setTime(horarioInicio);
+//		final String horarioInicio = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
+//		
+//		c.setTime(horarioFim);
+//		final String horarioFim = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
+//		
+//		return Utils.isDentroDoHorario(horarioInicio, horarioFim, data);
+//	}
+	
 	public boolean isDentroDoHorarioPermitido(final Date data) {
-		if(Objects.nonNull(dataRemovido)) {
-			return false;
-		}
-		
-		Calendar cHoje = Calendar.getInstance();
-		if (data != null) {
-			cHoje.setTime(data);
-		}
+	    // Se o horário foi removido, não deve permitir
+	    if (Objects.nonNull(dataRemovido)) {
+	        return false;
+	    }
 
-		Integer hoje = cHoje.get(Calendar.DAY_OF_WEEK);
+	    // Determina o dia atual
+	    Calendar cHoje = Calendar.getInstance();
+	    if (data != null) {
+	        cHoje.setTime(data);
+	    }
 
-		hoje--; // ajusta a numeracao dos dias para coincidir com a numeracao do pro-treino
-		if (hoje == 0)  {
-			hoje = 7;
-		}
-		
-		Calendar c = Calendar.getInstance();
-		c.setTime(horarioInicio);
-		final String horarioInicio = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
-		
-		c.setTime(horarioFim);
-		final String horarioFim = c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
-		
-		return Utils.isDentroDoHorario(horarioInicio, horarioFim, data);
+	    Integer hoje = cHoje.get(Calendar.DAY_OF_WEEK);
+	    hoje--; // ajusta para coincidir com a numeração do ProTreino
+	    if (hoje == 0) {
+	        hoje = 7;
+	    }
+
+	    // Verifica se o dia atual está permitido
+	    if (!isDiaPermitido(data)) {
+	        return false; // dia não permitido
+	    }
+
+	    // Extrai horários de início e fim no formato HH:mm
+	    Calendar c = Calendar.getInstance();
+
+	    c.setTime(horarioInicio);
+	    final String horaInicio = String.format("%02d:%02d",
+	            c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+
+	    c.setTime(horarioFim);
+	    final String horaFim = String.format("%02d:%02d",
+	            c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+
+	    // Verifica se o horário atual está dentro do intervalo permitido
+	    return Utils.isDentroDoHorario(horaInicio, horaFim, data);
 	}
+
 	
 	public boolean temCreditos() {
 		return Objects.isNull(qtdeDeCreditos) || qtdeDeCreditos > 0;
@@ -154,6 +193,10 @@ public class HorarioEntity extends BaseEntity implements ObjectWithId  {
 		if(qtdeDeCreditos < 0) {
 			qtdeDeCreditos = 0l;
 		}
+	}
+
+	public Boolean isRemovido() {
+		return this.getRemoved();
 	}
 	
 	public Long getId() {
