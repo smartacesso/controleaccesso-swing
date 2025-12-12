@@ -245,13 +245,13 @@ public class MainScreen extends JFrame {
 		tabbedPane.setTabComponentAt(position, label);
 		position++;
 
-		facielControlIdPanel = new FacialControlIdPanel();
-		tabbedPane.addTab("Cameras controlId", facielControlIdPanel);
-		label = new JLabel("Cameras controlId");
-		label.setPreferredSize(new Dimension(150, 25));
-		label.setForeground(Main.firstColor);
-		tabbedPane.setTabComponentAt(position, label);
-		position++;
+//		facielControlIdPanel = new FacialControlIdPanel();
+//		tabbedPane.addTab("Cameras controlId", facielControlIdPanel);
+//		label = new JLabel("Cameras controlId");
+//		label.setPreferredSize(new Dimension(150, 25));
+//		label.setForeground(Main.firstColor);
+//		tabbedPane.setTabComponentAt(position, label);
+//		position++;
 
 		if (Utils.isHikivisionConfigValid() && hikivisionUseCases.getSystemInformation()) {
 			JPanel panelDevicesHkivision = montarPanelCamerasHikivision();
