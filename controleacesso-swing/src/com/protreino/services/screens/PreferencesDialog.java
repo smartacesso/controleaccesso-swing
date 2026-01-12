@@ -27,11 +27,15 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.protreino.services.constants.Configurations;
+import com.protreino.services.entity.LocalEntity;
+import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.enumeration.FieldType;
 import com.protreino.services.enumeration.PreferenceGroup;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
+import com.protreino.services.repository.LocalRepository;
 import com.protreino.services.to.FieldTO;
 import com.protreino.services.to.PreferenceTO;
 import com.protreino.services.usecase.SyncPedestrianAccessListUseCase;
@@ -214,6 +218,9 @@ public class PreferencesDialog extends JDialog {
 		JButton sincLog = new JButton("Forçar Sinc");
 		sincLog.setPreferredSize(new Dimension(120, 30));
 		
+		JButton sincIdLocal = new JButton("Sinc IDLOCAL");
+		sincIdLocal.setPreferredSize(new Dimension(120, 30));
+		
 		JButton resetarButton = new JButton("Valores padrao");
 		resetarButton.setPreferredSize(new Dimension(120, 30));
 		JButton salvarButton = new JButton("Salvar");
@@ -226,6 +233,8 @@ public class PreferencesDialog extends JDialog {
 		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		buttonsPanel.add(zerarLastSyncButton);
 		buttonsPanel.add(Box.createHorizontalGlue());
+		buttonsPanel.add(sincIdLocal);
+		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(syncButton);
 		buttonsPanel.add(Box.createHorizontalStrut(5));
 		buttonsPanel.add(logoutButton);
@@ -265,6 +274,31 @@ public class PreferencesDialog extends JDialog {
 				}
 //Amanhã fazer a configuracoes da função e terminar de executar tanto a requisição, quanto o procuramento Main 1896
 		        JOptionPane.showMessageDialog(jFrame, "Datas : " +dateInitialMessage +"\n" + dateFinalgetMessage);
+		});
+		
+		sincIdLocal.addActionListener(e -> {
+			
+			System.out.println("Sincronizando idLocal");
+			LocalRepository localRepository = new LocalRepository();
+			@SuppressWarnings("unchecked")
+			List<PedestrianAccessEntity> pedestres =(List<PedestrianAccessEntity>) HibernateAccessDataFacade
+					.getResultList(PedestrianAccessEntity.class,
+							"PedestrianAccessEntity.findAllWithLocal");
+			
+			for (PedestrianAccessEntity p : pedestres) {
+			    if (p.getIdLocal() != null) {
+
+			        LocalEntity local = localRepository.buscaLocalById(p.getIdLocal());
+			        if (local != null && local.getUuid() != null) {
+			            p.setUuidLocal(local.getUuid());
+			            p.setEditadoNoDesktop(true);
+			            HibernateAccessDataFacade.update(PedestrianAccessEntity.class, p);
+			        }
+			    }
+			}
+
+			
+			
 		});
 
 		

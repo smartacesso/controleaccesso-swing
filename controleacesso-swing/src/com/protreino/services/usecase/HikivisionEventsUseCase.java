@@ -82,10 +82,6 @@ public class HikivisionEventsUseCase {
 		if (Objects.isNull(eventListnerTO) || Objects.isNull(eventListnerTO.getAccessControllerEvent())
 				|| Objects.isNull(eventListnerTO.getAccessControllerEvent().getCardNo())) {
 
-			System.out.println("Evento de pedestre não reconhecido pela câmera: " + hikivisionCameraId);
-			System.out.println(
-					"Cartão recebido nulo da Hikvision. : " + eventListnerTO.getAccessControllerEvent().getCardNo());
-			System.out.println("Processamento encerrado.");
 			return;
 		}
 
@@ -204,9 +200,9 @@ public class HikivisionEventsUseCase {
 			if (Utils.getPreferenceAsBoolean("doisDispositivos") && Objects.nonNull(HikivisionDevice)) {
 				String dispositivoNormalizado = HikivisionDevice.toLowerCase();
 				if (dispositivoNormalizado.contains("entrada")) {
-					sentido = "ENTROU";
+					sentido = "ENTRADA";
 				} else if (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida")) {
-					sentido = "SAIU";
+					sentido = "SAIDA";
 				} else {
 					sentido = "FACIAL"; // Padrão caso o nome do dispositivo seja inválido
 				}
@@ -218,7 +214,7 @@ public class HikivisionEventsUseCase {
 			}
 
 			LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-					pedestre.getId(), true, "", motivoLiberado, sentido, device.getFullIdentifier(), pedestre.getCardNumber(),
+					pedestre.getId(), true, "", motivoLiberado, sentido, device.getName(), pedestre.getCardNumber(),
 					new Date(dataAcesso.toInstant().toEpochMilli()));
 
 			return (LogPedestrianAccessEntity) HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class,
@@ -228,7 +224,7 @@ public class HikivisionEventsUseCase {
 			sentido = "";
 
 			LogPedestrianAccessEntity logEventoOffline = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-					pedestre.getId(), true, "", motivoBloqueio, sentido, device.getFullIdentifier(), pedestre.getCardNumber(),
+					pedestre.getId(), true, "", motivoBloqueio, sentido, device.getName(), pedestre.getCardNumber(),
 					new Date(dataAcesso.toInstant().toEpochMilli()));
 
 			logEventoOffline.setStatus("INATIVO");
@@ -240,7 +236,7 @@ public class HikivisionEventsUseCase {
 	}
 	
 	private String getMotivoEvento(int subEvento) {
-	    return EVENTOS_BLOQUEADOS.get(subEvento); // retorna null se for liberado
+	    return EVENTOS_BLOQUEADOS.get(subEvento); 
 	}
 
 
@@ -340,13 +336,13 @@ public class HikivisionEventsUseCase {
 			}
 
 			if (selectedDevice.getStatus() == DeviceStatus.CONNECTED) {
-				selectedDevice.validaAcessoHikivision(cardNo);
+				selectedDevice.validaAcessoHikivision(cardNo, hikivisionDeviceName);
 			} else {
 				processaEventoDePassagemComCatracaOffiline(cardNo, selectedDevice, dataAcesso, hikivisionDeviceName, subEvent);
 			}
 
 		} else {
-			selectedDevice.validaAcessoHikivision(cardNo);
+			selectedDevice.validaAcessoHikivision(cardNo, hikivisionDeviceName);
 		}
 	}
 

@@ -10,6 +10,7 @@ import com.protreino.services.entity.LocalEntity;
 public class LocalTo {
 
     private Long id;
+    private String uuid;
     private String nome;
     private String idClient;
     private List<String> hikivisionDeviceNames;  // mesmo nome do JSON
@@ -18,6 +19,7 @@ public class LocalTo {
 
     public LocalEntity toLocalEntity() {
         LocalEntity local = new LocalEntity();
+        local.setUuid(uuid);
         local.setNome(this.nome);
         local.setHikivisionDeviceNames(this.hikivisionDeviceNames);  // direto
         local.setIdClient(idClient);
@@ -72,6 +74,14 @@ public class LocalTo {
 
 	public void setDataRemovido(Date dataRemovido) {
 		this.dataRemovido = dataRemovido;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
     
 }

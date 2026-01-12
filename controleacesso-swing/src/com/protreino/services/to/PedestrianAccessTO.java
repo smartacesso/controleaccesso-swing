@@ -59,6 +59,7 @@ public class PedestrianAccessTO extends BaseEntity{
 	private Boolean enviaSmsAoPassarNaCatraca;
 	
 	private Long idLocal;
+	private String uuidLocal;
 	private Long idEmpresa;
 	private Long idCargo;
 	private Long idCentroCusto;
@@ -672,5 +673,13 @@ public class PedestrianAccessTO extends BaseEntity{
 
 	public void setAgendamentoLiberado(Boolean agendamentoLiberado) {
 		this.agendamentoLiberado = agendamentoLiberado;
+	}
+
+	public String getUuidLocal() {
+		return uuidLocal;
+	}
+
+	public void setUuidLocal(String uuidLocal) {
+		this.uuidLocal = uuidLocal;
 	}
 }

@@ -15,6 +15,7 @@ public class WebSocketPedestrianAccessTO {
 	private String fotoBase64;
 
 	private Long idLocal;
+	private String uuidLocal;
 	private Long idEmpresa;
 	private List<PedestreRegraTO> pedestreRegras;
 
@@ -112,6 +113,14 @@ public class WebSocketPedestrianAccessTO {
 
 	public void setPedestreRegras(List<PedestreRegraTO> pedestreRegras) {
 		this.pedestreRegras = pedestreRegras;
+	}
+
+	public String getUuidLocal() {
+		return uuidLocal;
+	}
+
+	public void setUuidLocal(String uuidLocal) {
+		this.uuidLocal = uuidLocal;
 	}
 
 }

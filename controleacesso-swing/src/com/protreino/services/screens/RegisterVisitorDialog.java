@@ -1941,7 +1941,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setIdCargo(getValorSelecionado(cargoJComboBox));
 		
 		//dados local
-		visitante.setIdLocal(getValorSelecionado(localJComboBox));
+		visitante.setUuidLocal(getValorSelecionadoString(localJComboBox));
 
 		// Dados e acesso
 		if (habilitaAppPedestre) {
@@ -2040,17 +2040,20 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		}
 
-		LocalEntity nomeLocaL = localRepository.buscaLocalById(visitante.getIdLocal());
-		if (visitante.getIdLocal() != null && nomeLocaL != null) {
-			for (int i = 0; i < localJComboBox.getItemCount(); i++) {
-				SelectItem item = localJComboBox.getItemAt(i);
-				if (item.getLabel().equals(nomeLocaL.getNome())) {
-					localJComboBox.setSelectedItem(item);
-					break;
-				}
-			}
+		LocalEntity nomeLocal = localRepository
+		        .getLocalByUiid(visitante.getUuidLocal())
+		        .orElse(null);
+
+		if (visitante.getUuidLocal() != null && nomeLocal != null) {
+		    for (int i = 0; i < localJComboBox.getItemCount(); i++) {
+		        SelectItem item = localJComboBox.getItemAt(i);
+		        if (item.getLabel().equals(nomeLocal.getNome())) {
+		            localJComboBox.setSelectedItem(item);
+		            break;
+		        }
+		    }
 		} else {
-			localJComboBox.setSelectedItem(null);
+		    localJComboBox.setSelectedItem(null);
 		}
 
 		habilitarTecladoCheckBox.setSelected(
@@ -3487,6 +3490,16 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		return (Long) itemSelecionado.getValue();
 	}
+	
+	
+	private String getValorSelecionadoString(JComboBox<SelectItem> itemComboBox) {
+		SelectItem itemSelecionado = (SelectItem) itemComboBox.getSelectedItem();
+
+		if (itemSelecionado == null)
+			return null;
+
+		return (String) itemSelecionado.getValue();
+	}
 
 	@SuppressWarnings("unchecked")
 	private static Vector<SelectItem> getAllCargosSelectItens(Long idEmpresa) {
@@ -3585,8 +3598,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		if (locais == null || locais.isEmpty())
 			return locaisItens;
 
-		locais.forEach(empresa -> {
-			locaisItens.add(new SelectItem(empresa.getNome(), empresa.getId()));
+		locais.forEach(local -> {
+			locaisItens.add(new SelectItem(local.getNome(), local.getUuid()));
 		});
 
 		return locaisItens;

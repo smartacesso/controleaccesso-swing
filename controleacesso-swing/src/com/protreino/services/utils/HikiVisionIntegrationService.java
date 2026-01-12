@@ -7,6 +7,7 @@ import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.protreino.services.enumeration.DiaSemana;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.exceptions.InvalidPhotoException;
@@ -293,7 +294,7 @@ public class HikiVisionIntegrationService {
 
 	public boolean adicionarUsuario(final String deviceId, final String idUser, final String name, String tipoUsuario) {
 		Map<String, Object> valid = new LinkedHashMap<>();
-		valid.put("enable", false);
+		valid.put("enable", true);
 		valid.put("beginTime", "2017-08-01T17:30:08");
 		valid.put("endTime", "2037-12-31T23:59:59");
 
@@ -596,6 +597,59 @@ public class HikiVisionIntegrationService {
 		
 		return false;
 	}
+	
+	
+	public boolean editarUsuario(final String deviceId, final String idUser, final String name,
+			final String tipoUsuario) {
+
+		// "Valid" object
+		Map<String, Object> valid = new LinkedHashMap<>();
+		valid.put("enable", true);
+		valid.put("beginTime", "2017-08-01T17:30:08");
+		valid.put("endTime", "2037-12-31T23:59:59");
+
+		// "UserInfo" object
+		Map<String, Object> userInfo = new LinkedHashMap<>();
+		userInfo.put("employeeNo", idUser);
+		userInfo.put("name", name);
+		userInfo.put("userType", tipoUsuario);
+		userInfo.put("Valid", valid);
+		
+		// JSON root object
+		Map<String, Object> bodyMap = new LinkedHashMap<>();
+		bodyMap.put("UserInfo", userInfo); // <-- sem lista aqui
+
+		String body = gson.toJson(bodyMap);
+
+		MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+		RequestBody requestBody = RequestBody.create(body, JSON);
+
+		OkHttpClient client = getOkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(url + "/ISAPI/AccessControl/UserInfo/Modify?format=json&devIndex=" + deviceId)
+				.addHeader("Content-Type", "application/json; charset=utf-8").addHeader("Accept", "application/json")
+				.put(requestBody).build();
+
+
+		try (Response response = client.newCall(request).execute();) {
+			if (response.isSuccessful()) {
+				final UserEditTo responseBody = gson.fromJson(response.body().string(), UserEditTo.class);
+
+				final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
+
+				System.out.println(String.format("Usuario %s editado no device %s com sucesso: %b", idUser, deviceId,
+						isCadastradoComSucesso));
+
+				return isCadastradoComSucesso;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
 
 	public HikivisionDeviceTO listarDispositivos() {
 		final String body = "{" 
@@ -757,8 +811,8 @@ public class HikiVisionIntegrationService {
 	}
 	 
 	public void vincularTemplateNoUsuario(final String deviceId, final String idUser, final int planTemplateId, String userType) {
-		boolean validEnable = false;
-		String beginTime = "2025-12-01T17:30:08";
+		boolean validEnable = true;
+		String beginTime = "2010-12-01T17:30:08";
 		String endTime = "2032-08-01T17:30:08";
 		String doorRight = "1";
 		int doorNo = 1;

@@ -75,6 +75,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 	private JButton syncHorario; //botao de sincronização por data
 	
 	private JButton libRegras; //botao de sincronização por data
+	
+	private JButton limpaErros;
 
 	private JButton addDevice; // botao de adicionar dispositivos
 	private JButton syncCameraListners; // botao de sincronizar camera
@@ -186,6 +188,15 @@ public class SincronizacaoManualDialog extends BaseDialog {
 			liberarPedestres();
 		});
 		
+		
+
+		limpaErros = new JButton("Limpa erros");
+		limpaErros.setBorder(new EmptyBorder(10, 15, 10, 15));
+		limpaErros.setPreferredSize(new Dimension(120, 40));
+		limpaErros.addActionListener(e -> {
+			limpaLogErros();
+		});
+		
 
 		//ação dos botoes 
 		JPanel actionsPanel = new JPanel();
@@ -205,6 +216,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		actionsPanel.add(requestFotos);
 		actionsPanel.add(Box.createHorizontalStrut(10));
 		actionsPanel.add(libRegras);
+		actionsPanel.add(Box.createHorizontalStrut(10));
+		actionsPanel.add(limpaErros);
 
 		populateTable();
 
@@ -218,6 +231,21 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+
+	private void limpaLogErros() {
+		List<HikivisionIntegrationErrorEntity> hikivisionIntegrationErrors = hikivisionIntegrationErrorRepository
+				.findLatest(50000);
+		if (Objects.nonNull(hikivisionIntegrationErrors) && !hikivisionIntegrationErrors.isEmpty()) {
+			System.out.println("Limpando erros");
+
+			for (HikivisionIntegrationErrorEntity erro : hikivisionIntegrationErrors) {
+				HibernateAccessDataFacade.removeError(erro.getId());
+			}
+			
+			System.out.println("Limpeza de erros finalizado");
+		}
+
 	}
 
 	private void liberarPedestres() {
@@ -312,6 +340,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 			
 			offset += pageSize;
 		} while (offset < countPedestresParaSincronizar);
+		
+		System.out.println("Baixar foto - finalizado");
 		
 	}
 
@@ -607,7 +637,7 @@ public class SincronizacaoManualDialog extends BaseDialog {
 					offset += pageSize;
 				} while (offset < countPedestresParaSincronizar);
 				
-				List<HikivisionIntegrationErrorEntity> hikivisionIntegrationErrors = hikivisionIntegrationErrorRepository.findLatest(30);
+				List<HikivisionIntegrationErrorEntity> hikivisionIntegrationErrors = hikivisionIntegrationErrorRepository.findLatest(5000);
 				if(Objects.nonNull(hikivisionIntegrationErrors) && !hikivisionIntegrationErrors.isEmpty()) {
 					hikivisionIntegrationErrors.forEach(error -> errors.add(error.getMessage()));
 				}

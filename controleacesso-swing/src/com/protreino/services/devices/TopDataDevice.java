@@ -996,6 +996,10 @@ public class TopDataDevice extends Device {
 			}
 			
 			System.out.println("DIREÇÃO DE GIRO : " + direction);
+			if("SAIDA".equalsIgnoreCase(direction) && Utils.isSaidaSemVerificar()) {
+				ultimoAcesso.setReason("SEMPRE LIBERADO");
+			}
+			
 			ultimoAcesso.setDirection(direction);
 			ultimoAcesso.setStatus("ATIVO");
 			ultimoAcesso.setBloquearSaida(bloquearSaida);
@@ -1011,6 +1015,7 @@ public class TopDataDevice extends Device {
 			if(ultimoAcesso.isEntrada()) {
 				ultimoAcesso.setIntervalo(getIntervaloRefeitorioAtivo());
 			}
+			
 			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 
 			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
@@ -2192,7 +2197,7 @@ public class TopDataDevice extends Device {
 		validandoAcesso = false;
 	}
 	
-	public void validaAcessoHikivision(final String cardNumber) {
+	public void validaAcessoHikivision(final String cardNumber, String cameraNome) {
 		try {
 			while (sendingConfiguration) {
 				Utils.sleep(50);
@@ -2212,12 +2217,23 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-			if(!this.ignorarAcesso() || !Utils.isAcessoLiberado()) {
-				processAccessRequest(cardNumber, false);				
-			}else {
-				setVerificationResult(VerificationResult.ALLOWED);
-				System.out.println("Acesso ignorado catraca online");
+//			if(!this.ignorarAcesso() || !Utils.isAcessoLiberado() || !isSaidaLiberada(cameraNome)) {
+//				processAccessRequest(cardNumber, false);				
+//			}else {
+//				setVerificationResult(VerificationResult.ALLOWED);
+//				System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
+//			}
+			System.out.println(">>> PASSAGEM NA CAMERA - " + cameraNome);
+			
+			if (this.ignorarAcesso() || Utils.isAcessoLiberado() || isSaidaLiberada(cameraNome)) {
+			    // Libera sem verificar
+			    setVerificationResult(VerificationResult.ALLOWED);
+			    System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
+			} else {
+			    // Processa normalmente
+			    processAccessRequest(cardNumber, false);
 			}
+
 				
 			if (athleteScreen != null) {
 				athleteScreen.requisicaoPorDigital(null, verificationResult, allowedUserName, matchedAthleteAccess);
@@ -2243,6 +2259,16 @@ public class TopDataDevice extends Device {
 		
 	}
 	
+	private boolean isSaidaLiberada(String cameraNome) {
+		String dispositivoNormalizado = cameraNome.toLowerCase();
+		
+		if (Utils.isSaidaSemVerificar() && (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida"))) {
+			return true;
+		}
+		
+		return false;
+	}
+
 	private Long searchTemplate(){
 		// Primeiro é feito o processo de match para identificar o usuario.
 		// Apos a identificaao é verificado se o acesso é permitido.

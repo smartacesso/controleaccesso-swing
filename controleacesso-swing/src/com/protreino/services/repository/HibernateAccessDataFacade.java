@@ -8,6 +8,7 @@ import com.protreino.services.entity.BiometricEntity;
 import com.protreino.services.entity.CartaoComandaEntity;
 import com.protreino.services.entity.ConfigurationGroupEntity;
 import com.protreino.services.entity.DeviceEntity;
+import com.protreino.services.entity.HikivisionIntegrationErrorEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ObjectWithId;
 import com.protreino.services.entity.PedestrianAccessEntity;
@@ -305,6 +306,20 @@ public class HibernateAccessDataFacade {
 			
 		} else {
 			HibernateLocalAccessData.remove(object);
+		}
+	}
+	
+	
+	public static synchronized void removeError(Long erro) {
+		if (Main.temServidor()) {
+			if (Main.getServidor().isNotConnected()) {
+				return;
+			}
+			
+			System.out.println("Execute no servidor");
+			
+		} else {
+			HibernateLocalAccessData.removeError(erro);
 		}
 	}
 	
