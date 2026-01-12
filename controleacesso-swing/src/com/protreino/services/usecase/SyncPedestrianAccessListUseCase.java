@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -218,9 +219,17 @@ public class SyncPedestrianAccessListUseCase {
 					System.out.println(sdf.format(new Date()) + "   LOCAIS DE ACESSO: sem registros para enviar");
 					return;
 				}
+				
+
 
 				JsonArray responseArray = new JsonArray();
 				for (LocalEntity local : locais) {
+				    // Garante que sempre exista UUID
+				    if (local.getUuid() == null) {
+				        local.setUuid(UUID.randomUUID().toString());
+				        HibernateAccessDataFacade.update(LocalEntity.class, local);
+				    }
+					
 					JsonObject responseObj = getNewLocalResponseObj(local);
 					responseArray.add(responseObj);
 				}
@@ -576,6 +585,7 @@ public class SyncPedestrianAccessListUseCase {
                 boolean atualizaDigitais = false;
                 hikivisionUseCases = new HikivisionUseCases();
                 LocalRepository localRepository = new LocalRepository();
+                System.out.println("Quantidae de recebidos da web : " + athleteAccessTOList.size());
                 for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
@@ -619,7 +629,6 @@ public class SyncPedestrianAccessListUseCase {
                         
                         final String oldStatus = existentAthleteAccess.getStatus();
 
-                        existentAthleteAccess.update(athleteAccessTO);
 
                         if((existentAthleteAccess.isRemovido() 
                     			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
@@ -633,6 +642,7 @@ public class SyncPedestrianAccessListUseCase {
                         		System.out.println(e.getMessage());
 							}
                         }
+                        
                         if(Utils.sincHikivisionWeb()) {
                             try {
                             	List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(existentAthleteAccess);
@@ -642,6 +652,8 @@ public class SyncPedestrianAccessListUseCase {
                         		System.out.println(e.getMessage());
     						}
                         }
+                        
+                        existentAthleteAccess.update(athleteAccessTO);
 
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
@@ -868,6 +880,7 @@ public class SyncPedestrianAccessListUseCase {
 	    JsonObject responseObj = new JsonObject();
 
 	    responseObj.addProperty("id", local.getId() != null ? local.getId().toString() : "");
+	    responseObj.addProperty("uuid", local.getUuid());
 	    responseObj.addProperty("idCliente", Main.loggedUser.getIdClient());
 	    responseObj.addProperty("nome", local.getNome() != null ? local.getNome() : "");
 	    responseObj.addProperty("removido", local.getRemoved() != null ?  local.getRemoved().toString() : "");
@@ -916,6 +929,7 @@ public class SyncPedestrianAccessListUseCase {
         
         //
         responseObj.addProperty("idLocal", visitante.getIdLocal() != null ? visitante.getIdLocal().toString() : "");
+        responseObj.addProperty("uuidLocal", visitante.getUuidLocal() != null ? visitante.getUuidLocal() : "");
         
         //Dados empresa
         responseObj.addProperty("idEmpresa", visitante.getIdEmpresa() != null ? visitante.getIdEmpresa().toString() : "");

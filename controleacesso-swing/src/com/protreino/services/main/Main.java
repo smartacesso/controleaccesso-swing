@@ -27,6 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -94,6 +96,7 @@ import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.EmpresaEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.ParametroEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PlanoEntity;
 import com.protreino.services.entity.RegraEntity;
@@ -448,6 +451,7 @@ public class Main {
                     pedestre.setSempreLiberado(true);
                     pedestre.setAgendamentoLiberado(true);
                     pedestre.setEditadoNoDesktop(true);
+                    pedestre.setObservacoes("Agendamento liberado | " + "inicio : " + inicio + ", fim : " + fim + " | JUSTIFICATIVA: " + pedestre.getJustificativa());
                     HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
                     salvarRegraHikivision(pedestre);
                     return;
@@ -460,6 +464,7 @@ public class Main {
                     pedestre.setDataFimPeriodoAgendamento(null);
                     pedestre.setAgendamentoLiberado(null);
                     pedestre.setJustificativa("");
+                    pedestre.setObservacoes("Atualizado : " + sdf.format(agora));
                     pedestre.setEditadoNoDesktop(true);
                     
                     
@@ -472,7 +477,7 @@ public class Main {
     }
     
 	private void salvarRegraHikivision(PedestrianAccessEntity pedestre) {
-		System.out.println("reenviando horaios");
+		System.out.println("Agendamento recebido para : " + pedestre.getName());
 		try {
 			new Thread() {
 				public void run() {
@@ -984,17 +989,83 @@ public class Main {
     						"PedestrianAccessEntity.findAllVisitantesWhithWhithPassagemHikivision", args, offset, pageSize);
     		
     		visitantes.forEach(visitante -> {
-    			hikivisionUseCases.removerUsuarioFromDevices(visitante);
-    			visitante.setFotoEnviada(null);
-    			HibernateLocalAccessData.update(PedestrianAccessEntity.class, visitante);
+    			if(podeRemover(visitante)) {
+    				System.out.println("removendo visitante : " + visitante.getName());
+        			hikivisionUseCases.removerUsuarioFromDevices(visitante);
+        			visitante.setFotoEnviada(null);
+        			HibernateLocalAccessData.update(PedestrianAccessEntity.class, visitante);
+    			}
+
     		});
     		
     		offset = offset + pageSize;
-    		System.out.println("quantidade : " + offset);
     	} while(offset < resultListCount);
     }
 
-    private static void limpaCartoesVisitantes() {
+    private static boolean podeRemover(PedestrianAccessEntity visitante) {
+
+        if (visitante.getRegraAtiva().isPresent()) {
+            PedestreRegraEntity regraAtiva = visitante.getRegraAtiva().get();
+
+            // 1) Verifica período da regra
+            if (regraAtiva.isRegraComPeriodo()) {
+                if (naoPassouDoPeriodo(regraAtiva)) {
+                    return false;
+                }
+            }
+
+            // 2) Verifica se teve acesso ontem
+            LogPedestrianAccessEntity ultimoAcesso = buscaUltimoAcesso(
+                    visitante.getId(), 
+                    visitante.getQtdAcessoAntesSinc()
+            );
+
+            if (!teveAcessoOntem(ultimoAcesso)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    private static boolean naoPassouDoPeriodo(PedestreRegraEntity regraAtiva) {
+        if (regraAtiva == null || regraAtiva.getDataFimPeriodo() == null) {
+            return true;
+        }
+
+        LocalDate fimDoPeriodo = regraAtiva.getDataFimPeriodo()
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        LocalDate hoje = LocalDate.now();
+
+        // Se fimDoPeriodo >= hoje → ainda está no período
+        return !fimDoPeriodo.isBefore(hoje);
+    }
+
+    private static boolean teveAcessoOntem(LogPedestrianAccessEntity ultimoAcesso) {
+        if (ultimoAcesso == null || ultimoAcesso.getAccessDate() == null) {
+            return false;
+        }
+
+        LocalDate dataAcesso = ultimoAcesso.getAccessDate()
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        LocalDate ontem = LocalDate.now().minusDays(1);
+
+        return dataAcesso.isEqual(ontem);
+    }
+
+	private static LogPedestrianAccessEntity buscaUltimoAcesso(Long id, Integer quantidadeDeAcessos) {
+		LogPedestrianAccessRepository logPedestrianAccessRepository = new LogPedestrianAccessRepository();
+		return logPedestrianAccessRepository.buscaUltimoAcessoVisitante(id, quantidadeDeAcessos);
+	}
+	
+
+	private static void limpaCartoesVisitantes() {
         if (Main.temServidor()) {
         	return;
         }
@@ -1157,7 +1228,7 @@ public class Main {
                         break;
                     }
                     
-                    Optional<LocalEntity> localExistente = localRepository.getLocalByName(localTo.getNome());
+                    Optional<LocalEntity> localExistente = localRepository.getLocalByUiid(localTo.getUuid());
                     
                     if(localExistente.isPresent()) {
                     	localExistente.get().update(localTo);

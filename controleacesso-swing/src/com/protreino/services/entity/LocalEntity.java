@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -18,6 +19,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -47,7 +49,11 @@ import com.protreino.services.to.LocalTo;
     @NamedQuery(name = "LocalEntity.findByName",
     		query = "SELECT obj FROM LocalEntity obj "
     				+ "WHERE obj.nome = :NOME and (obj.removed = false or obj.removed is null)"
-    				+ "ORDER BY obj.id ASC")
+    				+ "ORDER BY obj.id ASC"),
+    @NamedQuery(name = "LocalEntity.findByUuid",
+			query = "SELECT obj FROM LocalEntity obj "
+					+ "WHERE obj.uuid = :UUID and (obj.removed = false or obj.removed is null)"
+					+ "ORDER BY obj.id ASC")
 })
 public class LocalEntity extends BaseEntity implements ObjectWithId, Serializable {
 
@@ -77,8 +83,13 @@ public class LocalEntity extends BaseEntity implements ObjectWithId, Serializabl
     @Column(name = "DEVICE_NAME", nullable = false)
     private List<String> hikivisionDeviceNames = new ArrayList<>();
     
+    @Column(name = "UUID", unique = true, length = 36)
+    private String uuid;
+
+    
 	public void update(LocalTo local) {
 		this.setNome(local.getNome() != null ? local.getNome() : null);
+		this.setUuid(local.getUuid() != null ? local.getUuid() : UUID.randomUUID().toString());
 		this.setIdClient(local.getIdClient());
 		this.setRemoved(local.getRemoved());
 		this.setDataRemovido(local.getDataRemovido());
@@ -154,5 +165,12 @@ public class LocalEntity extends BaseEntity implements ObjectWithId, Serializabl
 		this.idClient = idClient;
 	}
     
+	public String getUuid() {
+	    return uuid;
+	}
+
+	public void setUuid(String uuid) {
+	    this.uuid = uuid;
+	}
 }
 

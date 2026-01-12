@@ -55,4 +55,32 @@ public class LogPedestrianAccessRepository {
 		return lastAccess;
 	}
     
+    public LogPedestrianAccessEntity buscaUltimoAcessoVisitante(Long idPedestre, Integer qtdAcessosAntesSinc) {
+		HashMap<String, Object> args = new HashMap<String, Object>();
+		args.put("ID_PEDESTRE", idPedestre);
+
+		String query = null;
+		if (Main.loggedUser != null && Main.loggedUser.getDateNewAccess() != null) {
+//			query = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrianAndDate";
+			query = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrian";
+//			args.put("DATE", Main.loggedUser.getDateNewAccess());
+		} else {
+			query = "LogPedestrianAccessEntity.findByLastAccessbyIdPedestrian";
+		}
+
+		LogPedestrianAccessEntity lastAccess = (LogPedestrianAccessEntity) HibernateAccessDataFacade
+				.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+
+		if (qtdAcessosAntesSinc != null && qtdAcessosAntesSinc > 0 && lastAccess == null) {
+			lastAccess = new LogPedestrianAccessEntity();
+			if (qtdAcessosAntesSinc % 2 == 0) {
+				lastAccess.setDirection(Tipo.SAIDA);
+			} else {
+				lastAccess.setDirection(Tipo.ENTRADA);
+			}
+		}
+		
+		return lastAccess;
+	}
+    
 }

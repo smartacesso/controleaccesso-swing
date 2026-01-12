@@ -43,6 +43,7 @@ import com.protreino.services.main.Main;
 import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
+import com.protreino.services.repository.LogPedestrianAccessRepository;
 import com.protreino.services.to.DocumentoTo;
 import com.protreino.services.to.PedestreRegraTO;
 import com.protreino.services.to.PedestrianAccessTO;
@@ -278,7 +279,7 @@ import com.protreino.services.utils.Utils;
 						"and obj.status = 'ATIVO' " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistred",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal, obj.uuidLocal) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.cardNumber != null " + 
@@ -294,7 +295,7 @@ import com.protreino.services.utils.Utils;
 						"and obj.dataCadastroFotoNaHikivision between :INIT_DATE and :END_DATE " +
 						"and obj.cardNumber != null "),
 	@NamedQuery(name = "PedestrianAccessEntity.findAllWithHikiVisionImageOnRegistredBeteenDate",
-				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal) " +
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal, obj.uuidLocal) " +
 						"from PedestrianAccessEntity obj " +
 						"where obj.dataCadastroFotoNaHikivision != null " +
 						"and obj.tipo = 'PEDESTRE' " + 
@@ -336,7 +337,12 @@ import com.protreino.services.utils.Utils;
 			            "where obj.dataInicioPeriodoAgendamento is not null " +
 			            "and obj.dataFimPeriodoAgendamento is not null " +
 			            "and obj.removido = false " +
-			            "order by obj.dataInicioPeriodoAgendamento desc")
+			            "order by obj.dataInicioPeriodoAgendamento desc"),
+	@NamedQuery(name = "PedestrianAccessEntity.findAllWithLocal",
+			    query = "select obj from PedestrianAccessEntity obj " +
+			            "where obj.idLocal is not null " +
+			            "and obj.removido = false " +
+			            "order by obj.id desc")
 
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {
@@ -478,6 +484,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="ID_LOCAL", nullable=true, length=15)
 	private Long idLocal;
 	
+	@Column(name = "UUID_LOCAL", nullable = true)
+	private String uuidLocal;
+	
 	@Column(name="ID_EMPRESA", nullable=true, length=15)
 	private Long idEmpresa;
 	
@@ -592,7 +601,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name = "DATA_FIM_PERIODO_AGENDAMENTO", nullable = true, length = 30)
 	private Date dataFimPeriodoAgendamento;
 	
-	@Column(name = "JUSTIFICATIVA_LIBERADO", nullable = true, length = 30)
+	@Column(name = "JUSTIFICATIVA_LIBERADO", nullable = true, length = 300)
 	private String justificativa;
 	
 	@Type(type = "org.hibernate.type.NumericBooleanType")
@@ -642,13 +651,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.removido = removido;
 	}
 	
-	public PedestrianAccessEntity(Long id, byte[] foto, String cardNumber, String name, Boolean removido, Long idLocal) {
+	public PedestrianAccessEntity(Long id, byte[] foto, String cardNumber, String name, Boolean removido, Long idLocal, String uuidLocal) {
 		this.id = id;
 		this.foto = foto;
 		this.cardNumber = cardNumber;
 		this.name = name;
 		this.removido = removido;
 		this.idLocal = idLocal;
+		this.uuidLocal = uuidLocal;
 	}
 
 	public PedestrianAccessEntity(Long id, String name) {
@@ -811,6 +821,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.responsavel = pedestreAccessTo.getResponsavel();
 		
 		this.idLocal = pedestreAccessTo.getIdLocal();
+		this.uuidLocal = pedestreAccessTo.getUuidLocal();
 		
 		//Dados Empresa
 		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
@@ -903,6 +914,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cpf = pedestreAccessTo.getCpf();
 		this.rg = pedestreAccessTo.getRg();
 		this.idLocal = pedestreAccessTo.getIdLocal();
+		this.uuidLocal = pedestreAccessTo.getUuidLocal();
 		
 		//Dados Empresa
 		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
@@ -933,6 +945,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.cpf = pedestreAccessTo.getCpf();
 		this.rg = pedestreAccessTo.getRg();
 		this.idLocal = pedestreAccessTo.getIdLocal();
+		this.uuidLocal = pedestreAccessTo.getUuidLocal();
 		
 		//Dados Empresa
 		this.idEmpresa = pedestreAccessTo.getIdEmpresa();
@@ -1018,6 +1031,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 			.append(observacoes != null ? observacoes : "").append(";")
 
 			.append(idLocal != null ? idLocal: "").append(";")
+			.append(uuidLocal != null ? uuidLocal: "").append(";")
 			
 			//Dados empresa
 			.append(idEmpresa != null ? idEmpresa : "").append(";")
@@ -1124,6 +1138,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		this.responsavel = athleteAccessTO.getResponsavel();
 
 		this.idLocal = athleteAccessTO.getIdLocal();
+		this.uuidLocal = athleteAccessTO.getUuidLocal();
 
 		//Dados empresa
 		this.idEmpresa = athleteAccessTO.getIdEmpresa();
@@ -1572,10 +1587,6 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		if(regraAtiva.get().temRegraDeHorariosComCredito()) {
 			System.out.println(">> Tem horario com credito:");
 			regraAtiva.get().decrementaCreditoFromHorario(date);
-			
-			if(Utils.refeitorioHabilitado()) {
-				regraAtiva.get().decrementaCreditoRefeitorio(date);
-			}
 		}
 	}
 	
@@ -1656,7 +1667,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 		return false;
 	}
-	
+
 	public Boolean getFotoEnviada() {
 		return fotoEnviada;
 	}
@@ -2316,6 +2327,14 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 
 	public void setAgendamentoLiberado(Boolean agendamentoLiberado) {
 		this.agendamentoLiberado = agendamentoLiberado;
+	}
+
+	public String getUuidLocal() {
+		return uuidLocal;
+	}
+
+	public void setUuidLocal(String uuidLocal) {
+		this.uuidLocal = uuidLocal;
 	}
 	
 }

@@ -84,7 +84,6 @@ public class HikivisionTcpServer {
 				} catch (Exception e) {
 					System.err.println("Erro ao processar evento: " + e.getMessage());
 				} finally {
-					System.out.println("Mensagem processada (ou descartada), agora vou enviar o response!");
 					sendResponse(outputStream);
 				}
 			} catch (IOException e) {
@@ -107,7 +106,6 @@ public class HikivisionTcpServer {
 
 			outputStream.write(response.getBytes());
 			outputStream.flush();
-			System.out.println("Response enviado com sucesso!");
 		}
 	}
 }

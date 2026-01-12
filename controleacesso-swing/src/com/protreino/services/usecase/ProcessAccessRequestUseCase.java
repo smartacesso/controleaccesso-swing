@@ -171,6 +171,8 @@ public class ProcessAccessRequestUseCase {
 		if (data == null) {
 			data = new Date();
 		}
+		
+		Device device = equipamentoPassado(equipament);
 
 		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(visitante.getId(),
 				visitante.getQtdAcessoAntesSinc());
@@ -217,7 +219,7 @@ public class ProcessAccessRequestUseCase {
 
 		// cria log de acesso
 		LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), visitante.getId(),
-				false, location, motivo, direction, equipament, codigoCartao, data);
+				false, location, motivo, direction, Objects.nonNull(device) ?  device.getName() : "", codigoCartao, data);
 
 		logAccess.setStatus("INDEFINIDO");
 
@@ -273,18 +275,20 @@ public class ProcessAccessRequestUseCase {
 		System.out.println("Acesso de : " + pedestre.getName());
 		byte[] foto = pedestre.getFoto();
 		String motivo = "";
+		String dispositivoPassado = "";
 		pedestre.setOrigemCatraca(origem);
 		if (data == null) {
 			data = new Date();
 		}
-		
+
 		Device device = equipamentoPassado(equipament);
-		
+
 		LogPedestrianAccessEntity ultimoAcesso = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
 				pedestre.getQtdAcessoAntesSinc());
+		
 
 		LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), pedestre.getId(),
-				pedestre.getStatus(), location, motivo, direction, equipament);
+				pedestre.getStatus(), location, motivo, direction, Objects.nonNull(device) ?  device.getName() : "");
 
 		logAccess.setStatus("INDEFINIDO");
 		logAccess.setAccessDate(data);
@@ -297,74 +301,75 @@ public class ProcessAccessRequestUseCase {
 
 		if (isSempreLiberado(pedestre)) {
 			liberado = "Sempre liberado";
-		} else if (isSaidaLiberada(ultimoAcesso)) {
-			liberado = "Saida liberada";
 		} else if (isAcessoLivre(pedestre)) {
 			liberado = "Acesso livre";
-		}else if(isHorarioIgnorado(device)) {
+		} else if (isHorarioIgnorado(device)) {
 			liberado = "horario liberado";
 		}
+//		else if (isSaidaLiberada(ultimoAcesso)) {
+//			liberado = "Saida liberada";
+//		} 
 
 		if (isPedestreInativo(pedestre)) {
 			System.out.println("LOG - Parou: pedestre inativo.");
-			if(createNotification) {
-				Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);				
+			if (createNotification) {
+				Utils.createNotification("Usuário inativo.", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - INATIVO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(Boolean.TRUE.equals(registerLog)) {
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			if (Boolean.TRUE.equals(registerLog)) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
-		
+
 		if (liberado != null) {
 			System.out.println("LOG - Parou: " + liberado);
-			if(registerLog) {
+			if (registerLog) {
 				criaLogDeAcessoSempreLiberado(ignoraRegras, origem, pedestre, location, direction, data, codigoCartao,
-						createNotification, equipament, foto, userName);				
+						createNotification, Objects.nonNull(device) ?  device.getName() : "", foto, userName);
 			}
 			return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 		}
-		
+
 		if (isTecladoBloqueado(pedestre, origem)) {
 			System.out.println("LOG - Parou: teclado bloqueado.");
-			if(createNotification) {
+			if (createNotification) {
 				Utils.createNotification("Teclado bloqueado.", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - TECLADO BLOQUEADO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(Boolean.TRUE.equals(registerLog)) {
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			if (Boolean.TRUE.equals(registerLog)) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
 
 		if (precisaRevista(ultimoAcesso)) {
 			System.out.println("LOG - Parou: revista obrigatória.");
-			if(createNotification) {
+			if (createNotification) {
 				Utils.createNotification("Revista obrigatória.", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - REVISTA";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);				
+			if (registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.REVISTA_REQUIRED, userName, pedestre, motivo);
 		}
 
 		if (isNaoPermitidoEquipamentoRestrito(equipament, pedestre.getEquipamentos())) {
 			System.out.println("LOG - Parou: equipamento não autorizado.");
-			if(createNotification) {
-				Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);				
+			if (createNotification) {
+				Utils.createNotification("Equipamento não autorizado.", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - EQUIPAMENTO NAO AUTORIZADO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
@@ -372,36 +377,38 @@ public class ProcessAccessRequestUseCase {
 
 		if (Utils.isAcessoRestrito() && !isPermitidoHoje(pedestre)) {
 			System.out.println("LOG - Parou: acesso restrito.");
-			if(createNotification) {
-				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);				
+			if (createNotification) {
+				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - DIA NÃO PERMITIDO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
 		}
-		
-		if(!isPedestrePermitidoRetornar(pedestre)) {
+
+		if (!isPedestrePermitidoRetornar(pedestre)) {
 			System.out.println("LOG - Parou: não permitido voltar.");
-			if(createNotification) {
-				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);				
+			if (createNotification) {
+				Utils.createNotification("Acesso restrito", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - NÃO PERMITIDO VOLTAR";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED, userName, pedestre, motivo);
-			
+
 		}
 
-		if(isCatracaRefeitorio(device)) {
+		if (isCatracaRefeitorio(device)) {
 			if (isHorarioRefeitorio(device)) {
+				System.out.println(">>>> REFEITORIO dentro do horario");
 				if (!isPermitidoNoHorarioGranvita(device, pedestre) && Utils.refeitorioHabilitado()) {
+					System.out.println("LOG - Parou: fora do horario de refeição.");
 					logAccess.setStatus("INATIVO");
 					logAccess.setReason("Não permitido, fora do horario");
 					if (createNotification) {
@@ -412,9 +419,9 @@ public class ProcessAccessRequestUseCase {
 					}
 					return resultadoNegado(VerificationResult.NOT_ALLOWED_NOW, userName, pedestre, motivo);
 				}
-				
-				
+
 				if (jaConsumiuIntervalo(codigoCartao, device)) {
+					System.out.println("LOG - Parou: sem créditos.");
 					logAccess.setStatus("INATIVO");
 					logAccess.setReason("Não permitido, sem créditos");
 					if (createNotification) {
@@ -427,74 +434,81 @@ public class ProcessAccessRequestUseCase {
 				}
 
 				if (registerLog) {
+					logAccess.setStatus("INDEFINIDO");
+					logAccess.setReason("-");
 					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 				}
+
+				System.out.println("LOG - Parou: liberado.");
 				return resultadoSucesso(userName, pedestre, foto, motivo, createNotification);
 
-			}else if(Utils.isBloqueadoForaHorarioRefeitorio()) {
+			} else if (Utils.isBloqueadoForaHorarioRefeitorio()) {
+				System.out.println(">>>> REFEITORIO fora do horario");
 				if (createNotification) {
 					Utils.createNotification(userName + " refeitorio fechado.", NotificationType.BAD, foto);
 				}
+				logAccess.setStatus("INATIVO");
+				logAccess.setReason("Refeitorio fechado!");
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 				return resultadoNegado(VerificationResult.NOT_ALLOWED_NOW, userName, pedestre, motivo);
 			}
-
-			if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
-				System.out.println("LOG - Parou: sem créditos.");
-				if(createNotification) {
-					Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
-				}
-				motivo = "ACESSO NEGADO - SEM CREDITOS";
-				logAccess.setReason(motivo);
-				logAccess.setStatus("INATIVO");
-				if(registerLog) {
-					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
-				}
-				return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
+		}
+		
+		if (pedestre.temTipoCredito() && !pedestre.temCreditosValidos(data)) {
+			System.out.println("LOG - Parou: sem créditos.");
+			if (createNotification) {
+				Utils.createNotification("Sem creditos.", NotificationType.BAD, foto);
 			}
+			motivo = "ACESSO NEGADO - SEM CREDITOS";
+			logAccess.setReason(motivo);
+			logAccess.setStatus("INATIVO");
+			if (registerLog) {
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+			}
+			return resultadoNegado(VerificationResult.NOT_ALLOWED_NO_CREDITS, userName, pedestre, motivo);
 		}
 
 		if (pedestre.temTipoEscala3x3()) {
-			if(pedestre.temEscala3x3Fixa() && !isPermitidoPorEscala3x3Fixo(pedestre)) {
+			if (pedestre.temEscala3x3Fixa() && !isPermitidoPorEscala3x3Fixo(pedestre)) {
 				System.out.println("LOG - Parou: fora da escala.");
-				if(createNotification) {
+				if (createNotification) {
 					Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
 				}
 				motivo = "ACESSO NEGADO - FORA DA ESCALA";
 				logAccess.setReason(motivo);
 				logAccess.setStatus("INATIVO");
-				if(registerLog) {
+				if (registerLog) {
 					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 				}
 				return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
-			}else {
-				if(!isPermitidoPorEscala3x3(pedestre, data)) {
+			} else {
+				if (!isPermitidoPorEscala3x3(pedestre, data)) {
 
 					System.out.println("LOG - Parou: fora da escala.");
-					if(createNotification) {
+					if (createNotification) {
 						Utils.createNotification("Fora da escala", NotificationType.BAD, foto);
 					}
 					motivo = "ACESSO NEGADO - FORA DA ESCALA";
 					logAccess.setReason(motivo);
 					logAccess.setStatus("INATIVO");
-					if(registerLog) {
+					if (registerLog) {
 						HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 					}
 					return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
-				
+
 				}
 			}
 		}
 
 		if (pedestre.temTipoTurno() && !isPermitidoPorTurno(pedestre)) {
 			System.out.println("LOG - Parou: fora do turno.");
-			if(createNotification) {
+			if (createNotification) {
 				Utils.createNotification("Fora do turno", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - FORA DO TURNO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
@@ -502,13 +516,13 @@ public class ProcessAccessRequestUseCase {
 
 		if (pedestre.temTipoPeriodo() && !pedestre.temRegraDeAcessoPorPeriodoValido()) {
 			System.out.println("LOG - Parou: fora do periodo.");
-			if(createNotification) {
+			if (createNotification) {
 				Utils.createNotification("Fora do periodo", NotificationType.BAD, foto);
 			}
 			motivo = "ACESSO NEGADO - FORA DO PERIODO";
 			logAccess.setReason(motivo);
 			logAccess.setStatus("INATIVO");
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 			return resultadoNegado(VerificationResult.NOT_ALLOWED_TODAY, userName, pedestre, motivo);
@@ -521,7 +535,7 @@ public class ProcessAccessRequestUseCase {
 					VerificationResult.ALLOWED, foto, origem, data);
 
 			System.out.println("LOG - Resultado final da validação: " + resultadoFinal);
-			if(registerLog) {
+			if (registerLog) {
 				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 			}
 
@@ -534,7 +548,7 @@ public class ProcessAccessRequestUseCase {
 			}
 		}
 
-		if(registerLog) {
+		if (registerLog) {
 			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 		}
 
@@ -589,18 +603,21 @@ public class ProcessAccessRequestUseCase {
 	    // intervalo do refeitório em vigor agora
 	    IntervaloTO intervaloExterno = ((TopDataDevice) equipament).getIntervaloRefeitorioAtivoTO();
 	    if (intervaloExterno == null) {
-	        return false; // não tem intervalo vigente -> não libera
+	    	System.out.println("LIBERANDO - SEM INTERVALO DE REFEITORIO");
+	        return true; // não tem intervalo vigente -> libera
 	    }
-
+	    
 	    Optional<Boolean> permitido = pedestre.getRegraAtiva()
-	        .flatMap(regraAtiva -> {
-	            List<HorarioEntity> horarios = regraAtiva.getHorarios();
-	            boolean result = horarios.stream()
-	                .filter(h -> h.getNome() != null && !h.getNome().toLowerCase().contains("termino")) // <<< nova validação
-	                .map(this::toIntervaloTO)
-	                .anyMatch(interno -> intervaloContido(interno, intervaloExterno));
-	            return Optional.of(result);
-	        });
+	    	    .flatMap(regraAtiva -> {
+	    	        List<HorarioEntity> horarios = regraAtiva.getHorarios();
+	    	        boolean result = horarios.stream()
+//	    	            .filter(h -> h.getNome() != null && !h.getNome().toLowerCase().contains("termino"))
+	    	            .peek(h -> System.out.println("Horário avaliado: " + h.getNome() + " | " + h.getHorarioInicio() + " | " + h.getHorarioFim()))
+	    	            .map(this::toIntervaloTO)
+	    	            .anyMatch(interno -> intervaloSobrepoe(interno, intervaloExterno));
+	    	        return Optional.of(result);
+	    	    });
+
 
 	    return permitido.orElse(true);
 	}
@@ -620,28 +637,45 @@ public class ProcessAccessRequestUseCase {
 	}
 	
 	
-	public static boolean intervaloContido(IntervaloTO interno, IntervaloTO externo) {
+//	public static boolean intervaloContido(IntervaloTO interno, IntervaloTO externo) {
+//	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+//	    LocalTime i1 = LocalTime.parse(interno.getInicio(), dtf);
+//	    LocalTime f1 = LocalTime.parse(interno.getFim(), dtf);
+//	    LocalTime i2 = LocalTime.parse(externo.getInicio(), dtf);
+//	    LocalTime f2 = LocalTime.parse(externo.getFim(), dtf);
+//
+//	    // Normaliza caso atravesse a meia-noite
+//	    if (f1.isBefore(i1)) {
+//	        f1 = f1.plusHours(24);
+//	        if (i2.isBefore(i1)) i2 = i2.plusHours(24);
+//	        if (f2.isBefore(i1)) f2 = f2.plusHours(24);
+//	    }
+//	    if (f2.isBefore(i2)) {
+//	        f2 = f2.plusHours(24);
+//	        if (i1.isBefore(i2)) i1 = i1.plusHours(24);
+//	        if (f1.isBefore(i2)) f1 = f1.plusHours(24);
+//	    }
+//
+//	    // [i1, f1] está contido em [i2, f2] ?
+//	    return !i1.isBefore(i2) && !f1.isAfter(f2);
+//	}
+	
+	public static boolean intervaloSobrepoe(IntervaloTO interno, IntervaloTO externo) {
 	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
 	    LocalTime i1 = LocalTime.parse(interno.getInicio(), dtf);
 	    LocalTime f1 = LocalTime.parse(interno.getFim(), dtf);
 	    LocalTime i2 = LocalTime.parse(externo.getInicio(), dtf);
 	    LocalTime f2 = LocalTime.parse(externo.getFim(), dtf);
 
-	    // Normaliza caso atravesse a meia-noite
-	    if (f1.isBefore(i1)) {
-	        f1 = f1.plusHours(24);
-	        if (i2.isBefore(i1)) i2 = i2.plusHours(24);
-	        if (f2.isBefore(i1)) f2 = f2.plusHours(24);
-	    }
-	    if (f2.isBefore(i2)) {
-	        f2 = f2.plusHours(24);
-	        if (i1.isBefore(i2)) i1 = i1.plusHours(24);
-	        if (f1.isBefore(i2)) f1 = f1.plusHours(24);
-	    }
+	    // Normaliza intervalos que passam da meia-noite
+	    if (f1.isBefore(i1)) f1 = f1.plusHours(24);
+	    if (f2.isBefore(i2)) f2 = f2.plusHours(24);
 
-	    // [i1, f1] está contido em [i2, f2] ?
-	    return !i1.isBefore(i2) && !f1.isAfter(f2);
+	    // Sobreposição existe se o início de um é antes do fim do outro, e o fim é depois do início do outro
+	    System.out.println("Intervalo sobreposto : liberado : " + (!f1.isBefore(i2) && !f2.isBefore(i1)));
+	    return !f1.isBefore(i2) && !f2.isBefore(i1);
 	}
+
 
 	private LocalTime toLocalTime(Date date) {
 	    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
@@ -953,12 +987,14 @@ public class ProcessAccessRequestUseCase {
 		if (device instanceof TopDataDevice && ((TopDataDevice) device).isDeviceRestrito()) {
 
 			if (Objects.isNull(equipamentosPedestre) || equipamentosPedestre.isEmpty()) {
-				System.out.println("Pedestre não possui permissão para equipamento restrito: " + device.getName());
+				System.out.println("Pedestre não possui EQUIPAMENTOS vinculados: " + device.getName());
 				return true;
 			}
-
+			
+			String numeroInner = device.getIdentifier().split(";")[0];
+			
 			for (PedestrianEquipamentEntity equipamentoPedestre : equipamentosPedestre) {
-				if (equipamentoPedestre.getNomeEquipamento().equals(device.getName())) {
+				if (equipamentoPedestre.getIdEquipamento().equals(numeroInner)) {
 					System.out.println("Pedestre possui permissão para equipamento restrito: " + device.getName());
 					return false;
 				}
@@ -973,6 +1009,10 @@ public class ProcessAccessRequestUseCase {
 	
 	
 	private TopDataDevice equipamentoPassado(String equipament) {
+		if(Objects.isNull(equipament)) {
+			return null;
+		}
+		
 		if(equipament.isEmpty()) {
 			return null;
 		}
@@ -1216,7 +1256,7 @@ public class ProcessAccessRequestUseCase {
 			if (!horarioValido.isPresent()) {
 				resultadoVerificacao = VerificationResult.NOT_ALLOWED_NOW;
 				logAccess.setStatus("INATIVO");
-				logAccess.setReason("Não permitido agora");
+				logAccess.setReason(" Bloqueado pelo horário");
 				if (createNotification) {
 					Utils.createNotification(userName + " fora do horario.", NotificationType.BAD, foto);
 				}

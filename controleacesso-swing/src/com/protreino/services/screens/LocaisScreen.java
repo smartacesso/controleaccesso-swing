@@ -8,11 +8,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -41,12 +44,17 @@ import javax.swing.text.JTextComponent;
 import org.hibernate.Hibernate;
 import org.java_websocket.WebSocket;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.protreino.services.devices.Device;
+import com.protreino.services.devices.TopDataDevice;
 import com.protreino.services.entity.LocalEntity;
 import com.protreino.services.main.Main;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.to.AttachedTO;
 import com.protreino.services.usecase.HikivisionUseCases;
+import com.protreino.services.utils.HttpConnection;
 import com.protreino.services.utils.Utils;
 
 @SuppressWarnings("serial") // Ignora avisos de serialização
@@ -55,11 +63,12 @@ public class LocaisScreen extends BaseDialog {
 	private Font font; // fonte padrão
 	private Font tabHeaderFont; // fonte do cabeçalho
 	private Container mainContentPane; // container principal
-	private String[] columns = { "Nome", "EDITAR", "REMOVER" }; // colunas da tabela
-	private Integer[] columnWidths = { 280, 150, 80 }; // largura das colunas
+	private String[] columns = { "Nome", "EDITAR", "REMOVER", "UUID" }; // colunas da tabela
+	private Integer[] columnWidths = { 280, 150, 80, 80 }; // largura das colunas
 	private JTable deviceListTable; // tabela de dispositivos
 
-	private JButton addLocal; // botao de sincronização total
+	private JButton addLocal; 
+	private JButton syncLocais; // botao de sincronização total
 
 	private DefaultTableModel dataModel;
 
@@ -67,6 +76,7 @@ public class LocaisScreen extends BaseDialog {
 	private JTextField nomeLocalTextField;
 	private HikivisionLocaisAttachedPanel camerasHikivisionPanel;
 	
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	public LocaisScreen() {
 		
@@ -115,22 +125,31 @@ public class LocaisScreen extends BaseDialog {
 		deviceListTablePanel.add(scrollPane);
 
 		//configuraçoes de botoes
+		syncLocais = new JButton("Sincronizar local com web");
+		syncLocais.setBorder(new EmptyBorder(10, 15, 10, 15));
+		syncLocais.setPreferredSize(new Dimension(180, 40));
+		syncLocais.addActionListener(e -> {
+			enviaLocais();
+		});
+		
+		
+		//configuraçoes de botoes
 		addLocal = new JButton("Adicionar local");
 		addLocal.setBorder(new EmptyBorder(10, 15, 10, 15));
 		addLocal.setPreferredSize(new Dimension(180, 40));
 		addLocal.addActionListener(e -> {
 			adicionarDevices();
 		});
-
-		//ação dos botoes 
+		
+		// ação dos botões 
 		JPanel actionsPanel = new JPanel();
 		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
 		actionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		actionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-		actionsPanel.add(Box.createHorizontalStrut(725));
-		
-		actionsPanel.add(addLocal);
-		
+
+		actionsPanel.add(syncLocais);              // botão da esquerda
+		actionsPanel.add(Box.createHorizontalGlue()); // empurra o próximo para a direita
+		actionsPanel.add(addLocal);                // botão da direita
 		
 		if (deviceListTable.isEditing()) {
 			deviceListTable.getCellEditor().stopCellEditing();
@@ -194,6 +213,11 @@ public class LocaisScreen extends BaseDialog {
 			LocalEntity local = new LocalEntity();
 			local.setNome(nomeLocalTextField.getText());
 			local.setIdClient(Main.loggedUser.getIdClient());
+			
+			if (local.getUuid() == null) {
+			    local.setUuid(UUID.randomUUID().toString());
+			}
+
 			List<String> equipamentosPermitidos = new ArrayList<String>();
 			
 			for (AttachedTO camera : camerasSelecionadas) {
@@ -255,7 +279,8 @@ public class LocaisScreen extends BaseDialog {
 	        dataModel.addRow(new Object[] {
 	            local.getNome(),
 	            "Editar",
-	            "Remover"
+	            "Remover",
+	            local.getUuid()
 	        });
 	    }
 
@@ -326,18 +351,18 @@ public class LocaisScreen extends BaseDialog {
 
 			button.addActionListener(e -> {
 				if (row >= 0 && row < deviceListTable.getRowCount()) {
-					String nomeLocal = (String) deviceListTable.getValueAt(row, 0);
+					String uuid = (String) deviceListTable.getValueAt(row, 3);
 					if ("Editar".equals(label)) {
-						editarLocal(nomeLocal);
+						editarLocal(uuid);
 					} else if ("Remover".equals(label)) {
 						int confirm = JOptionPane.showConfirmDialog(
 							deviceListTable,
-							"Deseja realmente remover o local \"" + nomeLocal + "\"?",
+							"Deseja realmente remover o local?",
 							"Confirmar remoção",
 							JOptionPane.YES_NO_OPTION
 						);
 						if (confirm == JOptionPane.YES_OPTION) {
-							removerLocal(nomeLocal);
+							removerLocal(uuid);
 						}
 					}
 				}
@@ -437,26 +462,26 @@ public class LocaisScreen extends BaseDialog {
 	}
 
 	
-	private void editarLocal(String nome) {
+	private void editarLocal(String uuid) {
 		HashMap<String, Object> args = new HashMap<String, Object>();
-		args.put("NOME", nome);
+		args.put("UUID", uuid);
 
 		@SuppressWarnings("unchecked")
-		List<LocalEntity> local = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByName", args);
+		List<LocalEntity> local = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByUuid", args);
 		
 		if (local.get(0) != null) {
 			editarDevices(local.get(0));
 		}
 	}
 
-	private void removerLocal(String nome) {
-	    int confirm = JOptionPane.showConfirmDialog(this, "Deseja remover o local: " + nome + "?", "Confirmação", JOptionPane.YES_NO_OPTION);
+	private void removerLocal(String uuid) {
+	    int confirm = JOptionPane.showConfirmDialog(this, "Deseja remover o local?", "Confirmação", JOptionPane.YES_NO_OPTION);
 	    if (confirm == JOptionPane.YES_OPTION) {
 	    	HashMap<String, Object> args = new HashMap<String, Object>();
-			args.put("NOME", nome);
+			args.put("UUID", uuid);
 
 			@SuppressWarnings("unchecked")
-			List<LocalEntity> local = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByName", args);
+			List<LocalEntity> local = (List<LocalEntity>) HibernateAccessDataFacade.getResultListWithParams(LocalEntity.class, "LocalEntity.findByUuid", args);
 			LocalEntity localSelecionado = local.get(0);
 	        if (local.get(0) != null) {
 	        	
@@ -464,12 +489,75 @@ public class LocaisScreen extends BaseDialog {
 	        	localSelecionado.setRemoved(true);
 	        	localSelecionado.setDataAlteracao(new Date());
 	        	
-	        	HibernateAccessDataFacade.save(LocalEntity.class, localSelecionado);
+	        	HibernateAccessDataFacade.update(LocalEntity.class, localSelecionado);
 	        	
 	            populateTable();
 	        }
 	    }
 	}
+	
+	private void enviaLocais() {
+		
+		@SuppressWarnings("unchecked")
+		List<LocalEntity> locais = (List<LocalEntity>) HibernateAccessDataFacade.getResultList(LocalEntity.class,
+				"LocalEntity.findAll");
 
+		if (locais == null || locais.isEmpty()) {
+			System.out.println(sdf.format(new Date()) + "   LOCAIS DE ACESSO: sem registros para enviar");
+			return;
+		}
 
+		JsonArray responseArray = new JsonArray();
+		for (LocalEntity local : locais) {
+			// Garante que sempre exista UUID
+			if (local.getUuid() == null) {
+				local.setUuid(UUID.randomUUID().toString());
+				HibernateAccessDataFacade.update(LocalEntity.class, local);
+			}
+
+			JsonObject responseObj = getNewLocalResponseObj(local);
+			responseArray.add(responseObj);
+		}
+
+		System.out.println("Enviando request com locais: " + responseArray.size());
+
+		int responseCode;
+
+		try {
+			HttpConnection con = new HttpConnection(Main.urlApplication + "/restful-services/access/uploadLocais"); // fazer
+																													// o
+																													// endpoint
+			responseCode = con.sendResponse(responseArray.toString());
+
+			if (responseCode != 200) {
+				System.out.println(sdf.format(new Date()) + "  ERRO AO ENVIAR LOCAIS: Response code: " + responseCode);
+				System.out.println(
+						sdf.format(new Date()) + "  ERRO AO ENVIAR LOCAIS: Error String: " + con.getErrorString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private JsonObject getNewLocalResponseObj(LocalEntity local) {
+		JsonObject responseObj = new JsonObject();
+
+		responseObj.addProperty("id", local.getId() != null ? local.getId().toString() : "");
+		responseObj.addProperty("uuid", local.getUuid());
+		responseObj.addProperty("idCliente", Main.loggedUser.getIdClient());
+		responseObj.addProperty("nome", local.getNome() != null ? local.getNome() : "");
+		responseObj.addProperty("removido", local.getRemoved() != null ? local.getRemoved().toString() : "");
+
+		// Adiciona a lista de nomes das câmeras
+		JsonArray deviceNamesArray = new JsonArray();
+		if (local.getHikivisionDeviceNames() != null) {
+			for (String name : local.getHikivisionDeviceNames()) {
+				deviceNamesArray.add(name);
+			}
+		}
+		responseObj.add("hikvisionDeviceNames", deviceNamesArray);
+
+		return responseObj;
+	}
+	
 }

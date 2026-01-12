@@ -1,5 +1,6 @@
 package com.protreino.services.usecase;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +30,6 @@ public class RecebePedestreWebSocketUseCase {
         if (Objects.isNull(existentAthleteAccess)) {
         	System.out.println("id : " + PedestrianAccessTO.getId());
         	pedestre = new PedestrianAccessEntity(PedestrianAccessTO);            
-            HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
             System.out.println("Salvando pedestre/visitante recebido da web : " + pedestre.getName());
         } else {
         	existentAthleteAccess.updateWenSocketPestrianAccess(PedestrianAccessTO);
@@ -40,6 +40,11 @@ public class RecebePedestreWebSocketUseCase {
         	try {
         		List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(pedestre);
         		hikivisionUseCases.syncronizarUsuarioInDevices(pedestre, null, devicesName);
+        		pedestre.setDataCadastroFotoNaHikivision(new Date());
+            	if(pedestre.isAtivo() && pedestre.isVisitante()) {
+            		pedestre.setFotoEnviada(true);
+            		
+            	}
         	} catch (Exception e) {
         		System.out.println(e.getMessage());
     		}
@@ -48,7 +53,10 @@ public class RecebePedestreWebSocketUseCase {
         // Só atualiza se for um existente (os novos já foram salvos acima)
         if (!Objects.isNull(existentAthleteAccess)) {
         	HibernateAccessDataFacade.update(PedestrianAccessEntity.class, pedestre);
-        	System.out.println("Atualizando pedestre/visitante recebido da web : " + pedestre.getName());
+        	System.out.println("ATUALIZANDO pedestre/visitante recebido da web : " + pedestre.getName());
+        }else {
+        	System.out.println("SALVANDO pedestre/visitante recebido da web : " + pedestre.getName());
+        	 HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
         }
     }
 }

@@ -197,6 +197,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	private Integer qtdeDigitosCartao;
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	 public static SimpleDateFormat sdfHour = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss");
 
 	private AvailableDevicesPanel panelEquipamentosDisponiveis;
 
@@ -364,6 +365,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		
 
 		getContentPane().add(mainContentPane, BorderLayout.CENTER);
+		setMinimumSize(new Dimension(1280, 700));
+
 		pack();
 		setLocationRelativeTo(null);
 		
@@ -1126,6 +1129,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    if (TipoPedestre.valueOf(visitante.getTipo()) == TipoPedestre.PEDESTRE) {
 	        abrirDialogoAgendamento(visitante);
 	    }
+	    
 	}
 
 	public void abrirDialogoAgendamento(PedestrianAccessEntity pedestre) {
@@ -1215,12 +1219,15 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    } else {
 	        System.out.println("❌ Fora do período agendado");
 	    }
-
+	    
+	    
+	    visitante.setObservacoes("Agendamento liberado | " + "inicio : " + sdfHour.format(inicio) + ", fim : " + sdfHour.format(fim) + " | JUSTIFICATIVA: " + justificativa);
 	    visitante.setEditadoNoDesktop(true);
 	    visitante = (PedestrianAccessEntity) HibernateAccessDataFacade
 	        .save(PedestrianAccessEntity.class, visitante)[0];
 
 	    JOptionPane.showMessageDialog(null, "Agendamento salvo com sucesso!");
+	    this.dispose();
 	}
 
 	private boolean mesmoMinuto(Date d1, Date d2) {
@@ -1934,7 +1941,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante.setIdCargo(getValorSelecionado(cargoJComboBox));
 		
 		//dados local
-		visitante.setIdLocal(getValorSelecionado(localJComboBox));
+		visitante.setUuidLocal(getValorSelecionadoString(localJComboBox));
 
 		// Dados e acesso
 		if (habilitaAppPedestre) {
@@ -2033,17 +2040,20 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		}
 
-		LocalEntity nomeLocaL = localRepository.buscaLocalById(visitante.getIdLocal());
-		if (visitante.getIdLocal() != null && nomeLocaL != null) {
-			for (int i = 0; i < localJComboBox.getItemCount(); i++) {
-				SelectItem item = localJComboBox.getItemAt(i);
-				if (item.getLabel().equals(nomeLocaL.getNome())) {
-					localJComboBox.setSelectedItem(item);
-					break;
-				}
-			}
+		LocalEntity nomeLocal = localRepository
+		        .getLocalByUiid(visitante.getUuidLocal())
+		        .orElse(null);
+
+		if (visitante.getUuidLocal() != null && nomeLocal != null) {
+		    for (int i = 0; i < localJComboBox.getItemCount(); i++) {
+		        SelectItem item = localJComboBox.getItemAt(i);
+		        if (item.getLabel().equals(nomeLocal.getNome())) {
+		            localJComboBox.setSelectedItem(item);
+		            break;
+		        }
+		    }
 		} else {
-			localJComboBox.setSelectedItem(null);
+		    localJComboBox.setSelectedItem(null);
 		}
 
 		habilitarTecladoCheckBox.setSelected(
@@ -2627,7 +2637,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
 						hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
 					} else {
-						hikivisionUseCases.removerUsuarioFromDevices(visitante);
+//						hikivisionUseCases.removerUsuarioFromDevices(visitante);
+						if(Utils.removeInativos()) {
+							System.out.println("Deletando da camera");
+							hikivisionUseCases.removerUsuarioFromDevices(visitante);
+						}else {
+							hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
+						}
 					}
 				}
 			}.start();
@@ -3474,6 +3490,16 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		return (Long) itemSelecionado.getValue();
 	}
+	
+	
+	private String getValorSelecionadoString(JComboBox<SelectItem> itemComboBox) {
+		SelectItem itemSelecionado = (SelectItem) itemComboBox.getSelectedItem();
+
+		if (itemSelecionado == null)
+			return null;
+
+		return (String) itemSelecionado.getValue();
+	}
 
 	@SuppressWarnings("unchecked")
 	private static Vector<SelectItem> getAllCargosSelectItens(Long idEmpresa) {
@@ -3572,8 +3598,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 		if (locais == null || locais.isEmpty())
 			return locaisItens;
 
-		locais.forEach(empresa -> {
-			locaisItens.add(new SelectItem(empresa.getNome(), empresa.getId()));
+		locais.forEach(local -> {
+			locaisItens.add(new SelectItem(local.getNome(), local.getUuid()));
 		});
 
 		return locaisItens;

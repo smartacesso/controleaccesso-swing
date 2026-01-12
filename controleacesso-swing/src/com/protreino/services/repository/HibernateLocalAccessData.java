@@ -1270,6 +1270,35 @@ public class HibernateLocalAccessData {
 			session.close();
 		}
 	}
+	
+	public static synchronized void removeError(Long idError) {
+	    Session session = getSessionFactory().openSession();
+	    Transaction tx = null;
+
+	    try {
+	        tx = session.beginTransaction();
+
+	        int rows = session.createQuery(
+	            "delete from HikivisionIntegrationErrorEntity e where e.id = :id"
+	        )
+	        .setParameter("id", idError)
+	        .executeUpdate();
+
+	        tx.commit();
+
+	        // opcional: log simples
+	        if (rows == 0) {
+	            System.out.println("Nenhum registro encontrado para remover. ID=" + idError);
+	        }
+
+	    } catch (Exception e) {
+	        if (tx != null) tx.rollback();
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+	}
+
 
 	public static Boolean cleanUserSession() {
 		Boolean retorno = true;

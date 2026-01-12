@@ -27,7 +27,7 @@ import com.protreino.services.enumeration.HikivisionAction;
 				query = "select obj from HikivisionIntegrationErrorEntity obj "
 					  + "where obj.id = :ID "),
 	@NamedQuery(name = "HikivisionIntegrationErrorEntity.findByLatest", 
-				query = "select new com.protreino.services.entity.HikivisionIntegrationErrorEntity(obj.message) "
+				query = "select new com.protreino.services.entity.HikivisionIntegrationErrorEntity(obj.id, obj.message) "
 					  + "from HikivisionIntegrationErrorEntity obj "
 					  + "order by obj.dataCriacao desc "),
 	@NamedQuery(name = "HikivisionIntegrationErrorEntity.findByCardNumberAndDeviceId",
@@ -73,7 +73,8 @@ public class HikivisionIntegrationErrorEntity extends BaseEntity implements Obje
 		this.hikivisionAction = hikivisionAction;
 	}
 	
-	public HikivisionIntegrationErrorEntity(String message) {
+	public HikivisionIntegrationErrorEntity(Long id,String message) {
+		this.id = id;
 		this.message = message;
 	}
 	
