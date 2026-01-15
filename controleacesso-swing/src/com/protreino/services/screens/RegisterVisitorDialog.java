@@ -770,6 +770,57 @@ public class RegisterVisitorDialog extends BaseDialog {
 	    loading.setVisible(true);
 	}
 	
+
+	public static boolean isCpfValido(String cpf) {
+
+		if (cpf == null) {
+			return false;
+		}
+
+		// Remove tudo que não for número
+		cpf = cpf.replaceAll("\\D", "");
+
+		// Deve ter 11 dígitos
+		if (cpf.length() != 11) {
+			return false;
+		}
+
+		// Rejeita CPFs com todos os dígitos iguais
+		if (cpf.matches("(\\d)\\1{10}")) {
+			return false;
+		}
+
+		try {
+			// Primeiro dígito verificador
+			int soma = 0;
+			for (int i = 0; i < 9; i++) {
+				soma += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+			}
+
+			int digito1 = 11 - (soma % 11);
+			if (digito1 >= 10) {
+				digito1 = 0;
+			}
+
+			// Segundo dígito verificador
+			soma = 0;
+			for (int i = 0; i < 10; i++) {
+				soma += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+			}
+
+			int digito2 = 11 - (soma % 11);
+			if (digito2 >= 10) {
+				digito2 = 0;
+			}
+
+			// Validação final
+			return digito1 == Character.getNumericValue(cpf.charAt(9))
+					&& digito2 == Character.getNumericValue(cpf.charAt(10));
+
+		} catch (Exception e) {
+			return false;
+		}
+	}
 	
 	private void buscarPedestrePorCPFAsync(final String cpf) {
 
