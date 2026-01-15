@@ -585,18 +585,12 @@ public class SyncPedestrianAccessListUseCase {
                 boolean atualizaDigitais = false;
                 hikivisionUseCases = new HikivisionUseCases();
                 LocalRepository localRepository = new LocalRepository();
-                System.out.println("Quantidae de recebidos da web : " + athleteAccessTOList.size());
+                System.out.println("QuantidaDe de recebidos da web : " + athleteAccessTOList.size());
                 for (PedestrianAccessTO athleteAccessTO : athleteAccessTOList) {
                     if (Main.loggedUser == null) { // usuario deslogou durante a sincronizacao
                     	break;
                     }
                    
-                    //System.out.println("sempre liberado que chegou da web : " + athleteAccessTO.getSempreLiberado());
-                    // TODO : criar novo m�todo para pegar pedestre removido ou nao
-                    //        isso pode resolver v�rios bugs
-                    // TODO : verificar onde o luxand ID e removido para nao fazer mais. Pode ser
-                    //		  aqui ou ne
-                    //athleteAccessTO.setSempreLiberado(true);
                     PedestrianAccessEntity existentAthleteAccess = (PedestrianAccessEntity) HibernateAccessDataFacade.
                             getAllPedestresById(athleteAccessTO.getId());
 
@@ -626,12 +620,13 @@ public class SyncPedestrianAccessListUseCase {
 //							System.out.println("Estou deletando automaticamente, face: " + idFacial);
 //							LuxandService.getInstance().clearName(Long.valueOf(idFacial));
 //						}
-                        
                         final String oldStatus = existentAthleteAccess.getStatus();
-
+                        
+                        existentAthleteAccess.update(athleteAccessTO);
+                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                         if((existentAthleteAccess.isRemovido() 
-                    			|| !Objects.equals(oldStatus, existentAthleteAccess.getStatus()))
+                    			|| !Objects.equals(oldStatus, athleteAccessTO.getStatus()))
                     		&& Utils.isHikivisionConfigValid() ) {
                         	System.out.println("Status alterado");
                         	try {
@@ -652,8 +647,6 @@ public class SyncPedestrianAccessListUseCase {
                         		System.out.println(e.getMessage());
     						}
                         }
-                        
-                        existentAthleteAccess.update(athleteAccessTO);
 
                         if (!atualizaDigitais && Boolean.TRUE.equals(existentAthleteAccess.getNovasDigitais())) {
                             atualizaDigitais = true;
@@ -666,8 +659,6 @@ public class SyncPedestrianAccessListUseCase {
                         		&& Objects.nonNull(existentAthleteAccess.getFoto())) {
                         	existentAthleteAccess.setFoto(null);
                         }
-                        
-                        HibernateAccessDataFacade.update(PedestrianAccessEntity.class, existentAthleteAccess);
 
                     } else {
                         PedestrianAccessEntity newAthleteAccess = new PedestrianAccessEntity(athleteAccessTO);
@@ -678,6 +669,8 @@ public class SyncPedestrianAccessListUseCase {
                         HibernateAccessDataFacade.save(PedestrianAccessEntity.class, newAthleteAccess);
                     }
                 }
+                
+                System.out.println("Updates dos alterados finalizado");
 
                 if (Main.loggedUser == null) {
                     return;
