@@ -434,8 +434,9 @@ public class ProcessAccessRequestUseCase {
 				}
 
 				if (registerLog) {
+					System.out.println("Salvando log");
 					logAccess.setStatus("INDEFINIDO");
-					logAccess.setReason("-");
+					logAccess.setReason(" ");
 					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 				}
 
@@ -1017,6 +1018,7 @@ public class ProcessAccessRequestUseCase {
 			return null;
 		}
 		
+		System.out.println("buscando equipamento : " + equipament);
 		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
 
 		if (Objects.isNull(device)) {

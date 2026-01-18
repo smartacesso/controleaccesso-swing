@@ -51,6 +51,7 @@ import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
@@ -903,7 +904,10 @@ public class TopDataDevice extends Device {
 		String query = "";
 
 		HashMap<String, Object> args = new HashMap<>();
-		args.put("EQUIPAMENTO", getFullIdentifier());
+		Device device = equipamentoPassado(getFullIdentifier());
+		System.out.println("EQUIPAMENTO QUE REGISTROU GIRO: " + device.getName());
+		
+		args.put("EQUIPAMENTO", device.getName());
 
 		// DEBUG: Estado inicial do cartão e facial
 		System.out.println(">>> Cartao bruto: " + inner.BilheteInner.Cartao);
@@ -974,11 +978,12 @@ public class TopDataDevice extends Device {
 
 
 		if (!this.ignorarAcesso()) {
-
+			
 			LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
 					.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
 			if (ultimoAcesso == null) {
+				System.out.println("Ultimo acesso não encontrado");
 				return;
 			}
 
@@ -1000,6 +1005,7 @@ public class TopDataDevice extends Device {
 				ultimoAcesso.setReason("SEMPRE LIBERADO");
 			}
 			
+			ultimoAcesso.setReason("");
 			ultimoAcesso.setDirection(direction);
 			ultimoAcesso.setStatus("ATIVO");
 			ultimoAcesso.setBloquearSaida(bloquearSaida);
@@ -2986,6 +2992,27 @@ public class TopDataDevice extends Device {
 
 	    return null; // nenhum intervalo ativo
 	}
+	
+	private TopDataDevice equipamentoPassado(String equipament) {
+		if(Objects.isNull(equipament)) {
+			return null;
+		}
+		
+		if(equipament.isEmpty()) {
+			return null;
+		}
+		
+		System.out.println("buscando equipamento : " + equipament);
+		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
+
+		if (Objects.isNull(device)) {
+			System.out.println("Device não encontrado");
+			return null;
+		}
+		
+		return (TopDataDevice) device;
+	}
+	
 	
 	
 	@Override
