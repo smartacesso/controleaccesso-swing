@@ -122,6 +122,9 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 //    JPanel cartaoAcessoPanel = new JPanel(new GridBagLayout());
 
+	private JLabel passaporteLabel;
+	private JTextField passaporteTextField;
+
 	private JLabel nomeLabel;
 	private JLabel dataNascimentoLabel;
 	private JLabel emailLabel;
@@ -544,6 +547,17 @@ public class RegisterVisitorDialog extends BaseDialog {
 			}
 		});
 
+		// Passaporte
+		passaporteLabel = getNewLabel("Passaporte");
+		passaporteTextField = getNewTextField(25);
+		passaporteTextField.setMinimumSize(new Dimension(300, 25));
+
+		JPanel passaportePanel = getNewMiniPanel(passaporteLabel, passaporteTextField);
+
+		
+		panel.add(passaportePanel, getNewGridBag(0, 2, 30, 5)); 
+
+		
 		telefoneLabel = getNewLabel("Telefone");
 		telefoneTextField = Utils.getNewJFormattedTextField(25);
 		telefoneTextField.setMinimumSize(new Dimension(300, 25));
@@ -614,6 +628,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 			responsavelTextField.setEditable(false);
 			obsTextArea.setEditable(false);
 			cartaoAcessoTextField.setEditable(false);
+			passaporteTextField.setEditable(false); 
+
 			
 			matriculaTextField.setEditable(false);
 			cepTextField.setEditable(false);
@@ -1873,6 +1889,8 @@ public class RegisterVisitorDialog extends BaseDialog {
 			visitante.setId(new Date().getTime());
 			visitante.setIdTemp(visitante.getId());
 			visitante.setCadastradoNoDesktop(true);
+			visitante.setPassaporte(passaporteTextField.getText());
+
 			
 
 		} else {
@@ -2073,6 +2091,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 		bairroTextField.setText(visitante.getBairro() != null ? visitante.getBairro() : "");
 		cidadeTextField.setText(visitante.getCidade() != null ? visitante.getCidade() : "");
 		estadoTextField.setText(visitante.getEstado() != null ? visitante.getEstado() : "");
+		
+		//passaporte
+		passaporteTextField.setText(
+			    visitante.getPassaporte() != null ? visitante.getPassaporte() : ""
+			);
+
 
 		// dados de acesso
 		if (habilitaAppPedestre) {
@@ -2508,6 +2532,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 		dataNascimentoTextField.setText("");
 		emailTextField.setText("");
 		cpfTextField.setText("");
+		passaporteTextField.setText("");
 		generoJComboBox.setSelectedIndex(0);
 		rgTextField.setText("");
 		telefoneTextField.setText("");
