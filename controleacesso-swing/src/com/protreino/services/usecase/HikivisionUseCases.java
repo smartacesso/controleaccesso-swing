@@ -341,6 +341,19 @@ public class HikivisionUseCases {
 
 		for (HikivisionDeviceSimplificadoTO deviceTo : devicesToSync) {
 			try {
+				//edita usuario
+				if (hikiVisionIntegrationService.isUsuarioJaCadastrado(deviceTo.getDevIndex(), pedestre.getCardNumber())) {
+					if (!hikiVisionIntegrationService.editarUsuario(deviceTo.getDevIndex(), pedestre.getCardNumber(),
+							pedestre.getName(), tipoPedestre)) {
+						
+						final String message = String.format("Erro ao editar pedestre %s no device %s",
+								pedestre.getName(), deviceTo.getDevIndex());
+						logAndThrowException(message, pedestre.getCardNumber(), deviceTo.getDevIndex(), HikivisionAction.CREATE);
+						
+
+					}
+				}
+				
 				// Vincular Template (já no mesmo loop)
 				if (Utils.getPreferenceAsBoolean("hikiVisionPlanHorario")) {
 					if(Objects.isNull(regraFinal)){

@@ -492,13 +492,13 @@ public class HibernateLocalAccessData {
 	    PedestrianAccessEntity entity = null;
 	    try {
 	        session.beginTransaction();
-
 	        Query<PedestrianAccessEntity> query = session.createQuery(
 	            "SELECT obj FROM PedestrianAccessEntity obj " +
-	            "WHERE obj.dataAlteracao >= :ULTIMA_SINC AND obj.id > :LAST_ID " +
+//	            "WHERE obj.dataAlteracao >= :ULTIMA_SINC AND obj.id > :LAST_ID " +
+				"WHERE (obj.cadastradoNoDesktop = true or obj.editadoNoDesktop = true) AND obj.id > :LAST_ID " +
 	            "ORDER BY obj.id ASC", PedestrianAccessEntity.class);
 
-	        query.setParameter("ULTIMA_SINC", lastSync);
+//	        query.setParameter("ULTIMA_SINC", lastSync);
 	        query.setParameter("LAST_ID", lastId == null ? 0L : lastId);
 	        query.setMaxResults(1); // pega um por vez
 
