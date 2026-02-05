@@ -662,17 +662,38 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 	}
 	
-	private boolean validarCPF(String cpf) {
-	    if (cpf == null) {
-	        return false;
+	public static boolean validarCPF(String cpf) {
+	    if (cpf == null) return false;
+
+	    // remove máscara
+	    cpf = cpf.replace(".", "").replace("-", "").trim();
+
+	    // evita campo vazio mascarado (___ .___ .___-__)
+	    if (cpf.length() != 11) return false;
+
+	    // bloqueia CPFs inválidos conhecidos
+	    if (cpf.matches("(\\d)\\1{10}")) return false;
+
+	    int soma = 0;
+	    for (int i = 0; i < 9; i++) {
+	        soma += (cpf.charAt(i) - '0') * (10 - i);
 	    }
-	    
-	    // Remove todos os caracteres não numéricos
-	    String cpfLimpo = cpf.replaceAll("[^0-9]", "");
-	    
-	    // Se, após a limpeza, a string estiver vazia, retorna false
-	    return !cpfLimpo.isEmpty();
+
+	    int digito1 = 11 - (soma % 11);
+	    digito1 = (digito1 >= 10) ? 0 : digito1;
+
+	    soma = 0;
+	    for (int i = 0; i < 10; i++) {
+	        soma += (cpf.charAt(i) - '0') * (11 - i);
+	    }
+
+	    int digito2 = 11 - (soma % 11);
+	    digito2 = (digito2 >= 10) ? 0 : digito2;
+
+	    return digito1 == (cpf.charAt(9) - '0')
+	        && digito2 == (cpf.charAt(10) - '0');
 	}
+
 
 	private void criarDialogoConfirmarmudarTipoPedestre(PedestrianAccessEntity existente) {
 		JDialog confirmarAdicaoCreditoDialog = new JDialog();
@@ -2025,231 +2046,215 @@ public class RegisterVisitorDialog extends BaseDialog {
 	}
 	
 	private void preencheDadosVisitanteEditando() {
-		// Dados basicos
-		nomeTextField.setText(visitante.getName() != null ? visitante.getName() : "");
-		dataNascimentoTextField
-				.setText(visitante.getDataNascimento() != null ? sdf.format(visitante.getDataNascimento()) : "");
-		emailTextField.setText(visitante.getEmail() != null ? visitante.getEmail() : "");
-		cpfTextField.setText(visitante.getCpf() != null ? visitante.getCpf() : "");
-		generoJComboBox.setSelectedIndex(
-				visitante.getGenero() != null ? (visitante.getGenero().equals("MASCULINO") ? 0 : 1) : 0);
-		rgTextField.setText(visitante.getRg() != null ? visitante.getRg() : "");
-		telefoneTextField.setText(visitante.getTelefone() != null ? visitante.getTelefone() : "");
-		celularTextField.setText(visitante.getCelular() != null ? visitante.getCelular() : "");
-		responsavelTextField.setText(visitante.getResponsavel() != null ? visitante.getResponsavel() : "");
-		obsTextArea.setText(visitante.getObservacoes() != null ? visitante.getObservacoes() : "");
+	    // --- Dados básicos ---
+	    nomeTextField.setText(visitante.getName() != null ? visitante.getName() : "");
+	    dataNascimentoTextField.setText(
+	        visitante.getDataNascimento() != null ? sdf.format(visitante.getDataNascimento()) : "");
+	    emailTextField.setText(visitante.getEmail() != null ? visitante.getEmail() : "");
+	    cpfTextField.setText(visitante.getCpf() != null ? visitante.getCpf() : "");
+	    
+	    // Gênero
+	    if (visitante.getGenero() != null) {
+	        generoJComboBox.setSelectedItem(visitante.getGenero().equalsIgnoreCase("MASCULINO") ? "MASCULINO" : "FEMININO");
+	    } else {
+	        generoJComboBox.setSelectedIndex(0);
+	    }
 
-		statusJComboBox.setSelectedItem(
-				visitante.getStatus() != null ? new SelectItem(visitante.getStatus(), visitante.getStatus()) : null);
-		matriculaTextField.setText(visitante.getMatricula() != null ? visitante.getMatricula() : "");
+	    rgTextField.setText(visitante.getRg() != null ? visitante.getRg() : "");
+	    telefoneTextField.setText(visitante.getTelefone() != null ? visitante.getTelefone() : "");
+	    celularTextField.setText(visitante.getCelular() != null ? visitante.getCelular() : "");
+	    responsavelTextField.setText(visitante.getResponsavel() != null ? visitante.getResponsavel() : "");
+	    obsTextArea.setText(visitante.getObservacoes() != null ? visitante.getObservacoes() : "");
+	    matriculaTextField.setText(visitante.getMatricula() != null ? visitante.getMatricula() : "");
+	    
+	    // Status
+	    statusJComboBox.setSelectedItem(
+	        visitante.getStatus() != null ? new SelectItem(visitante.getStatus(), visitante.getStatus()) : null);
 
-		if ("VISITANTE".equals(visitante.getTipo()) && !"".equals(cartaoAcessoTextField.getText().replace("0", ""))
-				&& (visitante.getCardNumber() == null || "".equals(visitante.getCardNumber().replace("0", "")))) {
+	    // --- Cartão de acesso ---
+	    String cartao = visitante.getCardNumber() != null ? visitante.getCardNumber() : cartaoAcessoTextField.getText();
+	    if ("VISITANTE".equals(visitante.getTipo())
+	            && !"".equals(cartaoAcessoTextField.getText().replace("0", ""))
+	            && (visitante.getCardNumber() == null || "".equals(visitante.getCardNumber().replace("0", "")))) {
+	        System.out.println("Não muda valor do cartão previamente adicionado");
+	    } else {
+	        cartaoAcessoTextField.setText(StringUtils.leftPad(cartao, qtdeDigitosCartao, '0'));
+	    }
 
-			// nao muda valor do cartao adicionado anteriormente
-			System.out.println("nao muda valor do cartao");
+	    // --- Local ---
+	    if (visitante.getUuidLocal() != null) {
+	        LocalEntity nomeLocal = localRepository.getLocalByUiid(visitante.getUuidLocal()).orElse(null);
+	        if (nomeLocal != null) {
+	            for (int i = 0; i < localJComboBox.getItemCount(); i++) {
+	                SelectItem item = localJComboBox.getItemAt(i);
+	                if (item.getLabel().equals(nomeLocal.getNome())) {
+	                    localJComboBox.setSelectedItem(item);
+	                    break;
+	                }
+	            }
+	        } else {
+	            localJComboBox.setSelectedItem(null);
+	        }
+	    } else {
+	        localJComboBox.setSelectedItem(null);
+	    }
 
-		} else {
-			cartaoAcessoTextField.setText(visitante.getCardNumber() != null ? visitante.getCardNumber()
-					: StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-			if (cartaoAcessoTextField.getText().length() < qtdeDigitosCartao) {
-				cartaoAcessoTextField
-						.setText(StringUtils.leftPad(cartaoAcessoTextField.getText(), qtdeDigitosCartao, '0'));
-			}
-		}
+	    // --- Checkboxes ---
+	    habilitarTecladoCheckBox.setSelected(Boolean.TRUE.equals(visitante.getHabilitarTeclado()));
+	    sempreLiberado.setSelected(Boolean.TRUE.equals(visitante.getSempreLiberado()));
+	    acessoLivre.setSelected(Boolean.TRUE.equals(visitante.getAcessoLivre()));
+	    enviaSMSdeConfirmacaoEntrada.setSelected(Boolean.TRUE.equals(visitante.getEnviaSmsAoPassarNaCatraca()));
 
-		LocalEntity nomeLocal = localRepository
-		        .getLocalByUiid(visitante.getUuidLocal())
-		        .orElse(null);
+	    // --- Endereço ---
+	    cepTextField.setText(visitante.getCep() != null ? visitante.getCep() : "");
+	    logradouroTextField.setText(visitante.getLogradouro() != null ? visitante.getLogradouro() : "");
+	    numeroTextField.setText(visitante.getNumero() != null ? visitante.getNumero() : "");
+	    complementoTextField.setText(visitante.getComplemento() != null ? visitante.getComplemento() : "");
+	    bairroTextField.setText(visitante.getBairro() != null ? visitante.getBairro() : "");
+	    cidadeTextField.setText(visitante.getCidade() != null ? visitante.getCidade() : "");
+	    estadoTextField.setText(visitante.getEstado() != null ? visitante.getEstado() : "");
+	    passaporteTextField.setText(visitante.getPassaporte() != null ? visitante.getPassaporte() : "");
 
-		if (visitante.getUuidLocal() != null && nomeLocal != null) {
-		    for (int i = 0; i < localJComboBox.getItemCount(); i++) {
-		        SelectItem item = localJComboBox.getItemAt(i);
-		        if (item.getLabel().equals(nomeLocal.getNome())) {
-		            localJComboBox.setSelectedItem(item);
-		            break;
-		        }
-		    }
-		} else {
-		    localJComboBox.setSelectedItem(null);
-		}
+	    // --- Dados de acesso ---
+	    if (habilitaAppPedestre) {
+	        loginTextField.setText(visitante.getLogin() != null ? visitante.getLogin() : "");
+	        tipoAcessoJComboBox.setSelectedIndex(
+	            visitante.getTipoAcesso() == null || visitante.getTipoAcesso().isEmpty() ? 0
+	            : ("NORMAL".equalsIgnoreCase(visitante.getTipoAcesso()) ? 1 : 2));
+	        senhaLabel.setText("Senha (somente para alteração)");
+	    }
 
-		habilitarTecladoCheckBox.setSelected(
-				Objects.nonNull(visitante.getHabilitarTeclado()) ? visitante.getHabilitarTeclado() : false);
-		sempreLiberado
-				.setSelected(Objects.nonNull(visitante.getSempreLiberado()) ? visitante.getSempreLiberado() : false);
-		acessoLivre.setSelected(Objects.nonNull(visitante.getAcessoLivre()) ? visitante.getAcessoLivre() : false);
-		enviaSMSdeConfirmacaoEntrada.setSelected(
-				Objects.nonNull(visitante.getEnviaSmsAoPassarNaCatraca()) ? visitante.getEnviaSmsAoPassarNaCatraca()
-						: false);
-
-		// Endereco
-		cepTextField.setText(visitante.getCep() != null ? visitante.getCep() : "");
-		logradouroTextField.setText(visitante.getLogradouro() != null ? visitante.getLogradouro() : "");
-		numeroTextField.setText(visitante.getNumero() != null ? visitante.getNumero() : "");
-		complementoTextField.setText(visitante.getComplemento() != null ? visitante.getComplemento() : "");
-		bairroTextField.setText(visitante.getBairro() != null ? visitante.getBairro() : "");
-		cidadeTextField.setText(visitante.getCidade() != null ? visitante.getCidade() : "");
-		estadoTextField.setText(visitante.getEstado() != null ? visitante.getEstado() : "");
-		
-		//passaporte
-		passaporteTextField.setText(
-			    visitante.getPassaporte() != null ? visitante.getPassaporte() : ""
-			);
-
-
-		// dados de acesso
-		if (habilitaAppPedestre) {
-			loginTextField.setText(visitante.getLogin());
-			tipoAcessoJComboBox
-					.setSelectedIndex(visitante.getTipoAcesso() == null || "".equals(visitante.getTipoAcesso()) ? 0
-							: ("NORMAL".equals(visitante.getTipoAcesso()) ? 1 : 2));
-			senhaLabel.setText("Senha (somente para alteração)");
-		}
-
-		if (visitante.getEquipamentos() != null)
-			panelEquipamentosDisponiveis.setPedestresEquipamentos(visitante.getEquipamentos());
-
-		if (visitante.getMensagens() != null)
-			panelMensagemPersonalizadas.setMensagens(visitante.getMensagens());
-
-		if (visitante.getPedestreRegra() != null)
-			panelAdicionarRegras.setPedestresRegras(visitante.getPedestreRegra());
-
-		if (visitante.getDocumentos() != null)
-			panelAdicionarDocumento.setDocumentos(visitante.getDocumentos());
-
-//        cartaoAcessoPanel.setVisible(exibeCartaoAcesso());
+	    // --- Painéis ---
+	    if (visitante.getEquipamentos() != null)
+	        panelEquipamentosDisponiveis.setPedestresEquipamentos(visitante.getEquipamentos());
+	    if (visitante.getMensagens() != null)
+	        panelMensagemPersonalizadas.setMensagens(visitante.getMensagens());
+	    if (visitante.getPedestreRegra() != null)
+	        panelAdicionarRegras.setPedestresRegras(visitante.getPedestreRegra());
+	    if (visitante.getDocumentos() != null)
+	        panelAdicionarDocumento.setDocumentos(visitante.getDocumentos());
 	}
-
+	
 	private boolean validarCampos() {
-		boolean valido = true;
+	    boolean valido = true;
 
-		cpfLabel.setText(cpfLabel.getText().replace(" ja existente", ""));
-		rgLabel.setText(rgLabel.getText().replace(" ja existente", ""));
-		cartaoAcessoLabel.setText(cartaoAcessoLabel.getText().replace(" ja existente", ""));
-		matriculaLabel.setText(matriculaLabel.getText().replace(" ja existente", ""));
+	    // Reseta mensagens antigas
+	    cpfLabel.setText(cpfLabel.getText().replace(" ja existente", ""));
+	    rgLabel.setText(rgLabel.getText().replace(" ja existente", ""));
+	    cartaoAcessoLabel.setText(cartaoAcessoLabel.getText().replace(" ja existente", ""));
+	    matriculaLabel.setText(matriculaLabel.getText().replace(" ja existente", ""));
+	    restauraFontLabel();
 
-		restauraFontLabel();
+	    String camposObrigatorios = buscaParametroPeloNome("Campos obrigatorios para cadastro de pedestres");
 
-		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatorios para cadastro de pedestres");
+	    // --- Validação de campos obrigatórios ---
+	    if ("".equals(nomeTextField.getText().trim())) {
+	        redAndBoldFont(nomeLabel);
+	        valido = false;
+	    }
 
-		if ("".equals(nomeTextField.getText().trim())) {
-			redAndBoldFont(nomeLabel);
-			valido = false;
-		}
-		
-		if (Utils.localObrigatorio() && localJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(localLabel);
-				valido = false;
-		}
-		
-		if (Objects.nonNull(camposObrigatorios)) {
-			if (camposObrigatorios.contains("data.nascimento")
-					&& dataNascimentoTextField.getText().replace("/", "").replace(" ", "").equals("")) {
-				redAndBoldFont(dataNascimentoLabel);
-				valido = false;
-			}
+	    if (Utils.localObrigatorio() && localJComboBox.getSelectedIndex() < 0) {
+	        redAndBoldFont(localLabel);
+	        valido = false;
+	    }
 
-			if (camposObrigatorios.contains("email") && emailTextField.getText().equals("")) {
-				redAndBoldFont(emailLabel);
-				valido = false;
-			}
+	    if (camposObrigatorios != null) {
+	        // Data de nascimento
+	        if (camposObrigatorios.contains("data.nascimento")
+	                && dataNascimentoTextField.getText().replace("/", "").trim().isEmpty()) {
+	            redAndBoldFont(dataNascimentoLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("cpf")
-					&& cpfTextField.getText().replace(".", "").replace("-", "").replace(" ", "").equals("")) {
-				redAndBoldFont(cpfLabel);
-				valido = false;
-			}
+	        // Email
+	        if (camposObrigatorios.contains("email") && emailTextField.getText().trim().isEmpty()) {
+	            redAndBoldFont(emailLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("rg") && rgTextField.getText().equals("")) {
-				redAndBoldFont(rgLabel);
-				valido = false;
-			}
+	        // CPF
+	        String cpfInput = cpfTextField.getText().replaceAll("[^0-9]", "");
+	        if (camposObrigatorios.contains("cpf") && (cpfInput.isEmpty() || !validarCPF(cpfInput))) {
+	            redAndBoldFont(cpfLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("telefone") && telefoneTextField.getText().replace("(", "").replace(")", "")
-					.replace("-", "").replace(" ", "").equals("")) {
-				redAndBoldFont(telefoneLabel);
-				valido = false;
-			}
+	        // RG
+	        if (camposObrigatorios.contains("rg") && rgTextField.getText().trim().isEmpty()) {
+	            redAndBoldFont(rgLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("celular") && celularTextField.getText().replace("(", "").replace(")", "")
-					.replace("-", "").replace(" ", "").equals("")) {
-				redAndBoldFont(celularLabel);
-				valido = false;
-			}
+	        // Telefone
+	        String telefone = telefoneTextField.getText().replaceAll("[^0-9]", "");
+	        if (camposObrigatorios.contains("telefone") && telefone.isEmpty()) {
+	            redAndBoldFont(telefoneLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("responsavel") && responsavelTextField.getText().equals("")) {
-				redAndBoldFont(responsavelLabel);
-				valido = false;
-			}
+	        // Celular
+	        String celular = celularTextField.getText().replaceAll("[^0-9]", "");
+	        if (camposObrigatorios.contains("celular") && celular.isEmpty()) {
+	            redAndBoldFont(celularLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("observacoes") && obsTextArea.getText().equals("")) {
-				redAndBoldFont(obsLabel);
-				valido = false;
-			}
+	        // Responsável
+	        if (camposObrigatorios.contains("responsavel") && responsavelTextField.getText().trim().isEmpty()) {
+	            redAndBoldFont(responsavelLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("empresa") && empresaJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(empresaLabel);
-				valido = false;
-			}
+	        // Observações
+	        if (camposObrigatorios.contains("observacoes") && obsTextArea.getText().trim().isEmpty()) {
+	            redAndBoldFont(obsLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("departamento") && departamentoJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(departamentoLabel);
-				valido = false;
-			}
+	        // Empresa, departamento, centro de custo e cargo
+	        if (camposObrigatorios.contains("empresa") && empresaJComboBox.getSelectedIndex() < 0) {
+	            redAndBoldFont(empresaLabel);
+	            valido = false;
+	        }
+	        if (camposObrigatorios.contains("departamento") && departamentoJComboBox.getSelectedIndex() < 0) {
+	            redAndBoldFont(departamentoLabel);
+	            valido = false;
+	        }
+	        if (camposObrigatorios.contains("centro.custo") && centroCustoJComboBox.getSelectedIndex() < 0) {
+	            redAndBoldFont(centroCustoLabel);
+	            valido = false;
+	        }
+	        if (camposObrigatorios.contains("cargo") && cargoJComboBox.getSelectedIndex() < 0) {
+	            redAndBoldFont(cargoLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("centro.custo") && centroCustoJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(centroCustoLabel);
-				valido = false;
-			}
+	        // Endereço
+	        if (camposObrigatorios.contains("endereco") && cepTextField.getText().replace("-", "").trim().isEmpty()) {
+	            redAndBoldFont(cepLabel);
+	            valido = false;
+	        }
 
-			if (camposObrigatorios.contains("cargo") && cargoJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(cargoLabel);
-				valido = false;
-			}
+	        // Cartão de acesso
+	        if (camposObrigatorios.contains("cartao.acesso") 
+	            && cartaoAcessoTextField.getText().replace("0", "").trim().isEmpty()) {
+	            redAndBoldFont(cartaoAcessoLabel);
+	            valido = false;
+	        }
+	    }
 
-			if (camposObrigatorios.contains("endereco")
-					&& cepTextField.getText().replace("-", "").replace(" ", "").equals("")) {
-				redAndBoldFont(cepLabel);
-				valido = false;
-			}
+	    // Regra de pedestre obrigatório
+	    if ("PEDESTRE".equals(visitante.getTipo())
+	            && (panelAdicionarRegras.getPedestresRegras() == null || panelAdicionarRegras.getPedestresRegras().isEmpty())
+	            && !sempreLiberado.isSelected()) {
+	        criarDialogoPedestreRegraObrigatotio();
+	        valido = false;
+	    }
 
-			if (camposObrigatorios.contains("cartao.acesso")
-					&& cartaoAcessoTextField.getText().replace("0", "").equals("")) {
-				redAndBoldFont(cartaoAcessoLabel);
-				valido = false;
-			}
-		}
-
-		if ("PEDESTRE".equals(visitante.getTipo()) && (panelAdicionarRegras.getPedestresRegras() == null
-				|| panelAdicionarRegras.getPedestresRegras().isEmpty()) && !sempreLiberado.isSelected()) {
-
-			criarDialogoPedestreRegraObrigatotio();
-			valido = false;
-		}
-
-		// valida login
-		if (loginTextField != null && !"".equals(loginTextField.getText().trim())) {
-			// se login preenchido, então verifica se os outros campos estão
-			// preenchidos tambem
-			if (visitante.getId() == null && visitante.getSenha() == null
-					&& "".equals(senhaTextField.getText().trim())) {
-				redAndBoldFont(senhaLabel);
-				valido = false;
-			}
-
-			if (tipoAcessoJComboBox.getSelectedIndex() < 0) {
-				redAndBoldFont(tipoAcessoLabel);
-				valido = false;
-			}
-		}
-
-		if (valido)
-			valido = validaCamposDuplicados();
-
-		return valido;
+	    return valido;
 	}
+
+	
 
 	private void criarDialogoPedestreRegraObrigatotio() {
 		JDialog regraObrigatoriaDialog = new JDialog();
