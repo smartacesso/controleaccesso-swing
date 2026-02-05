@@ -426,6 +426,8 @@ public class Utils {
 				"Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardBlock",
 				"Manter status AGUARDANDO comanda", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registraLogLiberacaoManual",
+				"Registra log liberacao manual", FieldType.CHECKBOX, "false"));
 //		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "onlyEnabledMode",
 //				"Catracas somente no modo habilitado", FieldType.CHECKBOX, "false"));
 
@@ -2039,6 +2041,13 @@ public class Utils {
 	public static boolean removeInativos() {
 		return Utils.getPreferenceAsBoolean("removeInativos");
 	}
+	
+	public static boolean registraLogLiberacaoManual() {
+		return Utils.getPreferenceAsBoolean("registraLogLiberacaoManual");
+	}
+	
+	
+	
 	
 	
 //	public static String conversorHexaDeciimal(String Cartao) {

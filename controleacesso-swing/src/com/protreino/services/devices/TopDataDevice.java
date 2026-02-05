@@ -1361,24 +1361,33 @@ public class TopDataDevice extends Device {
 //		}
 //	}
 	
+	
 	@Override
 	public void allowAccess() {
-	    synchronized (this) {  // ← trava apenas esta catraca
+	    // fluxo antigo, intacto
+	    allowAccess((String) null );
+	}
+	
+	public void allowAccess(String sentido) {
+	    synchronized (this) {
 	        try {
 	            definiMensagemExibidaNoDisplay();
+
+	            String sentidoRecebido = sentido; // pode ser null → fluxo antigo
 	            String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
 	            boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 
-	            if (mensagemPermitido == null || mensagemPermitido.trim().isEmpty())
+	            if (mensagemPermitido == null || mensagemPermitido.trim().isEmpty()) {
 	                mensagemPermitido = "Acesso Liberado";
+	            }
 
-	            int ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	            int ret = decideLadoEntrada(sentidoCatraca, bloquearSaida, sentidoRecebido);
 	            EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
 
 	            int countTentativasEnvioComando = 0;
 	            while (ret != Enumeradores.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
 	                Utils.sleep(tempoEspera);
-	                ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	                ret = decideLadoEntrada(sentidoCatraca, bloquearSaida, sentidoRecebido);
 	                countTentativasEnvioComando++;
 	            }
 
@@ -1398,7 +1407,8 @@ public class TopDataDevice extends Device {
 	    }
 	}
 
-	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida) {
+
+	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida, String sentidoCamera) {
 		int ret = 0;
 		final Boolean doisSentidosLiberado = Utils.getPreferenceAsBoolean("doisSentidos");
 		final String entrar = Utils.getPreference("messageEntryAllowed");
@@ -1430,6 +1440,51 @@ public class TopDataDevice extends Device {
 				
 				return ret;
 			}
+			
+			// nova implementação (mínima)
+			if (sentidoCamera != null && !sentidoCamera.trim().isEmpty()) {
+
+			    String cameraUpper = sentidoCamera.toUpperCase();
+
+			    boolean cameraEntrada = cameraUpper.contains("ENTRADA");
+			    boolean cameraSaida = cameraUpper.contains("SAIDA") || cameraUpper.contains("SAÍDA");
+
+			    // se não encontrou nenhum, libera os dois sentidos
+			    if (!cameraEntrada && !cameraSaida) {
+			        EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+			        EasyInner.AcionarBipCurto(inner.Numero);
+			        return ret;
+			    }
+
+			    // força ENTRADA
+			    if (cameraEntrada && !cameraSaida) {
+			        ret = "anticlockwise".equals(sentidoCatraca)
+			                ? EasyInner.LiberarCatracaEntrada(inner.Numero)
+			                : EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+
+			        if (messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
+			            mensagemPermitido = defineMensagemPermitido(sentidoCatraca, espacoEntrar, entrar);
+			        }
+
+			        return ret;
+			    }
+
+			    // força SAÍDA
+			    if (cameraSaida && !cameraEntrada) {
+			        ret = !"anticlockwise".equals(sentidoCatraca)
+			                ? EasyInner.LiberarCatracaEntrada(inner.Numero)
+			                : EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+
+			        if (messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
+			            mensagemPermitido = "anticlockwise".equals(sentidoCatraca)
+			                    ? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
+			                    : formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
+			        }
+
+			        return ret;
+			    }
+			}
+
 
 			LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(matchedAthleteAccess.getId(),
 					matchedAthleteAccess.getQtdAcessoAntesSinc());
@@ -2223,12 +2278,6 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-//			if(!this.ignorarAcesso() || !Utils.isAcessoLiberado() || !isSaidaLiberada(cameraNome)) {
-//				processAccessRequest(cardNumber, false);				
-//			}else {
-//				setVerificationResult(VerificationResult.ALLOWED);
-//				System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
-//			}
 			System.out.println(">>> PASSAGEM NA CAMERA - " + cameraNome);
 			
 			if (this.ignorarAcesso() || Utils.isAcessoLiberado() || isSaidaLiberada(cameraNome)) {
@@ -2247,7 +2296,7 @@ public class TopDataDevice extends Device {
 			
 			if (VerificationResult.ALLOWED.equals(getVerificationResult())
 					|| VerificationResult.TOLERANCE_PERIOD.equals(getVerificationResult())) {
-	            allowAccess();
+	            allowAccess(cameraNome);
 			} else {
 				denyAccess();
 			}

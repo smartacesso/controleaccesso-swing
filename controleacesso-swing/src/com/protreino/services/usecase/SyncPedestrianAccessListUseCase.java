@@ -710,7 +710,7 @@ public class SyncPedestrianAccessListUseCase {
                 } else {
                     System.out.println(sdf.format(new Date()) + "SINCRONIZACAO: Sem alteracoes de templates para catracas");
                 }
-
+                
                 Utils.sleep(1000);
                 lastSync = Calendar.getInstance(new Locale("pt", "BR")).getTimeInMillis();
                 Main.loggedUser.setLastSync(new Date(lastSync));
@@ -719,6 +719,8 @@ public class SyncPedestrianAccessListUseCase {
                 if (Main.broadcastServer != null) {
                     Main.broadcastServer.sendMessage(new BroadcastMessageTO(BroadcastMessageType.REFRESH_TEMPLATES));
                 }
+                
+                System.out.println("Sincronização web finalizada");
             }
 
 			@SuppressWarnings("unchecked")
