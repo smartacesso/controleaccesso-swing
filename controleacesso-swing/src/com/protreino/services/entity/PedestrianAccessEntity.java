@@ -414,6 +414,9 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="RG", nullable=true, length=20)
 	private String rg;
 	
+	@Column(name="PASSAPORTE", nullable=true, length=20)
+	private String passaporte;
+	
 	@Column(name="TELEFONE", nullable=true, length=20)
 	private String telefone;
 	
@@ -635,6 +638,15 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	public PedestrianAccessEntity(Long id) {
 		this.id = id;
 	}
+	
+	public String getPassaporte() {
+	    return passaporte;
+	}
+
+	public void setPassaporte(String passaporte) {
+	    this.passaporte = passaporte;
+	}
+
 
 	public PedestrianAccessEntity(byte[] foto, String cardNumber, String name, Boolean removido) {
 		this.foto = foto;
