@@ -2409,10 +2409,26 @@ public class RegisterVisitorDialog extends BaseDialog {
 				boolean cartaoExiste = verificaCartaoAcessoExistente(cartaoAcessoTextField.getText(),
 						visitante.getId() != null ? visitante.getId() : 0l);
 				if (cartaoExiste) {
-					cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " ja existente");
-					redAndBoldFont(cartaoAcessoLabel);
-					valido = false;
+				    int opcao = JOptionPane.showConfirmDialog(
+				        null,
+				        "Este cartão de acesso já existe.\nDeseja gerar outro cartão?",
+				        "Cartão já cadastrado",
+				        JOptionPane.YES_NO_OPTION
+				    );
+
+				    if (opcao == JOptionPane.YES_OPTION) {
+				        // Aqui você chama sua lógica para gerar um novo cartão
+				    	
+				    	String card = geraCartaoAcessoAleatorio();
+						System.out.println("gerado : " + card);
+						cartaoAcessoTextField.setText(card);
+				    } else {
+				        cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " já existente");
+				        redAndBoldFont(cartaoAcessoLabel);
+				        valido = false;
+				    }
 				}
+
 			}
 		}
 
@@ -2728,30 +2744,27 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 		visitante.setFotoEnviada(true);
 		visitante.setDataCadastroFotoNaHikivision(new Date());
-		try {
-			new Thread() {
-				public void run() {
-					if ("ATIVO".equals(visitante.getStatus())) {
-						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
-						hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
-					} else {
-//						hikivisionUseCases.removerUsuarioFromDevices(visitante);
-						if(Utils.removeInativos()) {
-							System.out.println("Deletando da camera");
-							hikivisionUseCases.removerUsuarioFromDevices(visitante);
-						}else {
-							hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
-						}
-					}
-				}
-			}.start();
-
-		} catch (InvalidPhotoException ife) {
-			criarDialogoFotoInvalida();
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
+	
+		new Thread(() -> {
+		    try {
+		        if ("ATIVO".equals(visitante.getStatus())) {
+		            List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
+		            hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
+		        } else {
+		            if (Utils.removeInativos()) {
+		                System.out.println("Deletando da camera");
+		                hikivisionUseCases.removerUsuarioFromDevices(visitante);
+		            } else {
+		                hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
+		            }
+		        }
+		    } catch (InvalidPhotoException ife) {
+		        criarDialogoFotoInvalida();
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}).start();
+		
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 
