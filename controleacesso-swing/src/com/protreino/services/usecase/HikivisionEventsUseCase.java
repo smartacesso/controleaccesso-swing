@@ -378,7 +378,6 @@ public class HikivisionEventsUseCase {
 
 		return null;
 	}
-	
 
 	private OffsetDateTime getOffsetDateTime(final String dataOriginal) {
 		final OffsetDateTime dataComFusoOriginal = OffsetDateTime.parse(dataOriginal,
@@ -393,7 +392,7 @@ public class HikivisionEventsUseCase {
 	    final Duration diferenca = Duration.between(offsetDateTime, agora);
 
 	    // Qualquer evento com mais de 20 segundos de diferença é considerado offline
-	    return Math.abs(diferenca.getSeconds()) > 20;
+	    return Math.abs(diferenca.getSeconds()) > 120;
 	}
 	
 }

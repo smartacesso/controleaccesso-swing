@@ -39,6 +39,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import com.protreino.services.entity.LogPedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.UserEntity;
 import com.protreino.services.main.Main;
@@ -536,6 +537,27 @@ public class AccessListPanel extends PaginedListPanel {
 	        if (ccol == 8) { // && pointInsidePrefSize(table, pt)) {
 	            int crow = table.rowAtPoint(pt);
 	            String idPedestre = String.valueOf(table.getValueAt(crow, 0));
+	            
+	            
+	            if(Utils.registraLogLiberacaoManual()) {
+					String idVisitante = String.valueOf(table.getValueAt(crow, 0));
+
+					HashMap<String, Object> args = new HashMap<>();
+					args.put("ID", Long.valueOf(idVisitante));
+
+					PedestrianAccessEntity visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.getUniqueResultWithParams(
+							PedestrianAccessEntity.class, "PedestrianAccessEntity.findById", args);
+					
+					
+					LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), visitante.getId(),
+							visitante.getStatus(), null, "liberado pelo sistema", null, "");
+
+					logAccess.setStatus("ATIVO");
+					logAccess.setAccessDate(new Date());
+					
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					return;
+	            }
 	            
 	            if(Main.temServidor()) {
 					String idVisitante = String.valueOf(table.getValueAt(crow, 0));

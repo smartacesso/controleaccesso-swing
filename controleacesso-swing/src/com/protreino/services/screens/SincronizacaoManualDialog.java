@@ -320,7 +320,8 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		// fazer a busca paginada
 		
 		final int pageSize = 500;
-		final Integer countPedestresParaSincronizar = countPesdestresParaSincronizar(null, null);
+		final Integer countPedestresParaSincronizar = HibernateAccessDataFacade.
+                getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllPedestres", null);
 		if(Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
 			return;
 		}
@@ -328,7 +329,10 @@ public class SincronizacaoManualDialog extends BaseDialog {
 		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
 		int offset = 0;
 		do {
-			List<PedestrianAccessEntity> pedestresParaSicronizar = buscaPedestresParaSicronizar(null, null, offset, pageSize);
+			
+			@SuppressWarnings("unchecked")
+			List<PedestrianAccessEntity> pedestresParaSicronizar = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class,
+					"PedestrianAccessEntity.allPedestres", null, offset, pageSize);
 			
 			try {
 				syncPedestrianAccessListUseCase = new SyncPedestrianAccessListUseCase();

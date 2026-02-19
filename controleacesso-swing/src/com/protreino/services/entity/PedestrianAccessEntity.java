@@ -342,7 +342,19 @@ import com.protreino.services.utils.Utils;
 			    query = "select obj from PedestrianAccessEntity obj " +
 			            "where obj.idLocal is not null " +
 			            "and obj.removido = false " +
-			            "order by obj.id desc")
+			            "order by obj.id desc"),
+	@NamedQuery(name = "PedestrianAccessEntity.countAllPedestres",
+				query = "select count(obj) from PedestrianAccessEntity obj " +
+						"where obj.tipo = 'PEDESTRE' " + 
+						"and obj.status = 'ATIVO' " +
+						"and obj.cardNumber != null "),
+	@NamedQuery(name = "PedestrianAccessEntity.allPedestres",
+				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.foto, obj.cardNumber, obj.name, obj.removido, obj.idLocal, obj.uuidLocal) " +
+						"from PedestrianAccessEntity obj " +
+						"where obj.cardNumber != null " + 
+						"and obj.tipo = 'PEDESTRE' " +
+						"and obj.status = 'ATIVO' " +
+						"order by obj.id asc"),
 
 })
 public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, Serializable {

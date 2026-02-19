@@ -19,6 +19,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -69,6 +70,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.JTextComponent;
@@ -100,6 +102,7 @@ import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.repository.LocalRepository;
 import com.protreino.services.repository.TopDataFacialErrorRepository;
+import com.protreino.services.screens.dialogs.LoadingDialog;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
 import com.protreino.services.usecase.HikivisionUseCases;
 import com.protreino.services.utils.CropImage;
@@ -409,172 +412,122 @@ public class RegisterVisitorDialog extends BaseDialog {
 			habilitaAppPedestre = Boolean.valueOf(appPedestre);
 		}
 	}
-
+	
 	private JPanel montarPanelDadosBasicos() {
 		JPanel panel = new JPanel();
 		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		c.gridx = 0;
-		c.gridy = 2;
 
+		// ===================== NOME =====================
 		nomeLabel = getNewLabel("Nome");
 		nomeTextField = getNewTextField(30);
 		nomeTextField.setMinimumSize(new Dimension(300, 25));
-		JPanel nomePanel = getNewMiniPanel(nomeLabel, nomeTextField);
-		panel.add(nomePanel, getNewGridBag(0, 0, 30, 5));
+		panel.add(getNewMiniPanel(nomeLabel, nomeTextField), getNewGridBag(0, 0, 30, 5));
 
+		// ===================== DATA NASCIMENTO =====================
 		dataNascimentoLabel = getNewLabel("Data de nascimento");
 		dataNascimentoTextField = Utils.getNewJFormattedTextField(10);
 		MaskFormatter mask = Utils.getNewMaskFormatter("##/##/####");
 		mask.install(dataNascimentoTextField);
-		JPanel dataNascimentoPanel = getNewMiniPanel(dataNascimentoLabel, dataNascimentoTextField);
-		panel.add(dataNascimentoPanel, getNewGridBag(1, 0, 30, 5));
+		panel.add(getNewMiniPanel(dataNascimentoLabel, dataNascimentoTextField), getNewGridBag(1, 0, 30, 5));
 
+		// ===================== EMAIL =====================
 		emailLabel = getNewLabel("E-mail");
 		emailTextField = getNewTextField(25);
 		emailTextField.setMinimumSize(new Dimension(300, 25));
-		JPanel emailPanel = getNewMiniPanel(emailLabel, emailTextField);
-		panel.add(emailPanel, getNewGridBag(2, 0, 30, 5));
+		panel.add(getNewMiniPanel(emailLabel, emailTextField), getNewGridBag(2, 0, 30, 5));
 
+		// ===================== CPF =====================
 		cpfLabel = getNewLabel("CPF");
 		cpfTextField = Utils.getNewJFormattedTextField(25);
-		cpfTextField.setMinimumSize(new Dimension(300, 25));
 		mask = Utils.getNewMaskFormatter("###.###.###-##");
 		mask.install(cpfTextField);
-		JPanel cpfPanel = getNewMiniPanel(cpfLabel, cpfTextField);
-		panel.add(cpfPanel, getNewGridBag(0, 1, 30, 5));
-		cpfTextField.addFocusListener(new FocusListener() {
+		panel.add(getNewMiniPanel(cpfLabel, cpfTextField), getNewGridBag(0, 1, 30, 5));
+
+		cpfTextField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				// pesquisa por pedestre ou visitante
-				if (habilitaBuscaCPF && visitante.getId() == null && cpfTextField.getText() != null
-						&& !"".equals(cpfTextField.getText())
-						&& !"".equals(cpfTextField.getText().replace(".", "").replace("-", ""))
-						&& validarCPF(cpfTextField.getText())) {
-					PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultByCPF(PedestrianAccessEntity.class,
-									cpfTextField.getText().replace(".", "").replace("-", "").trim());
 
-					if (existente != null && !"".equals(existente.getCpf())
-							&& !"".equals(existente.getCpf().replace(".", "").replace("-", ""))) {
-						if (!visitante.getTipo().equals(existente.getTipo())) {
-							criarDialogoConfirmarmudarTipoPedestre(existente);
-						} else {
-							existente.setTipo(visitante.getTipo());
-							visitante = existente;
-							fotoVisitante = visitante.getFoto();
-							preencheDadosVisitanteEditando();
-							ajustaPaineisParaEdicao();
-							buscaESelecionaEmpresaPedestre();
+				if (!habilitaBuscaCPF || visitante.getId() != null)
+					return;
 
-							mainContentPane.remove(actionsPanel);
-							actionsPanel = montarPainelAcoes();
-							mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
-							mainContentPane.revalidate();
-							mainContentPane.repaint();
+				String cpf = cpfTextField.getText().replace(".", "").replace("-", "").trim();
 
-						}
+				if (cpf.isEmpty() || !validarCPF(cpf))
+					return;
 
-					}
-				}
-			}
-
-			@Override
-			public void focusGained(FocusEvent e) {
+				buscarPedestrePorCPFAsync(cpf);
 			}
 		});
 
-		Vector<SelectItem> itens = new Vector<SelectItem>();
+		// ===================== GENERO =====================
+		Vector<SelectItem> itens = new Vector<>();
 		itens.add(new SelectItem("MASCULINO", "MASCULINO"));
 		itens.add(new SelectItem("FEMININO", "FEMININO"));
 
 		generoLabel = getNewLabel("Genero");
-		generoJComboBox = new JComboBox<SelectItem>(itens);
-		JPanel generoPanel = new JPanel();
+		generoJComboBox = new JComboBox<>(itens);
 
-		generoPanel.setLayout(new GridBagLayout());
-		c.fill = GridBagConstraints.HORIZONTAL;
+		JPanel generoPanel = new JPanel(new GridBagLayout());
 		c.gridx = 0;
 		c.gridy = 0;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		generoPanel.add(generoLabel, c);
-		c.gridx = 0;
 		c.gridy = 1;
 		generoPanel.add(generoJComboBox, c);
+
 		panel.add(generoPanel, getNewGridBag(1, 1, 30, 5));
 
+		// ===================== RG =====================
 		rgLabel = getNewLabel("RG");
 		rgTextField = getNewTextField(25);
-		rgTextField.setMinimumSize(new Dimension(300, 25));
-		JPanel rgPanel = getNewMiniPanel(rgLabel, rgTextField);
-		panel.add(rgPanel, getNewGridBag(2, 1, 30, 5));
-		rgTextField.addFocusListener(new FocusListener() {
+		panel.add(getNewMiniPanel(rgLabel, rgTextField), getNewGridBag(2, 1, 30, 5));
+
+		rgTextField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				// pesquisa por pedestre ou visitante
-				if (habilitaBuscaRG && visitante.getId() == null && rgTextField.getText() != null
-						&& !"".equals(rgTextField.getText())) {
-					PedestrianAccessEntity existente = (PedestrianAccessEntity) HibernateAccessDataFacade
-							.getSingleResultByRG(PedestrianAccessEntity.class, rgTextField.getText().trim());
 
-					if (existente != null && !"".equals(existente.getRg())) {
-						if (!existente.getTipo().equals(visitante.getTipo())) {
-							criarDialogoConfirmarmudarTipoPedestre(existente);
-						} else {
-							existente.setTipo(visitante.getTipo());
-							visitante = existente;
-							fotoVisitante = visitante.getFoto();
-							preencheDadosVisitanteEditando();
-							ajustaPaineisParaEdicao();
-							buscaESelecionaEmpresaPedestre();
+				if (!habilitaBuscaRG || visitante.getId() != null)
+					return;
 
-							mainContentPane.remove(actionsPanel);
-							actionsPanel = montarPainelAcoes();
-							mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
-							mainContentPane.revalidate();
-							mainContentPane.repaint();
-						}
+				String rg = rgTextField.getText().trim();
 
-					}
-				}
-			}
+				if (rg.isEmpty())
+					return;
 
-			@Override
-			public void focusGained(FocusEvent e) {
+				buscarPedestrePorRGAsync(rg);
 			}
 		});
 
+		// ===================== TELEFONE =====================
 		telefoneLabel = getNewLabel("Telefone");
 		telefoneTextField = Utils.getNewJFormattedTextField(25);
-		telefoneTextField.setMinimumSize(new Dimension(300, 25));
 		mask = Utils.getNewMaskFormatter("(###) ####-####");
 		mask.install(telefoneTextField);
-		JPanel telefonePanel = getNewMiniPanel(telefoneLabel, telefoneTextField);
-		panel.add(telefonePanel, getNewGridBag(0, 2, 30, 5));
+		panel.add(getNewMiniPanel(telefoneLabel, telefoneTextField), getNewGridBag(0, 2, 30, 5));
 
+		// ===================== CELULAR =====================
 		celularLabel = getNewLabel("Celular");
 		celularTextField = Utils.getNewJFormattedTextField(18);
 		mask = Utils.getNewMaskFormatter("(###) # ####-####");
 		mask.install(celularTextField);
-		JPanel celularPanel = getNewMiniPanel(celularLabel, celularTextField);
-		panel.add(celularPanel, getNewGridBag(1, 2, 30, 5));
+		panel.add(getNewMiniPanel(celularLabel, celularTextField), getNewGridBag(1, 2, 30, 5));
 
+		// ===================== RESPONSAVEL =====================
 		responsavelLabel = getNewLabel("Responsavel");
 		responsavelTextField = getNewTextField(25);
-		responsavelTextField.setMinimumSize(new Dimension(300, 25));
-		JPanel responsavelPanel = getNewMiniPanel(responsavelLabel, responsavelTextField);
-		panel.add(responsavelPanel, getNewGridBag(2, 2, 30, 5));
+		panel.add(getNewMiniPanel(responsavelLabel, responsavelTextField), getNewGridBag(2, 2, 30, 5));
 
+		// ===================== LOCAL =====================
 		localLabel = new JLabel("Local");
-		localJComboBox = new JComboBox<SelectItem>(getAllLocaisSelectItens());
+		localJComboBox = new JComboBox<>(getAllLocaisSelectItens());
 		criaPainelComboBox(localLabel, localJComboBox, panel, 0, 3);
-		
+
+		// ===================== OBS =====================
 		obsLabel = getNewLabel("Observacoes");
-		obsTextArea = new JTextArea();
-		obsTextArea.setColumns(40);
-		obsTextArea.setRows(4);
+		obsTextArea = new JTextArea(4, 40);
 		obsTextArea.setLineWrap(true);
-		obsTextArea.getInputMap().put(KeyStroke.getKeyStroke("control V"), "none");
 		obsTextArea.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
@@ -583,21 +536,166 @@ public class RegisterVisitorDialog extends BaseDialog {
 				}
 			}
 		});
-		obsTextArea.setMinimumSize(new Dimension(300, 70));
-		JPanel obsPanel = getNewMiniPanel(obsLabel, obsTextArea);
-		panel.add(obsPanel, getNewGridBag(1, 3, 30, 5));
-		
+		panel.add(getNewMiniPanel(obsLabel, obsTextArea), getNewGridBag(1, 3, 30, 5));
+
 		criaPanelDadosEmpresa(panel);
 
 		if (habilitaAppPedestre)
 			criaPanelDadosAcesso(panel);
-		
-		
-//		bloquearEdicaoSeNecessario(isPermitidoEditar);
 
 		return panel;
 	}
 	
+	private void buscarPedestrePorRGAsync(final String rg) {
+
+	    final LoadingDialog loading =
+	            new LoadingDialog(this, "Buscando cadastro pelo RG...");
+
+	    SwingWorker<PedestrianAccessEntity, Void> worker =
+	            new SwingWorker<PedestrianAccessEntity, Void>() {
+
+	        @Override
+	        protected PedestrianAccessEntity doInBackground() {
+	            return (PedestrianAccessEntity)
+	                    HibernateAccessDataFacade.getSingleResultByRG(
+	                            PedestrianAccessEntity.class, rg);
+	        }
+
+	        @Override
+	        protected void done() {
+	            loading.dispose();
+	            try {
+	                PedestrianAccessEntity existente = get();
+	                tratarPedestreEncontrado(existente);
+	            } catch (Exception e) {
+	                JOptionPane.showMessageDialog(
+	                        RegisterVisitorDialog.this,
+	                        "Erro ao buscar pedestre pelo RG",
+	                        "Erro",
+	                        JOptionPane.ERROR_MESSAGE
+	                );
+	            }
+	        }
+	    };
+
+	    worker.execute();
+	    loading.setVisible(true);
+	}
+	
+
+	public static boolean isCpfValido(String cpf) {
+
+		if (cpf == null) {
+			return false;
+		}
+
+		// Remove tudo que não for número
+		cpf = cpf.replaceAll("\\D", "");
+
+		// Deve ter 11 dígitos
+		if (cpf.length() != 11) {
+			return false;
+		}
+
+		// Rejeita CPFs com todos os dígitos iguais
+		if (cpf.matches("(\\d)\\1{10}")) {
+			return false;
+		}
+
+		try {
+			// Primeiro dígito verificador
+			int soma = 0;
+			for (int i = 0; i < 9; i++) {
+				soma += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+			}
+
+			int digito1 = 11 - (soma % 11);
+			if (digito1 >= 10) {
+				digito1 = 0;
+			}
+
+			// Segundo dígito verificador
+			soma = 0;
+			for (int i = 0; i < 10; i++) {
+				soma += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+			}
+
+			int digito2 = 11 - (soma % 11);
+			if (digito2 >= 10) {
+				digito2 = 0;
+			}
+
+			// Validação final
+			return digito1 == Character.getNumericValue(cpf.charAt(9))
+					&& digito2 == Character.getNumericValue(cpf.charAt(10));
+
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private void buscarPedestrePorCPFAsync(final String cpf) {
+
+	    final LoadingDialog loading =
+	            new LoadingDialog(this, "Buscando cadastro pelo CPF...");
+
+	    SwingWorker<PedestrianAccessEntity, Void> worker =
+	            new SwingWorker<PedestrianAccessEntity, Void>() {
+
+	        @Override
+	        protected PedestrianAccessEntity doInBackground() {
+	            return (PedestrianAccessEntity)
+	                    HibernateAccessDataFacade.getSingleResultByCPF(
+	                            PedestrianAccessEntity.class, cpf);
+	        }
+
+	        @Override
+	        protected void done() {
+	            loading.dispose();
+	            try {
+	                PedestrianAccessEntity existente = get();
+	                tratarPedestreEncontrado(existente);
+	            } catch (Exception e) {
+	                JOptionPane.showMessageDialog(
+	                        RegisterVisitorDialog.this,
+	                        "Erro ao buscar pedestre pelo CPF",
+	                        "Erro",
+	                        JOptionPane.ERROR_MESSAGE
+	                );
+	            }
+	        }
+	    };
+
+	    worker.execute();
+	    loading.setVisible(true);
+	}
+
+	private void tratarPedestreEncontrado(PedestrianAccessEntity existente) {
+
+	    if (existente == null)
+	        return;
+
+	    if (!existente.getTipo().equals(visitante.getTipo())) {
+	        criarDialogoConfirmarmudarTipoPedestre(existente);
+	        return;
+	    }
+
+	    existente.setTipo(visitante.getTipo());
+	    visitante = existente;
+	    fotoVisitante = visitante.getFoto();
+
+	    preencheDadosVisitanteEditando();
+	    ajustaPaineisParaEdicao();
+	    buscaESelecionaEmpresaPedestre();
+
+	    mainContentPane.remove(actionsPanel);
+	    actionsPanel = montarPainelAcoes();
+	    mainContentPane.add(actionsPanel, BorderLayout.SOUTH);
+	    mainContentPane.revalidate();
+	    mainContentPane.repaint();
+	}
+
+
 	
 	private void bloquearEdicaoSeNecessario(Boolean isPermitidoEditar) {
 		// Verifica se o usuario tem um perfil de acesso
@@ -2311,10 +2409,26 @@ public class RegisterVisitorDialog extends BaseDialog {
 				boolean cartaoExiste = verificaCartaoAcessoExistente(cartaoAcessoTextField.getText(),
 						visitante.getId() != null ? visitante.getId() : 0l);
 				if (cartaoExiste) {
-					cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " ja existente");
-					redAndBoldFont(cartaoAcessoLabel);
-					valido = false;
+				    int opcao = JOptionPane.showConfirmDialog(
+				        null,
+				        "Este cartão de acesso já existe.\nDeseja gerar outro cartão?",
+				        "Cartão já cadastrado",
+				        JOptionPane.YES_NO_OPTION
+				    );
+
+				    if (opcao == JOptionPane.YES_OPTION) {
+				        // Aqui você chama sua lógica para gerar um novo cartão
+				    	
+				    	String card = geraCartaoAcessoAleatorio();
+						System.out.println("gerado : " + card);
+						cartaoAcessoTextField.setText(card);
+				    } else {
+				        cartaoAcessoLabel.setText(cartaoAcessoLabel.getText() + " já existente");
+				        redAndBoldFont(cartaoAcessoLabel);
+				        valido = false;
+				    }
 				}
+
 			}
 		}
 
@@ -2630,30 +2744,27 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 		visitante.setFotoEnviada(true);
 		visitante.setDataCadastroFotoNaHikivision(new Date());
-		try {
-			new Thread() {
-				public void run() {
-					if ("ATIVO".equals(visitante.getStatus())) {
-						List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
-						hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
-					} else {
-//						hikivisionUseCases.removerUsuarioFromDevices(visitante);
-						if(Utils.removeInativos()) {
-							System.out.println("Deletando da camera");
-							hikivisionUseCases.removerUsuarioFromDevices(visitante);
-						}else {
-							hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
-						}
-					}
-				}
-			}.start();
-
-		} catch (InvalidPhotoException ife) {
-			criarDialogoFotoInvalida();
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
+	
+		new Thread(() -> {
+		    try {
+		        if ("ATIVO".equals(visitante.getStatus())) {
+		            List<String> devicesName = localRepository.getDevicesNameByPedestreLocal(visitante);
+		            hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, devicesName);
+		        } else {
+		            if (Utils.removeInativos()) {
+		                System.out.println("Deletando da camera");
+		                hikivisionUseCases.removerUsuarioFromDevices(visitante);
+		            } else {
+		                hikivisionUseCases.cadastrarUsuarioInDevices(visitante, null, null);
+		            }
+		        }
+		    } catch (InvalidPhotoException ife) {
+		        criarDialogoFotoInvalida();
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}).start();
+		
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 

@@ -37,6 +37,7 @@ import com.protreino.services.constants.Tipo;
 import com.protreino.services.entity.BiometricEntity;
 import com.protreino.services.entity.DeviceEntity;
 import com.protreino.services.entity.LogPedestrianAccessEntity;
+import com.protreino.services.entity.PedestreRegraEntity;
 import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.PedestrianMessagesEntity;
 import com.protreino.services.entity.TemplateEntity;
@@ -51,6 +52,7 @@ import com.protreino.services.enumeration.MessageType;
 import com.protreino.services.enumeration.NotificationType;
 import com.protreino.services.enumeration.VerificationResult;
 import com.protreino.services.main.Main;
+import com.protreino.services.repository.DeviceRepository;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateLocalAccessData;
 import com.protreino.services.repository.LogPedestrianAccessRepository;
@@ -900,208 +902,179 @@ public class TopDataDevice extends Device {
 
 	
 	protected void registraGiro(int sentido, Date data) {
-		String query = "";
+	    String query = "";
 
-		HashMap<String, Object> args = new HashMap<>();
-		args.put("EQUIPAMENTO", getFullIdentifier());
+	    HashMap<String, Object> args = new HashMap<>();
 
-		// DEBUG: Estado inicial do cartão e facial
-		System.out.println(">>> Cartao bruto: " + inner.BilheteInner.Cartao);
-		System.out.println(">>> FacialId: " + matchedFacialId);
+	    // ===== TRATAMENTO 1: DEVICE =====
+	    Device device = equipamentoPassado(getFullIdentifier());
+	    if (device == null) {
+	        System.out.println("ERRO: Equipamento não encontrado");
+	        return;
+	    }
 
-		String cartaoStr = (inner.BilheteInner.Cartao != null) 
-		        ? inner.BilheteInner.Cartao.toString() 
-		        : null;
+	    System.out.println("EQUIPAMENTO QUE REGISTROU GIRO: " + device.getName());
+	    args.put("EQUIPAMENTO", device.getName());
 
-		// Um cartão é válido se não for nulo, não for vazio e não for só zeros
-		boolean cartaoEhValido = cartaoStr != null 
-		        && !cartaoStr.isEmpty() 
-		        && !cartaoStr.replace("0", "").isEmpty();
+	    // ===== TRATAMENTO 2: INNER =====
+	    if (inner == null || inner.BilheteInner == null) {
+	        System.out.println("ERRO: inner ou BilheteInner nulo");
+	        return;
+	    }
 
-		if (cartaoEhValido) {
-		    // Remove prefixo se existir
-		    if (cartaoStr.startsWith("05000") 
-		            || cartaoStr.startsWith("005000") 
-		            || cartaoStr.startsWith("00100")) {
-		        cartaoStr = cartaoStr.substring(5);
-		    }
+	    // DEBUG
+	    System.out.println(">>> Cartao bruto: " + inner.BilheteInner.Cartao);
+	    System.out.println(">>> FacialId: " + matchedFacialId);
 
-		    System.out.println(">>> Registra giro com CARTAO válido: " + cartaoStr);
-		    args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
-		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+	    String cartaoStr = (inner.BilheteInner.Cartao != null)
+	            ? inner.BilheteInner.Cartao.toString()
+	            : null;
 
-		} else if (matchedFacialId != null) {
-		    // Caso facial reconhecido
-		    System.out.println(">>> Registra giro com FACIAL ID: " + matchedFacialId);
-		    args.put("NUMERO_CARTAO_RECEBIDO", matchedFacialId.toString());
-		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
-		    matchedFacialId = null;
+	    boolean cartaoEhValido = cartaoStr != null
+	            && !cartaoStr.isEmpty()
+	            && !cartaoStr.replace("0", "").isEmpty();
 
-		} else if (cartaoStr != null && cartaoStr.isEmpty()) {
-		    // Cartão veio vazio -> Liberação manual
-		    System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (sem cartão nem facial)");
+	    if (cartaoEhValido) {
 
-		    if (inner.BilheteInner.Cartao == null) {
-		        inner.BilheteInner.Cartao = new StringBuilder();
-		    } else {
-		        inner.BilheteInner.Cartao.setLength(0);
-		    }
-		    return;
+	        if (cartaoStr.startsWith("05000")
+	                || cartaoStr.startsWith("005000")
+	                || cartaoStr.startsWith("00100")) {
+	            cartaoStr = cartaoStr.substring(5);
+	        }
 
-		} else if (cartaoStr != null && cartaoStr.replace("0", "").isEmpty()) {
-		    // Cartão só com zeros -> Sem cartão
-		    System.out.println(">>> Registra giro SEM CARTÃO (cartão zerado)");
-		    query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
+	        System.out.println(">>> Registra giro com CARTAO válido: " + cartaoStr);
+	        args.put("NUMERO_CARTAO_RECEBIDO", cartaoStr);
+	        query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
 
-		} else {
-		    // Qualquer outro cenário não previsto -> trata como liberação manual
-		    System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (caso alternativo)");
+	    } else if (matchedFacialId != null) {
 
-		    if (inner.BilheteInner.Cartao == null) {
-		        inner.BilheteInner.Cartao = new StringBuilder();
-		    } else {
-		        inner.BilheteInner.Cartao.setLength(0);
-		    }
-		    return;
-		}
+	        System.out.println(">>> Registra giro com FACIAL ID: " + matchedFacialId);
+	        args.put("NUMERO_CARTAO_RECEBIDO", matchedFacialId.toString());
+	        query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndComCartaoRecebido";
+	        matchedFacialId = null;
 
-		// Sempre limpa o cartão no final (defensivo)
-		if (inner.BilheteInner.Cartao == null) {
-		    inner.BilheteInner.Cartao = new StringBuilder();
-		} else {
-		    inner.BilheteInner.Cartao.setLength(0);
-		}
+	    } else if (cartaoStr != null && cartaoStr.isEmpty()) {
 
+	        System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL");
+	        inner.BilheteInner.Cartao = new StringBuilder();
+	        return;
 
-		if (!this.ignorarAcesso()) {
+	    } else if (cartaoStr != null && cartaoStr.replace("0", "").isEmpty()) {
 
-			LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
-					.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+	        System.out.println(">>> Registra giro SEM CARTÃO (zerado)");
+	        query = "LogPedestrianAccessEntity.findByEquipamentSemDirectionAndSemCartaoRecebido";
 
-			if (ultimoAcesso == null) {
-				return;
-			}
+	    } else {
 
-			// sentido = 1 / horario
-			// sentido = 0 / antihorario
-			String direction = Tipo.ENTRADA;
-			String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
+	        System.out.println(">>> Registra giro da LIBERAÇÃO MANUAL (fallback)");
+	        inner.BilheteInner.Cartao = new StringBuilder();
+	        return;
+	    }
 
-			boolean bloquearSaida = true;
+	    // ===== LIMPA CARTÃO =====
+	    inner.BilheteInner.Cartao = new StringBuilder();
 
-			if (sentido == 1) {
-				direction = "anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
-			} else if (sentido == 0) {
-				direction = !"anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
-			}
-			
-			System.out.println("DIREÇÃO DE GIRO : " + direction);
-			if("SAIDA".equalsIgnoreCase(direction) && Utils.isSaidaSemVerificar()) {
-				ultimoAcesso.setReason("SEMPRE LIBERADO");
-			}
-			
-			ultimoAcesso.setDirection(direction);
-			ultimoAcesso.setStatus("ATIVO");
-			ultimoAcesso.setBloquearSaida(bloquearSaida);
+	    // ===== TRATAMENTO 3: QUERY =====
+	    if (query == null || query.isEmpty()) {
+	        System.out.println("ERRO: query não definida");
+	        return;
+	    }
 
-			if (data != null) {
-				ultimoAcesso.setAccessDate(data);
-				ultimoAcesso.setOffline(true);
-			} else {
-				ultimoAcesso.setAccessDate(new Date());
-			}
+	    if (!this.ignorarAcesso()) {
 
-			ultimoAcesso.setDataCriacao(new Date());
-			if(ultimoAcesso.isEntrada()) {
-				ultimoAcesso.setIntervalo(getIntervaloRefeitorioAtivo());
-			}
-			
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
+	        LogPedestrianAccessEntity ultimoAcesso =
+	                (LogPedestrianAccessEntity) HibernateAccessDataFacade
+	                        .getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
 
-			PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
-					.getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
+	        // ===== TRATAMENTO 4: ULTIMO ACESSO =====
+	        if (ultimoAcesso == null) {
+	            System.out.println("Ultimo acesso não encontrado");
+	            return;
+	        }
 
-			if (pedestre == null) {
-				pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
-						.getSingleResultByIdTemp(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
-			}
+	        String direction = Tipo.ENTRADA;
+	        String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
+	        boolean bloquearSaida = true;
 
-			if (pedestre == null) {
-				return;
-			}
+	        if (sentido == 1) {
+	            direction = "anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
+	        } else if (sentido == 0) {
+	            direction = !"anticlockwise".equals(sentidoCatraca) ? Tipo.SAIDA : Tipo.ENTRADA;
+	        }
 
-			if (Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
-				pedestre.setLastAccessHikiVision(new Date());
-			}
+	        System.out.println("DIREÇÃO DE GIRO : " + direction);
 
-			boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
-			if (!ignoraRegras) {
-				if (pedestre.temMensagens()) {
-					pedestre.decrementaMensagens();
-				}
+	        ultimoAcesso.setReason("");
+	        ultimoAcesso.setDirection(direction);
+	        ultimoAcesso.setStatus("ATIVO");
+	        ultimoAcesso.setBloquearSaida(bloquearSaida);
 
-				// adicionar uma configuracao para decremetar na saida
-				final Boolean decrementaEntrada = Utils.getPreferenceAsBoolean("decrementaEntrada");
+	        if (data != null) {
+	            ultimoAcesso.setAccessDate(data);
+	            ultimoAcesso.setOffline(true);
+	        } else {
+	            ultimoAcesso.setAccessDate(new Date());
+	        }
 
-				// Verifica se deve decrementar na entrada ou na saída
-				if (decrementaEntrada) {
-					// Configuração ativa: decrementar na entrada
-					if (ultimoAcesso.isEntrada()) {
-						System.out.println(">> Apagando credito");
-						pedestre.decrementaCreditos(data);
-					}
-				} else {
-					// Configuração inativa: decrementar na saída
-					if (ultimoAcesso.isSaida() || !bloquearSaida) {
-						System.out.println(">> Apagando credito");
-						pedestre.decrementaCreditos(data);
-					}
-				}
-				//para apagar foto visitante
-				if (ultimoAcesso.isSaida() 
-						&& (!pedestre.temCreditos()
-								&& pedestre.isVisitante() 
-								&& !(pedestre.getRegraAtiva().get().isRegraComHorarios() || pedestre.temRegraDeAcessoPorPeriodoValido()))) {
-					if (Utils.isHikivisionConfigValid() && Objects.nonNull(pedestre.getFoto())
-							&& Objects.nonNull(pedestre.getDataCadastroFotoNaHikivision())) {
-						if (removeVisitanteCamera) {
-							hikivisionUseCases.removerUsuarioFromDevices(pedestre);
-						}
+	        ultimoAcesso.setDataCriacao(new Date());
 
-					} else {
-						pedestre.apagarCartao();
-					}
+	        HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
 
-				}
+	        PedestrianAccessEntity pedestre =
+	                (PedestrianAccessEntity) HibernateAccessDataFacade
+	                        .getSingleResultById(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
 
-				if (pedestre.isQrCodeUsoDinamico()) {
-					pedestre.decrementaQRCodeUso();
-				}
-				
-				if(pedestre.isVisitante()) {
-					pedestre.setEditadoNoDesktop(true);
-					pedestre.setDataAlteracao(new Date());
-				}
-				
-				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
-			}
+	        if (pedestre == null) {
+	            pedestre =
+	                    (PedestrianAccessEntity) HibernateAccessDataFacade
+	                            .getSingleResultByIdTemp(PedestrianAccessEntity.class, ultimoAcesso.getIdPedestrian());
+	        }
 
-			if (ultimoAcesso.isSaida()) {
-				enviaSmsDeRegistroUseCase.execute(pedestre);
-			}
+	        if (pedestre == null) {
+	            return;
+	        }
 
-			System.out.println("Registrou giro no equipamento: " + inner.Numero);
-		}else {
-			System.out.println("Acesso ignorado");
-			LogPedestrianAccessEntity ultimoAcesso = (LogPedestrianAccessEntity) HibernateAccessDataFacade
-					.getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
-			
-			ultimoAcesso.setStatus("ATIVO");
-			ultimoAcesso.setDirection("ACESSO HORARIO LIVRE");
-			
-			HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
-		}
+	        boolean ignoraRegras = getConfigurationValueAsBoolean(IGNORAR_REGRAS_DE_ACESSO);
+
+	        if (!ignoraRegras) {
+
+	            if (ultimoAcesso.isSaida()
+	                    && pedestre.isVisitante()
+	                    && !pedestre.temCreditos()
+	                    && !pedestre.getRegraAtiva()
+	                            .map(PedestreRegraEntity::isRegraComHorarios)
+	                            .orElse(false)
+	                    && !pedestre.temRegraDeAcessoPorPeriodoValido()) {
+
+	                pedestre.apagarCartao();
+	            }
+
+	            HibernateAccessDataFacade.save(PedestrianAccessEntity.class, pedestre);
+	        }
+
+	        System.out.println("Registrou giro no equipamento: " + inner.Numero);
+
+	    } else {
+
+	        System.out.println("Acesso ignorado");
+
+	        LogPedestrianAccessEntity ultimoAcesso =
+	                (LogPedestrianAccessEntity) HibernateAccessDataFacade
+	                        .getUniqueResultWithParams(LogPedestrianAccessEntity.class, query, args);
+
+	        // ===== TRATAMENTO 5: ULTIMO ACESSO (IGNORADO) =====
+	        if (ultimoAcesso == null) {
+	            System.out.println("Ultimo acesso não encontrado (ignorado)");
+	            return;
+	        }
+
+	        ultimoAcesso.setStatus("ATIVO");
+	        ultimoAcesso.setDirection("ACESSO HORARIO LIVRE");
+
+	        HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, ultimoAcesso);
+	    }
 	}
+
 	
 	@Override
 	public void sendConfiguration() throws Exception {
@@ -1355,24 +1328,33 @@ public class TopDataDevice extends Device {
 //		}
 //	}
 	
+	
 	@Override
 	public void allowAccess() {
-	    synchronized (this) {  // ← trava apenas esta catraca
+	    // fluxo antigo, intacto
+	    allowAccess((String) null );
+	}
+	
+	public void allowAccess(String sentido) {
+	    synchronized (this) {
 	        try {
 	            definiMensagemExibidaNoDisplay();
+
+	            String sentidoRecebido = sentido; // pode ser null → fluxo antigo
 	            String sentidoCatraca = getConfigurationValue(SENTIDO_DA_CATRACA);
 	            boolean bloquearSaida = getConfigurationValueAsBoolean(BLOQUEAR_SAIDA);
 
-	            if (mensagemPermitido == null || mensagemPermitido.trim().isEmpty())
+	            if (mensagemPermitido == null || mensagemPermitido.trim().isEmpty()) {
 	                mensagemPermitido = "Acesso Liberado";
+	            }
 
-	            int ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	            int ret = decideLadoEntrada(sentidoCatraca, bloquearSaida, sentidoRecebido);
 	            EasyInner.EnviarMensagemPadraoOnLine(inner.Numero, 0, mensagemPermitido);
 
 	            int countTentativasEnvioComando = 0;
 	            while (ret != Enumeradores.RET_COMANDO_OK && countTentativasEnvioComando < 3) {
 	                Utils.sleep(tempoEspera);
-	                ret = decideLadoEntrada(sentidoCatraca, bloquearSaida);
+	                ret = decideLadoEntrada(sentidoCatraca, bloquearSaida, sentidoRecebido);
 	                countTentativasEnvioComando++;
 	            }
 
@@ -1392,7 +1374,8 @@ public class TopDataDevice extends Device {
 	    }
 	}
 
-	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida) {
+
+	private int decideLadoEntrada(String sentidoCatraca, boolean bloquearSaida, String sentidoCamera) {
 		int ret = 0;
 		final Boolean doisSentidosLiberado = Utils.getPreferenceAsBoolean("doisSentidos");
 		final String entrar = Utils.getPreference("messageEntryAllowed");
@@ -1424,6 +1407,60 @@ public class TopDataDevice extends Device {
 				
 				return ret;
 			}
+			
+			// nova implementação (mínima)
+			if (sentidoCamera != null && !sentidoCamera.trim().isEmpty()) {
+				System.out.println("Sentido da camera recebido : " + sentidoCamera);
+
+			    String cameraUpper = sentidoCamera.toUpperCase();
+
+			    boolean cameraEntrada = cameraUpper.contains("ENTRADA");
+			    boolean cameraSaida = cameraUpper.contains("SAIDA") || cameraUpper.contains("SAÍDA");
+			    
+			    System.out.println("Convertido, entrada : " + cameraEntrada + ", camera saida : " + cameraSaida);
+
+			    if(doisSentidosLiberado) {
+			    	System.out.println("Dois sentidos liberados");
+					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+					EasyInner.AcionarBipCurto(inner.Numero);	
+				}
+			    
+			    // se não encontrou nenhum, libera os dois sentidos
+			    if (!cameraEntrada && !cameraSaida) {
+			        EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
+			        EasyInner.AcionarBipCurto(inner.Numero);
+			        return ret;
+			    }
+
+			    // força ENTRADA
+			    if (cameraEntrada && !cameraSaida) {
+			        ret = "anticlockwise".equals(sentidoCatraca)
+			                ? EasyInner.LiberarCatracaEntrada(inner.Numero)
+			                : EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+
+			        if (messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
+			            mensagemPermitido = defineMensagemPermitido(sentidoCatraca, espacoEntrar, entrar);
+			        }
+
+			        return ret;
+			    }
+
+			    // força SAÍDA
+			    if (cameraSaida && !cameraEntrada) {
+			        ret = !"anticlockwise".equals(sentidoCatraca)
+			                ? EasyInner.LiberarCatracaEntrada(inner.Numero)
+			                : EasyInner.LiberarCatracaEntradaInvertida(inner.Numero);
+
+			        if (messagePersonalizedInDevice == null || messagePersonalizedInDevice.isEmpty()) {
+			            mensagemPermitido = "anticlockwise".equals(sentidoCatraca)
+			                    ? formatMessage(sair + espacoSair + "->" + ";" + allowedUserName)
+			                    : formatMessage("<-" + espacoSair + sair + ";" + allowedUserName);
+			        }
+
+			        return ret;
+			    }
+			}
+
 
 			LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(matchedAthleteAccess.getId(),
 					matchedAthleteAccess.getQtdAcessoAntesSinc());
@@ -2217,12 +2254,6 @@ public class TopDataDevice extends Device {
 			inner.BilheteInner.Cartao.setLength(0);
 			inner.BilheteInner.Cartao = new StringBuilder(cardNumber);
 			
-//			if(!this.ignorarAcesso() || !Utils.isAcessoLiberado() || !isSaidaLiberada(cameraNome)) {
-//				processAccessRequest(cardNumber, false);				
-//			}else {
-//				setVerificationResult(VerificationResult.ALLOWED);
-//				System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
-//			}
 			System.out.println(">>> PASSAGEM NA CAMERA - " + cameraNome);
 			
 			if (this.ignorarAcesso() || Utils.isAcessoLiberado() || isSaidaLiberada(cameraNome)) {
@@ -2241,7 +2272,7 @@ public class TopDataDevice extends Device {
 			
 			if (VerificationResult.ALLOWED.equals(getVerificationResult())
 					|| VerificationResult.TOLERANCE_PERIOD.equals(getVerificationResult())) {
-	            allowAccess();
+	            allowAccess(cameraNome);
 			} else {
 				denyAccess();
 			}
@@ -2986,6 +3017,27 @@ public class TopDataDevice extends Device {
 
 	    return null; // nenhum intervalo ativo
 	}
+	
+	private TopDataDevice equipamentoPassado(String equipament) {
+		if(Objects.isNull(equipament)) {
+			return null;
+		}
+		
+		if(equipament.isEmpty()) {
+			return null;
+		}
+		
+		System.out.println("buscando equipamento : " + equipament);
+		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
+
+		if (Objects.isNull(device)) {
+			System.out.println("Device não encontrado");
+			return null;
+		}
+		
+		return (TopDataDevice) device;
+	}
+	
 	
 	
 	@Override

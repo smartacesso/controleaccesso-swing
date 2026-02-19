@@ -136,8 +136,10 @@ public class HikiVisionIntegrationService {
 						HikivisionUserInfoTO.class);
 				final boolean isUsuarioCadastrado = responseBody.UserInfoSearch.responseStatusStrg.equals("OK");
 
-				System.out.println(String.format("Usuario %s ja cadastrado no device %s: %b", idUser, deviceId,
-						isUsuarioCadastrado));
+				if(!isUsuarioCadastrado) {
+					System.out.println(String.format("Usuario %s ja cadastrado no device %s: %b", idUser, deviceId,
+							isUsuarioCadastrado));
+				}
 
 				return isUsuarioCadastrado;
 			}
@@ -239,9 +241,11 @@ public class HikiVisionIntegrationService {
 				final UserInfoOut responseBody = gson.fromJson(response.body().string(), UserInfoOut.class);
 
 				final boolean isCadastradoComSucesso = "OK".equalsIgnoreCase(responseBody.statusString);
-
-				System.out.println(String.format("Usuario %s com a digital vinculada no device %s com sucesso: %b", idUser, deviceId,
-						isCadastradoComSucesso));
+				
+				if(!isCadastradoComSucesso) {
+					System.out.println(String.format("Usuario %s com a digital vinculada no device %s com sucesso: %b", idUser, deviceId,
+							isCadastradoComSucesso));
+				}
 
 				return isCadastradoComSucesso;
 			}
@@ -276,9 +280,11 @@ public class HikiVisionIntegrationService {
 				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
 
 				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
-
-				System.out.println(String.format("Usuario %s removido no device %s com sucesso: %b", idUser, deviceId,
-						isCadastradoComSucesso));
+				
+				if(!isCadastradoComSucesso) {
+					System.out.println(String.format("Usuario %s removido no device %s com sucesso: %b", idUser, deviceId,
+							isCadastradoComSucesso));
+				}
 
 				return isCadastradoComSucesso;
 			}
@@ -326,9 +332,11 @@ public class HikiVisionIntegrationService {
 				final UserInfoTO responseBody = gson.fromJson(response.body().string(), UserInfoTO.class);
 
 				final boolean isCadastradoComSucesso = responseBody.UserInfoOutList.UserInfoOut.get(0).statusString.equalsIgnoreCase("OK");
-
-				System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
-						isCadastradoComSucesso));
+				
+				if(!isCadastradoComSucesso) {
+					System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
+							isCadastradoComSucesso));
+				}
 
 				return isCadastradoComSucesso;
 			}
@@ -367,9 +375,11 @@ public class HikiVisionIntegrationService {
 			}
 			
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
-
-			System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser,
-					deviceId, isCadastradoComSucesso));
+			
+			if(isCadastradoComSucesso) {
+				System.out.println(String.format("Foto do usuario %s cadastrada no device %s com sucesso: %b", idUser,
+						deviceId, isCadastradoComSucesso));
+			}
 
 			return isCadastradoComSucesso;
 		} catch (InvalidPhotoException ife) {
@@ -408,8 +418,13 @@ public class HikiVisionIntegrationService {
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
                 final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+                
                 final boolean isCartaoAdicionado = responseBody.statusString.equalsIgnoreCase("OK");
-                System.out.println(String.format("Cartao  %s cadastrado no device %s com sucesso: %b", idUser, deviceId, isCartaoAdicionado));
+                
+				if (!isCartaoAdicionado) {
+					System.out.println(String.format("Cartao  %s cadastrado no device %s com sucesso: %b", idUser,
+							deviceId, isCartaoAdicionado));
+				}
                 
                 return isCartaoAdicionado;
             }
@@ -482,9 +497,11 @@ public class HikiVisionIntegrationService {
 			final FaceDataRecordResponseTO responseBody = gson.fromJson(response.body().string(),
 					FaceDataRecordResponseTO.class);
 			final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
-
-			System.out.println(String.format("Foto do usuario %s atualizada no device %s com sucesso: %b", idUser,
-					deviceId, isCadastradoComSucesso));
+			
+			if(!isCadastradoComSucesso) {
+				System.out.println(String.format("Foto do usuario %s atualizada no device %s com sucesso: %b", idUser,
+						deviceId, isCadastradoComSucesso));
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -524,8 +541,14 @@ public class HikiVisionIntegrationService {
 	        try(Response response = client.newCall(request).execute();) {
 	            if (response.isSuccessful()) {
 	                final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+	                
 	                final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
-	                System.out.println(String.format("Listerner adicionado para o device %s com sucesso: %b", deviceId, isCadastradoComSucesso));
+	                
+					if (!isCadastradoComSucesso) {
+						System.out.println(String.format("Listerner adicionado para o device %s com sucesso: %b",
+								deviceId, isCadastradoComSucesso));
+					}
+	               
 	            } else {
 	            	System.out.println("Erro ao enviar listerner: " + response.body().string());
 	            }
@@ -555,8 +578,11 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute();) {
 			final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+			
             final boolean isApagadoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
-            System.out.println(String.format("Usuario %s apagado no device %s com sucesso: %b", idUser, deviceId, isApagadoComSucesso));
+            if(!isApagadoComSucesso) {
+            	  System.out.println(String.format("Usuario %s apagado no device %s com sucesso: %b", idUser, deviceId, isApagadoComSucesso));
+            }
             
             return isApagadoComSucesso;
 
@@ -586,8 +612,13 @@ public class HikiVisionIntegrationService {
 		try (Response response = client.newCall(request).execute();) {
 			if (response.isSuccessful()) {
                 final ResponseStatusTO responseBody = gson.fromJson(response.body().string(), ResponseStatusTO.class);
+                
                 final boolean isApagadoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
-                System.out.println(String.format("Foto do usuario %s apagada no device %s com sucesso: %b", idUser, deviceId, isApagadoComSucesso));
+                
+				if (!isApagadoComSucesso) {
+					System.out.println(String.format("Foto do usuario %s apagada no device %s com sucesso: %b", idUser,
+							deviceId, isApagadoComSucesso));
+				}
                 
                 return isApagadoComSucesso;
             }
@@ -638,8 +669,10 @@ public class HikiVisionIntegrationService {
 
 				final boolean isCadastradoComSucesso = responseBody.statusString.equalsIgnoreCase("OK");
 
-				System.out.println(String.format("Usuario %s editado no device %s com sucesso: %b", idUser, deviceId,
-						isCadastradoComSucesso));
+				if(!isCadastradoComSucesso) {
+					System.out.println(String.format("Usuario %s editado no device %s com sucesso: %b", idUser, deviceId,
+							isCadastradoComSucesso));
+				}
 
 				return isCadastradoComSucesso;
 			}
@@ -748,7 +781,6 @@ public class HikiVisionIntegrationService {
 	}
 	
 	public void criarPlanoDeHorario(final String deviceId, final int weekPlanId, PlanoHorarioHikivision config) {
-		System.out.println("Criando intervalos de horarios");
 		Gson gson = new Gson();
 
 		String bodyInterno = gson.toJson(config);
@@ -766,9 +798,9 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute()) {
 			if (response.isSuccessful()) {
-				System.out.println(
-						String.format("Configuração do horario de acesso %d atualizada no dispositivo %s com sucesso!",
-								weekPlanId, deviceId));
+//				System.out.println(
+//						String.format("Configuração do horario de acesso %d atualizada no dispositivo %s com sucesso!",
+//								weekPlanId, deviceId));
 			} else {
 				System.err.println(
 						"Erro ao atualizar configuração de horario: " + response.code() + " - " + response.message());
@@ -798,9 +830,9 @@ public class HikiVisionIntegrationService {
 
 		try (Response response = client.newCall(request).execute()) {
 			if (response.isSuccessful()) {
-				System.out.println(
-						String.format("Configuração de acesso do plano %d atualizada no dispositivo %s com sucesso!",
-								planTemplateId, deviceId));
+//				System.out.println(
+//						String.format("Configuração de acesso do plano %d atualizada no dispositivo %s com sucesso!",
+//								planTemplateId, deviceId));
 			} else {
 				System.err.println(
 						"Erro ao atualizar configuração de template: " + response.code() + " - " + response.message());
@@ -846,7 +878,7 @@ public class HikiVisionIntegrationService {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                System.out.println(String.format("Configuração de horario do usuario atualizada no dispositivo com sucesso! no template %d", planTemplateId));
+//                System.out.println(String.format("Configuração de horario do usuario atualizada no dispositivo com sucesso! no template %d", planTemplateId));
             } else {
                 System.err.println("Erro ao atualizar configuração de vinculo de usuario: " + response.code() + " - " + response.message());
             }
