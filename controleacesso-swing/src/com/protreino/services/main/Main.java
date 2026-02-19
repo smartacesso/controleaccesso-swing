@@ -643,8 +643,6 @@ public class Main {
 
         inicializaTimers();
         
-       // verificaRemocaoDefacesHV();
-      
         String hora = Utils.getPreference("hourAutomaticRoutines");
         hora = (hora == null || "".equals(hora) ? "0" : hora);
 
@@ -900,6 +898,7 @@ public class Main {
         if (timerCall) {
             limpaCartoesVisitantes();
             buscaVisitantesFotoAlterada();
+            baixarFotos();
         }
         
         syncTemplatesInTopDataDevices.execute();
@@ -2269,21 +2268,36 @@ public class Main {
         }
     }
     
-//	private List<PedestrianAccessEntity> buscarTodosAgendamentos() {
-////		@SuppressWarnings("unchecked")
-////		List<PedestrianAccessEntity> pedestresAgendados = (List<PedestrianAccessEntity>) HibernateAccessDataFacade
-////				.getResultListLimited(PedestrianAccessEntity.class,
-////						"PedestrianAccessEntity.findAllVisitantesWhithWhithAgendamento", 100L);
-//		
-//		List<PedestrianAccessEntity> pedestresAgendados =  HibernateLocalAccessData.buscarAgendamentosAtivos(100);
-//
-//		if (pedestresAgendados == null || pedestresAgendados.isEmpty()) {
-//			System.out.println(sdf.format(new Date()) + "  PEDESTRES: sem agendados");
-//			return null;
-//		}
-//		
-//		return pedestresAgendados;
-//	}
+    private static void baixarFotos() {
+		final int pageSize = 500;
+		final Integer countPedestresParaSincronizar = HibernateAccessDataFacade.
+                getResultListWithParamsCount(PedestrianAccessEntity.class, "PedestrianAccessEntity.countAllPedestres", null);
+		if(Objects.isNull(countPedestresParaSincronizar) || countPedestresParaSincronizar.equals(0)) {
+			return;
+		}
+
+		System.out.println("Pedestre encontrados: " + countPedestresParaSincronizar);
+		int offset = 0;
+		do {
+			
+			@SuppressWarnings("unchecked")
+			List<PedestrianAccessEntity> pedestresParaSicronizar = (List<PedestrianAccessEntity>) HibernateAccessDataFacade.getResultListWithParams(PedestrianAccessEntity.class,
+					"PedestrianAccessEntity.allPedestres", null, offset, pageSize);
+			
+			try {
+				syncPedestrianAccessListUseCase.buscaFotosTodosDosPedestres(pedestresParaSicronizar);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			offset += pageSize;
+		} while (offset < countPedestresParaSincronizar);
+		
+		System.out.println("Baixar foto - finalizado");
+		
+	}
+
     
     public static synchronized boolean temServidor() {
     	return Objects.nonNull(servidor);
