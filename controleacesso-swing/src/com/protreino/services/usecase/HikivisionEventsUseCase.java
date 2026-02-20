@@ -392,7 +392,7 @@ public class HikivisionEventsUseCase {
 	    final Duration diferenca = Duration.between(offsetDateTime, agora);
 
 	    // Qualquer evento com mais de 20 segundos de diferença é considerado offline
-	    return Math.abs(diferenca.getSeconds()) > 120;
+	    return Math.abs(diferenca.getSeconds()) > 480;
 	}
 	
 }
