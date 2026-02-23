@@ -2019,6 +2019,10 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	public Boolean getEditadoNoDesktop() {
 		return editadoNoDesktop;
 	}
+	
+	public Boolean visitanteAlterado() {
+		return editadoNoDesktop || cadastradoNoDesktop;
+	}
 
 	public void setEditadoNoDesktop(Boolean editadoNoDesktop) {
 		this.editadoNoDesktop = editadoNoDesktop;

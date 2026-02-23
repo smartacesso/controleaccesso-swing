@@ -349,7 +349,7 @@ public class SyncPedestrianAccessListUseCase {
                 while (true) {
                     PedestrianAccessEntity visitante = HibernateLocalAccessData.getNextCadastradoOuEditado(lastSync, lastId);
                     if (visitante == null) break;
-                    if(Boolean.TRUE.equals(visitante.getEditadoNoDesktop())) {
+                    if(Boolean.TRUE.equals(visitante.visitanteAlterado())) {
                     	visitantesLocais.add(visitante);
                     }
                     lastId = visitante.getId();
