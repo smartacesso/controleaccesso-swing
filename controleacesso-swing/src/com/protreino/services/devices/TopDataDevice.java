@@ -2257,9 +2257,28 @@ public class TopDataDevice extends Device {
 			System.out.println(">>> PASSAGEM NA CAMERA - " + cameraNome);
 			
 			if (this.ignorarAcesso() || Utils.isAcessoLiberado() || isSaidaLiberada(cameraNome)) {
-			    // Libera sem verificar
-			    setVerificationResult(VerificationResult.ALLOWED);
-			    System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
+
+				final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
+						.getSingleResultByCardNumberString(PedestrianAccessEntity.class, cardNumber);
+
+				setVerificationResult(VerificationResult.ALLOWED);
+
+				if (Objects.isNull(pedestre)) {
+					System.out.println("pedestre não encontrado");
+					return;
+				}
+				
+				System.out.println("Disposito sempre liberado : " + this.getName());
+
+				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+						pedestre.getId(), false, location, "", null, Objects.nonNull(this) ? this.getName() : "",
+						cardNumber, new Date());
+
+				logAccess.setStatus("INDEFINIDO");
+
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+
+				System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
 			} else {
 			    // Processa normalmente
 			    processAccessRequest(cardNumber, false);
