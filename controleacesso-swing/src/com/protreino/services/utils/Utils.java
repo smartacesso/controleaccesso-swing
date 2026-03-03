@@ -424,6 +424,8 @@ public class Utils {
 				"Habilita reset status de cartão/comanda", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableOfflineCard",
 				"Enviar cartões para Catraca Offline", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "removeVisitanteFinalDodia",
+				"Remove visitante no final do dia", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "enableCardBlock",
 				"Manter status AGUARDANDO comanda", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "registraLogLiberacaoManual",
@@ -575,6 +577,8 @@ public class Utils {
 				"Sincronizar horario hkivision de regras alteradas na web", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "removeInativos",
 				"Remover da camera totalmente inativos", FieldType.CHECKBOX, "true"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockInativos",
+				"Manter na camera e bloquear inativo", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "blockCardAndGenerateRandomNumber",
 				"Bloquear campo cartão/Gerar automatico", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.HIKIVISION_FACE_RECOGONIZER, "reproccessHikivisionErrors",
@@ -2045,10 +2049,14 @@ public class Utils {
 	public static boolean registraLogLiberacaoManual() {
 		return Utils.getPreferenceAsBoolean("registraLogLiberacaoManual");
 	}
+
+	public static boolean manterEbloquerInativos() {
+		return Utils.getPreferenceAsBoolean("blockInativos");
+	}
 	
-	
-	
-	
+	public static boolean removerVisitante() {
+		return Utils.getPreferenceAsBoolean("removeVisitanteFinalDodia");
+	}
 	
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {

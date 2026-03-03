@@ -988,7 +988,7 @@ public class Main {
     						"PedestrianAccessEntity.findAllVisitantesWhithWhithPassagemHikivision", args, offset, pageSize);
     		
     		visitantes.forEach(visitante -> {
-    			if(podeRemover(visitante)) {
+    			if(podeRemover(visitante) || Utils.removerVisitante()) {
     				System.out.println("removendo visitante : " + visitante.getName());
         			hikivisionUseCases.removerUsuarioFromDevices(visitante);
         			visitante.setFotoEnviada(null);
