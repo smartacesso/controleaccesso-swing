@@ -306,13 +306,9 @@ public class HikivisionUseCases {
 	}
 	
 	private String tipoPedestre(PedestrianAccessEntity pedestre) {
-		if(pedestre.isInativo()) {
+		if(pedestre.isInativo() && Utils.manterEbloquerInativos()) {
 			return "blackList";
 		}	
-		
-//		if(pedestre.isVisitante()) {
-//			return "visitor";
-//		}
 		
 		return "normal";
 	}

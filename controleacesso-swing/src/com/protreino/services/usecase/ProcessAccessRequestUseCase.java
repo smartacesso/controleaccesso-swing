@@ -120,9 +120,20 @@ public class ProcessAccessRequestUseCase {
 
 			// se nao for encontrado
 			if (matchedPedestrianAccess == null) {
+				System.out.println("Pedestre com cartão: " + codigo + " não encontrado");
 				if (createNotification) {
 					Utils.createNotification("Usuário de Código " + codigo + " não encontrado.", NotificationType.BAD, foto);
 				}
+				
+				Date dataAcesso = (data != null) ? data : new Date();
+				
+				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(), null,
+						false, location, "", direction, "", codigo, dataAcesso);
+
+				logAccess.setStatus("INDEFINIDO");
+				logAccess.setAccessDate(dataAcesso);
+				
+				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 
 				return new Object[] { VerificationResult.NOT_FOUND, userName, null };
 			}
@@ -1010,23 +1021,25 @@ public class ProcessAccessRequestUseCase {
 	
 	
 	private TopDataDevice equipamentoPassado(String equipament) {
-		if(Objects.isNull(equipament)) {
-			return null;
-		}
-		
-		if(equipament.isEmpty()) {
-			return null;
-		}
-		
-		System.out.println("buscando equipamento : " + equipament);
-		Device device = (TopDataDevice) DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
+	    if (equipament == null || equipament.isEmpty()) {
+	        return null;
+	    }
 
-		if (Objects.isNull(device)) {
-			System.out.println("Device não encontrado");
-			return null;
-		}
-		
-		return (TopDataDevice) device;
+	    System.out.println("buscando equipamento : " + equipament);
+
+	    Device device = DeviceRepository.getDeviceByIdentifierNomeAlterado(equipament);
+
+	    if (device == null) {
+	        System.out.println("Device não encontrado");
+	        return null;
+	    }
+
+	    if (device instanceof TopDataDevice) {
+	        return (TopDataDevice) device;
+	    }
+
+	    System.out.println("⚠ Equipamento não é TopData: " + device.getClass().getSimpleName());
+	    return null; // ou lança exceção se isso for erro de regra
 	}
 	
 	private boolean isCatracaRefeitorio(Device equipament) {

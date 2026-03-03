@@ -2258,27 +2258,30 @@ public class TopDataDevice extends Device {
 			
 			if (this.ignorarAcesso() || Utils.isAcessoLiberado() || isSaidaLiberada(cameraNome)) {
 
-				final PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
-						.getSingleResultByCardNumberString(PedestrianAccessEntity.class, cardNumber);
-
 				setVerificationResult(VerificationResult.ALLOWED);
 
-				if (Objects.isNull(pedestre)) {
-					System.out.println("pedestre não encontrado");
-					return;
+				PedestrianAccessEntity pedestre = (PedestrianAccessEntity) HibernateLocalAccessData
+						.getSingleResultByCardNumberString(PedestrianAccessEntity.class, cardNumber);
+				if (pedestre == null) {
+					pedestre = (PedestrianAccessEntity) HibernateAccessDataFacade
+							.getSingleResultByCardNumber(PedestrianAccessEntity.class, Long.valueOf(cardNumber));
 				}
-				
-				System.out.println("Disposito sempre liberado : " + this.getName());
 
-				LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
-						pedestre.getId(), false, location, "", null, Objects.nonNull(this) ? this.getName() : "",
-						cardNumber, new Date());
+				if (Objects.isNull(pedestre)) {
+					System.out.println("pedestre não encontrado — sempre liberado mesmo assim");
+				} else {
+					System.out.println("Acesso de : " + pedestre.getName());
 
-				logAccess.setStatus("INDEFINIDO");
+					LogPedestrianAccessEntity logAccess = new LogPedestrianAccessEntity(Main.loggedUser.getId(),
+							pedestre.getId(), false, location, "", null, Objects.nonNull(this) ? this.getName() : "",
+							cardNumber, new Date());
 
-				HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
+					logAccess.setStatus("INDEFINIDO");
+					HibernateAccessDataFacade.save(LogPedestrianAccessEntity.class, logAccess);
 
-				System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
+					System.out.println(">>>>>> ACESSO SEMPRE LIBERADO");
+				}
+
 			} else {
 			    // Processa normalmente
 			    processAccessRequest(cardNumber, false);
