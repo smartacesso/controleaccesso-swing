@@ -743,7 +743,7 @@ public class MainScreen extends JFrame {
 			visitante = new PedestrianAccessEntity();
 			visitante.setTipo("VISITANTE");
 		}
-		autoAtendimentoVisitante = new TelaAutoAtendimento(null);
+		autoAtendimentoVisitante = new TelaAutoAtendimento(null, visitante);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -755,20 +755,21 @@ public class MainScreen extends JFrame {
 
 	public void abreCadastroVisitante(PedestrianAccessEntity p) {
 		PedestrianAccessEntity visitante = p;
-		if(visitante == null) {
+		if (visitante == null) {
 			visitante = new PedestrianAccessEntity();
 			visitante.setTipo("VISITANTE");
 		}
-		if(!RegisterVisitorDialog.abertoPeloAtalho) {
+		if (Utils.cadastroSimplificado()) {
+			abreAutoAtendimento(visitante);
+		} else if (!RegisterVisitorDialog.abertoPeloAtalho) {
 			RegisterVisitorDialog.abertoPeloAtalho = true;
 			cadastroVisitante = new RegisterVisitorDialog(visitante, true);
-			SwingUtilities.invokeLater( 
-			    new Runnable() { 
-			        @Override public void run() {
-			        	cadastroVisitante.setVisible(true);
-			        }
-			    }
-			);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					cadastroVisitante.setVisible(true);
+				}
+			});
 		}
 	}
 
@@ -801,8 +802,9 @@ public class MainScreen extends JFrame {
 			pedestre.setTipo("PEDESTRE");
 		}
 
-		// Verifica se o cadastro ja foi aberto pelo atalho
-		if (!RegisterVisitorDialog.abertoPeloAtalho) {
+		if (Utils.cadastroSimplificado()) {
+			abreAutoAtendimento(pedestre);
+		} else if(!RegisterVisitorDialog.abertoPeloAtalho) {
 			RegisterVisitorDialog.abertoPeloAtalho = true;
 			cadastroPedestre = new RegisterVisitorDialog(pedestre, isPermitidoEditar);
 

@@ -539,6 +539,8 @@ public class Utils {
 				"Tamanho da página na sincronização de logs", FieldType.TEXT, "50", true, 12));	
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "bloquearCartaoZero",
 				"Bloquear cartao zerado", FieldType.CHECKBOX, "true"));	
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "validarCpf",
+				"Habilita validar CPF existente", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaCpf",
 				"Habilita busca por CPF", FieldType.CHECKBOX, "true"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "habilitaBuscaRg",
@@ -550,11 +552,17 @@ public class Utils {
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "porcentagemRevista",
 				"Definir porcentagem da revista obrigatoria", FieldType.TEXT, "0", true, 12));	
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaSemVerificar",
-				"Saida sem verificacao", FieldType.CHECKBOX, "false"));
+				"Saida sem verificacao (geral)", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "saidaHakivisionSemVerificar",
+				"Saida sem verificacao  (apenas hikivision)", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "decrementaEntrada",
 				"Decrementar credito na entrada", FieldType.CHECKBOX, "false"));
 		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "autoAtentimentoHabilitado",
 				"Habilitar auto Atendimento", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "cadastroSimples",
+				"Cadastro Simplificado", FieldType.CHECKBOX, "false"));
+		defaultPreferencesList.add(new PreferenceTO(PreferenceGroup.GENERAL, "liberarDesconhecido",
+				"Liberar mesmo não encontrado no sistema", FieldType.CHECKBOX, "false"));
 
 
 		//Campo Reconhecimento Facial HIKI
@@ -1964,6 +1972,9 @@ public class Utils {
 		return Utils.getPreferenceAsBoolean("saidaSemVerificar");
 	}
 	
+	public static boolean isSaidaHikivisionSemVerificar() {
+		return Utils.getPreferenceAsBoolean("saidaHakivisionSemVerificar");
+	}
 	
 	public static boolean isAcessoHoraErradoIgnorada() {
 		return Utils.getPreferenceAsBoolean("ignorarAcessosHorarioErrado");
@@ -2057,6 +2068,18 @@ public class Utils {
 	public static boolean removerVisitante() {
 		return Utils.getPreferenceAsBoolean("removeVisitanteFinalDodia");
 	}
+
+	public static boolean ignoraRegras() {
+		return Utils.getPreferenceAsBoolean("liberarDesconhecido");
+	}
+	
+	public static boolean ativarValidarCpf() {
+		return Utils.getPreferenceAsBoolean("validarCpf");
+	}
+	
+	public static boolean cadastroSimplificado() {
+		return Utils.getPreferenceAsBoolean("cadastroSimples");
+	}
 	
 //	public static String conversorHexaDeciimal(String Cartao) {
 //		try {
@@ -2095,5 +2118,64 @@ public class Utils {
 //		}
 //	
 //	}
+	
+	public static boolean isCpfValido(String cpf) {
+
+		if (cpf == null) {
+			return false;
+		}
+
+		// Remove tudo que não for número
+		cpf = cpf.replaceAll("\\D", "");
+
+		// Deve ter 11 dígitos
+		if (cpf.length() != 11) {
+			return false;
+		}
+
+		if (Utils.ativarValidarCpf()) {
+
+			// Rejeita CPFs com todos os dígitos iguais
+			if (cpf.matches("(\\d)\\1{10}")) {
+				return false;
+			}
+
+			try {
+				// Primeiro dígito verificador
+				int soma = 0;
+				for (int i = 0; i < 9; i++) {
+					soma += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+				}
+
+				int digito1 = 11 - (soma % 11);
+				if (digito1 >= 10) {
+					digito1 = 0;
+				}
+
+				// Segundo dígito verificador
+				soma = 0;
+				for (int i = 0; i < 10; i++) {
+					soma += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+				}
+
+				int digito2 = 11 - (soma % 11);
+				if (digito2 >= 10) {
+					digito2 = 0;
+				}
+
+				// Validação final
+				return digito1 == Character.getNumericValue(cpf.charAt(9))
+						&& digito2 == Character.getNumericValue(cpf.charAt(10));
+
+			} catch (Exception e) {
+				return false;
+			}
+
+		}
+		
+		return true;
+	
+	}
+	
 
 }

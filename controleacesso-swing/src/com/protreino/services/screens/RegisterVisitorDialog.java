@@ -13,8 +13,10 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
@@ -49,6 +51,7 @@ import java.util.Vector;
 import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -102,6 +105,7 @@ import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HibernateServerAccessData;
 import com.protreino.services.repository.LocalRepository;
 import com.protreino.services.repository.TopDataFacialErrorRepository;
+import com.protreino.services.screens.dialogs.AlertMessage;
 import com.protreino.services.screens.dialogs.LoadingDialog;
 import com.protreino.services.screens.dialogs.SimpleMessageDialog;
 import com.protreino.services.usecase.HikivisionUseCases;
@@ -454,7 +458,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 				String cpf = cpfTextField.getText().replace(".", "").replace("-", "").trim();
 
-				if (cpf.isEmpty() || !validarCPF(cpf))
+				if (cpf.isEmpty())
 					return;
 
 				buscarPedestrePorCPFAsync(cpf);
@@ -597,41 +601,48 @@ public class RegisterVisitorDialog extends BaseDialog {
 			return false;
 		}
 
-		// Rejeita CPFs com todos os dígitos iguais
-		if (cpf.matches("(\\d)\\1{10}")) {
-			return false;
+		if (Utils.ativarValidarCpf()) {
+
+			// Rejeita CPFs com todos os dígitos iguais
+			if (cpf.matches("(\\d)\\1{10}")) {
+				return false;
+			}
+
+			try {
+				// Primeiro dígito verificador
+				int soma = 0;
+				for (int i = 0; i < 9; i++) {
+					soma += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+				}
+
+				int digito1 = 11 - (soma % 11);
+				if (digito1 >= 10) {
+					digito1 = 0;
+				}
+
+				// Segundo dígito verificador
+				soma = 0;
+				for (int i = 0; i < 10; i++) {
+					soma += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+				}
+
+				int digito2 = 11 - (soma % 11);
+				if (digito2 >= 10) {
+					digito2 = 0;
+				}
+
+				// Validação final
+				return digito1 == Character.getNumericValue(cpf.charAt(9))
+						&& digito2 == Character.getNumericValue(cpf.charAt(10));
+
+			} catch (Exception e) {
+				return false;
+			}
+
 		}
 
-		try {
-			// Primeiro dígito verificador
-			int soma = 0;
-			for (int i = 0; i < 9; i++) {
-				soma += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
-			}
+		return true;
 
-			int digito1 = 11 - (soma % 11);
-			if (digito1 >= 10) {
-				digito1 = 0;
-			}
-
-			// Segundo dígito verificador
-			soma = 0;
-			for (int i = 0; i < 10; i++) {
-				soma += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
-			}
-
-			int digito2 = 11 - (soma % 11);
-			if (digito2 >= 10) {
-				digito2 = 0;
-			}
-
-			// Validação final
-			return digito1 == Character.getNumericValue(cpf.charAt(9))
-					&& digito2 == Character.getNumericValue(cpf.charAt(10));
-
-		} catch (Exception e) {
-			return false;
-		}
 	}
 	
 	private void buscarPedestrePorCPFAsync(final String cpf) {
@@ -742,18 +753,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 			// Exemplo: btnSalvar.setEnabled(false);
 			return;
 		}
-	}
-	
-	private boolean validarCPF(String cpf) {
-	    if (cpf == null) {
-	        return false;
-	    }
-	    
-	    // Remove todos os caracteres não numéricos
-	    String cpfLimpo = cpf.replaceAll("[^0-9]", "");
-	    
-	    // Se, após a limpeza, a string estiver vazia, retorna false
-	    return !cpfLimpo.isEmpty();
 	}
 
 	private void criarDialogoConfirmarmudarTipoPedestre(PedestrianAccessEntity existente) {
@@ -2100,6 +2099,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 	
+	private PedestrianAccessEntity salvarCadastro() {
+		return (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
+	}
+	
 	private Boolean isTopDataEnable() {
 		return Utils.getPreferenceAsBoolean("enableTopDataFacial");
 	}
@@ -2230,10 +2233,12 @@ public class RegisterVisitorDialog extends BaseDialog {
 				valido = false;
 			}
 
-			if (camposObrigatorios.contains("cpf")
-					&& cpfTextField.getText().replace(".", "").replace("-", "").replace(" ", "").equals("")) {
-				redAndBoldFont(cpfLabel);
-				valido = false;
+			if (camposObrigatorios.contains("cpf")) {
+				if (!isCpfValido(cpfTextField.getText())) {
+					redAndBoldFont(cpfLabel);
+					valido = false;
+				}
+
 			}
 
 			if (camposObrigatorios.contains("rg") && rgTextField.getText().equals("")) {
@@ -2323,6 +2328,13 @@ public class RegisterVisitorDialog extends BaseDialog {
 			valido = validaCamposDuplicados();
 
 		return valido;
+	}
+	
+	public boolean validaCamposCadastroSimplificado(){
+		//cpf
+		
+		return true;
+		
 	}
 
 	private void criarDialogoPedestreRegraObrigatotio() {
@@ -2949,17 +2961,15 @@ public class RegisterVisitorDialog extends BaseDialog {
 		salvarBtn.setMaximumSize(new Dimension(400, 60));
 		salvarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 		salvarBtn.addActionListener(e -> {
-			boolean valido = validaEmpresaAutoAtendimento();
-			if(valido) {
-				salvarFotoVisitanteHikivision();
-				Optional<PedestreRegraEntity> regraAtiva = visitante.getRegraAtivaPedestre();
-				if (!regraAtiva.isPresent() || !regraAtiva.get().isPeriodoValido()) {
-					System.out.println("adicionando credito");
-				    visitante.setQuantidadeCreditos(1L);
-				}
-				HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante);
-				dialog.dispose();
+
+			salvarFotoVisitanteHikivision();
+			Optional<PedestreRegraEntity> regraAtiva = visitante.getRegraAtivaPedestre();
+			if (!regraAtiva.isPresent() || !regraAtiva.get().isPeriodoValido() && visitante.isVisitante()) {
+				System.out.println("adicionando credito");
+				visitante.setQuantidadeCreditos(1L);
 			}
+			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante);
+			dialog.dispose();
 		});
 
 		JButton fecharBtn = new JButton("Fechar");
@@ -3119,7 +3129,7 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 	    return empresaSelecionada[0];
 	}
-
+	
 	private boolean TirarFotoVisitanteHabilitado(PedestrianAccessEntity visitante) {
 		if (Objects.nonNull(visitante)) {
 			return false;
@@ -3633,6 +3643,36 @@ public class RegisterVisitorDialog extends BaseDialog {
 
 		return cargoItens;
 	}
+	
+	public EmpresaEntity escolherEmpresaSimples(Component parent) {
+	    @SuppressWarnings("unchecked")
+	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
+	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
+
+	    if (empresas == null || empresas.isEmpty()) {
+	        JOptionPane.showMessageDialog(parent, "Nenhuma empresa ativa encontrada.", "Aviso",
+	                JOptionPane.INFORMATION_MESSAGE);
+	        return null;
+	    }
+
+	    JComboBox<EmpresaEntity> combo = new JComboBox<>(empresas.toArray(new EmpresaEntity[0]));
+	    combo.setFont(new Font("Arial", Font.PLAIN, 14));
+	    combo.setPreferredSize(new Dimension(300, 30));
+
+	    int result = JOptionPane.showConfirmDialog(
+	            parent,
+	            combo,
+	            "Selecione a Empresa",
+	            JOptionPane.OK_CANCEL_OPTION,
+	            JOptionPane.PLAIN_MESSAGE
+	    );
+
+	    if (result == JOptionPane.OK_OPTION) {
+	        return (EmpresaEntity) combo.getSelectedItem();
+	    }
+
+	    return null;
+	}
 
 	@SuppressWarnings("unchecked")
 	private static Vector<SelectItem> getAllCentroCustosSelectItens(Long idEmpresa) {
@@ -3883,5 +3923,10 @@ public class RegisterVisitorDialog extends BaseDialog {
 		}
 		
 		return valido;
+	}
+	
+	boolean isEmpresaObrigatorio() {
+		String camposObrigatorios = buscaParametroPeloNome("Campos obrigatorios para cadastro de pedestres");
+		return camposObrigatorios.contains("empresa");
 	}
 }

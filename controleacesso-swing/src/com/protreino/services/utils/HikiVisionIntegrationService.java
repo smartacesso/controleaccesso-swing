@@ -10,7 +10,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.protreino.services.enumeration.DiaSemana;
 import com.protreino.services.enumeration.Finger;
+import com.protreino.services.exceptions.CartaoInvalidException;
 import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.exceptions.UsuarioInvalidException;
 import com.protreino.services.to.hikivision.*;
 import com.protreino.services.to.hikivision.CaptureFingerPrintTO.CaptureFingerPrint;
 import com.protreino.services.to.hikivision.UserInfoTO.UserInfoOut;
@@ -336,10 +338,15 @@ public class HikiVisionIntegrationService {
 				if(!isCadastradoComSucesso) {
 					System.out.println(String.format("Usuario %s cadastrado no device %s com sucesso: %b", idUser, deviceId,
 							isCadastradoComSucesso));
+					
+					throw new UsuarioInvalidException("erro");
 				}
 
 				return isCadastradoComSucesso;
 			}
+
+		} catch (UsuarioInvalidException ufe) {
+			throw ufe;
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -424,10 +431,15 @@ public class HikiVisionIntegrationService {
 				if (!isCartaoAdicionado) {
 					System.out.println(String.format("Cartao  %s cadastrado no device %s com sucesso: %b", idUser,
 							deviceId, isCartaoAdicionado));
+					
+					throw new CartaoInvalidException("erro");
 				}
                 
                 return isCartaoAdicionado;
             }
+
+		} catch (CartaoInvalidException cfe) {
+			throw cfe;
 
 		} catch (Exception e) {
 			e.printStackTrace();

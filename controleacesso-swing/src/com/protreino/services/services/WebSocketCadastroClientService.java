@@ -4,6 +4,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -17,7 +18,7 @@ import com.protreino.services.usecase.RecebePedestreWebSocketUseCase;
 
 public class WebSocketCadastroClientService {
 	
-	private WebSocketClient client;
+	private static WebSocketClient client;
     private String urlAtual;
     private String idClientAtual;
     private ObjectMapper mapper = new ObjectMapper();
@@ -80,5 +81,17 @@ public class WebSocketCadastroClientService {
 		
 		System.out.println("Conexão com webSocket ainda aberta: " + LocalDateTime.now());
 	}
-
+	
+	public static void enviarParaServidor(String status) {
+	    try {
+	        if (client != null && client.isOpen()) {
+	            client.send(status);
+	            System.out.println("Mensagem enviada para servidor: " + status);
+	        } else {
+	            System.out.println("WebSocket não está conectado.");
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -166,7 +167,7 @@ import com.protreino.services.utils.Utils;
 					  + "order by obj.name asc"),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUser",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.status, "
-					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
+					  + "count(distinct temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
 					  + "from PedestrianAccessEntity obj "
 					  + "left join obj.templates temp "
 					  + "where (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
@@ -183,7 +184,7 @@ import com.protreino.services.utils.Utils;
 					  + "where obj.tipo = 'PEDESTRE'and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "),
 	@NamedQuery(name  = "PedestrianAccessEntity.findAllNaoRemovidosOrderedToRegisterUserPedestre",
 				query = "select new com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.tipo, obj.status, "
-					  + "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
+					  + "count(distinct temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier) "
 					  + "from PedestrianAccessEntity obj "
 					  + "left join obj.templates temp "
 					  + "where obj.tipo = 'PEDESTRE' and (obj.removido is null or obj.removido = false) and (obj.invisivel is null or obj.invisivel = false) "
@@ -530,7 +531,7 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 	@Column(name="TIPO_QRCODE", nullable=true, length=100)
 	private String tipoQRCode;
 	
-	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.LAZY,
+	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, fetch=FetchType.EAGER,
 			 targetEntity=TemplateEntity.class, mappedBy="pedestrianAccess")
 	@Fetch(FetchMode.SUBSELECT)
 	public List<TemplateEntity> templates;
@@ -1221,58 +1222,64 @@ public class PedestrianAccessEntity extends BaseEntity implements ObjectWithId, 
 		}
 		
 		try {
-			if (athleteAccessTO.getTemplates() != null
-					&& !athleteAccessTO.getTemplates().isEmpty()) {
-				//verifica antes se alterou templates
-				boolean alterar = false;
-				if(templates != null && !templates.isEmpty()) {
-					if(templates.size() != athleteAccessTO.getTemplates().size()) {
-						//tamanhos diferentes, ja altera
-						alterar = true;
-						if(Main.desenvolvimento)
-							System.out.println("Digitais diferentes");
-					} else {
-						//verifica se lista de digitais existes 
-						//é igual a lista de digitais recebidas
-						List<String> templatesExistentes = new ArrayList<String>();
-						for (TemplateEntity t : templates) {
-							String existente = Base64.encodeBase64String(t.getTemplate());
-							templatesExistentes.add(existente.replaceAll("(?:\\n|\\r)", ""));
-						}
-						
-						if(!templatesExistentes.equals(athleteAccessTO.getTemplates())) {
-							alterar = true;
-							if(Main.desenvolvimento)
-								System.out.println("Digitais diferentes");
-						}else {
-							if(Main.desenvolvimento)
-								System.out.println("Digitais iguais");
-						}
-					}
-				} else {
-					alterar = true;
-				}
-				
-				if(alterar) {
-					if (templates != null && !templates.isEmpty()) {
-						templates.clear();
-					
-					} else {
-						templates = new ArrayList<TemplateEntity>();
-					}
-					
-					for (String s : athleteAccessTO.getTemplates()) {
-						templates.add(new TemplateEntity(this, Base64.decodeBase64(s), athleteAccessTO.getDataAlteracao()));
-					}
-					
-					novasDigitais = true;
-				}
-			} else {
-				if (templates != null) {
-						templates.clear();
-				}
-			}
+		    if (athleteAccessTO.getTemplates() != null && !athleteAccessTO.getTemplates().isEmpty()) {
+
+		        // Normaliza templates recebidos
+		        Set<String> novosTemplates = athleteAccessTO.getTemplates()
+		                .stream()
+		                .map(s -> s.replaceAll("(?:\\n|\\r)", ""))
+		                .collect(Collectors.toSet());
+
+		        // Inicializa lista se necessário
+		        if (templates == null) {
+		            templates = new ArrayList<>();
+		        }
+
+		        // Normaliza templates existentes
+		        Set<String> existentes = templates.stream()
+		                .map(t -> Base64.encodeBase64String(t.getTemplate()).replaceAll("(?:\\n|\\r)", ""))
+		                .collect(Collectors.toSet());
+
+		        if (!existentes.equals(novosTemplates)) {
+
+		            if (Main.desenvolvimento) {
+		                System.out.println("Digitais diferentes");
+		            }
+
+		            // 🔴 REMOVE apenas o que não existe mais
+		            templates.removeIf(t -> {
+		                String base64 = Base64.encodeBase64String(t.getTemplate()).replaceAll("(?:\\n|\\r)", "");
+		                return !novosTemplates.contains(base64);
+		            });
+
+		            // 🔴 ADICIONA apenas novos
+		            for (String s : novosTemplates) {
+		                if (!existentes.contains(s)) {
+		                    templates.add(new TemplateEntity(
+		                            this,
+		                            Base64.decodeBase64(s),
+		                            athleteAccessTO.getDataAlteracao()
+		                    ));
+		                }
+		            }
+
+		            novasDigitais = true;
+
+		        } else {
+		            if (Main.desenvolvimento) {
+		                System.out.println("Digitais iguais");
+		            }
+		        }
+
+		    } else {
+		        // Remove tudo se não veio nada
+		        if (templates != null) {
+		            templates.clear(); // aqui pode manter
+		        }
+		    }
+
 		} catch (Exception e) {
+		    e.printStackTrace(); // nunca deixe vazio
 		}
 		
 		//equipamentos

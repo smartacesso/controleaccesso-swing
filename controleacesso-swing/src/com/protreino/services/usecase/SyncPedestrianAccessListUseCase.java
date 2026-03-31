@@ -551,6 +551,8 @@ public class SyncPedestrianAccessListUseCase {
                         + "&lastsync=" + lastSync
                         + "&version=" + Configurations.VERSION);
                 con.setTimeout(0); // tempo ilimitado
+                
+                System.out.println(con.getHttpURLConnection());
 
                 Integer responseCode = con.getResponseCode();
                 

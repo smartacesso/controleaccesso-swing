@@ -20,8 +20,10 @@ import com.protreino.services.entity.PedestrianAccessEntity;
 import com.protreino.services.entity.RegraEntity;
 import com.protreino.services.enumeration.Finger;
 import com.protreino.services.enumeration.HikivisionAction;
+import com.protreino.services.exceptions.CartaoInvalidException;
 import com.protreino.services.exceptions.HikivisionIntegrationException;
 import com.protreino.services.exceptions.InvalidPhotoException;
+import com.protreino.services.exceptions.UsuarioInvalidException;
 import com.protreino.services.repository.HibernateAccessDataFacade;
 import com.protreino.services.repository.HikivisionFingerErrorRepository;
 import com.protreino.services.repository.HikivisionIntegrationErrorRepository;
@@ -70,7 +72,7 @@ public class HikivisionUseCases {
 
 	public void syncronizarUsuarioInDevices(final PedestrianAccessEntity pedestre, List<HikivisionDeviceSimplificadoTO> devicesToSync, List<String> devicesByName) {
 		
-		if (pedestre.isRemovido() || Objects.isNull(pedestre.getFoto()) || pedestre.isInativo()) {
+		if (pedestre.isRemovido() || pedestre.isInativo()) {
 			System.out.println("removendo foto");
 			
 			if(Utils.removeInativos()) {
@@ -291,10 +293,14 @@ public class HikivisionUseCases {
 			} catch (HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
 						ex.getDeviceId(), ex.getHikivisionAction()));
+			} catch (UsuarioInvalidException ufe) {
+				throw ufe;
+			} catch (CartaoInvalidException cfe) {
+				throw cfe;
 			} catch (InvalidPhotoException ife) {
 				throw ife;
 			} catch (Exception e) {
-				System.out.println("Erro inesperado no device {}: {}");
+				System.out.println("Erro inesperado no device : " + deviceTo);
 			}
 		}
 
@@ -402,6 +408,10 @@ public class HikivisionUseCases {
 			} catch (HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
 						ex.getDeviceId(), ex.getHikivisionAction()));
+			} catch (UsuarioInvalidException ufe) {
+				throw ufe;
+			} catch (CartaoInvalidException cfe) {
+				throw cfe;
 			} catch (InvalidPhotoException ife) {
 				throw ife;
 			} catch (Exception e) {
@@ -458,10 +468,14 @@ public class HikivisionUseCases {
 			} catch (HikivisionIntegrationException ex) {
 				integrationErrors.add(new HikivisionIntegrationErrorEntity(ex.getMessage(), ex.getCardNumber(),
 						ex.getDeviceId(), ex.getHikivisionAction()));
+			} catch (UsuarioInvalidException ufe) {
+				throw ufe;
+			} catch (CartaoInvalidException cfe) {
+				throw cfe;
 			} catch (InvalidPhotoException ife) {
 				throw ife;
 			} catch (Exception e) {
-				System.out.println("Erro inesperado no device {}: {}");
+				System.out.println("Erro inesperado no device : " + deviceTo);
 			}
 		}
 

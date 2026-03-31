@@ -505,7 +505,7 @@ public class RegisterUserDialog extends JDialog{
 		
 		
 		String construtor = " com.protreino.services.entity.PedestrianAccessEntity(obj.id, obj.name, obj.tipo, obj.status, "
-				+ "count(temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier)  ";
+				+ "count(distinct temp.id), obj.cadastradoNaCatracaRWTech, obj.cardNumber, obj.cadastradoNoDesktop, obj.luxandIdentifier)  ";
 		
 		String join = " left join obj.templates temp ";
 		

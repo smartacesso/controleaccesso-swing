@@ -175,7 +175,7 @@ public class HikivisionEventsUseCase {
 		String motivoLiberado = "FACIAL";
 
 		// Busca o último acesso do pedestre
-		final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcesso(pedestre.getId(),
+		final LogPedestrianAccessEntity lastAccess = logPedestrianAccessRepository.buscaUltimoAcessoPorCartao(pedestre.getCardNumber(),
 				pedestre.getQtdAcessoAntesSinc());
 
 		// Se houver um último acesso, verifica o tempo
