@@ -343,4 +343,8 @@ public class EmpresaEntity extends BaseEntity implements ObjectWithId {
 		this.autoAtendimentoLiberado = autoAtendimentoLiberado;
 	}
 	
+	@Override
+	public String toString() {
+	    return this.getNome();
+	}
 }

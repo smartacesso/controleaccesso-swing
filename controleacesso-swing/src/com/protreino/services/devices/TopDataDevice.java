@@ -902,6 +902,8 @@ public class TopDataDevice extends Device {
 
 	
 	protected void registraGiro(int sentido, Date data) {
+		System.out.println("REGISTRA GIRO");
+		
 	    String query = "";
 
 	    HashMap<String, Object> args = new HashMap<>();
@@ -1004,7 +1006,7 @@ public class TopDataDevice extends Device {
 
 	        System.out.println("DIREÇÃO DE GIRO : " + direction);
 
-	        ultimoAcesso.setReason("");
+//	        ultimoAcesso.setReason("");
 	        ultimoAcesso.setDirection(direction);
 	        ultimoAcesso.setStatus("ATIVO");
 	        ultimoAcesso.setBloquearSaida(bloquearSaida);
@@ -1421,15 +1423,14 @@ public class TopDataDevice extends Device {
 
 			    if(doisSentidosLiberado) {
 			    	System.out.println("Dois sentidos liberados");
-					EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-					EasyInner.AcionarBipCurto(inner.Numero);	
+			    	EasyInner.AcionarBipCurto(inner.Numero);
+					return EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 				}
 			    
 			    // se não encontrou nenhum, libera os dois sentidos
 			    if (!cameraEntrada && !cameraSaida) {
-			        EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
-			        EasyInner.AcionarBipCurto(inner.Numero);
-			        return ret;
+			    	EasyInner.AcionarBipCurto(inner.Numero);
+					return EasyInner.LiberarCatracaDoisSentidos(inner.Numero);
 			    }
 
 			    // força ENTRADA
@@ -2116,6 +2117,7 @@ public class TopDataDevice extends Device {
 		this.inner.EstadoTeclado = Enumeradores.EstadosTeclado.TECLADO_EM_BRANCO;
 		this.inner.ValorLeitor1 = getConfigurationValueAsInteger(LEITOR_1);
 		this.inner.ValorLeitor2 = getConfigurationValueAsInteger(LEITOR_2);
+		
 	}
 	
 	protected Integer testarConexaoInner(Integer Inner) {
@@ -2217,7 +2219,8 @@ public class TopDataDevice extends Device {
 				System.out.println("origem : " + matchedAthleteAccess.getOrigemCatraca());
 				if(usaUrna && matchedAthleteAccess != null 
 	            			&& matchedAthleteAccess.getOrigemCatraca() != null 
-	            			&& matchedAthleteAccess.getOrigemCatraca() == 3) {
+	            			&& matchedAthleteAccess.getOrigemCatraca() == 3
+	            			&& !(this instanceof TopDataAcessoDevice)) {
 	            	EasyInner.AcionarRele2(inner.Numero);
 	            } else {
 	            	allowAccess();
@@ -2315,7 +2318,7 @@ public class TopDataDevice extends Device {
 	private boolean isSaidaLiberada(String cameraNome) {
 		String dispositivoNormalizado = cameraNome.toLowerCase();
 		
-		if (Utils.isSaidaSemVerificar() && (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida"))) {
+		if (Utils.isSaidaHikivisionSemVerificar() && (dispositivoNormalizado.contains("saída") || dispositivoNormalizado.contains("saida"))) {
 			return true;
 		}
 		
@@ -3040,7 +3043,7 @@ public class TopDataDevice extends Device {
 	    return null; // nenhum intervalo ativo
 	}
 	
-	private TopDataDevice equipamentoPassado(String equipament) {
+	protected TopDataDevice equipamentoPassado(String equipament) {
 		if(Objects.isNull(equipament)) {
 			return null;
 		}

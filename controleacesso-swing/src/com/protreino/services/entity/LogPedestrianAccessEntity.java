@@ -163,6 +163,19 @@ indexes = {
 					  + "and obj.dataCriacao is not null "
 					  + "and obj.dataCriacao >= :DATE "
 					  + "order by obj.dataCriacao desc "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyCardNumber",
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + "where obj.cartaoAcessoRecebido = :CARD_NUMBER "
+					  + "and obj.direction is not null "
+					  + "and obj.dataCriacao is not null "
+					  + "order by obj.dataCriacao desc "),
+	@NamedQuery(name  = "LogPedestrianAccessEntity.findByLastAccessbyCardNumberAndDate",
+				query = "select obj from LogPedestrianAccessEntity obj "
+					  + "where obj.cartaoAcessoRecebido = :CARD_NUMBER "
+					  + "and obj.direction is not null "
+					  + "and obj.dataCriacao is not null "
+					  + "and obj.dataCriacao >= :DATE "
+					  + "order by obj.dataCriacao desc "),
 	@NamedQuery(name  = "LogPedestrianAccessEntity.findByCurrentDate",
 				query = "select obj from LogPedestrianAccessEntity obj "
 					  + "where obj.dataCriacao is not null "

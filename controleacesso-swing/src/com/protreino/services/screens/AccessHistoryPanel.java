@@ -326,7 +326,14 @@ public class AccessHistoryPanel extends PaginedListPanel {
 					obj[4] = logAcesso.getAccessDate() != null ? sdfTime.format(logAcesso.getAccessDate()) : "-";
 					obj[5] = montaTipoAcesso(logAcesso);
 
-				} else {
+				} else if(logAcesso.getReason() != null ?  logAcesso.getReason().contains("NÃO ENCONTRADO") : false){
+					obj[0] = "-";
+					obj[1] = (logAcesso.getCartaoAcessoRecebido() != null && !"".equals(logAcesso.getCartaoAcessoRecebido())) ? logAcesso.getCartaoAcessoRecebido() : "-";
+					obj[2] = "-";
+					obj[3] = "-";
+					obj[4] = logAcesso.getAccessDate() != null ? sdfTime.format(logAcesso.getAccessDate()) : "-";
+					obj[5] = "NÃO ENCONTRADO";
+				}else {
 					obj[0] = "-";
 					obj[1] = "-";
 					obj[2] = "-";
@@ -338,8 +345,6 @@ public class AccessHistoryPanel extends PaginedListPanel {
 			}
 		}
 		accessHistoryTable.setModel(dataModel);
-		//int numAcessos = (historicoAcesso != null ? historicoAcesso.size() : 0);
-		//countLabel.setText("Numero de registros: " + numAcessos);
 		countLabel.setText("Pág. ("+ paginaAtual + "/" + totalPaginas + ") do total: " + totalRegistros);
 		formatTable();
 	}
