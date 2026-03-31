@@ -25,7 +25,8 @@ public class TelaAutoAtendimento extends BaseDialog {
     enum Etapa {
         CPF,
         NOME,
-        EMPRESA
+        EMPRESA,
+        OBS
     }
 
     private Etapa etapaAtual;
@@ -35,14 +36,19 @@ public class TelaAutoAtendimento extends BaseDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.cadastro = cadastro;
 
-        setUndecorated(true);
+        setUndecorated(false);
         setBounds(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds());
         setLayout(new BorderLayout());
 
         contentPanel = new JPanel(new BorderLayout());
         add(contentPanel, BorderLayout.CENTER);
 
-        mostrarTelaCPF();
+        
+        if(Objects.nonNull(cadastro.getId())) {
+        	mostrarTelaNome();
+        }else {
+        	mostrarTelaCPF();
+        }
     }
 
     // =========================================================
@@ -67,35 +73,28 @@ public class TelaAutoAtendimento extends BaseDialog {
         JButton btn = new JButton("Continuar");
         btn.setFont(new Font("Arial", Font.BOLD, 36));
 
-        btn.addActionListener(e -> {
-            String cpf = cpfField.getText().trim();
+		btn.addActionListener(e -> {
+			String cpf = cpfField.getText().trim().replaceAll("\\D", "");
 
-            if (cpf.isEmpty()) {
-                new AlertMessage(this, "Atenção", "Digite o CPF").mostrar();
-                return;
-            }
-            
-            if(Utils.ativarValidarCpf() && !Utils.isCpfValido(cpf)) {
+			if (cpf.isEmpty()) {
+				new AlertMessage(this, "Atenção", "Digite o CPF").mostrar();
+				return;
+			}
+
+			if (Utils.ativarValidarCpf() && !Utils.isCpfValido(cpf)) {
 				new AlertMessage(this, "Atenção", "Digite o CPF correto").mostrar();
 				return;
-            }
-            
-            cadastro.setCpf(cpf);
+			}
 
-            PedestrianAccessEntity visitante = buscarVisitantePorCpf(cpf);
+			cadastro.setCpf(cpf);
 
-            if (visitante != null) {
-                cadastro = visitante;
+			PedestrianAccessEntity visitante = buscarVisitantePorCpf(cpf);
 
-                if (cadastro.getCardNumber() == null) {
-                    cadastro.setCardNumber(geraCartaoAcessoAleatorio());
-                }
-
-                mostrarTelaEmpresa();
-            } else {
-                mostrarTelaNome();
-            }
-        });
+			if (visitante != null) {
+				cadastro = visitante;
+			}
+			mostrarTelaNome();
+		});
 
         center.add(label);
         center.add(cpfField);
@@ -109,7 +108,7 @@ public class TelaAutoAtendimento extends BaseDialog {
 
         panel.add(center, BorderLayout.CENTER);
         panel.add(tecladoWrapper, BorderLayout.SOUTH);
-
+        
         trocarTela(panel);
     }
 
@@ -119,8 +118,10 @@ public class TelaAutoAtendimento extends BaseDialog {
     private void mostrarTelaNome() {
         etapaAtual = Etapa.NOME;
 
-        JPanel panel = new JPanel(new GridLayout(3, 1, 30, 30));
-        panel.setBorder(BorderFactory.createEmptyBorder(100, 300, 100, 300));
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel center = new JPanel(new GridLayout(3, 1, 30, 30));
+        center.setBorder(BorderFactory.createEmptyBorder(100, 300, 100, 300));
 
         JLabel label = new JLabel("Digite seu Nome:");
         label.setFont(new Font("Arial", Font.BOLD, 48));
@@ -129,6 +130,12 @@ public class TelaAutoAtendimento extends BaseDialog {
         JTextField nomeField = new JTextField();
         nomeField.setFont(new Font("Arial", Font.PLAIN, 40));
         nomeField.setHorizontalAlignment(JTextField.CENTER);
+
+        // Preenche se já existir
+        if (cadastro.getName() != null && !cadastro.getName().isEmpty()) {
+            nomeField.setText(cadastro.getName());
+            nomeField.setCaretPosition(nomeField.getText().length());
+        }
 
         JButton btn = new JButton("Continuar");
         btn.setFont(new Font("Arial", Font.BOLD, 36));
@@ -142,14 +149,30 @@ public class TelaAutoAtendimento extends BaseDialog {
             }
 
             cadastro.setName(nome);
-            cadastro.setCardNumber(geraCartaoAcessoAleatorio());
-
             mostrarTelaEmpresa();
         });
 
-        panel.add(label);
-        panel.add(nomeField);
-        panel.add(btn);
+        center.add(label);
+        center.add(nomeField);
+        center.add(btn);
+        
+        TecladoAlfabeticoPanel teclado = new TecladoAlfabeticoPanel(nomeField);
+
+        JPanel tecladoWrapper = new JPanel(new BorderLayout());
+        tecladoWrapper.setBorder(new EmptyBorder(20, 300, 50, 300));
+        tecladoWrapper.add(teclado, BorderLayout.CENTER);
+
+
+        panel.add(center, BorderLayout.CENTER);
+        
+        panel.add(tecladoWrapper, BorderLayout.SOUTH);
+        
+        JPanel bottom = new JPanel(new BorderLayout());
+
+        bottom.add(tecladoWrapper, BorderLayout.CENTER);
+        bottom.add(criarFooterVoltar(), BorderLayout.SOUTH);
+
+        panel.add(bottom, BorderLayout.SOUTH);
 
         trocarTela(panel);
     }
@@ -177,6 +200,7 @@ public class TelaAutoAtendimento extends BaseDialog {
             mostrarTelaEmpresaDesktop(empresas);
         }
     }
+    
     
     private void mostrarTelaEmpresaTouch(List<EmpresaEntity> empresas) {
         JPanel main = new JPanel(new BorderLayout());
@@ -239,7 +263,7 @@ public class TelaAutoAtendimento extends BaseDialog {
             combo.addItem(emp);
         }
 
-        combo.setFont(new Font("Arial", Font.PLAIN, 20));
+        combo.setFont(new Font("Arial", Font.PLAIN, 40));
 
         JButton confirmar = new JButton("Confirmar");
         confirmar.setFont(new Font("Arial", Font.BOLD, 22));
@@ -247,7 +271,7 @@ public class TelaAutoAtendimento extends BaseDialog {
         confirmar.addActionListener(e -> {
             EmpresaEntity selecionada = (EmpresaEntity) combo.getSelectedItem();
             if (selecionada != null) {
-                finalizarFluxo(selecionada);
+                mostrarTelaObservacao(selecionada);
             } else {
                 new AlertMessage(this, "Atenção", "Selecione uma empresa").mostrar();
             }
@@ -263,6 +287,52 @@ public class TelaAutoAtendimento extends BaseDialog {
         trocarTela(main);
     }
     
+    // =========================================================
+    // OBSERVACAO
+    // =========================================================
+    private void mostrarTelaObservacao(EmpresaEntity empresaSelecionada) {
+        etapaAtual = Etapa.OBS;
+
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel center = new JPanel(new GridLayout(3, 1, 30, 30));
+        center.setBorder(BorderFactory.createEmptyBorder(100, 300, 100, 300));
+
+        JLabel label = new JLabel("Digite observação:");
+        label.setFont(new Font("Arial", Font.BOLD, 48));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JTextField obsField = new JTextField();
+        obsField.setFont(new Font("Arial", Font.PLAIN, 40));
+        obsField.setHorizontalAlignment(JTextField.CENTER);
+
+        // Preenche se já existir
+        if (cadastro.getObservacoes() != null && !cadastro.getObservacoes().isEmpty()) {
+            obsField.setText(cadastro.getObservacoes());
+            obsField.setCaretPosition(obsField.getText().length());
+        }
+
+        JButton btn = new JButton("Continuar");
+        btn.setFont(new Font("Arial", Font.BOLD, 36));
+
+        btn.addActionListener(e -> {
+            String obs = obsField.getText().trim();
+
+            // Observação opcional
+            cadastro.setObservacoes(obs);
+
+            finalizarFluxo(empresaSelecionada);
+        });
+
+        center.add(label);
+        center.add(obsField);
+        center.add(btn);
+
+        panel.add(center, BorderLayout.CENTER);
+        panel.add(criarFooterVoltar(), BorderLayout.SOUTH);
+
+        trocarTela(panel);
+    }
     
     // =========================================================
     // FINAL
@@ -274,8 +344,8 @@ public class TelaAutoAtendimento extends BaseDialog {
             return;
         }
 
-        if (Objects.nonNull(empresa.getAutoAtendimentoLiberado())
-                && empresa.autoAtendimentoLiberado()) {
+        if (Objects.isNull(empresa.getAutoAtendimentoLiberado())
+                || empresa.autoAtendimentoLiberado()) {
 
             RegisterVisitorDialog cadastroVisitante =
                     new RegisterVisitorDialog(cadastro, true);
@@ -306,10 +376,23 @@ public class TelaAutoAtendimento extends BaseDialog {
         voltar.setFont(new Font("Arial", Font.PLAIN, 20));
 
         voltar.addActionListener(e -> {
-            if (cadastro.getName() == null) {
-                mostrarTelaCPF();
-            } else {
-                mostrarTelaNome();
+            switch (etapaAtual) {
+                case CPF:
+                    // primeira tela → pode fechar
+                    dispose();
+                    break;
+
+                case NOME:
+                    mostrarTelaCPF();
+                    break;
+
+                case EMPRESA:
+                    mostrarTelaNome();
+                    break;
+
+                case OBS:
+                    mostrarTelaEmpresa();
+                    break;
             }
         });
 
@@ -325,7 +408,4 @@ public class TelaAutoAtendimento extends BaseDialog {
                         PedestrianAccessEntity.class, cpf);
     }
 
-    private String geraCartaoAcessoAleatorio() {
-        return String.valueOf(System.currentTimeMillis()).substring(5, 13);
-    }
 }

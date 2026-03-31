@@ -2099,7 +2099,63 @@ public class RegisterVisitorDialog extends BaseDialog {
 		visitante = (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 	
-	private PedestrianAccessEntity salvarCadastro() {
+	private PedestrianAccessEntity adicionarVisitanteSimplificado() {
+		String regex = ".*\\d.*";
+
+		if (visitante.getId() == null) {
+			visitante.setId(new Date().getTime());
+			visitante.setIdTemp(visitante.getId());
+			visitante.setCadastradoNoDesktop(true);
+			
+
+		} else {
+
+			// verifica se ja existe um visitante novo
+			if (visitante.getIdTemp() == null) {
+				PedestrianAccessEntity cadastrado = (PedestrianAccessEntity) HibernateAccessDataFacade
+						.getSingleResultByIdTemp(PedestrianAccessEntity.class, visitante.getId());
+				if (cadastrado != null && cadastrado.getId() != null)
+					visitante = cadastrado;
+			}
+
+			visitante.setEditadoNoDesktop(true);
+		}
+		
+		
+		visitante.setIdUsuario(Main.internoLoggedUser.getId());
+		visitante.setStatus("ATIVO");
+		
+		if(Objects.isNull(visitante.getCardNumber())) {
+			visitante.setCardNumber(geraCartaoAcessoAleatorio());
+		}
+		
+		if(visitante.isPedestre()) {
+			visitante.setSempreLiberado(true);
+			visitante.setAcessoLivre(true);
+		}
+		
+		if (panelAdicionarRegras.getPedestresRegras() != null && !panelAdicionarRegras.getPedestresRegras().isEmpty()) {
+//			panelAdicionarRegras.getPedestresRegras().forEach(pr -> {
+//				pr.setPedestrianAccess(visitante);
+//			});
+			for(PedestreRegraEntity pr : panelAdicionarRegras.getPedestresRegras()) {
+				pr.setPedestrianAccess(visitante);
+			}
+
+			visitante.setPedestreRegra(panelAdicionarRegras.getPedestresRegras());
+
+		} else if ("VISITANTE".equals(visitante.getTipo())
+				&& (visitante.getPedestreRegra() == null || visitante.getPedestreRegra().isEmpty())) {
+			PedestreRegraEntity pedestreRegra = buscaPedestreRegraPadraoVisitante();
+			pedestreRegra.setPedestrianAccess(visitante);
+			visitante.setPedestreRegra(Arrays.asList(pedestreRegra));
+			visitante.setQuantidadeCreditos(visitante.getPedestreRegra().get(0).getQtdeDeCreditos());
+			visitante.setValidadeCreditos(visitante.getPedestreRegra().get(0).getValidade());
+
+		}
+		
+		visitante.setDataAlteracao(new Date());
+		
 		return (PedestrianAccessEntity) HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante)[0];
 	}
 	
@@ -2962,12 +3018,22 @@ public class RegisterVisitorDialog extends BaseDialog {
 		salvarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 		salvarBtn.addActionListener(e -> {
 
-			salvarFotoVisitanteHikivision();
+			adicionarVisitanteSimplificado();
+			
+			if (Objects.nonNull(hikivisionUseCases)) {
+				salvarFotoVisitanteHikivision();
+			}
+
+			if (isTopDataEnable()) {
+				salvarFotoVisitanteTopData();
+			}
+			
 			Optional<PedestreRegraEntity> regraAtiva = visitante.getRegraAtivaPedestre();
-			if (!regraAtiva.isPresent() || !regraAtiva.get().isPeriodoValido() && visitante.isVisitante()) {
+			if ((!regraAtiva.isPresent() || !regraAtiva.get().isPeriodoValido()) && visitante.isVisitante()) {
 				System.out.println("adicionando credito");
 				visitante.setQuantidadeCreditos(1L);
 			}
+			
 			HibernateAccessDataFacade.save(PedestrianAccessEntity.class, visitante);
 			dialog.dispose();
 		});
@@ -2991,145 +3057,6 @@ public class RegisterVisitorDialog extends BaseDialog {
 		dialog.setVisible(true);
 	}
 
-	public EmpresaEntity mostrarDialogoEscolherEmpresaTouch(Frame owner) {
-	    @SuppressWarnings("unchecked")
-	    List<EmpresaEntity> empresas = (List<EmpresaEntity>) HibernateAccessDataFacade
-	            .getResultList(EmpresaEntity.class, "EmpresaEntity.findAllActive");
-
-	    if (empresas == null || empresas.isEmpty()) {
-	        JOptionPane.showMessageDialog(owner, "Nenhuma empresa ativa encontrada.", "Aviso",
-	                JOptionPane.INFORMATION_MESSAGE);
-	        return null;
-	    }
-
-	    final EmpresaEntity[] empresaSelecionada = new EmpresaEntity[1];
-
-	    JDialog dialog = new JDialog(owner, "Escolha a Empresa", true);
-	    dialog.setUndecorated(true);
-
-	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	    dialog.setSize(screenSize);
-	    dialog.setLocationRelativeTo(null);
-
-	    JPanel mainPanel = new JPanel(new BorderLayout());
-	    mainPanel.setBackground(Color.WHITE);
-
-	    JLabel titulo = new JLabel("Selecione uma Empresa");
-	    titulo.setFont(new Font("Arial", Font.BOLD, 36));
-	    titulo.setHorizontalAlignment(SwingConstants.CENTER);
-	    titulo.setBorder(new EmptyBorder(30, 0, 30, 0));
-	    mainPanel.add(titulo, BorderLayout.NORTH);
-
-	    JPanel gridPanel = new JPanel(new GridBagLayout());
-	    gridPanel.setBackground(Color.WHITE);
-
-	    JScrollPane scroll = new JScrollPane(gridPanel);
-	    scroll.setBorder(null);
-	    scroll.getVerticalScrollBar().setUnitIncrement(16);
-	    scroll.getHorizontalScrollBar().setUnitIncrement(16);
-	    scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-	    mainPanel.add(scroll, BorderLayout.CENTER);
-
-	    // --- Rodapé melhorado ---
-	    JPanel footerPanel = new JPanel(new GridBagLayout());
-	    footerPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-	    footerPanel.setBackground(Color.WHITE);
-
-	    JButton btnVoltarPagina = new JButton("Página Anterior");
-	    btnVoltarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
-	    btnVoltarPagina.setPreferredSize(new Dimension(200, 50));
-	    btnVoltarPagina.setBackground(new Color(220, 220, 220)); // Cinza claro
-
-	    JButton btnCancelar = new JButton("Cancelar");
-	    btnCancelar.setFont(new Font("Arial", Font.PLAIN, 20));
-	    btnCancelar.setPreferredSize(new Dimension(200, 50));
-	    btnCancelar.setBackground(new Color(255, 150, 150)); // Vermelho claro
-
-	    JButton btnAvancarPagina = new JButton("Próxima Página");
-	    btnAvancarPagina.setFont(new Font("Arial", Font.PLAIN, 20));
-	    btnAvancarPagina.setPreferredSize(new Dimension(200, 50));
-	    btnAvancarPagina.setBackground(new Color(173, 216, 230)); // Azul claro
-
-	    GridBagConstraints gbcFooter = new GridBagConstraints();
-	    gbcFooter.insets = new Insets(0, 10, 0, 10);
-	    gbcFooter.gridy = 0;
-
-	    gbcFooter.gridx = 0;
-	    gbcFooter.anchor = GridBagConstraints.WEST;
-	    footerPanel.add(btnVoltarPagina, gbcFooter);
-
-	    gbcFooter.gridx = 1;
-	    gbcFooter.anchor = GridBagConstraints.CENTER;
-	    footerPanel.add(btnCancelar, gbcFooter);
-
-	    gbcFooter.gridx = 2;
-	    gbcFooter.anchor = GridBagConstraints.EAST;
-	    footerPanel.add(btnAvancarPagina, gbcFooter);
-
-	    mainPanel.add(footerPanel, BorderLayout.SOUTH);
-	    dialog.setContentPane(mainPanel);
-
-	    final int[] paginaAtual = {0};
-	    final int itensPorPagina = 12;
-	    final int totalPaginas = (int) Math.ceil((double) empresas.size() / itensPorPagina);
-
-	    Runnable atualizarGrid = () -> {
-	        gridPanel.removeAll();
-	        GridBagConstraints gbc = new GridBagConstraints();
-	        gbc.insets = new Insets(20, 20, 20, 20);
-	        gbc.fill = GridBagConstraints.NONE;
-
-	        int start = paginaAtual[0] * itensPorPagina;
-	        int end = Math.min(start + itensPorPagina, empresas.size());
-
-	        for (int i = start; i < end; i++) {
-	            EmpresaEntity empresa = empresas.get(i);
-	            JButton botao = new JButton("<html><center>" + empresa.getNome() + "</center></html>");
-	            botao.setFont(new Font("Arial", Font.PLAIN, 22));
-	            botao.setPreferredSize(new Dimension(300, 150));
-	            botao.setFocusPainted(false);
-	            botao.setBackground(new Color(230, 230, 250));
-
-	            botao.addActionListener(e -> {
-	                empresaSelecionada[0] = empresa;
-	                dialog.dispose();
-	            });
-
-	            gbc.gridx = (i - start) % 3;
-	            gbc.gridy = (i - start) / 3;
-	            gridPanel.add(botao, gbc);
-	        }
-
-	        gridPanel.revalidate();
-	        gridPanel.repaint();
-
-	        btnVoltarPagina.setEnabled(paginaAtual[0] > 0);
-	        btnAvancarPagina.setEnabled(paginaAtual[0] < totalPaginas - 1);
-	    };
-
-	    btnVoltarPagina.addActionListener(e -> {
-	        if (paginaAtual[0] > 0) {
-	            paginaAtual[0]--;
-	            atualizarGrid.run();
-	        }
-	    });
-
-	    btnAvancarPagina.addActionListener(e -> {
-	        if (paginaAtual[0] < totalPaginas - 1) {
-	            paginaAtual[0]++;
-	            atualizarGrid.run();
-	        }
-	    });
-
-	    btnCancelar.addActionListener(e -> dialog.dispose());
-
-	    atualizarGrid.run();
-	    dialog.setVisible(true);
-
-	    return empresaSelecionada[0];
-	}
-	
 	private boolean TirarFotoVisitanteHabilitado(PedestrianAccessEntity visitante) {
 		if (Objects.nonNull(visitante)) {
 			return false;
